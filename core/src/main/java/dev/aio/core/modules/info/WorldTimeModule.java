@@ -10,7 +10,7 @@ public final class WorldTimeModule extends TextHudElement {
     private final BooleanSetting symbol;
 
     public WorldTimeModule() {
-        super("worldtime", "World Time", "Time of day in the Minecraft world", Category.INFO, false, 0.0, 0.36);
+        super("worldtime", "World Time", "Time of day in the Minecraft world", Category.QOL, false, 0.0, 0.36);
         twelveHour = add(new BooleanSetting("twelveHour", "12-hour format", false));
         symbol = add(new BooleanSetting("symbol", "Sun/moon", true));
     }

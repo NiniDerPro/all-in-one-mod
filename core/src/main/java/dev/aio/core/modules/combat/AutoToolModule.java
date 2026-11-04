@@ -15,7 +15,7 @@ public final class AutoToolModule extends Module {
     private int previousSlot = -1;
 
     public AutoToolModule() {
-        super("autotool", "Auto Tool", "Switches to the right tool when mining", Category.COMBAT, true);
+        super("autotool", "Auto Tool", "Switches to the right tool when mining", Category.PVP, true);
         restore = add(new BooleanSetting("restore", "Switch back afterwards", false));
         on(Events.StartBreak.class, e -> onBreak());
         on(Events.Tick.class, e -> tick());

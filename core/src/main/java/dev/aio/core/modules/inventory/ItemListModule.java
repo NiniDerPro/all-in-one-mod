@@ -16,7 +16,7 @@ public final class ItemListModule extends Module {
     private volatile boolean loading;
 
     public ItemListModule() {
-        super("itemlist", "Item Browser", "All items next to your inventory (also creative), search with @mod, recipes (R/U)", Category.INVENTORY, false);
+        super("itemlist", "Item Browser", "All items next to your inventory (also creative), search with @mod, recipes (R/U)", Category.QOL, false);
         maxColumns = add(new NumberSetting("columns", "Max columns", 8, 3, 16, 1));
         worldInfo = add(new dev.aio.core.setting.BooleanSetting("worldInfo", "Trades, loot, spawns and ores", true));
         // Neue Welt oder neuer Server: Daten (Datenpakete, Mods) können anders sein

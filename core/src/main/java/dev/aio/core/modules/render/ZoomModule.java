@@ -26,7 +26,7 @@ public final class ZoomModule extends KeyActivatedModule {
     private long lastNanos = -1;
 
     public ZoomModule() {
-        super("zoom", "Zoom", "Hold the key to zoom, scroll to change the level", Category.RENDER, Keys.C);
+        super("zoom", "Zoom", "Hold the key to zoom, scroll to change the level", Category.VISUALS, Keys.C);
         level = add(new NumberSetting("level", "Zoom level", 3, 1.5, 50, 0.5, "x"));
         smooth = add(new BooleanSetting("smoothZoom", "Smooth transition", false));
         scrollAdjust = add(new BooleanSetting("scroll", "Scroll changes level", true));

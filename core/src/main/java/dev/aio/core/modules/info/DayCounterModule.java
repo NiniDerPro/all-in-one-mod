@@ -6,7 +6,7 @@ import dev.aio.core.module.Category;
 /** Aktueller Tag der Welt. */
 public final class DayCounterModule extends TextHudElement {
     public DayCounterModule() {
-        super("daycounter", "Day Counter", "How many days the world has been running", Category.INFO, false, 0.0, 0.30);
+        super("daycounter", "Day Counter", "How many days the world has been running", Category.QOL, false, 0.0, 0.30);
     }
 
     @Override protected String getText() {

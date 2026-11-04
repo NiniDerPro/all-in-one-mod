@@ -17,7 +17,7 @@ public final class FreecamModule extends KeyActivatedModule {
     private final BooleanSetting notify;
 
     public FreecamModule() {
-        super("freecam", "Freecam", "Detach the camera and fly through blocks while your player stays put", Category.RENDER,
+        super("freecam", "Freecam", "Detach the camera and fly through blocks while your player stays put", Category.VISUALS,
                 "key.keyboard.f4", ActivationMode.TOGGLE);
         horizontalSpeed = add(new NumberSetting("hSpeed", "Horizontal speed", 1.0, 0.1, 5.0, 0.1, "x"));
         verticalSpeed = add(new NumberSetting("vSpeed", "Vertical speed", 1.0, 0.1, 5.0, 0.1, "x"));

@@ -10,7 +10,7 @@ public final class PortalCalculatorModule extends TextHudElement {
     private final BooleanSetting showY;
 
     public PortalCalculatorModule() {
-        super("portalcalc", "Portal Calculator", "Overworld/Nether coordinates for portals", Category.NAVIGATION, false, 0.0, 0.48);
+        super("portalcalc", "Portal Calculator", "Overworld/Nether coordinates for portals", Category.QOL, false, 0.0, 0.48);
         showY = add(new BooleanSetting("showY", "Show Y", false));
     }
 

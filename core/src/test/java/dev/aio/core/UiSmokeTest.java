@@ -49,6 +49,7 @@ class UiSmokeTest {
         FpsModule fps = core.module(FpsModule.class);
         fps.setEnabled(true);
         FakeRenderer r = new FakeRenderer();
+        dev.aio.core.hud.ColoredText.clearCache(); // Schriftprüfung jetzt, nicht zufällig mitten in der Messung
         fps.update();
         fps.render(r, false);
         int calls = r.widthCalls;

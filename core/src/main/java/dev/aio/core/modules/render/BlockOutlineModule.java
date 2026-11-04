@@ -19,7 +19,7 @@ public final class BlockOutlineModule extends Module {
     private final ColorSetting fillColor;
 
     public BlockOutlineModule() {
-        super("blockoutline", "Block Outline", "Customize the outline of the block you look at", Category.RENDER, false);
+        super("blockoutline", "Block Outline", "Customize the outline of the block you look at", Category.VISUALS, false);
         colorMode = add(new EnumSetting<>("colorMode", "Color mode", ColorMode.STATIC));
         lineColor = add(new ColorSetting("color", "Line color", 0xFFFFFFFF));
         lineColor.visibleWhen(() -> colorMode.get() != ColorMode.CHROMA);

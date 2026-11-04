@@ -52,7 +52,7 @@ public abstract class Module {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.category = category;
+        this.category = Category.of(id, category);
         this.gameplayAffecting = gameplayAffecting;
         this.toggleKey = add(new KeybindSetting("toggleKey", "Toggle key", Keys.NONE));
         if (!canToggle()) toggleKey.hidden();
