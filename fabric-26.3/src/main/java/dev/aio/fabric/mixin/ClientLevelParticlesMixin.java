@@ -27,8 +27,12 @@ public abstract class ClientLevelParticlesMixin {
         if (aio$off(ParticleLimitModule.BLOCK_BREAK)) ci.cancel();
     }
 
-    @Inject(method = "addBreakingBlockEffects", at = @At("HEAD"), cancellable = true)
-    private void aio$blockCrack(BlockPos pos, Direction side, boolean flag, CallbackInfo ci) {
+    /**
+     * Nur die Splitter beim Abbauen, nicht den Klopf-Sound: In 26.3 spielt addBreakingBlockEffects
+     * erst den Sound und ruft dann addBreakingParticles auf, darum wird nur Letzteres abgebrochen.
+     */
+    @Inject(method = "addBreakingParticles", at = @At("HEAD"), cancellable = true)
+    private void aio$blockCrack(BlockPos pos, Direction side, BlockState state, CallbackInfo ci) {
         if (aio$off(ParticleLimitModule.BLOCK_CRACK)) ci.cancel();
     }
 
