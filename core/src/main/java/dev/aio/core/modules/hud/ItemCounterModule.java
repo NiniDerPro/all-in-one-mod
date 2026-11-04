@@ -18,8 +18,8 @@ public class ItemCounterModule extends HudElement {
         super(id, name, description, x, y);
         this.query = query;
         this.iconId = iconId;
-        hideWhenZero = add(new BooleanSetting("hideWhenZero", "Bei 0 ausblenden", false));
-        warnWhenZero = add(new BooleanSetting("warnWhenZero", "Bei 0 rot", true));
+        hideWhenZero = add(new BooleanSetting("hideWhenZero", "Hide at 0", false));
+        warnWhenZero = add(new BooleanSetting("warnWhenZero", "Red at 0", true));
     }
 
     @Override protected void onActivate() { update(); }

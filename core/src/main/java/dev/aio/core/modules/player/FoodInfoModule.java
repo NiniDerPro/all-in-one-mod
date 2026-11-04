@@ -24,17 +24,16 @@ public final class FoodInfoModule extends Module {
     private final BooleanSetting values;
 
     public FoodInfoModule() {
-        super("foodinfo", "Essens-Info", "Nährwert im Tooltip, Sättigung/Erschöpfung auf der Hungerleiste, Vorschau beim Essen",
+        super("foodinfo", "Food Info", "Food values in tooltips, saturation and exhaustion on the hunger bar, preview when holding food",
                 Category.COMBAT, false);
-        tooltip = add(new BooleanSetting("tooltip", "Nährwert im Tooltip", true));
-        saturation = add(new BooleanSetting("saturation", "Sättigung anzeigen", true));
-        exhaustion = add(new BooleanSetting("exhaustion", "Erschöpfung anzeigen (nur Einzelspieler)", true));
-        preview = add(new BooleanSetting("preview", "Vorschau beim Halten von Essen", true));
-        healthPreview = add(new BooleanSetting("healthPreview", "Vorschau geheilter Herzen", true));
-        values = add(new BooleanSetting("values", "Werte als Zahl über der Hungerleiste", false));
+        tooltip = add(new BooleanSetting("tooltip", "Food values in tooltip", true));
+        saturation = add(new BooleanSetting("saturation", "Show saturation", true));
+        exhaustion = add(new BooleanSetting("exhaustion", "Show exhaustion (singleplayer only)", true));
+        preview = add(new BooleanSetting("preview", "Preview when holding food", true));
+        healthPreview = add(new BooleanSetting("healthPreview", "Preview healed hearts", true));
+        values = add(new BooleanSetting("values", "Values as numbers above the hunger bar", false));
     }
 
-    @Override public boolean enabledByDefault() { return true; }
 
     public boolean showTooltip() { return isActive() && tooltip.on(); }
 
@@ -71,8 +70,8 @@ public final class FoodInfoModule extends Module {
             if (holding && newSat > sat) drawSaturation(r, right, top, sat, newSat, pulse());
         }
         if (values.on()) {
-            String text = "Hunger " + s.food() + " · Sätt. " + String.format(java.util.Locale.GERMANY, "%.1f", sat)
-                    + (Float.isFinite(s.exhaustion()) ? " · Erschöpf. " + String.format(java.util.Locale.GERMANY, "%.2f", s.exhaustion()) : "");
+            String text = "Hunger " + s.food() + " · Sat. " + String.format(java.util.Locale.GERMANY, "%.1f", sat)
+                    + (Float.isFinite(s.exhaustion()) ? " · Exh. " + String.format(java.util.Locale.GERMANY, "%.2f", s.exhaustion()) : "");
             r.text(text, right - r.textWidth(text), top - 10, 0xFFE0E0E0, true);
         }
         if (holding) {

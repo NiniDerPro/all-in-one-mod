@@ -16,11 +16,11 @@ public final class RenderDistanceModule extends Module {
     private final BooleanSetting keepPlayers;
 
     public RenderDistanceModule() {
-        super("renderdistance", "Render-Reichweite", "Entities, Truhen und Schilder nur in der Nähe zeichnen", Category.PERFORMANCE, false);
-        entityDistance = add(new NumberSetting("entities", "Entities bis", 64, 16, 256, 8, " Blöcke"));
-        blockEntityDistance = add(new NumberSetting("blockEntities", "Block-Entities bis", 64, 16, 256, 8, " Blöcke"));
-        signDistance = add(new NumberSetting("signs", "Schilder bis", 24, 8, 128, 4, " Blöcke"));
-        keepPlayers = add(new BooleanSetting("players", "Spieler immer zeigen", true));
+        super("renderdistance", "Render Distance", "Only draw entities, chests and signs nearby", Category.PERFORMANCE, false);
+        entityDistance = add(new NumberSetting("entities", "Entities up to", 64, 16, 256, 8, " blocks"));
+        blockEntityDistance = add(new NumberSetting("blockEntities", "Block entities up to", 64, 16, 256, 8, " blocks"));
+        signDistance = add(new NumberSetting("signs", "Signs up to", 24, 8, 128, 4, " blocks"));
+        keepPlayers = add(new BooleanSetting("players", "Always show players", true));
     }
 
     public double entityDistance() { return entityDistance.get(); }

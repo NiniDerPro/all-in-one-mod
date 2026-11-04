@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public final class InfoViews {
     private static final int ROWS_PER_PAGE = 7;
-    private static final String[] LEVELS = {"", "Neuling", "Lehrling", "Geselle", "Experte", "Meister"};
+    private static final String[] LEVELS = {"", "Novice", "Apprentice", "Journeyman", "Expert", "Master"};
     private static final String VILLAGER_EGG = "minecraft:villager_spawn_egg";
     private static final String WANDERING_EGG = "minecraft:wandering_trader_spawn_egg";
 
@@ -26,16 +26,16 @@ public final class InfoViews {
 
     static {
         String[][] names = {
-                {"desert_pyramid", "Wüstentempel"}, {"jungle_temple", "Dschungeltempel"}, {"jungle_pyramid", "Dschungeltempel"},
-                {"ancient_city", "Antike Stätte"}, {"bastion", "Bastionsruine"}, {"end_city", "Endsiedlung"},
-                {"nether_bridge", "Netherfestung"}, {"fortress", "Netherfestung"}, {"stronghold", "Festung"},
-                {"woodland_mansion", "Waldanwesen"}, {"mansion", "Waldanwesen"}, {"shipwreck", "Schiffswrack"},
-                {"buried_treasure", "Vergrabener Schatz"}, {"igloo", "Iglu"}, {"pillager_outpost", "Plünderer-Außenposten"},
-                {"ruined_portal", "Portalruine"}, {"simple_dungeon", "Verlies"}, {"abandoned_mineshaft", "Verlassene Mine"},
-                {"mineshaft", "Verlassene Mine"}, {"underwater_ruin", "Ozeanruine"}, {"ocean_ruin", "Ozeanruine"},
-                {"monument", "Ozeanmonument"}, {"swamp_hut", "Sumpfhütte"}, {"trial_chambers", "Prüfungskammer"},
-                {"trial_chamber", "Prüfungskammer"}, {"spawn_bonus_chest", "Bonustruhe"}, {"abandoned_camp", "Verlassenes Lager"},
-                {"village", "Dorf"}, {"nether_fossil", "Netherfossil"}, {"trail_ruins", "Pfadruine"}};
+                {"desert_pyramid", "Desert Pyramid"}, {"jungle_temple", "Jungle Temple"}, {"jungle_pyramid", "Jungle Temple"},
+                {"ancient_city", "Ancient City"}, {"bastion", "Bastion Remnant"}, {"end_city", "End City"},
+                {"nether_bridge", "Nether Fortress"}, {"fortress", "Nether Fortress"}, {"stronghold", "Stronghold"},
+                {"woodland_mansion", "Woodland Mansion"}, {"mansion", "Woodland Mansion"}, {"shipwreck", "Shipwreck"},
+                {"buried_treasure", "Buried Treasure"}, {"igloo", "Igloo"}, {"pillager_outpost", "Pillager Outpost"},
+                {"ruined_portal", "Ruined Portal"}, {"simple_dungeon", "Dungeon"}, {"abandoned_mineshaft", "Mineshaft"},
+                {"mineshaft", "Mineshaft"}, {"underwater_ruin", "Ocean Ruin"}, {"ocean_ruin", "Ocean Ruin"},
+                {"monument", "Ocean Monument"}, {"swamp_hut", "Swamp Hut"}, {"trial_chambers", "Trial Chambers"},
+                {"trial_chamber", "Trial Chambers"}, {"spawn_bonus_chest", "Bonus Chest"}, {"abandoned_camp", "Abandoned Camp"},
+                {"village", "Village"}, {"nether_fossil", "Nether Fossil"}, {"trail_ruins", "Trail Ruins"}};
         for (String[] n : names) PLACES.put(n[0], n[1]);
     }
 
@@ -56,18 +56,18 @@ public final class InfoViews {
         for (WorldInfo.Source s : info.sourcesOf(id)) {
             rows.add(new RecipeView.Row(sourceIcon(s.table()), sourceName(s.table()) + " · " + chance(s.drop()) + countSuffix(s.drop())));
         }
-        page(out, "Beute & Drops", p.item("minecraft:chest", 1), List.of(), rows);
+        page(out, "Loot & Drops", p.item("minecraft:chest", 1), List.of(), rows);
         // Handel, der das Item gibt
         for (WorldInfo.TradeEntry t : info.trades()) if (t.trade().gives().item().equals(id)) out.add(tradeView(t));
         // Erzvorkommen
         List<RecipeView.Row> ores = new ArrayList<>();
         List<String> oreNotes = new ArrayList<>();
         for (WorldGenData.Ore ore : info.worldGen().oresOf(id)) {
-            ores.add(new RecipeView.Row(item, "Y " + ore.minY() + " bis " + ore.maxY() + " · ~" + num(ore.perChunk()) + "× je Chunk"
-                    + (ore.shape().equals("trapezoid") ? " · meist in der Mitte" : "")));
+            ores.add(new RecipeView.Row(item, "Y " + ore.minY() + " to " + ore.maxY() + " · ~" + num(ore.perChunk()) + "× per chunk"
+                    + (ore.shape().equals("trapezoid") ? " · mostly in the middle" : "")));
             if (oreNotes.isEmpty()) oreNotes.add(biomeSummary(ore));
         }
-        page(out, "Vorkommen", item, oreNotes, ores);
+        page(out, "Generation", item, oreNotes, ores);
         // Spawns (Spawn-Ei → Biome und Strukturen)
         String entity = entityOfEgg(id);
         if (entity != null) {
@@ -78,9 +78,9 @@ public final class InfoViews {
                 String place = s.structure() ? placeName(s.place()) : p.translate("biome." + s.place().replace(':', '.'), Json.pretty(s.place()));
                 String count = s.minCount() == s.maxCount() ? num(s.minCount()) : num(s.minCount()) + "–" + num(s.maxCount());
                 spawnRows.add(new RecipeView.Row(p.item(s.structure() ? "minecraft:mossy_stone_bricks" : "minecraft:grass_block", 1),
-                        place + " · Gewicht " + s.weight() + " · Gruppe " + count));
+                        place + " · weight " + s.weight() + " · group " + count));
             }
-            page(out, "Spawnt in", item, List.of(), spawnRows);
+            page(out, "Spawns in", item, List.of(), spawnRows);
         }
         if (id.equals(VILLAGER_EGG)) out.addAll(professionList());
         return out;
@@ -93,8 +93,8 @@ public final class InfoViews {
         // Arbeitsblock → Beruf (wie JEP) und dessen Handel
         for (Profession prof : info.professions()) {
             if (!prof.jobBlock().equals(id)) continue;
-            out.add(RecipeView.withNotes("Beruf", List.of(List.of(item)), p.item(VILLAGER_EGG, 1), item,
-                    List.of("Beruf: " + prof.name(), "Ein Dorfbewohner in der Nähe nimmt diesen Beruf an.")));
+            out.add(RecipeView.withNotes("Profession", List.of(List.of(item)), p.item(VILLAGER_EGG, 1), item,
+                    List.of("Profession: " + prof.name(), "A villager nearby takes this profession.")));
             for (WorldInfo.TradeEntry t : info.trades()) if (t.profession() == prof) out.add(tradeView(t));
         }
         if (id.equals(VILLAGER_EGG) || id.equals("minecraft:emerald")) out.addAll(professionList());
@@ -108,7 +108,7 @@ public final class InfoViews {
         }
         // Piglin-Tausch mit Gold
         if (id.equals("minecraft:gold_ingot")) {
-            page(out, "Piglin-Tausch", p.item("minecraft:piglin_head", 1), List.of("Ein Goldbarren ergibt eins davon:"),
+            page(out, "Piglin Bartering", p.item("minecraft:piglin_head", 1), List.of("One gold ingot gives one of these:"),
                     dropRows(info.drops(WorldInfo.BARTERING)));
         }
         // Spawn-Ei → was der Mob droppt
@@ -130,7 +130,7 @@ public final class InfoViews {
             rows.add(new RecipeView.Row(block, prof.name() + mod + " · " + block.name()));
         }
         List<RecipeView> out = new ArrayList<>();
-        page(out, "Berufe", p.item(VILLAGER_EGG, 1), List.of("Arbeitsblock → Beruf"), rows);
+        page(out, "Professions", p.item(VILLAGER_EGG, 1), List.of("Job block → profession"), rows);
         return out;
     }
 
@@ -152,19 +152,19 @@ public final class InfoViews {
         List<String> notes = new ArrayList<>();
         ItemRef station;
         if (t.profession() == null) {
-            notes.add("Wandernder Händler · " + t.rarity());
+            notes.add("Wandering Trader · " + t.rarity());
             station = p.item(WANDERING_EGG, 1);
         } else {
-            notes.add(t.profession().name() + " · Stufe " + t.level() + (t.level() < LEVELS.length ? " (" + LEVELS[t.level()] + ")" : ""));
+            notes.add(t.profession().name() + " · level " + t.level() + (t.level() < LEVELS.length ? " (" + LEVELS[t.level()] + ")" : ""));
             station = p.item(t.profession().jobBlock(), 1);
         }
-        String price = !tr.wants().isEmpty() && tr.wants().iconCount() == 0 ? "Preis: " + priceText(tr.wants()) + " · " : "";
-        notes.add(price + "max. " + tr.maxUses() + "× · " + tr.xp() + " EP" + (tr.randomized() ? " · zufällige Verzauberung" : ""));
-        return RecipeView.withNotes("Handel", slots, stack(tr.gives()), station, notes);
+        String price = !tr.wants().isEmpty() && tr.wants().iconCount() == 0 ? "Price: " + priceText(tr.wants()) + " · " : "";
+        notes.add(price + "max " + tr.maxUses() + "× · " + tr.xp() + " XP" + (tr.randomized() ? " · random enchantment" : ""));
+        return RecipeView.withNotes("Trade", slots, stack(tr.gives()), station, notes);
     }
 
     private String priceText(TradeData.Stack s) {
-        return s.min() <= 0 ? "je nach Verzauberung" : s.countText() + " " + p.item(s.item(), 1).name();
+        return s.min() <= 0 ? "depends on enchantment" : s.countText() + " " + p.item(s.item(), 1).name();
     }
 
     private ItemRef stack(TradeData.Stack s) {
@@ -208,14 +208,14 @@ public final class InfoViews {
             String e = Json.lastPath(path);
             return p.translate("entity." + ns + "." + e, Json.pretty(e));
         }
-        if (path.equals("gameplay/piglin_bartering")) return "Piglin-Tausch";
-        if (path.startsWith("gameplay/fishing")) return "Angeln" + (path.endsWith("treasure") ? " (Schatz)" : path.endsWith("junk") ? " (Müll)" : "");
-        if (path.startsWith("gameplay/hero_of_the_village")) return "Held des Dorfes";
-        if (path.startsWith("archaeology/")) return "Archäologie: " + placeName(Json.lastPath(path));
-        if (path.startsWith("shearing/")) return "Scheren: " + Json.pretty(path.substring("shearing/".length()).replace('/', '_'));
-        if (path.startsWith("chests/village/")) return "Dorf: " + Json.pretty(Json.lastPath(path).replace("village_", ""));
+        if (path.equals("gameplay/piglin_bartering")) return "Piglin Bartering";
+        if (path.startsWith("gameplay/fishing")) return "Fishing" + (path.endsWith("treasure") ? " (treasure)" : path.endsWith("junk") ? " (junk)" : "");
+        if (path.startsWith("gameplay/hero_of_the_village")) return "Hero of the Village";
+        if (path.startsWith("archaeology/")) return "Archaeology: " + placeName(Json.lastPath(path));
+        if (path.startsWith("shearing/")) return "Shearing: " + Json.pretty(path.substring("shearing/".length()).replace('/', '_'));
+        if (path.startsWith("chests/village/")) return "Village: " + Json.pretty(Json.lastPath(path).replace("village_", ""));
         if (path.startsWith("chests/")) return placeName(path.substring("chests/".length()));
-        if (path.startsWith("spawners/")) return "Prüfungs-Spawner";
+        if (path.startsWith("spawners/")) return "Trial Spawner";
         return Json.pretty(path);
     }
 
@@ -233,8 +233,8 @@ public final class InfoViews {
 
     private String biomeSummary(WorldGenData.Ore ore) {
         int n = ore.biomes().size();
-        String dim = switch (ore.dimension()) { case NETHER -> "Nether"; case END -> "Ende"; default -> "Oberwelt"; };
-        if (n > 12) return dim + " · in " + n + " Biomen";
+        String dim = switch (ore.dimension()) { case NETHER -> "Nether"; case END -> "End"; default -> "Overworld"; };
+        if (n > 12) return dim + " · in " + n + " biomes";
         List<String> names = new ArrayList<>();
         for (String b : ore.biomes()) names.add(p.translate("biome." + b.replace(':', '.'), Json.pretty(b)));
         return dim + ": " + String.join(", ", names);
@@ -249,7 +249,7 @@ public final class InfoViews {
         double pct = d.chance() * 100;
         String s = pct >= 10 ? String.format(Locale.GERMANY, "%.0f %%", pct)
                 : pct >= 1 ? String.format(Locale.GERMANY, "%.1f %%", pct) : String.format(Locale.GERMANY, "%.2f %%", pct);
-        return (d.conditional() ? "bis " : "") + s;
+        return (d.conditional() ? "up to " : "") + s;
     }
 
     private static String countSuffix(LootAnalyzer.Drop d) {

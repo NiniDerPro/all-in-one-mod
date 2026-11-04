@@ -106,7 +106,7 @@ public class FakePlatform implements Platform {
     @Override public void setGameKeyPressed(GameKey key, boolean pressed) {
         if (pressed) forcedGameKeys.add(key); else forcedGameKeys.remove(key);
     }
-    @Override public String keyName(String key) { return key.isEmpty() ? "Keine" : key.substring(key.lastIndexOf('.') + 1).toUpperCase(); }
+    @Override public String keyName(String key) { return key.isEmpty() ? "None" : key.substring(key.lastIndexOf('.') + 1).toUpperCase(); }
     @Override public Perspective perspective() { return perspective; }
     @Override public void setPerspective(Perspective p) { perspective = p; }
     @Override public void openScreen(UiScreen s) { if (screen != null) screen.onClose(); screen = s; }

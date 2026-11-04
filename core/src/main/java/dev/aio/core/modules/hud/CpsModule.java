@@ -6,7 +6,7 @@ import dev.aio.core.setting.EnumSetting;
 /** Klicks pro Sekunde, getrennt für links und rechts. */
 public final class CpsModule extends TextHudElement {
     public enum Mode implements EnumSetting.Named {
-        BOTH("Links | Rechts"), LEFT("Nur links"), RIGHT("Nur rechts");
+        BOTH("Left | Right"), LEFT("Left only"), RIGHT("Right only");
 
         private final String displayName;
 
@@ -18,8 +18,8 @@ public final class CpsModule extends TextHudElement {
     private final EnumSetting<Mode> mode;
 
     public CpsModule() {
-        super("cps", "CPS", "Klicks pro Sekunde (links/rechts)", 0.0, 0.06);
-        mode = add(new EnumSetting<>("mode", "Anzeige", Mode.BOTH));
+        super("cps", "CPS", "Clicks per second (left/right)", 0.0, 0.06);
+        mode = add(new EnumSetting<>("mode", "Display", Mode.BOTH));
     }
 
     @Override protected void onActivate() {

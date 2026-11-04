@@ -52,7 +52,7 @@ public final class HudEditorScreen implements UiScreen {
         core.hud().setEditorOpen(true);
     }
 
-    @Override public String title() { return "HUD-Editor"; }
+    @Override public String title() { return "HUD Editor"; }
 
     private List<HudElement> visibleElements() {
         List<HudElement> list = new ArrayList<>();
@@ -170,12 +170,12 @@ public final class HudEditorScreen implements UiScreen {
         Object info = mode != Mode.NONE ? selected : hovered;
         if (info != null) tooltip(r, info, mouseX, mouseY);
 
-        String hint = "Linksklick: auswählen/ziehen · Rand/Ecke: Größe · Shift: frei/Seitenverhältnis · Rechtsklick: Einstellungen · R: zurücksetzen";
-        if (r.textWidth(hint) > w - 8) hint = "Ziehen · Rand/Ecke · Shift · Rechtsklick · R";
+        String hint = "Left click: select/drag · Edge/corner: resize · Shift: free/keep ratio · Right click: settings · R: reset";
+        if (r.textWidth(hint) > w - 8) hint = "Drag · Edge/corner · Shift · Right click · R";
         r.centeredText(hint, w / 2f, h - 14, 0xB0FFFFFF, true);
 
-        drawButton(r, settingsButton(r), "Einstellungen", true, mouseX, mouseY);
-        drawButton(r, resetButton(r), "Zurücksetzen", selected != null, mouseX, mouseY);
+        drawButton(r, settingsButton(r), "Settings", true, mouseX, mouseY);
+        drawButton(r, resetButton(r), "Reset", selected != null, mouseX, mouseY);
     }
 
     private static void frame(Renderer r, float[] b, int color) {
@@ -214,13 +214,13 @@ public final class HudEditorScreen implements UiScreen {
     }
 
     private float[] settingsButton(Renderer r) {
-        float bw = r.textWidth("Einstellungen") + 16;
+        float bw = r.textWidth("Settings") + 16;
         float x = r.screenWidth() / 2f - bw - 3;
         return new float[]{x, 6, x + bw, 22};
     }
 
     private float[] resetButton(Renderer r) {
-        float bw = r.textWidth("Zurücksetzen") + 16;
+        float bw = r.textWidth("Reset") + 16;
         float x = r.screenWidth() / 2f + 3;
         return new float[]{x, 6, x + bw, 22};
     }

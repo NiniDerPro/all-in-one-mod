@@ -29,16 +29,16 @@ public final class EntityCullingModule extends Module {
     private volatile Set<String> blockEntityExceptions = Set.of();
 
     public EntityCullingModule() {
-        super("entityculling", "Entity-Culling", "Verdeckte Mobs, Truhen und Schilder nicht zeichnen", Category.PERFORMANCE, false);
+        super("entityculling", "Entity Culling", "Skip drawing mobs, chests and signs hidden behind walls", Category.PERFORMANCE, false);
         entities = add(new BooleanSetting("entities", "Entities", true));
-        blockEntities = add(new BooleanSetting("blockEntities", "Block-Entities (Truhen, Schilder, …)", true));
-        tickCulling = add(new BooleanSetting("tickCulling", "Verdeckte Entities vereinfacht ticken", true));
-        leavesSolid = add(new BooleanSetting("leavesSolid", "Laub zählt als fest (mehr FPS in Wäldern)", false));
-        keepNamed = add(new BooleanSetting("keepNamed", "Mobs mit Namensschild immer zeigen", true));
-        traceDistance = add(new NumberSetting("traceRange", "Prüfweite", 64, 16, 128, 8, " Blöcke"));
-        entityWhitelist = add(new StringSetting("entityWhitelist", "Ausnahmen Entities (IDs mit Komma)",
+        blockEntities = add(new BooleanSetting("blockEntities", "Block entities (chests, signs, …)", true));
+        tickCulling = add(new BooleanSetting("tickCulling", "Simplified ticking for hidden entities", true));
+        leavesSolid = add(new BooleanSetting("leavesSolid", "Leaves count as solid (more FPS in forests)", false));
+        keepNamed = add(new BooleanSetting("keepNamed", "Always show name-tagged mobs", true));
+        traceDistance = add(new NumberSetting("traceRange", "Check distance", 64, 16, 128, 8, " blocks"));
+        entityWhitelist = add(new StringSetting("entityWhitelist", "Entity exceptions (IDs, comma separated)",
                 "minecraft:ender_dragon,minecraft:wither,minecraft:end_crystal,minecraft:ghast,minecraft:happy_ghast", 2000));
-        blockEntityWhitelist = add(new StringSetting("blockEntityWhitelist", "Ausnahmen Block-Entities (IDs mit Komma)",
+        blockEntityWhitelist = add(new StringSetting("blockEntityWhitelist", "Block entity exceptions (IDs, comma separated)",
                 "minecraft:beacon,minecraft:end_gateway,minecraft:end_portal", 2000));
         entityWhitelist.onChange(v -> entityExceptions = parse(v));
         blockEntityWhitelist.onChange(v -> blockEntityExceptions = parse(v));
@@ -55,7 +55,6 @@ public final class EntityCullingModule extends Module {
         return Set.copyOf(out);
     }
 
-    @Override public boolean enabledByDefault() { return true; }
 
     public boolean cullEntities() { return isActive() && entities.on(); }
 

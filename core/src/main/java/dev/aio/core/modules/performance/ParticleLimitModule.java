@@ -27,21 +27,21 @@ public final class ParticleLimitModule extends Module {
 
     static {
         String[][] list = {
-                {BLOCK_BREAK, "Block zerbrochen (Splitter)"}, {BLOCK_CRACK, "Block abbauen (Splitter beim Hacken)"},
-                {"minecraft:block", "Block-Staub (Landen, Sprinten)"}, {"minecraft:explosion", "Explosion"},
-                {"minecraft:explosion_emitter", "Große Explosion"}, {"minecraft:poof", "Rauchwolke (Tod von Mobs)"},
-                {"minecraft:crit", "Kritischer Treffer"}, {"minecraft:enchanted_hit", "Verzauberter Treffer"},
-                {"minecraft:damage_indicator", "Schadensanzeige (Herzen)"}, {"minecraft:sweep_attack", "Schwungangriff"},
-                {"minecraft:totem_of_undying", "Totem der Unsterblichkeit"}, {"minecraft:entity_effect", "Trank-Effekte"},
-                {"minecraft:firework", "Feuerwerk"}, {"minecraft:campfire_cosy_smoke", "Lagerfeuer-Rauch"},
-                {"minecraft:campfire_signal_smoke", "Signalfeuer-Rauch"}, {"minecraft:smoke", "Rauch"},
-                {"minecraft:large_smoke", "Großer Rauch"}, {"minecraft:rain", "Regentropfen"},
-                {"minecraft:portal", "Portal"}, {"minecraft:heart", "Herzen (Zucht)"},
-                {"minecraft:angry_villager", "Wütender Dorfbewohner"}, {"minecraft:happy_villager", "Glücklicher Dorfbewohner"},
-                {"minecraft:dust", "Redstone-Staub"}, {"minecraft:falling_dust", "Fallender Staub"},
-                {"minecraft:ash", "Asche (Nether)"}, {"minecraft:white_ash", "Weiße Asche (Nether)"},
-                {"minecraft:spore_blossom_air", "Sporenblüte"}, {"minecraft:cherry_leaves", "Kirschblätter"},
-                {"minecraft:bubble", "Blasen"}, {"minecraft:splash", "Spritzer"}};
+                {BLOCK_BREAK, "Block broken (debris)"}, {BLOCK_CRACK, "Mining a block (debris while hitting)"},
+                {"minecraft:block", "Block dust (landing, sprinting)"}, {"minecraft:explosion", "Explosion"},
+                {"minecraft:explosion_emitter", "Large explosion"}, {"minecraft:poof", "Smoke puff (mob death)"},
+                {"minecraft:crit", "Critical hit"}, {"minecraft:enchanted_hit", "Enchanted hit"},
+                {"minecraft:damage_indicator", "Damage indicator (hearts)"}, {"minecraft:sweep_attack", "Sweep attack"},
+                {"minecraft:totem_of_undying", "Totem of Undying"}, {"minecraft:entity_effect", "Potion Effects"},
+                {"minecraft:firework", "Fireworks"}, {"minecraft:campfire_cosy_smoke", "Campfire smoke"},
+                {"minecraft:campfire_signal_smoke", "Signal fire smoke"}, {"minecraft:smoke", "Smoke"},
+                {"minecraft:large_smoke", "Large smoke"}, {"minecraft:rain", "Rain drops"},
+                {"minecraft:portal", "Portal"}, {"minecraft:heart", "Hearts (breeding)"},
+                {"minecraft:angry_villager", "Angry villager"}, {"minecraft:happy_villager", "Happy villager"},
+                {"minecraft:dust", "Redstone dust"}, {"minecraft:falling_dust", "Falling dust"},
+                {"minecraft:ash", "Ash (Nether)"}, {"minecraft:white_ash", "White ash (Nether)"},
+                {"minecraft:spore_blossom_air", "Spore blossom"}, {"minecraft:cherry_leaves", "Cherry leaves"},
+                {"minecraft:bubble", "Bubbles"}, {"minecraft:splash", "Splashes"}};
         for (String[] e : list) IMPORTANT.put(e[0], e[1]);
     }
 
@@ -51,15 +51,14 @@ public final class ParticleLimitModule extends Module {
     private volatile Set<String> disabledSet = Set.of();
 
     public ParticleLimitModule() {
-        super("particlelimit", "Partikel", "Partikel einzeln abschalten und begrenzen", Category.PERFORMANCE, false);
-        add(new ActionSetting("choose", "Partikel auswählen…", () -> platform().openScreen(new ParticleScreen(core, this))));
-        percent = add(new NumberSetting("percent", "Übrige Partikel behalten", 100, 0, 100, 5, " %"));
-        disabled = add(new StringSetting("disabled", "Abgeschaltet", "", 100_000));
+        super("particlelimit", "Particles", "Turn off particles one by one and limit the rest", Category.PERFORMANCE, false);
+        add(new ActionSetting("choose", "Choose particles…", () -> platform().openScreen(new ParticleScreen(core, this))));
+        percent = add(new NumberSetting("percent", "Keep remaining particles", 100, 0, 100, 5, " %"));
+        disabled = add(new StringSetting("disabled", "Disabled", "", 100_000));
         disabled.hidden();
         disabled.onChange(v -> rebuild());
     }
 
-    @Override public boolean enabledByDefault() { return true; }
 
     @Override public void afterLoad() { rebuild(); }
 

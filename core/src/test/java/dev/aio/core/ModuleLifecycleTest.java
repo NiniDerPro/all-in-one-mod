@@ -65,7 +65,7 @@ class ModuleLifecycleTest {
         assertFalse(fb.isActive());
         assertTrue(fb.isEnabled(), "Wunsch des Spielers bleibt gespeichert");
         assertTrue(Double.isNaN(fb.gammaOverride()));
-        assertTrue(p.messages.stream().anyMatch(m -> m.contains("gesperrt")));
+        assertTrue(p.messages.stream().anyMatch(m -> m.contains("blocked")));
         assertTrue(core.module(FpsModule.class).isEnabled() || !core.module(FpsModule.class).isBlocked(),
                 "HUD-Module werden nie gesperrt");
 

@@ -13,7 +13,7 @@ import java.util.List;
 /** Rüstung und Items in der Hand mit Haltbarkeit als Balken, Zahl oder Prozent. */
 public final class ArmorHudModule extends HudElement {
     public enum DurabilityMode implements EnumSetting.Named {
-        BAR("Balken"), NUMBER("Zahl"), PERCENT("Prozent"), NONE("Aus");
+        BAR("Bar"), NUMBER("Number"), PERCENT("Percent"), NONE("Off");
 
         private final String displayName;
 
@@ -23,7 +23,7 @@ public final class ArmorHudModule extends HudElement {
     }
 
     public enum Orientation implements EnumSetting.Named {
-        VERTICAL("Vertikal"), HORIZONTAL("Horizontal");
+        VERTICAL("Vertical"), HORIZONTAL("Horizontal");
 
         private final String displayName;
 
@@ -49,17 +49,24 @@ public final class ArmorHudModule extends HudElement {
     private int cachedH = -1;
 
     public ArmorHudModule() {
-        super("armorhud", "ArmorHUD", "Rüstung, Haltbarkeit und Item in der Hand", 1.0, 0.5);
-        durability = add(new EnumSetting<>("durability", "Haltbarkeit", DurabilityMode.PERCENT));
-        orientation = add(new EnumSetting<>("orientation", "Ausrichtung", Orientation.VERTICAL));
-        showMainHand = add(new BooleanSetting("mainHand", "Item in der Hand", true));
-        showOffHand = add(new BooleanSetting("offHand", "Zweithand", true));
-        colorByDurability = add(new BooleanSetting("colorByDurability", "Farbe nach Haltbarkeit", true));
+        super("armorhud", "Armor HUD", "Armor, durability and held items", 0.0, 0.5);
+        durability = add(new EnumSetting<>("durability", "Durability", DurabilityMode.PERCENT));
+        orientation = add(new EnumSetting<>("orientation", "Orientation", Orientation.VERTICAL));
+        showMainHand = add(new BooleanSetting("mainHand", "Main hand", true));
+        showOffHand = add(new BooleanSetting("offHand", "Offhand", false));
+        colorByDurability = add(new BooleanSetting("colorByDurability", "Color by durability", true));
         durability.onChange(v -> invalidate());
         orientation.onChange(v -> invalidate());
     }
 
     @Override protected boolean defaultBackground() { return false; }
+
+    /** Neue Standards (links, ohne Zweithand) einmalig auch für bestehende Configs. */
+    @Override public void applyNewDefaults() {
+        posX.reset();
+        posY.reset();
+        showOffHand.reset();
+    }
 
     private void invalidate() {
         cachedW = -1;

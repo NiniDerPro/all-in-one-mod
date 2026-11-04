@@ -38,27 +38,26 @@ public final class WaypointsModule extends HudElement {
     private boolean loaded;
 
     public WaypointsModule() {
-        super("waypoints", "Wegpunkte", "Wegpunkte mit Entfernung im Bild und auf dem Kompass", Category.NAVIGATION, false, 0, 0);
+        super("waypoints", "Waypoints", "Waypoints with distance on screen and on the compass", Category.NAVIGATION, false, 0, 0);
         // nur noch zum Übernehmen alter Daten (früher im Profil gespeichert)
-        data = add(new StringSetting("data", "Daten (alt)", "[]", 1_000_000));
+        data = add(new StringSetting("data", "Data (old)", "[]", 1_000_000));
         data.hidden();
         posX.hidden();
         posY.hidden();
-        addKey = add(new KeybindSetting("addKey", "Wegpunkt setzen", "key.keyboard.b"));
-        manageKey = add(new KeybindSetting("manageKey", "Wegpunkte verwalten", "key.keyboard.n"));
-        add(new ActionSetting("manage", "Wegpunkte verwalten", () -> core.platform().openScreen(new WaypointScreen(core, this))));
-        showDistance = add(new BooleanSetting("distance", "Entfernung zeigen", true));
-        edgeMarkers = add(new BooleanSetting("edge", "Am Bildrand zeigen", true));
-        maxDistance = add(new NumberSetting("maxDistance", "Max. Entfernung", 0, 0, 10000, 100, " m (0 = ∞)"));
+        addKey = add(new KeybindSetting("addKey", "Add waypoint", "key.keyboard.b"));
+        manageKey = add(new KeybindSetting("manageKey", "Manage waypoints", "key.keyboard.n"));
+        add(new ActionSetting("manage", "Manage waypoints", () -> core.platform().openScreen(new WaypointScreen(core, this))));
+        showDistance = add(new BooleanSetting("distance", "Show distance", true));
+        edgeMarkers = add(new BooleanSetting("edge", "Show at screen edge", true));
+        maxDistance = add(new NumberSetting("maxDistance", "Max distance", 0, 0, 10000, 100, " m (0 = ∞)"));
         on(Events.Key.class, e -> {
             if (!e.isPress() || e.screenOpen()) return;
-            if (addKey.matches(e.key())) addHere("Wegpunkt " + (waypoints.size() + 1));
+            if (addKey.matches(e.key())) addHere("Waypoint " + (waypoints.size() + 1));
             else if (manageKey.matches(e.key())) platform().openScreen(new WaypointScreen(core, this));
         });
         data.onChange(v -> { if (!saving && core != null && loaded) load(); });
     }
 
-    @Override public boolean enabledByDefault() { return true; }
 
     @Override protected void onActivate() { load(); }
 
@@ -106,7 +105,7 @@ public final class WaypointsModule extends HudElement {
                 }
             }
         } catch (RuntimeException e) {
-            Log.warn("Wegpunkte konnten nicht gelesen werden: " + e.getMessage());
+            Log.warn("Could not read waypoints: " + e.getMessage());
         }
     }
 
@@ -155,7 +154,7 @@ public final class WaypointsModule extends HudElement {
         Waypoint w = new Waypoint(name, (int) Math.floor(p.x()), (int) Math.floor(p.y()), (int) Math.floor(p.z()),
                 platform().worldKey(), platform().dimension(), color, true, false);
         add(w);
-        platform().notify("Wegpunkt \"" + name + "\" gesetzt");
+        platform().notify("Waypoint \"" + name + "\" added");
         return w;
     }
 

@@ -23,12 +23,12 @@ import java.util.Set;
 public final class KeyBindIndex {
     public static final String AIO_PREFIX = "aio:";
 
-    public enum Filter { ALL("Alle"), CONFLICTS("Konflikte"), UNBOUND("Unbelegt"), FREE("Freie Tasten");
+    public enum Filter { ALL("All"), CONFLICTS("Conflicts"), UNBOUND("Unbound"), FREE("Free keys");
         public final String label;
         Filter(String label) { this.label = label; }
     }
 
-    public enum Sort { DEFAULT("Standard"), NAME_AZ("Name A–Z"), NAME_ZA("Name Z–A"), KEY_AZ("Taste A–Z");
+    public enum Sort { DEFAULT("Default"), NAME_AZ("Name A–Z"), NAME_ZA("Name Z–A"), KEY_AZ("Key A–Z");
         public final String label;
         Sort(String label) { this.label = label; }
     }

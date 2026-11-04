@@ -10,8 +10,8 @@ public final class PortalCalculatorModule extends TextHudElement {
     private final BooleanSetting showY;
 
     public PortalCalculatorModule() {
-        super("portalcalc", "Portalrechner", "Oberwelt-/Nether-Koordinaten für Portale", Category.NAVIGATION, false, 0.0, 0.48);
-        showY = add(new BooleanSetting("showY", "Y anzeigen", false));
+        super("portalcalc", "Portal Calculator", "Overworld/Nether coordinates for portals", Category.NAVIGATION, false, 0.0, 0.48);
+        showY = add(new BooleanSetting("showY", "Show Y", false));
     }
 
     @Override protected String getText() {
@@ -19,7 +19,7 @@ public final class PortalCalculatorModule extends TextHudElement {
         Vec3 p = platform().playerPos();
         return switch (platform().dimension()) {
             case "overworld" -> "Nether: " + coords(p.x() / 8, p.y(), p.z() / 8);
-            case "the_nether" -> "Oberwelt: " + coords(p.x() * 8, p.y(), p.z() * 8);
+            case "the_nether" -> "Overworld: " + coords(p.x() * 8, p.y(), p.z() * 8);
             default -> "";
         };
     }

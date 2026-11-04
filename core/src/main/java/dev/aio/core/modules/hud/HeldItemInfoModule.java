@@ -34,11 +34,11 @@ public final class HeldItemInfoModule extends HudElement {
     private int cachedW = -1;
 
     public HeldItemInfoModule() {
-        super("helditeminfo", "Item-Info", "Verzauberungen des Items in der Hand über der Hotbar", 0.5, 1.0);
-        duration = add(new NumberSetting("duration", "Anzeigedauer", 3, 1, 10, 0.5, " s"));
-        always = add(new BooleanSetting("always", "Immer anzeigen", false));
-        maxLines = add(new NumberSetting("maxLines", "Max. Zeilen", 6, 1, 12, 1));
-        showName = add(new BooleanSetting("showName", "Itemname anzeigen", true));
+        super("helditeminfo", "Held Item Info", "Name and enchantments of the held item above the hotbar", 0.5, 1.0);
+        duration = add(new NumberSetting("duration", "Display time", 3, 1, 10, 0.5, " s"));
+        always = add(new BooleanSetting("always", "Always show", false));
+        maxLines = add(new NumberSetting("maxLines", "Max lines", 6, 1, 12, 1));
+        showName = add(new BooleanSetting("showName", "Show item name", true));
         showName.onChange(v -> cachedW = -1);
     }
 
@@ -88,7 +88,7 @@ public final class HeldItemInfoModule extends HudElement {
             int max = maxLines.intValue();
             if (next.size() > max) {
                 List<String> cut = new java.util.ArrayList<>(next.subList(0, max - 1));
-                cut.add("+" + (next.size() - max + 1) + " weitere");
+                cut.add("+" + (next.size() - max + 1) + " more");
                 next = cut;
             }
             lines = next;
@@ -116,12 +116,12 @@ public final class HeldItemInfoModule extends HudElement {
     private boolean previewing(boolean preview) { return lines.isEmpty() && preview; }
 
     private List<String> shown(boolean preview) {
-        return previewing(preview) ? List.of("Schärfe V", "Plünderung III", "Haltbarkeit III") : lines;
+        return previewing(preview) ? List.of("Sharpness V", "Looting III", "Unbreaking III") : lines;
     }
 
     private String name(boolean preview) {
         if (!showName.on()) return "";
-        return previewing(preview) ? "Diamantschwert" : itemName;
+        return previewing(preview) ? "Diamond Sword" : itemName;
     }
 
     private int nameHeight(boolean preview) { return name(preview).isEmpty() ? 0 : LINE + NAME_GAP; }

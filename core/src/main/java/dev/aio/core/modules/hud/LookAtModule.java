@@ -20,7 +20,7 @@ import java.util.Locale;
  */
 public final class LookAtModule extends HudElement {
     public enum Style implements EnumSetting.Named {
-        CLASSIC("Klassisch"), COLORFUL("Farbmodus");
+        CLASSIC("Classic"), COLORFUL("Color mode");
 
         private final String displayName;
 
@@ -74,23 +74,22 @@ public final class LookAtModule extends HudElement {
     private int heartsW;
 
     public LookAtModule() {
-        super("lookat", "Blick-Info", "Zeigt Block oder Wesen unter dem Fadenkreuz", dev.aio.core.module.Category.INFO, false, 0.5, 0.0);
-        style = add(new EnumSetting<>("style", "Stil", Style.CLASSIC));
+        super("lookat", "Block Info", "Shows the block or mob under your crosshair", dev.aio.core.module.Category.INFO, false, 0.5, 0.0);
+        style = add(new EnumSetting<>("style", "Style", Style.CLASSIC));
         showIcon = add(new BooleanSetting("showIcon", "Icon", true));
-        showModName = add(new BooleanSetting("showModName", "Mod-Name", true));
-        showTool = add(new BooleanSetting("showTool", "Werkzeug", true));
-        showGrowth = add(new BooleanSetting("showGrowth", "Wachstum", true));
-        showDetails = add(new BooleanSetting("showDetails", "Block-Details (Honig, Füllstand, ...)", true));
-        showHealth = add(new BooleanSetting("showHealth", "Leben", true));
-        showArmor = add(new BooleanSetting("showArmor", "Rüstung", true));
-        showCoords = add(new BooleanSetting("showCoords", "Koordinaten", false));
-        hideInMenus = add(new BooleanSetting("hideInMenus", "In Menüs ausblenden", true));
-        range = add(new dev.aio.core.setting.NumberSetting("range", "Reichweite (Blöcke)", 0, 0, 32, 1, " (0 = normal)"));
+        showModName = add(new BooleanSetting("showModName", "Mod name", true));
+        showTool = add(new BooleanSetting("showTool", "Tool", true));
+        showGrowth = add(new BooleanSetting("showGrowth", "Growth", true));
+        showDetails = add(new BooleanSetting("showDetails", "Block details (honey, fill level, ...)", true));
+        showHealth = add(new BooleanSetting("showHealth", "Health", true));
+        showArmor = add(new BooleanSetting("showArmor", "Armor", true));
+        showCoords = add(new BooleanSetting("showCoords", "Coordinates", false));
+        hideInMenus = add(new BooleanSetting("hideInMenus", "Hide in menus", true));
+        range = add(new dev.aio.core.setting.NumberSetting("range", "Range (blocks)", 0, 0, 32, 1, " (0 = normal)"));
     }
 
     @Override protected int defaultBackgroundColor() { return BG; }
 
-    @Override public boolean enabledByDefault() { return true; }
 
     @Override protected ColorMode defaultColorMode() { return ColorMode.STATIC; }
 
@@ -125,8 +124,8 @@ public final class LookAtModule extends HudElement {
             }
             if (showGrowth.on() && !Float.isNaN(t.growth())) {
                 boolean done = t.growth() >= 1f;
-                next.add(new Line("Wachstum: ", INFO, false,
-                        done ? "ausgewachsen" : Math.round(t.growth() * 100) + "%", done ? GOOD : 0xFFFFFFFF));
+                next.add(new Line("Growth: ", INFO, false,
+                        done ? "fully grown" : Math.round(t.growth() * 100) + "%", done ? GOOD : 0xFFFFFFFF));
             }
             if (showDetails.on()) {
                 for (LookTarget.Detail d : t.details()) {
@@ -135,7 +134,7 @@ public final class LookAtModule extends HudElement {
             }
         } else {
             if (!t.typeName().isEmpty() && !t.typeName().equals(t.name())) {
-                next.add(new Line("Typ: ", INFO, false, t.typeName(), 0xFFFFFFFF));
+                next.add(new Line("Type: ", INFO, false, t.typeName(), 0xFFFFFFFF));
             }
             if (showHealth.on() && !Float.isNaN(t.health()) && t.maxHealth() > 0) {
                 boolean asHearts = t.maxHealth() <= MAX_HEARTS * 2;
@@ -143,7 +142,7 @@ public final class LookAtModule extends HudElement {
                 next.add(asHearts ? new Line("", BAD, true, " " + hp, 0xFFFFFFFF)
                         : new Line(HEART + " ", BAD, false, hp, 0xFFFFFFFF));
             }
-            if (showArmor.on() && t.armor() > 0) next.add(new Line("Rüstung: " + t.armor(), INFO, false));
+            if (showArmor.on() && t.armor() > 0) next.add(new Line("Armor: " + t.armor(), INFO, false));
         }
         if (showCoords.on()) next.add(new Line(t.x() + ", " + t.y() + ", " + t.z(), INFO, false));
         if (showModName.on() && t.source() != null && !t.source().isEmpty()) {
@@ -182,7 +181,7 @@ public final class LookAtModule extends HudElement {
         return target != null && target.icon() != null && !target.icon().isEmpty();
     }
 
-    private String shownName(boolean preview) { return previewing(preview) ? "Grasblock" : name; }
+    private String shownName(boolean preview) { return previewing(preview) ? "Grass Block" : name; }
 
     private List<Line> shownLines(boolean preview) {
         if (!previewing(preview)) return lines;

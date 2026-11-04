@@ -37,7 +37,7 @@ public final class FoodTooltip {
         private int icons() { return Math.max(1, (data.nutrition() + 1) / 2); }
 
         private String saturationText() {
-            return String.format(Locale.ROOT, "Sättigung +%.1f", data.saturation());
+            return String.format(Locale.ROOT, "Saturation +%.1f", data.saturation());
         }
 
         @Override public int getHeight(Font font) { return 22; }

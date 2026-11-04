@@ -281,10 +281,10 @@ public final class FabricPlatform implements Platform {
     }
 
     private static String toolType(BlockState state) {
-        if (state.is(BlockTags.MINEABLE_WITH_PICKAXE)) return "Spitzhacke";
-        if (state.is(BlockTags.MINEABLE_WITH_AXE)) return "Axt";
-        if (state.is(BlockTags.MINEABLE_WITH_SHOVEL)) return "Schaufel";
-        if (state.is(BlockTags.MINEABLE_WITH_HOE)) return "Hacke";
+        if (state.is(BlockTags.MINEABLE_WITH_PICKAXE)) return "Pickaxe";
+        if (state.is(BlockTags.MINEABLE_WITH_AXE)) return "Axe";
+        if (state.is(BlockTags.MINEABLE_WITH_SHOVEL)) return "Shovel";
+        if (state.is(BlockTags.MINEABLE_WITH_HOE)) return "Hoe";
         return null;
     }
 
@@ -700,7 +700,7 @@ public final class FabricPlatform implements Platform {
     }
 
     @Override public String keyName(String key) {
-        if (Keys.isNone(key)) return "Keine";
+        if (Keys.isNone(key)) return "None";
         try {
             return InputConstants.getKey(key).getDisplayName().getString();
         } catch (RuntimeException e) {

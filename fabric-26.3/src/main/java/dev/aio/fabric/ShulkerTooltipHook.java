@@ -28,10 +28,10 @@ public final class ShulkerTooltipHook {
             int stacks = stackCount(stack.get(DataComponents.CONTAINER));
             if (stacks == 0) return;
             // Ersetzt die Vanilla-Liste: kurze Zusammenfassung, darunter der Hinweis auf die Taste
-            lines.add(Component.literal("Enthält " + stacks + (stacks == 1 ? " Stack" : " Stacks")).withStyle(ChatFormatting.GRAY));
+            lines.add(Component.literal("Contains " + stacks + (stacks == 1 ? " Stack" : " Stacks")).withStyle(ChatFormatting.GRAY));
             if (m.showHint()) {
                 lines.add(Component.literal("[Shift]").withStyle(ChatFormatting.GOLD)
-                        .append(Component.literal(" Gesamten Inhalt anzeigen").withStyle(ChatFormatting.GRAY)));
+                        .append(Component.literal(" Show full contents").withStyle(ChatFormatting.GRAY)));
             }
         });
     }

@@ -9,17 +9,17 @@ import java.util.Locale;
 
 /** Koordinaten, optional mit Blickrichtung und Biom. */
 public final class CoordinatesModule extends TextHudElement {
-    private static final String[] DIRECTIONS = {"S", "SW", "W", "NW", "N", "NO", "O", "SO"};
+    private static final String[] DIRECTIONS = {"S", "SW", "W", "NW", "N", "NE", "O", "SE"};
 
     private final NumberSetting decimals;
     private final BooleanSetting showDirection;
     private final BooleanSetting showBiome;
 
     public CoordinatesModule() {
-        super("coordinates", "Koordinaten", "Position, Blickrichtung und Biom", dev.aio.core.module.Category.INFO, false, 0.0, 0.12);
-        decimals = add(new NumberSetting("decimals", "Nachkommastellen", 0, 0, 2, 1));
-        showDirection = add(new BooleanSetting("showDirection", "Blickrichtung", true));
-        showBiome = add(new BooleanSetting("showBiome", "Biom", false));
+        super("coordinates", "Coordinates", "Position, facing and biome", dev.aio.core.module.Category.INFO, false, 0.0, 0.12);
+        decimals = add(new NumberSetting("decimals", "Decimals", 0, 0, 2, 1));
+        showDirection = add(new BooleanSetting("showDirection", "Facing", true));
+        showBiome = add(new BooleanSetting("showBiome", "Biome", false));
     }
 
     @Override protected String getText() {

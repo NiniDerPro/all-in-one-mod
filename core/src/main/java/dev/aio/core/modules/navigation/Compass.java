@@ -2,7 +2,7 @@ package dev.aio.core.modules.navigation;
 
 /** Kompass-Mathematik. Kompasskurs: 0 = Norden, 90 = Osten, 180 = Süden, 270 = Westen. */
 public final class Compass {
-    private static final String[] LABELS = {"N", "NO", "O", "SO", "S", "SW", "W", "NW"};
+    private static final String[] LABELS = {"N", "NE", "O", "SE", "S", "SW", "W", "NW"};
 
     private Compass() {}
 

@@ -35,7 +35,7 @@ public final class ParticleScreen implements UiScreen {
         this.all = ids;
     }
 
-    @Override public String title() { return "Partikel"; }
+    @Override public String title() { return "Particles"; }
 
     @Override public boolean returnsToPrevious() { return true; }
 
@@ -65,21 +65,21 @@ public final class ParticleScreen implements UiScreen {
         float pw = Math.min(w - 16, 320), px = (w - pw) / 2f, py = 8, ph = h - 16;
         r.fill(px, py, px + pw, py + ph, Theme.PANEL);
         Theme.accentBar(r, core, px, py, px + pw, py + 2);
-        r.text("Partikel", px + 8, py + 8, Theme.TEXT, true);
-        String count = module.isActive() ? "" : "  (Modul ist aus)";
-        r.text(count, px + 8 + r.textWidth("Partikel"), py + 8, Theme.WARNING, false);
+        r.text("Particles", px + 8, py + 8, Theme.TEXT, true);
+        String count = module.isActive() ? "" : "  (module is off)";
+        r.text(count, px + 8 + r.textWidth("Particles"), py + 8, Theme.WARNING, false);
 
         float sx = px + 8, sy = py + 22, sw = pw - 16;
         r.fill(sx, sy, sx + sw, sy + 14, 0xF0202028);
         r.outline(sx, sy, sx + sw, sy + 14, 1, Theme.accent(core));
         boolean caret = (System.currentTimeMillis() / 500) % 2 == 0;
-        String shown = query.isEmpty() ? "Suchen… (einfach tippen)" : query + (caret ? "_" : "");
+        String shown = query.isEmpty() ? "Search… (just type)" : query + (caret ? "_" : "");
         r.text(r.trim(shown, sw - 8), sx + 4, sy + 3, query.isEmpty() ? Theme.TEXT_MUTED : Theme.TEXT, false);
 
         float by = sy + 18;
         float bx = px + 8;
-        bx += button(r, bx, by, "Alle an", mx, my, () -> setAll(false)) + 3;
-        button(r, bx, by, "Alle aus", mx, my, () -> setAll(true));
+        bx += button(r, bx, by, "All on", mx, my, () -> setAll(false)) + 3;
+        button(r, bx, by, "All off", mx, my, () -> setAll(true));
 
         listTop = by + 18;
         listBottom = py + ph - 6;
@@ -88,16 +88,16 @@ public final class ParticleScreen implements UiScreen {
         List<String> important = new ArrayList<>();
         for (String id : ParticleLimitModule.IMPORTANT.keySet()) if (matches(id) && (id.startsWith("aio:") || all.contains(id))) important.add(id);
         if (!important.isEmpty()) {
-            y = header(r, "Wichtig", px + 8, y);
+            y = header(r, "Important", px + 8, y);
             for (String id : important) y = row(r, id, px + 8, pw - 16, y, mx, my);
         }
         List<String> rest = new ArrayList<>();
         for (String id : all) if (!ParticleLimitModule.IMPORTANT.containsKey(id) && matches(id)) rest.add(id);
         if (!rest.isEmpty()) {
-            y = header(r, "Alle Partikel", px + 8, y + 4);
+            y = header(r, "All particles", px + 8, y + 4);
             for (String id : rest) y = row(r, id, px + 8, pw - 16, y, mx, my);
         }
-        if (important.isEmpty() && rest.isEmpty()) r.text("Nichts gefunden.", px + 8, listTop + 4, Theme.TEXT_DIM, false);
+        if (important.isEmpty() && rest.isEmpty()) r.text("Nothing found.", px + 8, listTop + 4, Theme.TEXT_DIM, false);
         r.disableScissor();
         contentHeight = (int) (y + scroll - listTop);
     }

@@ -32,19 +32,19 @@ class RecipeTransferTest {
     /** Stöcke: 2 Bretter übereinander (1 breit, 2 hoch), beliebige Holzart. */
     private static RecipeView sticks() {
         List<ItemRef> planks = List.of(ref("oak_planks"), ref("birch_planks"));
-        return new RecipeView("Werkbank", 1, 2, List.of(planks, planks), ref("stick"), ItemRef.EMPTY, RecipeKind.CRAFTING);
+        return new RecipeView("Crafting", 1, 2, List.of(planks, planks), ref("stick"), ItemRef.EMPTY, RecipeKind.CRAFTING);
     }
 
     /** Werkbank-Block: 2×2 Bretter. */
     private static RecipeView table() {
         List<ItemRef> p = List.of(ref("oak_planks"));
-        return new RecipeView("Werkbank", 2, 2, List.of(p, p, p, p), ref("crafting_table"), ItemRef.EMPTY, RecipeKind.CRAFTING);
+        return new RecipeView("Crafting", 2, 2, List.of(p, p, p, p), ref("crafting_table"), ItemRef.EMPTY, RecipeKind.CRAFTING);
     }
 
     /** Ofen: 3×3 Bruchstein mit leerer Mitte. */
     private static RecipeView furnace() {
         List<ItemRef> s = List.of(ref("cobblestone"));
-        return new RecipeView("Werkbank", 3, 3, List.of(s, s, s, s, List.of(), s, s, s, s), ref("furnace"), ItemRef.EMPTY, RecipeKind.CRAFTING);
+        return new RecipeView("Crafting", 3, 3, List.of(s, s, s, s, List.of(), s, s, s, s), ref("furnace"), ItemRef.EMPTY, RecipeKind.CRAFTING);
     }
 
     @Test void placesOnceIntoCraftingTable() {
@@ -85,7 +85,7 @@ class RecipeTransferTest {
         assertEquals(RecipeTransfer.Status.MISSING_ITEMS, RecipeTransfer.check(c, furnace()));
         assertEquals(5, RecipeTransfer.missing(c, furnace()).size());
         assertEquals(0, RecipeTransfer.transfer(c, furnace(), false));
-        RecipeView smelt = new RecipeView("Ofen", 1, 1, List.of(List.of(ref("iron_ore"))), ref("iron_ingot"), ItemRef.EMPTY, RecipeKind.FURNACE);
+        RecipeView smelt = new RecipeView("Furnace", 1, 1, List.of(List.of(ref("iron_ore"))), ref("iron_ingot"), ItemRef.EMPTY, RecipeKind.FURNACE);
         assertEquals(RecipeTransfer.Status.WRONG_STATION, RecipeTransfer.check(c, smelt));
         assertEquals(RecipeTransfer.Status.WRONG_STATION, RecipeTransfer.check(null, smelt));
     }
@@ -94,7 +94,7 @@ class RecipeTransferTest {
         FakeContainer c = new FakeContainer(3);
         c.grid = new ContainerView.Grid(Set.of(RecipeKind.FURNACE), 1, 1, new int[]{0});
         c.set(30, "iron_ore", 40);
-        RecipeView smelt = new RecipeView("Ofen", 1, 1, List.of(List.of(ref("iron_ore"))), ref("iron_ingot"), ItemRef.EMPTY, RecipeKind.FURNACE);
+        RecipeView smelt = new RecipeView("Furnace", 1, 1, List.of(List.of(ref("iron_ore"))), ref("iron_ingot"), ItemRef.EMPTY, RecipeKind.FURNACE);
         assertEquals(40, RecipeTransfer.transfer(c, smelt, true), "Shift füllt den Eingang");
         assertEquals(40, c.get(0).count());
     }
