@@ -69,7 +69,7 @@ Server-Sperre = vom Server-Schutz sperrbar (Standard: Schutz aus).
 | Info | Biom, Tagzähler, Uhrzeit (Welt) | – | Biomname, „Tag 42“, Weltzeit mit ☀/☾ |
 | Info | Spielzeit | – | Aus der Statistik der Welt, z. B. „2 T 3 Std 14 Min“ |
 | Info | Server-Info | – | Name, IP, Ping, Spieler, Version, Software |
-| Info | Blick-Info | – | Wie Jade: Icon, Name, Werkzeug ✔/✘, Wachstum, Entity-Typ, Herzen + HP, Rüstung, Mod; Block-Details nur beim passenden Block (Honig/Bienen, Komposter, Kessel, Seelenanker, Ackerboden, Redstone, Notenblock, …) |
+| Info | Blick-Info | – | Wie Jade (Reichweite für Blöcke einstellbar): Icon, Name, Werkzeug ✔/✘, Wachstum, Entity-Typ, Herzen + HP, Rüstung, Mod; Block-Details nur beim passenden Block (Honig/Bienen, Komposter, Kessel, Seelenanker, Ackerboden, Redstone, Notenblock, …) |
 | Navigation | Kompass | – | Leiste oben oder rund, mit Wegpunkten |
 | Navigation | Wegpunkte | – | B = setzen, N = verwalten; Marker mit Name + Entfernung im Bild und am Rand; pro Welt und Dimension |
 | Navigation | Todespunkt | – | Wegpunkt beim Tod, verschwindet bei Ankunft |
@@ -84,7 +84,7 @@ Server-Sperre = vom Server-Schutz sperrbar (Standard: Schutz aus).
 | Inventar | Item-Liste | – | Alle Items rechts im Inventar, Suche (`@mod`, `$id`, `-ausschließen`), Rezepte (Klick/R) und Verwendungen (Rechtsklick/U). **+** legt das Rezept ins 2×2, die Werkbank, den Ofen/Schmelz-/Räucherofen oder die Steinsäge (Shift = so viele wie möglich), fehlende Zutaten werden rot markiert |
 | Spieler & Kampf | Toggle Sprint | ja | Dauersprinten per Sprint-Taste |
 | Spieler & Kampf | Auto Tool | ja | Bestes Werkzeug beim Abbauen, danach zurück |
-| Spieler & Kampf | Auto Sword | ja | Beste Waffe vor dem Schlag (Krit zählt mit der Waffe) |
+| Spieler & Kampf | Auto Sword | ja | Beste Waffe, sobald ein Lebewesen anvisiert wird (also vor dem Schlag) |
 | Chat | Chat | – | Zeitstempel, langer Verlauf, Größe/Schrift/Deckkraft, **Chat kopieren** (Rechtsklick im Chat), Chatbox im HUD-Editor an der Ecke ziehen |
 | Chat | Namens-Alarm | – | Ton + Hinweis bei deinem Namen (mit/ohne @) und eigenen Stichwörtern |
 | Client | Client | – | Menü-Taste, HUD-Editor-Taste, Server-Schutz, Farben, Sortierung |
@@ -135,15 +135,20 @@ Minecraft 26.3, Fabric Loader 0.20.1, Fabric API 0.165.0+26.3, Loom 1.19, Gradle
 
 ## Stand der Verifikation
 
-- **Kern:** kompiliert, 71 Tests grün, u. a. Sortieren und Item-Verschieben gegen ein simuliertes
-  MC-Inventar, Projektion der Wegpunkt-Marker, Kompass-Mathe, Todespunkt, Namens-Alarm,
-  Chat-Optionen, Item-Suche, Auto Tool/Sword.
-- **Adapter 26.3:** kompiliert gegen Minecraft 26.3 (CI). Die Namen stammen aus den 26.3-Quellen
-  der Fabric API und aus Mods, die schon auf 26.x laufen (u. a. Freecam, Tweakeroo, MiniHUD,
-  ShulkerBoxTooltip, JEI, Jade); übernommen wurden nur API-Namen, kein Code.
-  Hooks mit `require = 0` (kosten bei falschem Namen nur die Funktion, nie den Start):
-  - Freelook-Kamerarotation, Chat-Zeitstempel/Verlaufslänge, No Hurtcam (`bobHurt`)
+- **Kern:** kompiliert, 84 Tests grün, darunter Regressionstests zu jedem Fund aus dem Selbst-Audit
+  (Start ohne geladene Optionen, Config-Laden ohne kurzes Aktivieren, Wegpunkte sicher vor
+  „Zurücksetzen“ und Profilwechsel, Shift-„+“ mit wenigen Paketen, Freelook ohne Kamera-Hook,
+  Namens-Alarm bei Server-Chatformaten, Mod-Konflikte).
+- **Adapter 26.3:** kompiliert gegen Minecraft 26.3 (CI). Mixin-Ziele prüft erst Minecraft beim
+  Laden. Belegt in 26.3-Quellen anderer Mods: Tastatur/Maus, `Entity.turn`, `Camera.calculateFov`,
+  Lightmap, Fog, `Hud`, `MultiPlayerGameMode`, `ItemStack`-Tooltip, Container-Felder.
+  Unbelegt und darum mit `require = 0` (kosten nur die Funktion): Freelook-Kamera, Chat-Zeitstempel/
+  Verlaufslänge, No Hurtcam. Freelook schaltet sich selbst ab, wenn der Kamera-Hook nicht greift.
+- **Nicht im Spiel getestet.** Minecraft lässt sich in der Entwicklungsumgebung nicht starten.
 - **Rezeptquellen:** Singleplayer → Rezepte des integrierten Servers (inkl. Datenpakete);
   Server mit Fabric-Rezept-Sync → die Rezepte des Servers (auch geänderte);
   sonst → die Standard-Rezepte aus dem Minecraft-Jar (`data/minecraft/recipe`).
+- **Daten:** Wegpunkte liegen in `config/aio/waypoints.json` (unabhängig von Profilen und vom Export).
+- **Kompatibilität:** Mit JEI, REI oder EMI blendet sich die eigene Item-Liste aus; mit Mouse Tweaks,
+  Mouse Wheelie oder Inventory Profiles Next die eigenen Maus-Tweaks.
 - **Grenzen:** Die Bienenanzahl kennt nur der Server (steht auch nicht in F3), auf Servern fehlt sie daher.

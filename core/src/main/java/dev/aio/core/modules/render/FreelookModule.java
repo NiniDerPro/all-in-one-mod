@@ -26,7 +26,13 @@ public final class FreelookModule extends KeyActivatedModule {
         invertPitch = add(new BooleanSetting("invertPitch", "Vertikal invertieren", false));
     }
 
+    private boolean warned;
+
     @Override protected void onEngage() {
+        if (!platform().freelookSupported() && !warned) {
+            warned = true;
+            platform().notify("Freelook: Kamera-Hook greift in dieser Version nicht, Funktion ist aus");
+        }
         yaw = platform().playerYaw();
         pitch = platform().playerPitch();
         previous = platform().perspective();
@@ -51,7 +57,8 @@ public final class FreelookModule extends KeyActivatedModule {
      * @return true, wenn Freelook die Bewegung verbraucht hat (Spieler nicht drehen)
      */
     public boolean consumeMouse(double dx, double dy) {
-        if (!isEngaged()) return false;
+        // Ohne funktionierenden Kamera-Hook würde die Sicht sonst "einfrieren"
+        if (!isEngaged() || !platform().freelookSupported()) return false;
         yaw += (float) dx * 0.15f;
         pitch += (float) (invertPitch.on() ? -dy : dy) * 0.15f;
         pitch = Math.max(-90f, Math.min(90f, pitch));

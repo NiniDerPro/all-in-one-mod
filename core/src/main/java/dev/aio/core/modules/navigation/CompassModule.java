@@ -74,7 +74,6 @@ public final class CompassModule extends HudElement {
         float fov = fieldOfView.floatValue();
         float pxPerDeg = w / fov;
         float center = w / 2f;
-        r.enableScissorLocal(0, 0, w, barH);
 
         int start = (int) Math.floor(h - fov / 2) - 1;
         int end = (int) Math.ceil(h + fov / 2) + 1;
@@ -83,6 +82,8 @@ public final class CompassModule extends HudElement {
             if (x < 0 || x > w) continue;
             String label = Compass.label(deg);
             if (label != null) {
+                float lw = r.textWidth(label);
+                if (x - lw / 2f < 1 || x + lw / 2f > w - 1) continue; // am Rand abgeschnitten: weglassen
                 boolean cardinal = label.length() == 1;
                 int color = cardinal ? (label.equals("N") ? 0xFFFF5555 : textColor()) : 0xFFBBBBBB;
                 if (colorMode() != ColorMode.STATIC) color = dynamicColor(x);
@@ -101,14 +102,13 @@ public final class CompassModule extends HudElement {
                 for (Waypoint wpt : wp.visibleHere()) {
                     float b = Compass.bearing(wpt.x() + 0.5 - p.x(), wpt.z() + 0.5 - p.z());
                     float d = Compass.delta(h, b);
-                    float x = center + Math.max(-fov / 2, Math.min(fov / 2, d)) * pxPerDeg;
+                    float x = Math.max(3, Math.min(w - 3, center + Math.max(-fov / 2, Math.min(fov / 2, d)) * pxPerDeg));
                     int c = wpt.color() | 0xFF000000;
                     r.fill(x - 2, 13, x + 2, 17, c);
                     r.fill(x - 1, 12, x + 1, 18, c);
                 }
             }
         }
-        r.disableScissorLocal();
         // Mittelmarke
         r.fill(center - 0.5f, 0, center + 0.5f, barH, 0xFFFFFFFF);
         r.fill(center - 2, 0, center + 2, 1, 0xFFFFFFFF);

@@ -20,10 +20,18 @@ public final class ItemListModule extends Module {
     int maxColumns() { return maxColumns.intValue(); }
 
     /** Panel für Inventar-Screens, null wenn das Modul aus ist. */
+    /** Mods, die selbst eine Item-Liste mitbringen: dann keine zweite einblenden. */
+    private static final String[] CONFLICTS = {"jei", "roughlyenoughitems", "emi"};
+
     public ItemPanel panel() {
-        if (!isActive()) return null;
+        if (!isActive() || conflict()) return null;
         if (panel == null) panel = new ItemPanel(core, this);
         return panel;
+    }
+
+    public boolean conflict() {
+        for (String id : CONFLICTS) if (platform().isModLoaded(id)) return true;
+        return false;
     }
 
     public void showRecipes(ItemRef item, boolean usages) {

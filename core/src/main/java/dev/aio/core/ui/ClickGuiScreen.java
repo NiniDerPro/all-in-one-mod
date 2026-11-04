@@ -319,8 +319,9 @@ public final class ClickGuiScreen implements UiScreen {
         y += 6;
         Module m = selected;
         button(r, mx, my, x, y, x + 90, y + 14, "Zurücksetzen", Theme.DANGER, false, b -> {
+            // Versteckte Einstellungen (Position, gespeicherte Daten) bleiben unangetastet
             for (Setting<?> s : m.settings()) {
-                if (!"x".equals(s.id()) && !"y".equals(s.id())) s.reset();
+                if (!s.isHidden()) s.reset();
             }
             showStatus(m.name() + " zurückgesetzt", accent);
         });

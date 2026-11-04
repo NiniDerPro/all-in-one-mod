@@ -20,16 +20,16 @@ public final class HudManager {
     public void init(EventBus bus) {
         elements = modules.ofType(HudElement.class);
         bus.subscribe(Events.Tick.class, e -> tick());
-        bus.subscribe(Events.RenderHud.class, e -> render(e.renderer));
+        bus.subscribe(Events.RenderHud.class, e -> render(e.renderer, e.tickDelta));
     }
 
     private void tick() {
         for (HudElement el : elements) if (el.isActive()) el.update();
     }
 
-    private void render(Renderer r) {
+    private void render(Renderer r, float partialTick) {
         if (editorOpen) return; // der Editor zeichnet die Elemente selbst
-        for (HudElement el : elements) if (el.isActive()) el.renderOverlay(r);
+        for (HudElement el : elements) if (el.isActive()) el.renderOverlay(r, partialTick);
         for (HudElement el : elements) if (el.isActive() && el.editable()) el.render(r, false);
     }
 

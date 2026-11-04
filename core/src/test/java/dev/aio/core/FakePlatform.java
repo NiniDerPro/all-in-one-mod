@@ -45,7 +45,17 @@ public class FakePlatform implements Platform {
     @Override public ItemRef mainHand() { return mainHand; }
     @Override public ItemRef offHand() { return ItemRef.EMPTY; }
     @Override public List<EffectInfo> effects() { return effects; }
-    @Override public dev.aio.core.platform.LookTarget lookTarget() { return lookTarget; }
+    public double lastLookRange = -1;
+    public boolean onLiving;
+    public boolean freelookOk = true;
+    public final java.util.Set<String> loadedMods = new java.util.HashSet<>();
+    @Override public dev.aio.core.platform.LookTarget lookTarget(double range) { lastLookRange = range; return lookTarget; }
+    @Override public boolean crosshairOnLiving() { return onLiving; }
+    @Override public boolean isModLoaded(String id) { return loadedMods.contains(id); }
+    @Override public boolean freelookSupported() { return freelookOk; }
+    @Override public dev.aio.core.platform.CameraView camera(float partial) {
+        return new dev.aio.core.platform.CameraView(x, y + 1.62, z, yaw, pitch, 70);
+    }
 
     // ---- neue Plattform-Methoden ----
     public String worldKey = "sp:Testwelt";
@@ -69,8 +79,6 @@ public class FakePlatform implements Platform {
     @Override public String playerName() { return "Steve"; }
     @Override public long dayTime() { return dayTime; }
     @Override public String dimension() { return dimension; }
-    @Override public Vec3 eyePos() { return new Vec3(x, y + 1.62, z); }
-    @Override public double fov() { return 70; }
     @Override public boolean isDead() { return dead; }
     @Override public long playTimeTicks() { return playTime; }
     @Override public void requestStats() { statRequests++; }

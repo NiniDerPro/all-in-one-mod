@@ -62,10 +62,10 @@ final class VanillaRecipes {
             if ("jar".equals(uri.getScheme())) {
                 try {
                     fs = FileSystems.newFileSystem(uri, Map.of());
+                    dir = fs.getPath("/" + DIR);
                 } catch (FileSystemAlreadyExistsException e) {
-                    fs = FileSystems.getFileSystem(uri);
+                    dir = FileSystems.getFileSystem(uri).getPath("/" + DIR); // fremdes FS: nicht schließen
                 }
-                dir = fs.getPath("/" + DIR);
             } else {
                 dir = Path.of(uri).getParent();
             }
@@ -81,6 +81,13 @@ final class VanillaRecipes {
                     } catch (Exception e) {
                         // einzelne Sonderrezepte überspringen
                     }
+                }
+            }
+            if (fs != null) {
+                try {
+                    fs.close(); // nur selbst geöffnete Dateisysteme schließen
+                } catch (Exception ignored) {
+                    // egal
                 }
             }
             AioFabricClient.LOGGER.info("{} Vanilla-Rezepte geladen", out.size());

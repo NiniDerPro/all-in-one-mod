@@ -79,4 +79,16 @@ final class FabricContainerView implements ContainerView {
     }
 
     @Override public boolean isPlayerOnly() { return menu instanceof InventoryMenu; }
+
+    /** Vanilla Quick Craft (Ziehen mit links): Start, ein Paket pro Slot, Ende. */
+    @Override public void dragSplit(int[] slots) {
+        if (client.gameMode == null || client.player == null || slots.length == 0) return;
+        int id = menu.containerId;
+        client.gameMode.handleContainerInput(id, -999, quickcraftMask(0, 0), ContainerInput.QUICK_CRAFT, client.player);
+        for (int s : slots) client.gameMode.handleContainerInput(id, s, quickcraftMask(1, 0), ContainerInput.QUICK_CRAFT, client.player);
+        client.gameMode.handleContainerInput(id, -999, quickcraftMask(2, 0), ContainerInput.QUICK_CRAFT, client.player);
+    }
+
+    /** Wie {@code AbstractContainerMenu.getQuickcraftMask}: Phase (0 Start, 1 Slot, 2 Ende) + Art (0 = gleichmäßig). */
+    private static int quickcraftMask(int phase, int type) { return (phase & 3) | ((type & 3) << 2); }
 }

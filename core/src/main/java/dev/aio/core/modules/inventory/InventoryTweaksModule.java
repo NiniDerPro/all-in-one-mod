@@ -31,9 +31,17 @@ public final class InventoryTweaksModule extends Module {
 
     @Override public boolean enabledByDefault() { return true; }
 
+    /** Mods mit denselben Inventar-Gesten: dann hier nichts tun, sonst passiert alles doppelt. */
+    private static final String[] CONFLICTS = {"mousetweaks", "mousewheelie", "inventoryprofilesnext"};
+
+    private boolean conflict() {
+        for (String id : CONFLICTS) if (platform().isModLoaded(id)) return true;
+        return false;
+    }
+
     /** Mausrad über einem Slot. Runter = ein Item rüber, hoch = eins zurückholen; mit Shift der ganze Stack. */
     public boolean onScroll(ContainerView c, int slotIndex, double amount, boolean shift) {
-        if (!isActive() || !wheel.on() || c == null || slotIndex < 0 || amount == 0) return false;
+        if (!isActive() || !wheel.on() || c == null || slotIndex < 0 || amount == 0 || conflict()) return false;
         boolean push = invertWheel.on() ? amount > 0 : amount < 0;
         if (shift && push) {
             Slot s = InventoryOps.slot(c, slotIndex);
@@ -46,7 +54,7 @@ public final class InventoryTweaksModule extends Module {
 
     /** Linke Maustaste mit Shift über einen weiteren Slot gezogen. */
     public boolean onDrag(ContainerView c, int slotIndex, boolean shift) {
-        if (!isActive() || !shiftDrag.on() || !shift || c == null || slotIndex < 0) return false;
+        if (!isActive() || !shiftDrag.on() || !shift || c == null || slotIndex < 0 || conflict()) return false;
         if (!c.cursor().isEmpty() || !dragged.add(slotIndex)) return false;
         Slot s = InventoryOps.slot(c, slotIndex);
         if (s == null || s.item().isEmpty()) return false;
@@ -64,7 +72,7 @@ public final class InventoryTweaksModule extends Module {
 
     /** Mittelklick über einem Slot: dessen Bereich sortieren. */
     public boolean onMiddleClick(ContainerView c, int slotIndex, boolean creative) {
-        if (!isActive() || !middleSort.on() || c == null || slotIndex < 0) return false;
+        if (!isActive() || !middleSort.on() || c == null || slotIndex < 0 || conflict()) return false;
         if (creative && !c.isPlayerOnly()) return false; // Mittelklick = Item kopieren im Kreativmodus
         Slot s = InventoryOps.slot(c, slotIndex);
         if (s == null) return false;

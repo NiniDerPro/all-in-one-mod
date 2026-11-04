@@ -64,6 +64,29 @@ public final class ConfigManager {
 
     public String activeProfile() { return activeProfile; }
 
+    /** Basisordner der Config (z. B. für Daten, die nicht zu einem Profil gehören). */
+    public Path root() { return root; }
+
+    /** Liest eine Textdatei unter {@link #root()}, null wenn sie fehlt. */
+    public String readText(String fileName) {
+        Path f = root.resolve(fileName);
+        try {
+            return Files.isRegularFile(f) ? Files.readString(f, StandardCharsets.UTF_8) : null;
+        } catch (IOException e) {
+            Log.error("Datei " + f + " konnte nicht gelesen werden", e);
+            return null;
+        }
+    }
+
+    /** Schreibt eine Textdatei unter {@link #root()} atomar. */
+    public void writeText(String fileName, String content) {
+        try {
+            writeAtomic(root.resolve(fileName), content);
+        } catch (IOException e) {
+            Log.error("Datei " + fileName + " konnte nicht geschrieben werden", e);
+        }
+    }
+
     // ---- Laden / Speichern ----
 
     public void load() {
@@ -237,21 +260,30 @@ public final class ConfigManager {
         return obj;
     }
 
-    /** Setzt das Modul auf Standard zurück und übernimmt dann alle gültigen Werte aus {@code obj}. */
+    /**
+     * Übernimmt eine gespeicherte Modul-Config: erst die Einstellungen (Standard + gespeicherte Werte),
+     * dann genau einmal der Ein/Aus-Zustand. So wird ein laut Config ausgeschaltetes Modul nie
+     * zwischendurch aktiviert (das würde z. B. beim Spielstart Code ausführen, der noch nicht darf).
+     */
     static void applyModule(Module m, JsonObject obj) {
-        m.resetToDefaults();
-        if (obj == null) return;
-        try {
-            if (obj.has("settings") && obj.get("settings").isJsonObject()) {
-                JsonObject settings = obj.getAsJsonObject("settings");
-                for (Setting<?> s : m.settings()) {
-                    if (settings.has(s.id())) s.fromJson(settings.get(s.id()));
+        m.resetSettings();
+        boolean enabled = m.enabledByDefault();
+        if (obj != null) {
+            try {
+                if (obj.has("settings") && obj.get("settings").isJsonObject()) {
+                    JsonObject settings = obj.getAsJsonObject("settings");
+                    for (Setting<?> s : m.settings()) {
+                        if (settings.has(s.id())) s.fromJson(settings.get(s.id()));
+                    }
                 }
+                if (obj.has("enabled") && obj.get("enabled").isJsonPrimitive()) enabled = obj.get("enabled").getAsBoolean();
+            } catch (RuntimeException e) {
+                Log.error("Ungültige Config für Modul " + m.id() + ", nutze Standardwerte", e);
+                m.resetSettings();
+                enabled = m.enabledByDefault();
             }
-            if (obj.has("enabled") && obj.get("enabled").isJsonPrimitive()) m.setEnabled(obj.get("enabled").getAsBoolean());
-        } catch (RuntimeException e) {
-            Log.error("Ungültige Config für Modul " + m.id() + ", nutze Standardwerte", e);
         }
+        m.setEnabled(enabled);
     }
 
     // ---- Hilfen ----
