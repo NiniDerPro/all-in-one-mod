@@ -17,6 +17,10 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.gui.screens.inventory.MerchantScreen;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.npc.villager.AbstractVillager;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -35,6 +39,13 @@ final class ScreenHooks {
         FabricRenderer renderer = new FabricRenderer(client);
         ScreenEvents.AFTER_INIT.register((mc, screen, w, h) -> {
             if (screen instanceof ChatScreen) hookChat(core, renderer, screen);
+            // Handelsfenster: Angebote des angeschauten Dorfbewohners merken (Dorfbewohner-Info)
+            if (screen instanceof MerchantScreen merchant) {
+                Entity target = client.hitResult instanceof EntityHitResult ehr ? ehr.getEntity() : null;
+                if (target instanceof AbstractVillager) {
+                    ScreenEvents.afterTick(screen).register(s -> VillagerOffers.remember(target, merchant.getMenu().getOffers()));
+                }
+            }
             // Tastenbelegung mit Suche statt der Vanilla-Liste (zurück geht es zur Steuerung)
             if (screen instanceof KeyBindsScreen) {
                 KeyBindsModule keys = core.module(KeyBindsModule.class);

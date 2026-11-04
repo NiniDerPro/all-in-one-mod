@@ -26,6 +26,11 @@ public record FabricItemRef(ItemStack stack) implements ItemRef {
 
     @Override public String name() { return stack.getHoverName().getString(); }
 
+    @Override public int nameColor() {
+        net.minecraft.network.chat.TextColor c = stack.getStyledHoverName().getStyle().getColor();
+        return c == null ? 0xFFFFFFFF : 0xFF000000 | c.getValue();
+    }
+
     @Override public String id() { return BuiltInRegistries.ITEM.getKey(stack.getItem()).toString(); }
 
     @Override public String modName() {

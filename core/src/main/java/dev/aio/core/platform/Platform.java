@@ -168,6 +168,12 @@ public interface Platform {
     /** Vorschau von Rüstungsverzierungen für eine Schmiedevorlage (leer, wenn keine). */
     default java.util.List<RecipeView> trimViews(ItemRef template) { return java.util.List.of(); }
 
+    /**
+     * Handelsangebote bekannter Dorfbewohner in der Nähe (bekannt, sobald man ihr Handelsfenster
+     * einmal geöffnet hat), Position über dem Kopf, interpoliert.
+     */
+    default java.util.List<WorldLabel> villagerLabels(double maxDistance, float partialTick) { return java.util.List.of(); }
+
     /** Ob gerade ein Inventar-/Container-Screen offen ist (nicht Chat, Menü, ...). */
     default boolean containerScreenOpen() { return false; }
 

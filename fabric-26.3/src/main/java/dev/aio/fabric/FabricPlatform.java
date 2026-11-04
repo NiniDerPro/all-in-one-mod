@@ -378,7 +378,9 @@ public final class FabricPlatform implements Platform {
         if (ench.isEmpty()) ench = s.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY);
         List<String> out = new ArrayList<>();
         for (Object2IntMap.Entry<Holder<Enchantment>> e : ench.entrySet()) {
-            out.add(Enchantment.getFullname(e.getKey(), e.getIntValue()).getString());
+            // Flüche rot wie im Vanilla-Tooltip
+            boolean curse = e.getKey().is(net.minecraft.tags.EnchantmentTags.CURSE);
+            out.add((curse ? "§c" : "") + Enchantment.getFullname(e.getKey(), e.getIntValue()).getString());
         }
         return out;
     }
@@ -484,6 +486,7 @@ public final class FabricPlatform implements Platform {
             case CHAT_OPACITY -> op.chatOpacity();
             case TEXT_BACKGROUND_OPACITY -> op.textBackgroundOpacity();
             case FORCE_UNICODE_FONT -> op.forceUnicodeFont();
+            case MOUSE_SENSITIVITY -> op.sensitivity();
         };
     }
 
@@ -606,6 +609,10 @@ public final class FabricPlatform implements Platform {
     @Override public List<RecipeView> trimViews(ItemRef template) {
         if (!(template instanceof FabricItemRef ref) || client.level == null) return List.of();
         return TrimPreview.views(client, ref.stack());
+    }
+
+    @Override public List<dev.aio.core.platform.WorldLabel> villagerLabels(double maxDistance, float partialTick) {
+        return VillagerOffers.labels(client, maxDistance, partialTick);
     }
 
     @Override public boolean containerScreenOpen() { return client.gui.screen() instanceof AbstractContainerScreen<?>; }

@@ -28,6 +28,13 @@ public abstract class CameraMixin {
         return result;
     }
 
+    /** Die Hand rückt beim Zoomen mit aus dem Bild (wie das Sichtfeld). */
+    @ModifyReturnValue(method = "calculateHudFov", at = @At("RETURN"), require = 0)
+    private float aio$zoomHand(float fov) {
+        AioCore core = AioCore.get();
+        return core == null ? fov : (float) (fov * core.module(ZoomModule.class).currentMultiplier());
+    }
+
     // Unverifiziert für 26.3: Falls Camera die Rotation nicht mehr über getViewYRot/getViewXRot liest,
     // greift das nicht (require = 0 verhindert dann einen Absturz, Freelook dreht dann nur den Spieler nicht).
     @WrapOperation(method = "*", require = 0,
