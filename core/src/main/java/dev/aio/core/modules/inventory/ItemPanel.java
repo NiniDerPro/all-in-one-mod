@@ -19,6 +19,7 @@ public final class ItemPanel {
     private final AioCore core;
     private final ItemListModule module;
     private List<ItemRef> all = List.of();
+    private ItemSearch.Index index;
     private List<ItemRef> filtered = List.of();
     private String query = "";
     private boolean focused;
@@ -37,12 +38,13 @@ public final class ItemPanel {
     private void ensureItems() {
         if (all.isEmpty()) {
             all = core.platform().allItems();
+            index = new ItemSearch.Index(all);
             refilter();
         }
     }
 
     private void refilter() {
-        filtered = ItemSearch.filter(all, query);
+        filtered = index != null ? index.filter(query) : ItemSearch.filter(all, query);
         page = 0;
     }
 
@@ -62,6 +64,7 @@ public final class ItemPanel {
      */
     public void render(Renderer r, int mx, int my, float left) {
         ensureItems();
+        module.ensureWorldInfo(); // Handel, Beute & Co. schon im Hintergrund laden, bevor R/U gedrückt wird
         hovered = null;
         int w = r.screenWidth(), h = r.screenHeight();
         x1 = Math.max(left + 6, w - 6 - module.maxColumns() * CELL);
