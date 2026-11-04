@@ -148,6 +148,26 @@ public interface Platform {
     /** Lesbarer, lokalisierter Name einer Taste. */
     String keyName(String key);
 
+    // ---- Daten für den Item-Browser (Handel, Beute, Weltgenerierung) ----
+
+    /**
+     * Alle JSON-Dateien eines Datenpaket-Ordners nach ID, z. B. {@code loot_table} →
+     * {@code minecraft:chests/desert_pyramid}. Darf von einem Hintergrund-Thread aufgerufen werden.
+     */
+    default java.util.Map<String, com.google.gson.JsonElement> dataFiles(String dir) { return java.util.Map.of(); }
+
+    /** Item nach ID mit Anzahl; {@link ItemRef#EMPTY}, wenn es das Item nicht gibt. */
+    default ItemRef item(String id, int count) { return ItemRef.EMPTY; }
+
+    /** Übersetzung eines Sprachschlüssels oder {@code fallback}. */
+    default String translate(String key, String fallback) { return fallback; }
+
+    /** Dorfbewohner-Berufe mit Arbeitsblock und Trade-Sets. */
+    default java.util.List<Profession> professions() { return java.util.List.of(); }
+
+    /** Vorschau von Rüstungsverzierungen für eine Schmiedevorlage (leer, wenn keine). */
+    default java.util.List<RecipeView> trimViews(ItemRef template) { return java.util.List.of(); }
+
     /** Hunger, Sättigung, Leben und das Essen in der Hand (Essens-Info). */
     default FoodState foodState() { return FoodState.NONE; }
 

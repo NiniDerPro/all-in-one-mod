@@ -35,9 +35,23 @@ public final class RecipeScreen implements UiScreen {
         open(item, usages);
     }
 
+    /** Auswahl je Slot bei Kombinations-Ansichten (Verzierungen). */
+    private int[] selection = new int[0];
+    private int selectionFor = -1;
+    /** Beim Öffnen fehlten noch die Welt-Infos: sobald sie da sind, neu laden. */
+    private boolean pendingInfo;
+    private final java.util.List<Object[]> comboHits = new java.util.ArrayList<>();
+
+    private List<RecipeView> load(ItemRef item, boolean usages) {
+        ItemListModule list = core.module(ItemListModule.class);
+        if (list == null) return core.platform().recipes(item, usages);
+        pendingInfo = list.worldInfoPending();
+        return list.recipesFor(item, usages);
+    }
+
     private void open(ItemRef item, boolean usages) {
         if (view != null) history.push(view);
-        view = new View(item, usages, core.platform().recipes(item, usages));
+        view = new View(item, usages, load(item, usages));
         index = 0;
     }
 
@@ -47,16 +61,21 @@ public final class RecipeScreen implements UiScreen {
 
     @Override public void render(Renderer r, int mx, int my, float delta) {
         slotHits.clear();
+        comboHits.clear();
         hoveredItem = null;
+        if (pendingInfo) {
+            ItemListModule list = core.module(ItemListModule.class);
+            if (list == null || !list.worldInfoPending()) view = new View(view.item, view.usages, load(view.item, view.usages));
+        }
         int w = r.screenWidth(), h = r.screenHeight();
         r.fill(0, 0, w, h, Theme.OVERLAY);
-        int pw = 220, ph = 150;
+        int pw = Math.min(w - 10, 250), ph = Math.min(h - 10, 196);
         int px = (w - pw) / 2, py = (h - ph) / 2;
         r.fill(px, py, px + pw, py + ph, Theme.PANEL);
         Theme.accentBar(r, core, px, py, px + pw, py + 2);
         r.item(view.item, px + 8, py + 6, false);
         String head = (view.usages ? "Verwendung: " : "Rezepte: ") + view.item.name();
-        r.text(r.trim(head, pw - 40), px + 28, py + 11, Theme.TEXT, true);
+        r.text(r.trim(head, pw - 90), px + 28, py + 11, Theme.TEXT, true);
 
         if (!core.platform().recipesAvailable()) {
             r.text("Rezepte sind erst in einer Welt verfügbar.", px + 10, py + 50, Theme.TEXT_DIM, false);
@@ -65,6 +84,7 @@ public final class RecipeScreen implements UiScreen {
         List<RecipeView> rs = view.recipes;
         if (rs.isEmpty()) {
             r.text(view.usages ? "Wird in keinem Rezept verwendet." : "Kein Rezept gefunden.", px + 10, py + 50, Theme.TEXT_DIM, false);
+            if (pendingInfo) r.text("Handel, Beute & Spawns werden geladen…", px + 10, py + 64, Theme.TEXT_MUTED, false);
             return;
         }
         index = Math.max(0, Math.min(rs.size() - 1, index));
@@ -75,6 +95,18 @@ public final class RecipeScreen implements UiScreen {
         java.util.List<Integer> missing = transferStatus == RecipeTransfer.Status.MISSING_ITEMS
                 ? RecipeTransfer.missing(container, rec) : java.util.List.of();
         r.text(rec.type(), px + 10, py + 30, Theme.TEXT_DIM, false);
+        if (pendingInfo) r.text("lädt…", px + pw - 40, py + 30, Theme.TEXT_MUTED, false);
+
+        if (rec.isList()) {
+            renderList(r, rec, px, py, pw, mx, my);
+            renderFooter(r, rs, px, py, pw, ph, mx, my);
+            renderTooltip(r, mx, my, w);
+            return;
+        }
+        if (selectionFor != index || selection.length != rec.slots().size()) {
+            selection = new int[rec.slots().size()];
+            selectionFor = index;
+        }
 
         int gw = Math.max(1, rec.width()), gh = Math.max(1, rec.height());
         float gx = px + 20, gy = py + 44;
@@ -86,7 +118,8 @@ public final class RecipeScreen implements UiScreen {
             if (i < rec.slots().size()) {
                 List<ItemRef> opts = rec.slots().get(i);
                 if (!opts.isEmpty()) {
-                    ItemRef it = opts.get((int) (tick % opts.size()));
+                    ItemRef it = rec.combos() ? opts.get(Math.floorMod(selection[i], opts.size())) : opts.get((int) (tick % opts.size()));
+                    if (rec.combos() && opts.size() > 1) comboHits.add(new Object[]{sx, sy, i});
                     r.item(it, sx + 1, sy + 1, true);
                     slotHits.add(new Object[]{sx, sy, it});
                     if (mx >= sx && mx < sx + SLOT && my >= sy && my < sy + SLOT) hoveredItem = it;
@@ -97,10 +130,25 @@ public final class RecipeScreen implements UiScreen {
         r.text("→", ax, ay, Theme.TEXT, true);
         float rx = ax + 18, ry = gy + (gh * SLOT) / 2f - SLOT / 2f;
         drawSlot(r, rx, ry);
-        r.item(rec.result(), rx + 1, ry + 1, true);
-        slotHits.add(new Object[]{rx, ry, rec.result()});
-        if (mx >= rx && mx < rx + SLOT && my >= ry && my < ry + SLOT) hoveredItem = rec.result();
+        ItemRef result = rec.combos() && !rec.results().isEmpty() ? rec.results().get(comboIndex(rec)) : rec.result();
+        r.item(result, rx + 1, ry + 1, true);
+        slotHits.add(new Object[]{rx, ry, result});
+        if (mx >= rx && mx < rx + SLOT && my >= ry && my < ry + SLOT) hoveredItem = result;
         if (rec.station() != null && !rec.station().isEmpty()) r.item(rec.station(), rx + 30, ry + 1, false);
+
+        float ny = gy + gh * SLOT + 8;
+        for (String note : rec.notes()) {
+            r.text(r.trim(note, pw - 20), px + 10, ny, Theme.TEXT_DIM, false);
+            ny += 10;
+        }
+        if (rec.combos()) r.text("Klick auf Rüstung/Material: wechseln · Shift+Klick: Rezepte", px + 10, ny + 2, Theme.TEXT_MUTED, false);
+
+        if (rec.kind() == dev.aio.core.platform.RecipeKind.OTHER) {
+            plusBtn = new float[4];
+            renderFooter(r, rs, px, py, pw, ph, mx, my);
+            renderTooltip(r, mx, my, w);
+            return;
+        }
 
         // "+": ins offene Inventar übertragen
         plusBtn = new float[]{px + pw - 30, py + 44, px + pw - 10, py + 60};
@@ -123,20 +171,56 @@ public final class RecipeScreen implements UiScreen {
             r.text(tip, tx, plusBtn[3] + 4, 0xFFFFFFFF, false);
         }
 
+        renderFooter(r, rs, px, py, pw, ph, mx, my);
+        renderTooltip(r, mx, my, w);
+    }
+
+    /** Liste aus Symbol und Text (Beute, Spawns, Berufe, …). */
+    private void renderList(Renderer r, RecipeView rec, int px, int py, int pw, int mx, int my) {
+        float y = py + 44;
+        for (String note : rec.notes()) {
+            r.text(r.trim(note, pw - 20), px + 10, y, Theme.TEXT_DIM, false);
+            y += 10;
+        }
+        if (!rec.notes().isEmpty()) y += 2;
+        for (RecipeView.Row row : rec.rows()) {
+            float ix = px + 10;
+            drawSlot(r, ix, y);
+            if (row.icon() != null && !row.icon().isEmpty()) {
+                r.item(row.icon(), ix + 1, y + 1, false);
+                if (mx >= ix && mx < ix + SLOT && my >= y && my < y + SLOT) hoveredItem = row.icon();
+            }
+            r.text(r.trim(row.label(), pw - 40), ix + SLOT + 5, y + 5, Theme.TEXT, false);
+            y += SLOT + 1;
+        }
+    }
+
+    private void renderFooter(Renderer r, List<RecipeView> rs, int px, int py, int pw, int ph, int mx, int my) {
         String counter = (index + 1) + " / " + rs.size();
         r.centeredText(counter, px + pw / 2f, py + ph - 18, Theme.TEXT_DIM, false);
         prevBtn = new float[]{px + 10, py + ph - 22, px + 34, py + ph - 8};
         nextBtn = new float[]{px + pw - 34, py + ph - 22, px + pw - 10, py + ph - 8};
         button(r, prevBtn, "<", mx, my);
         button(r, nextBtn, ">", mx, my);
-        if (!history.isEmpty()) r.text("⌫ zurück", px + pw - 54, py + 30, Theme.TEXT_MUTED, false);
+        if (!history.isEmpty()) r.text("⌫ zurück", px + pw - 54, py + 18, Theme.TEXT_MUTED, false);
+    }
 
-        if (hoveredItem != null) {
-            String n = hoveredItem.name();
-            float tx = Math.min(mx + 10, w - r.textWidth(n) - 8);
-            r.fill(tx - 3, my - 14, tx + r.textWidth(n) + 3, my - 3, 0xF0100010);
-            r.text(n, tx, my - 12, 0xFFFFFFFF, true);
+    private void renderTooltip(Renderer r, int mx, int my, int w) {
+        if (hoveredItem == null) return;
+        String n = hoveredItem.name();
+        float tx = Math.min(mx + 10, w - r.textWidth(n) - 8);
+        r.fill(tx - 3, my - 14, tx + r.textWidth(n) + 3, my - 3, 0xF0100010);
+        r.text(n, tx, my - 12, 0xFFFFFFFF, true);
+    }
+
+    /** Ergebnis-Index aus der Auswahl: gemischte Basis über alle Slots mit mehreren Möglichkeiten. */
+    private int comboIndex(RecipeView rec) {
+        int idx = 0;
+        for (int i = 0; i < rec.slots().size(); i++) {
+            int n = rec.slots().get(i).size();
+            if (n > 1) idx = idx * n + Math.floorMod(selection[i], n);
         }
+        return Math.min(Math.max(0, idx), rec.results().size() - 1);
     }
 
     private static String stationHint(dev.aio.core.platform.RecipeKind kind) {
@@ -176,6 +260,16 @@ public final class RecipeScreen implements UiScreen {
         }
         if (in(prevBtn, mx, my)) { index--; return true; }
         if (in(nextBtn, mx, my)) { index++; return true; }
+        boolean shiftDown = core.platform().isKeyDown(Keys.LEFT_SHIFT) || core.platform().isKeyDown(Keys.RIGHT_SHIFT);
+        if (!shiftDown) {
+            for (Object[] hit : comboHits) {
+                float sx = (float) hit[0], sy = (float) hit[1];
+                if (mx >= sx && mx < sx + SLOT && my >= sy && my < sy + SLOT) {
+                    selection[(int) hit[2]] += button == 1 ? -1 : 1;
+                    return true;
+                }
+            }
+        }
         if (hoveredItem != null && !hoveredItem.isEmpty()) {
             open(hoveredItem, button == 1);
             return true;
