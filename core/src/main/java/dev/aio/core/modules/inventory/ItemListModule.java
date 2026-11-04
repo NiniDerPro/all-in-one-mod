@@ -17,11 +17,16 @@ public final class ItemListModule extends Module {
 
     public ItemListModule() {
         super("itemlist", "Item-Browser", "Alle Items rechts im Inventar (auch Kreativ), Suche mit @mod, Rezepte (R/U)", Category.INVENTORY, false);
-        maxColumns = add(new NumberSetting("columns", "Max. Spalten", 9, 3, 16, 1));
+        maxColumns = add(new NumberSetting("columns", "Max. Spalten", 8, 3, 16, 1));
         worldInfo = add(new dev.aio.core.setting.BooleanSetting("worldInfo", "Handel, Beute, Spawns & Erze", true));
         // Neue Welt oder neuer Server: Daten (Datenpakete, Mods) können anders sein
         on(dev.aio.core.event.Events.ServerJoin.class, e -> info = null);
         on(dev.aio.core.event.Events.ServerLeave.class, e -> info = null);
+    }
+
+    /** Früher 9 Spalten: überdeckt bei GUI-Stufe 3 die Effekte, darum auf die neuen 8 umstellen. */
+    @Override public void afterLoad() {
+        if (maxColumns.intValue() == 9) maxColumns.reset();
     }
 
     /** Ob die Welt-Infos noch geladen werden. */

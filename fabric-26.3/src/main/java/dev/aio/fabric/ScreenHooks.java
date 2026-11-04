@@ -126,7 +126,9 @@ final class ScreenHooks {
             syncTextInput(s, panel, textProxy);
             if (panel == null) return;
             renderer.begin(graphics);
-            panel.render(renderer, mx, my, acc.aio$leftPos() + acc.aio$imageWidth());
+            // Rechts neben dem Inventar zeigt Minecraft die Effekte: diesen Platz frei lassen (kompakte Breite)
+            int effects = core.platform().effects().isEmpty() ? 0 : 34;
+            panel.render(renderer, mx, my, acc.aio$leftPos() + acc.aio$imageWidth() + effects);
         });
 
         ScreenMouseEvents.allowMouseClick(screen).register((s, event) -> {
