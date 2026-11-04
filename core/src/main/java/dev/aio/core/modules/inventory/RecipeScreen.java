@@ -175,9 +175,14 @@ public final class RecipeScreen implements UiScreen {
         // Kopfzeile über dem Fenster: welches Item, zurück
         String head = (view.usages ? "Uses: " : "Recipes: ") + view.item.name();
         r.text(r.trim(head, W - 60), px + 2, py - TAB_H - 12, 0xFFFFFFFF, true);
-        if (!history.isEmpty()) {
-            String back = "⌫ back";
-            r.text(back, px + W - r.textWidth(back), py - TAB_H - 12, 0xFFB0B0B0, true);
+        {
+            // Zurück: zur vorherigen Rezeptansicht, sonst zurück ins Inventar
+            String back = "◀ Back";
+            float bw = r.textWidth(back) + 8, bx2 = px + W, bx1 = bx2 - bw, by1 = py - TAB_H - 15, by2 = by1 + 13;
+            boolean hover = mx >= bx1 && mx <= bx2 && my >= by1 && my <= by2;
+            r.fill(bx1, by1, bx2, by2, hover ? 0xE0505060 : 0xC0202028);
+            r.text(back, bx1 + 4, by1 + 3, hover ? 0xFFFFFFFF : 0xFFD0D0D0, true);
+            hits.add(new Hit(bx1, by1, bx2, by2, this::goBack));
         }
         if (pendingInfo && !recs.isEmpty()) r.text("loading…", px + W - 30, py + ph + 3, 0xFFB0B0B0, true);
 
@@ -392,7 +397,17 @@ public final class RecipeScreen implements UiScreen {
     // Eingabe
     // =====================================================================
 
+    /** Eine Ansicht zurück, oder (ganz am Anfang) Fenster schließen → zurück ins Inventar. */
+    private void goBack() {
+        if (!history.isEmpty()) setView(history.pop(), true);
+        else core.platform().closeScreen();
+    }
+
     @Override public boolean mouseClicked(double mx, double my, int button) {
+        if (button == 3) { // Maus-Seitentaste "Zurück"
+            goBack();
+            return true;
+        }
         ItemPanel panel = itemPanel();
         if (panel != null && lastRenderer != null && panel.mouseClicked(lastRenderer, mx, my, button)) return true;
         for (Hit h : hits) {
@@ -431,8 +446,8 @@ public final class RecipeScreen implements UiScreen {
         ItemPanel panel = itemPanel();
         if (panel != null && panel.isFocused()) return panel.keyPressed(key, ItemRef.EMPTY);
         if (panel != null && panel.hovered() != null && panel.keyPressed(key, ItemRef.EMPTY)) return true;
-        if (Keys.BACKSPACE.equals(key) && !history.isEmpty()) {
-            setView(history.pop(), true);
+        if (Keys.BACKSPACE.equals(key)) {
+            goBack();
             return true;
         }
         if (hoveredItem != null) {

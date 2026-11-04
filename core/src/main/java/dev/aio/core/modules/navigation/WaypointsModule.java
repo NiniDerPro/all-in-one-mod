@@ -52,7 +52,7 @@ public final class WaypointsModule extends HudElement {
         maxDistance = add(new NumberSetting("maxDistance", "Max distance", 0, 0, 10000, 100, " m (0 = ∞)"));
         on(Events.Key.class, e -> {
             if (!e.isPress() || e.screenOpen()) return;
-            if (addKey.triggeredBy(platform(), e.key())) addHere("Waypoint " + (waypoints.size() + 1));
+            if (addKey.triggeredBy(platform(), e.key())) platform().openScreen(new WaypointEditScreen(core, this, null));
             else if (manageKey.triggeredBy(platform(), e.key())) platform().openScreen(new WaypointScreen(core, this));
         });
         data.onChange(v -> { if (!saving && core != null && loaded) load(); });
@@ -259,26 +259,31 @@ public final class WaypointsModule extends HudElement {
 
     private static void drawDot(Renderer r, int color, float x, float y, boolean edge) {
         int s = edge ? 2 : 3;
-        diamond(r, x, y, s + 1, 0xB0000000); // dunkler Rand, gut sichtbar auf hellem und dunklem Grund
-        diamond(r, x, y, s, color);
+        // Über die Transformation statt gerundeter Koordinaten: bewegt sich stufenlos (Sub-Pixel)
+        r.push();
+        r.translate(x, y);
+        diamond(r, s + 1, 0xB0000000); // dunkler Rand, gut sichtbar auf hellem und dunklem Grund
+        diamond(r, s, color);
+        r.pop();
     }
 
-    /** Raute aus Pixelzeilen, Mittelpunkt (x, y), Radius s. */
-    private static void diamond(Renderer r, float x, float y, int s, int color) {
-        x = Math.round(x);
-        y = Math.round(y);
+    /** Raute aus Pixelzeilen um (0, 0), Radius s. */
+    private static void diamond(Renderer r, int s, int color) {
         for (int dy = -s; dy < s; dy++) {
             int half = s - (dy < 0 ? -dy - 1 : dy);
-            r.fill(x - half, y + dy, x + half, y + dy + 1, color);
+            r.fill(-half, dy, half, dy + 1, color);
         }
     }
 
     private void drawLabel(Renderer r, Waypoint wp, double dist, float x, float y) {
         String label = wp.name() + (showDistance.on() ? "  " + formatDistance(dist) : "");
-        float tw = r.textWidth(label);
-        float top = y - 7 - r.fontHeight() - 3;
-        r.fill(x - tw / 2 - 3, top, x + tw / 2 + 3, top + r.fontHeight() + 3, 0xA0000000);
-        r.text(label, x - tw / 2, top + 2, wp.color() | 0xFF000000, shadow());
+        int tw = r.textWidth(label);
+        int top = -7 - r.fontHeight() - 3;
+        r.push();
+        r.translate(x, y);
+        r.fill(-tw / 2 - 3, top, tw - tw / 2 + 3, top + r.fontHeight() + 3, 0xA0000000);
+        r.text(label, -tw / 2, top + 2, wp.color() | 0xFF000000, shadow());
+        r.pop();
     }
 
     public static String formatDistance(double d) {
