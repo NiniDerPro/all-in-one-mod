@@ -615,6 +615,10 @@ public final class FabricPlatform implements Platform {
         return VillagerOffers.labels(client, maxDistance, partialTick);
     }
 
+    @Override public String applyFpsBoost(java.util.Set<String> tweaks, String saved) { return FpsBoost.apply(client, tweaks, saved); }
+
+    @Override public void restoreFpsBoost(String saved) { FpsBoost.restore(client, saved); }
+
     @Override public List<String> particleTypes() {
         List<String> out = new ArrayList<>();
         for (Identifier id : BuiltInRegistries.PARTICLE_TYPE.keySet()) out.add(id.toString());

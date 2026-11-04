@@ -27,11 +27,17 @@ public final class Culler {
     private static final Long2LongOpenHashMap ENTITIES = new Long2LongOpenHashMap();
     private static final Long2LongOpenHashMap BLOCKS = new Long2LongOpenHashMap();
     private static long tick;
+    /** Höchstens so viele Sichtprüfungen pro Tick, damit es auch mit vielen Mobs/Truhen billig bleibt. */
+    private static final int BUDGET_PER_TICK = 48;
+    private static int budget = BUDGET_PER_TICK;
+    /** Gemessene Zeit für Sichtprüfungen (Nanosekunden, für die Diagnose). */
+    public static long nanos;
     private static final BlockPos.MutableBlockPos CURSOR = new BlockPos.MutableBlockPos();
 
     /** Jeden Client-Tick: Zähler weiter, alte Einträge ab und zu wegwerfen. */
     public static void tick() {
         tick++;
+        budget = BUDGET_PER_TICK;
         if (tick % 200 == 0) {
             ENTITIES.clear();
             BLOCKS.clear();
@@ -96,7 +102,11 @@ public final class Culler {
         int refresh = m.refreshTicks();
         // versetzt neu prüfen, damit nicht alles im selben Tick gerechnet wird
         if (v >= 0 && tick - (v >>> 1) < refresh + (key & 1)) return (v & 1) == 1;
+        if (budget <= 0) return v < 0 || (v & 1) == 1; // Budget aufgebraucht: alten Stand behalten (neu = sichtbar)
+        budget--;
+        long t0 = System.nanoTime();
         boolean vis = compute(box, m.traceDistance());
+        nanos += System.nanoTime() - t0;
         cache.put(key, (tick << 1) | (vis ? 1 : 0));
         return vis;
     }

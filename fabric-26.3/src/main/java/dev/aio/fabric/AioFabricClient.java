@@ -45,8 +45,11 @@ public final class AioFabricClient implements ClientModInitializer {
         // Ganz oben über allen Vanilla-HUD-Elementen zeichnen (F1 blendet das HUD samt diesem Element aus).
         HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("aio", "hud"), (graphics, deltaTracker) -> {
             if (hideHudFor(client.gui.screen())) return;
+            long t0 = System.nanoTime();
             hudRenderer.begin(graphics);
             core.bus().post(new Events.RenderHud(hudRenderer, deltaTracker.getGameTimeDeltaPartialTick(false)));
+            hudNanos += System.nanoTime() - t0;
+            hudFrames++;
         });
 
         // Vanilla-Teile ausblenden, die ein aktives AIO-Modul ersetzt
@@ -98,8 +101,11 @@ public final class AioFabricClient implements ClientModInitializer {
             if (!c.isWindowActive()) InputState.clear();
             platform.applyPendingScreen();
             Culler.tick();
+            long t0 = System.nanoTime();
             platform.saveOptionsIfDirty();
             core.bus().post(Events.Tick.INSTANCE);
+            tickNanos += System.nanoTime() - t0;
+            if (++diagTicks >= 600) reportPerformance(core);
         });
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, c) -> {
@@ -123,5 +129,23 @@ public final class AioFabricClient implements ClientModInitializer {
      */
     private static boolean hideHudFor(Screen screen) {
         return screen != null && !(screen instanceof ChatScreen) && !(screen instanceof AioScreen);
+    }
+
+    // ---- Leistungs-Diagnose (FPS-Boost → "Leistungs-Diagnose ins Log") ----
+    private static long hudNanos, hudFrames, tickNanos;
+    private static int diagTicks;
+
+    /** Alle 30 Sekunden: wie viel Zeit AIO selbst gebraucht hat (zum Vergleichen mit der Frame-Zeit aus F3). */
+    private static void reportPerformance(AioCore core) {
+        dev.aio.core.modules.performance.FpsBoostModule boost = core.module(dev.aio.core.modules.performance.FpsBoostModule.class);
+        if (boost != null && boost.diagnose()) {
+            double hud = hudFrames == 0 ? 0 : hudNanos / 1e6 / hudFrames;
+            LOGGER.info(String.format(java.util.Locale.ROOT,
+                    "[aio] Leistung: HUD %.3f ms/Frame (%d Frames), Ticks %.3f ms/Tick, Sichtprüfungen %.3f ms/Tick, FPS %d",
+                    hud, hudFrames, tickNanos / 1e6 / diagTicks, Culler.nanos / 1e6 / diagTicks, Minecraft.getInstance().getFps()));
+        }
+        hudNanos = hudFrames = tickNanos = 0;
+        Culler.nanos = 0;
+        diagTicks = 0;
     }
 }

@@ -116,6 +116,7 @@ public final class AioCore {
         modules.register(new dev.aio.core.modules.player.ElytraSwapModule());
         modules.register(new dev.aio.core.modules.client.KeyBindsModule());
         modules.register(new dev.aio.core.modules.player.FoodInfoModule());
+        modules.register(new dev.aio.core.modules.performance.FpsBoostModule());
         modules.register(new dev.aio.core.modules.performance.EntityCullingModule());
         modules.register(new dev.aio.core.modules.performance.RenderDistanceModule());
         modules.register(new dev.aio.core.modules.performance.DynamicFpsModule());
