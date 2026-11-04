@@ -186,6 +186,11 @@ public interface Platform {
     /** FPS-Boost aus: Ursprungswerte wiederherstellen. */
     default void restoreFpsBoost(String saved) {}
 
+    /** Freecam ein-/ausschalten (Kamera löst sich vom Spieler). */
+    default void setFreecam(boolean on) {}
+
+    default boolean freecamActive() { return false; }
+
     /** IDs aller Partikelarten, z. B. {@code minecraft:crit}. */
     default java.util.List<String> particleTypes() { return java.util.List.of(); }
 

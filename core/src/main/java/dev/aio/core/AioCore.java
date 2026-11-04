@@ -103,6 +103,7 @@ public final class AioCore {
         modules.register(new dev.aio.core.modules.navigation.PortalCalculatorModule());
         // Grafik
         modules.register(new dev.aio.core.modules.render.NoFogModule());
+        modules.register(new dev.aio.core.modules.render.FreecamModule());
         modules.register(new dev.aio.core.modules.render.NoHurtcamModule());
         modules.register(new dev.aio.core.modules.render.NoPumpkinModule());
         modules.register(new dev.aio.core.modules.render.BlockOutlineModule());
