@@ -339,7 +339,34 @@ public final class ClickGuiScreen implements UiScreen {
             }
         }
         int rows = (list.size() + cols - 1) / cols;
-        return rows * (CARD_H + GAP) - GAP;
+        float height = rows * (CARD_H + GAP) - GAP;
+        if (category == dev.aio.core.module.Category.CLIENT && search.isEmpty()) height += renderResetAll(r, mx, my, x, y + height + 18, w) + 18;
+        return height;
+    }
+
+    /** Zeitpunkt des ersten Klicks auf "Reset all" (zweiter Klick innerhalb von 4 s bestätigt). */
+    private long resetAllArmed;
+
+    /** Rot umrandeter Knopf ganz unten in "Client": setzt alles auf Standard. */
+    private float renderResetAll(Renderer r, int mx, int my, float x, float y, float w) {
+        boolean armed = System.currentTimeMillis() - resetAllArmed < 4000;
+        float bw = Math.min(w, 220), x1 = x + (w - bw) / 2f, x2 = x1 + bw, y2 = y + 20;
+        boolean hover = inside(mx, my, x1, y, x2, y2) && my >= viewY1 && my <= viewY2;
+        r.fill(x1, y, x2, y2, armed ? 0xFF5A1A1E : hover ? 0xFF2A1416 : Theme.CARD);
+        r.outline(x1, y, x2, y2, 1, Theme.DANGER);
+        String label = armed ? "Click again: reset EVERYTHING" : "Reset all";
+        r.centeredText(label, (x1 + x2) / 2f, y + 6, armed || hover ? 0xFFFF8080 : Theme.DANGER, false);
+        hit(x1, y, x2, y2, b -> {
+            if (System.currentTimeMillis() - resetAllArmed < 4000) {
+                resetAllArmed = 0;
+                core.resetAll();
+                showStatus("Everything reset to default", Theme.DANGER);
+            } else {
+                resetAllArmed = System.currentTimeMillis();
+            }
+        });
+        r.centeredText("All modules, settings, keys and HUD positions (waypoints stay)", (x1 + x2) / 2f, y2 + 4, Theme.TEXT_MUTED, false);
+        return 20 + 14;
     }
 
     private void renderSettingsHeader(Renderer r, int mx, int my, float x, float y, float w, int accent) {

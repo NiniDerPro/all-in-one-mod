@@ -319,11 +319,8 @@ public final class FabricPlatform implements Platform {
         LocalPlayer p = player();
         if (p == null) return new CameraView(0, 0, 0, 0, 0, 70);
         double fov0 = FabricHooks.lastFov > 1 ? FabricHooks.lastFov : (client.options == null ? 70 : client.options.fov().get());
-        if (System.nanoTime() - FabricHooks.camNanos < 250_000_000L) {
-            // Genau die Kamera, mit der die Welt in diesem Frame gezeichnet wurde (inkl. Wackeln, Freecam, 3rd Person an Wänden)
-            return new CameraView(FabricHooks.camX, FabricHooks.camY, FabricHooks.camZ, FabricHooks.camYaw, FabricHooks.camPitch,
-                    fov0, FabricHooks.camBobWalk, FabricHooks.camBob);
-        }
+        CameraView exact = FabricHooks.frameCamera(client, fov0);
+        if (exact != null) return exact;
         var fl = AioCore.get() == null ? null : AioCore.get().module(FreelookModule.class);
         boolean free = fl != null && fl.isEngaged() && freelookSupported();
         float yaw = free ? fl.cameraYaw() : p.getViewYRot(partial);

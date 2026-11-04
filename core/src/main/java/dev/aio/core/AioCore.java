@@ -153,6 +153,21 @@ public final class AioCore {
         Log.info(NAME + " started with " + modules.all().size() + " modules (profile: " + config.activeProfile() + ")");
     }
 
+    /**
+     * Alles auf Standard: jedes Modul erst aus (damit z. B. FPS Boost seine gemerkten Vanilla-Werte
+     * zurückschreibt), dann Einstellungen zurück und Standard-Ein/Aus. Wegpunkte bleiben erhalten.
+     */
+    public void resetAll() {
+        for (Module m : modules.all()) if (m != clientSettings) m.setEnabled(false);
+        for (Module m : modules.all()) {
+            m.resetSettings();
+            m.afterLoad();
+        }
+        for (Module m : modules.all()) m.setEnabled(m.enabledByDefault());
+        config.save();
+        Log.info("All settings reset to default");
+    }
+
     public void shutdown() {
         config.save();
     }

@@ -43,7 +43,7 @@ public final class WaypointScreen implements UiScreen {
         Theme.accentBar(r, core, px, py, px + pw, py + 2);
         r.text("Waypoints", px + 10, py + 9, Theme.TEXT, true);
         button(r, mx, my, px + pw - 110, py + 6, px + pw - 8, py + 20, "+ Add here", true,
-                b -> module.addHere("Waypoint " + (module.inThisWorld().size() + 1)));
+                b -> core.platform().openScreen(new WaypointEditScreen(core, module, null)));
 
         List<Waypoint> list = module.inThisWorld();
         Vec3 pos = core.platform().playerPos();
@@ -82,7 +82,10 @@ public final class WaypointScreen implements UiScreen {
             });
         }
         String coords = wp.x() + " " + wp.y() + " " + wp.z() + (wp.dimension().equals(dim) ? "" : "  (" + dimName(wp.dimension()) + ")");
-        r.text(coords, x + 150, y + 7, Theme.TEXT_DIM, false);
+        boolean ch = mx >= x + 146 && mx <= x + 146 + r.textWidth(coords) + 8 && my >= y + 4 && my <= y + 18;
+        r.text(coords + (ch ? "  ✎" : ""), x + 150, y + 7, ch ? Theme.TEXT : Theme.TEXT_DIM, false);
+        hitClipped(x + 146, y + 4, x + 146 + r.textWidth(coords) + 14, y + 18, top, bottom,
+                b -> core.platform().openScreen(new WaypointEditScreen(core, module, wp)));
         if (wp.dimension().equals(dim)) {
             String d = WaypointsModule.formatDistance(wp.distanceTo(pos.x(), pos.y(), pos.z()));
             r.text(d, x + w - 92 - r.textWidth(d), y + 7, Theme.TEXT_MUTED, false);
