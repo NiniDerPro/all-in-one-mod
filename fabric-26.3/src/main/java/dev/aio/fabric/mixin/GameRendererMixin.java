@@ -20,8 +20,6 @@ public abstract class GameRendererMixin {
     @WrapOperation(method = "renderLevel", require = 0,
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;bobHurt(Lnet/minecraft/client/renderer/state/level/CameraRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;)V"))
     private void aio$noHurtcam(GameRenderer instance, CameraRenderState camera, PoseStack pose, Operation<Void> original) {
-        // Kamera dieses Frames merken: Marker im HUD nutzen exakt dieselbe Position, Drehung und dasselbe Laufwackeln
-        dev.aio.fabric.FabricHooks.captureCamera(camera);
         AioCore core = AioCore.get();
         if (core != null && core.module(NoHurtcamModule.class).suppress()) return;
         original.call(instance, camera, pose);

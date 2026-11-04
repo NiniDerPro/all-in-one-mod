@@ -67,4 +67,38 @@ class HotkeysAndPartsTest {
         assertNotEquals(10, time.screenX(r), 0.5, "Uhrzeit bleibt, wo sie war");
         dt.render(r, true);
     }
+
+    @Test void resetAllRestoresDefaults() {
+        FakePlatform p = new FakePlatform();
+        AioCore core = start(p);
+        DateTimeModule dt = core.module(DateTimeModule.class);
+        dt.setEnabled(true);
+        dt.setting("seconds").fromJson(new com.google.gson.JsonPrimitive(true));
+        core.module(dev.aio.core.modules.hud.ArmorHudModule.class).setEnabled(false);
+        core.resetAll();
+        assertFalse(dt.isEnabled());
+        assertEquals(false, dt.setting("seconds").get());
+        assertTrue(core.module(dev.aio.core.modules.hud.ArmorHudModule.class).isEnabled());
+        assertTrue(core.clientSettings().isEnabled());
+    }
+
+    @Test void waypointDialogCreatesWaypointWithEditedCoords() {
+        FakePlatform p = new FakePlatform();
+        AioCore core = start(p);
+        var wm = core.module(dev.aio.core.modules.navigation.WaypointsModule.class);
+        wm.setEnabled(true);
+        var dlg = new dev.aio.core.modules.navigation.WaypointEditScreen(core, wm, null);
+        dlg.render(new FakeRenderer(), 0, 0, 0);
+        try { Thread.sleep(200); } catch (InterruptedException ignored) {}
+        dlg.charTyped("H"); // Name ist anfangs markiert → ersetzt
+        dlg.charTyped("i");
+        dlg.keyPressed("key.keyboard.tab");
+        dlg.charTyped("1");
+        dlg.charTyped("2");
+        dlg.keyPressed("key.keyboard.enter");
+        var list = wm.inThisWorld();
+        assertEquals(1, list.size());
+        assertEquals("Hi", list.get(0).name());
+        assertEquals(12, list.get(0).x());
+    }
 }

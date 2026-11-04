@@ -118,12 +118,13 @@ class FeaturesTest {
         assertEquals(List.of("Basis"), w2.visibleHere().stream().map(Waypoint::name).toList());
     }
 
-    @Test void waypointKeyAddsWaypoint() {
+    @Test void waypointKeyOpensCreateDialog() {
         FakePlatform p = new FakePlatform();
         AioCore core = newCore(p);
         core.module(WaypointsModule.class).setEnabled(true);
         core.bus().post(new Events.Key("key.keyboard.b", 1, false));
-        assertEquals(1, core.module(WaypointsModule.class).inThisWorld().size());
+        assertInstanceOf(dev.aio.core.modules.navigation.WaypointEditScreen.class, p.screen);
+        assertEquals(0, core.module(WaypointsModule.class).inThisWorld().size(), "erst beim Speichern");
     }
 
     @Test void deathPointCreatedAndRemovedOnArrival() {
