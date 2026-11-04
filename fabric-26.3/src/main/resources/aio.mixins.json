@@ -4,7 +4,6 @@
   "compatibilityLevel": "JAVA_25",
   "client": [
     "ClientInputAccessor",
-    "KeyboardInputMixin",
     "ClientLevelParticlesMixin",
     "ParticleEngineMixin",
     "MinecraftFpsMixin",
@@ -27,7 +26,18 @@
     "LightmapMixin",
     "MouseHandlerMixin",
     "MultiPlayerGameModeMixin",
-    "WaterFogMixin"
+    "WaterFogMixin",
+    "FreecamBlockStateMixin",
+    "FreecamCameraMixin",
+    "FreecamEntityMixin",
+    "FreecamEntityRenderDispatcherMixin",
+    "FreecamGameRendererMixin",
+    "FreecamHudMixin",
+    "FreecamLevelExtractorMixin",
+    "FreecamLivingEntityMixin",
+    "FreecamLocalPlayerMixin",
+    "FreecamMinecraftMixin",
+    "FreecamPacketListenerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
