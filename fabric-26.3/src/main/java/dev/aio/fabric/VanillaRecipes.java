@@ -75,8 +75,9 @@ final class VanillaRecipes {
                     String name = rel.substring(0, rel.length() - 5);
                     try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
                         JsonElement json = JsonParser.parseReader(reader);
-                        Recipe.CODEC.parse(ops, json).result().ifPresent(recipe -> out.add(new RecipeHolder<>(
-                                ResourceKey.create(Registries.RECIPE, Identifier.withDefaultNamespace(name)), recipe)));
+                        // In 26.3 liefert der Codec einen Holder (Inline-JSON = direkter Holder)
+                        Recipe.CODEC.parse(ops, json).result().ifPresent(holder -> out.add(new RecipeHolder<Recipe<?>>(
+                                ResourceKey.create(Registries.RECIPE, Identifier.withDefaultNamespace(name)), holder.value())));
                     } catch (Exception e) {
                         // einzelne Sonderrezepte überspringen
                     }
