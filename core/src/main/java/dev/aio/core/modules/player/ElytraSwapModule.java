@@ -26,7 +26,8 @@ public final class ElytraSwapModule extends Module {
         super("elytraswap", "Elytra-Tausch", "Wechselt per Taste zwischen Elytra und Brustplatte", Category.COMBAT, false);
         key = add(new KeybindSetting("key", "Taste", "key.keyboard.grave.accent"));
         on(Events.Key.class, e -> {
-            if (e.isPress() && !e.screenOpen() && key.matches(e.key())) swap();
+            // auch im offenen Spielerinventar (dort prüft swap(), dass nur das eigene Inventar offen ist)
+            if (e.isPress() && key.matches(e.key()) && (!e.screenOpen() || platform().containerScreenOpen())) swap();
         });
     }
 
