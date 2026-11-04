@@ -1,5 +1,7 @@
 package dev.aio.core.platform;
 
+import java.util.List;
+
 /**
  * Was der Spieler gerade ansieht (Block oder Wesen unter dem Fadenkreuz).
  * Der Adapter liefert nur Rohdaten, die Darstellung entscheidet der Kern.
@@ -12,18 +14,44 @@ package dev.aio.core.platform;
  * @param growth      Wachstum 0..1 bei Pflanzen, sonst NaN
  * @param health      Lebenspunkte bei Wesen, sonst NaN
  * @param armor       Rüstungspunkte bei Wesen, sonst -1
+ * @param details     blockspezifische Angaben (Honig im Bienenstock, Füllstand im Komposter, ...).
+ *                    Der Adapter liefert nur die, die zur angesehenen Blockart passen.
  */
 public record LookTarget(Kind kind, String name, String source, ItemRef icon, Boolean correctTool, String toolType,
-                         float growth, float health, float maxHealth, int armor, int x, int y, int z) {
+                         float growth, float health, float maxHealth, int armor, int x, int y, int z,
+                         List<Detail> details) {
     public enum Kind { BLOCK, ENTITY }
+
+    /**
+     * Eine Zeile "Bezeichnung: Wert".
+     *
+     * @param highlight Wert hervorheben (grün), z. B. "Honig: 5/5" = erntebereit
+     */
+    public record Detail(String label, String value, boolean highlight) {
+        public static Detail of(String label, String value) { return new Detail(label, value, false); }
+
+        public static Detail of(String label, int value, int max) {
+            return new Detail(label, value + "/" + max, value >= max);
+        }
+    }
+
+    public LookTarget {
+        details = details == null ? List.of() : List.copyOf(details);
+    }
+
+    public static LookTarget block(String name, String source, ItemRef icon, Boolean correctTool, String toolType,
+                                   float growth, int x, int y, int z, List<Detail> details) {
+        return new LookTarget(Kind.BLOCK, name, source, icon, correctTool, toolType, growth, Float.NaN, Float.NaN, -1,
+                x, y, z, details);
+    }
 
     public static LookTarget block(String name, String source, ItemRef icon, Boolean correctTool, String toolType,
                                    float growth, int x, int y, int z) {
-        return new LookTarget(Kind.BLOCK, name, source, icon, correctTool, toolType, growth, Float.NaN, Float.NaN, -1, x, y, z);
+        return block(name, source, icon, correctTool, toolType, growth, x, y, z, List.of());
     }
 
     public static LookTarget entity(String name, String source, ItemRef icon, float health, float maxHealth, int armor,
                                     int x, int y, int z) {
-        return new LookTarget(Kind.ENTITY, name, source, icon, null, null, Float.NaN, health, maxHealth, armor, x, y, z);
+        return new LookTarget(Kind.ENTITY, name, source, icon, null, null, Float.NaN, health, maxHealth, armor, x, y, z, List.of());
     }
 }

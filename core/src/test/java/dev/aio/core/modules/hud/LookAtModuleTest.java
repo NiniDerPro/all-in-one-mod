@@ -62,6 +62,28 @@ class LookAtModuleTest {
         assertEquals("Axt", m.lineTexts().get(0), "ohne Axt in der Hand neutral");
     }
 
+    @Test void blockDetailsOnlyForThatBlock() {
+        FakePlatform p = new FakePlatform();
+        AioCore core = newCore(p);
+        LookAtModule m = core.module(LookAtModule.class);
+        p.lookTarget = LookTarget.block("Bienenstock", "Minecraft", DIRT, null, "Axt", Float.NaN, 0, 0, 0,
+                List.of(LookTarget.Detail.of("Honig", 5, 5), LookTarget.Detail.of("Bienen", 2, 3)));
+        m.update();
+        assertEquals(List.of("Axt", "Honig: 5/5", "Bienen: 2/3", "§oMinecraft"), m.lineTexts());
+        assertTrue(LookTarget.Detail.of("Honig", 5, 5).highlight(), "voll = hervorgehoben");
+        assertFalse(LookTarget.Detail.of("Bienen", 2, 3).highlight());
+
+        p.lookTarget = LookTarget.block("Stein", "Minecraft", DIRT, null, null, Float.NaN, 0, 0, 0);
+        m.update();
+        assertEquals(List.of("§oMinecraft"), m.lineTexts(), "andere Blöcke ohne Details");
+
+        ((dev.aio.core.setting.BooleanSetting) m.setting("showDetails")).set(false);
+        p.lookTarget = LookTarget.block("Komposter", "Minecraft", DIRT, null, null, Float.NaN, 0, 0, 0,
+                List.of(LookTarget.Detail.of("Füllstand", 3, 7)));
+        m.update();
+        assertEquals(List.of("§oMinecraft"), m.lineTexts(), "Details abschaltbar");
+    }
+
     @Test void entityShowsHeartsOrNumbersAndArmor() {
         FakePlatform p = new FakePlatform();
         AioCore core = newCore(p);

@@ -29,8 +29,15 @@ public final class LookAtModule extends HudElement {
         @Override public String displayName() { return displayName; }
     }
 
-    /** Eine Textzeile; {@code hearts} markiert die Herzzeile, die gesondert gezeichnet wird. */
-    private record Line(String text, int color, boolean hearts) {}
+    /**
+     * Eine Textzeile. {@code hearts} markiert die Herzzeile, die gesondert gezeichnet wird.
+     * {@code value} wird optional hinter {@code text} in eigener Farbe gezeichnet ("Honig: " + "5/5").
+     */
+    private record Line(String text, int color, boolean hearts, String value, int valueColor) {
+        Line(String text, int color, boolean hearts) { this(text, color, hearts, "", 0); }
+
+        String full() { return text + value; }
+    }
 
     // Farben des klassischen Tooltips
     static final int BG = 0xF0100010;
@@ -52,6 +59,7 @@ public final class LookAtModule extends HudElement {
     private final BooleanSetting showModName;
     private final BooleanSetting showTool;
     private final BooleanSetting showGrowth;
+    private final BooleanSetting showDetails;
     private final BooleanSetting showHealth;
     private final BooleanSetting showArmor;
     private final BooleanSetting showCoords;
@@ -71,6 +79,7 @@ public final class LookAtModule extends HudElement {
         showModName = add(new BooleanSetting("showModName", "Mod-Name", true));
         showTool = add(new BooleanSetting("showTool", "Werkzeug", true));
         showGrowth = add(new BooleanSetting("showGrowth", "Wachstum", true));
+        showDetails = add(new BooleanSetting("showDetails", "Block-Details (Honig, Füllstand, ...)", true));
         showHealth = add(new BooleanSetting("showHealth", "Leben", true));
         showArmor = add(new BooleanSetting("showArmor", "Rüstung", true));
         showCoords = add(new BooleanSetting("showCoords", "Koordinaten", false));
@@ -113,8 +122,14 @@ public final class LookAtModule extends HudElement {
                 else next.add(new Line("✘ " + t.toolType(), BAD, false));
             }
             if (showGrowth.on() && !Float.isNaN(t.growth())) {
-                next.add(new Line(t.growth() >= 1f ? "Wachstum: ausgewachsen"
-                        : "Wachstum: " + Math.round(t.growth() * 100) + "%", INFO, false));
+                boolean done = t.growth() >= 1f;
+                next.add(new Line("Wachstum: ", INFO, false,
+                        done ? "ausgewachsen" : Math.round(t.growth() * 100) + "%", done ? GOOD : 0xFFFFFFFF));
+            }
+            if (showDetails.on()) {
+                for (LookTarget.Detail d : t.details()) {
+                    next.add(new Line(d.label() + ": ", INFO, false, d.value(), d.highlight() ? GOOD : 0xFFFFFFFF));
+                }
             }
         } else {
             if (showHealth.on() && !Float.isNaN(t.health()) && t.maxHealth() > 0) {
@@ -130,7 +145,7 @@ public final class LookAtModule extends HudElement {
         }
 
         StringBuilder k = new StringBuilder(t.name());
-        for (Line l : next) k.append('|').append(l.text);
+        for (Line l : next) k.append('|').append(l.full());
         if (!Float.isNaN(t.health())) k.append('|').append(t.health()).append('/').append(t.maxHealth());
         k.append('|').append(t.icon() == null || t.icon().isEmpty() ? "" : t.icon().name());
         String newKey = k.toString();
@@ -184,7 +199,7 @@ public final class LookAtModule extends HudElement {
         if (!preview && cachedW >= 0) return cachedW;
         int w = r.textWidth(shownName(preview));
         heartsW = heartsWidth(r);
-        for (Line l : shownLines(preview)) w = Math.max(w, l.hearts ? heartsW : r.textWidth(l.text));
+        for (Line l : shownLines(preview)) w = Math.max(w, l.hearts ? heartsW : r.textWidth(l.full()));
         int total = textLeft(preview) + w + PAD;
         if (!preview) cachedW = total;
         return total;
@@ -219,8 +234,12 @@ public final class LookAtModule extends HudElement {
         drawText(r, shownName(preview), left, top);
         float y = top + LINE_H;
         for (Line l : ls) {
-            if (l.hearts) drawHearts(r, left, y);
-            else r.text(l.text, left, y, l.color, shadow());
+            if (l.hearts) {
+                drawHearts(r, left, y);
+            } else {
+                r.text(l.text, left, y, l.color, shadow());
+                if (!l.value.isEmpty()) r.text(l.value, left + r.textWidth(l.text), y, l.valueColor, shadow());
+            }
             y += LINE_H;
         }
     }
@@ -263,7 +282,7 @@ public final class LookAtModule extends HudElement {
 
     List<String> lineTexts() {
         List<String> out = new ArrayList<>();
-        for (Line l : lines) out.add(l.hearts ? "<hearts>" : l.text);
+        for (Line l : lines) out.add(l.hearts ? "<hearts>" : l.full());
         return out;
     }
 
