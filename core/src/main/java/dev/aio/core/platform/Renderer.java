@@ -20,6 +20,9 @@ public interface Renderer {
     /** Zeichnet ein Item-Icon (16x16). {@code overlay} zeigt Anzahl und Haltbarkeitsbalken. */
     void item(ItemRef item, float x, float y, boolean overlay);
 
+    /** Zeichnet ein Sprite aus dem GUI-Atlas, z. B. {@code minecraft:mob_effect/speed}. */
+    void sprite(String id, float x, float y, int width, int height);
+
     void push();
 
     void pop();
@@ -32,6 +35,14 @@ public interface Renderer {
     void enableScissor(int x1, int y1, int x2, int y2);
 
     void disableScissor();
+
+    /**
+     * Scissor in lokalen Koordinaten (nach translate/scale). Die Umrechnung übernimmt der Renderer,
+     * wenn er die aktuelle Transformation kennt; die Standardumsetzung clippt nicht.
+     */
+    default void enableScissorLocal(float x1, float y1, float x2, float y2) {}
+
+    default void disableScissorLocal() {}
 
     // ---- Hilfsfunktionen auf Basis der Primitive ----
 

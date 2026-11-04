@@ -29,7 +29,8 @@ public final class HudManager {
 
     private void render(Renderer r) {
         if (editorOpen) return; // der Editor zeichnet die Elemente selbst
-        for (HudElement el : elements) if (el.isActive()) el.render(r, false);
+        for (HudElement el : elements) if (el.isActive()) el.renderOverlay(r);
+        for (HudElement el : elements) if (el.isActive() && el.editable()) el.render(r, false);
     }
 
     public List<HudElement> elements() { return elements; }

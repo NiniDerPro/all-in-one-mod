@@ -12,12 +12,20 @@ import net.minecraft.network.chat.Component;
 /** Verpackt einen versionsunabhängigen {@link UiScreen} in einen MC-Screen. */
 public final class AioScreen extends Screen {
     private final UiScreen ui;
+    private final Screen parent;
     private final FabricRenderer renderer;
 
-    public AioScreen(UiScreen ui) {
+    /** @param parent Screen, zu dem bei {@link UiScreen#returnsToPrevious()} zurückgekehrt wird */
+    public AioScreen(UiScreen ui, Screen parent) {
         super(Component.literal(ui.title()));
         this.ui = ui;
+        this.parent = parent instanceof AioScreen a && a.ui.getClass() == ui.getClass() ? a.parent : parent;
         this.renderer = new FabricRenderer(Minecraft.getInstance());
+    }
+
+    @Override public void onClose() {
+        if (ui.returnsToPrevious() && parent != null) Minecraft.getInstance().gui.setScreen(parent);
+        else super.onClose();
     }
 
     @Override public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {

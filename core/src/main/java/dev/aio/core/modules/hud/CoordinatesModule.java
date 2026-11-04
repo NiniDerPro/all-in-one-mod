@@ -16,7 +16,7 @@ public final class CoordinatesModule extends TextHudElement {
     private final BooleanSetting showBiome;
 
     public CoordinatesModule() {
-        super("coordinates", "Koordinaten", "Position, Blickrichtung und Biom", 0.0, 0.12);
+        super("coordinates", "Koordinaten", "Position, Blickrichtung und Biom", dev.aio.core.module.Category.INFO, false, 0.0, 0.12);
         decimals = add(new NumberSetting("decimals", "Nachkommastellen", 0, 0, 2, 1));
         showDirection = add(new BooleanSetting("showDirection", "Blickrichtung", true));
         showBiome = add(new BooleanSetting("showBiome", "Biom", false));

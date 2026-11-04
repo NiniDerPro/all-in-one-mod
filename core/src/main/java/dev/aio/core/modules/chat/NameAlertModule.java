@@ -1,0 +1,68 @@
+package dev.aio.core.modules.chat;
+
+import dev.aio.core.event.Events;
+import dev.aio.core.module.Category;
+import dev.aio.core.module.Module;
+import dev.aio.core.setting.BooleanSetting;
+import dev.aio.core.setting.StringSetting;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.regex.Pattern;
+
+/** Benachrichtigt, wenn der eigene Name (oder ein Stichwort) im Chat erwähnt wird. */
+public final class NameAlertModule extends Module {
+    private final BooleanSetting requireAt;
+    private final StringSetting keywords;
+    private final BooleanSetting sound;
+    private final BooleanSetting popup;
+    private final BooleanSetting ignoreOwn;
+
+    public NameAlertModule() {
+        super("namealert", "Namens-Alarm", "Ton und Hinweis, wenn dein Name im Chat fällt", Category.CHAT, false);
+        requireAt = add(new BooleanSetting("requireAt", "Nur mit @", false));
+        keywords = add(new StringSetting("keywords", "Weitere Wörter (Komma)", "", 256));
+        sound = add(new BooleanSetting("sound", "Ton", true));
+        popup = add(new BooleanSetting("popup", "Hinweis einblenden", true));
+        ignoreOwn = add(new BooleanSetting("ignoreOwn", "Eigene Nachrichten ignorieren", true));
+        on(Events.ChatReceived.class, this::onChat);
+    }
+
+    @Override public boolean enabledByDefault() { return true; }
+
+    private void onChat(Events.ChatReceived e) {
+        String name = platform().playerName();
+        if (ignoreOwn.on() && isOwnMessage(e.text(), name)) return;
+        String hit = match(e.text(), words(name), requireAt.on());
+        if (hit == null) return;
+        if (sound.on()) platform().playAlertSound();
+        if (popup.on()) platform().notify("Erwähnt: " + shorten(e.text()));
+    }
+
+    private List<String> words(String name) {
+        List<String> list = new ArrayList<>();
+        if (name != null && !name.isBlank()) list.add(name);
+        for (String k : keywords.get().split(",")) if (!k.isBlank()) list.add(k.trim());
+        return list;
+    }
+
+    /** "<Name> ..." oder "Name: ..." am Anfang = eigene Nachricht. */
+    static boolean isOwnMessage(String text, String name) {
+        if (name == null || name.isEmpty()) return false;
+        String t = text.trim();
+        return t.startsWith("<" + name + ">") || t.startsWith(name + ":") || t.startsWith("[" + name + "]");
+    }
+
+    /** Liefert das gefundene Wort oder null. Ganze Wörter, ohne Groß/Klein. */
+    static String match(String text, List<String> words, boolean requireAt) {
+        for (String w : words) {
+            String q = Pattern.quote(w.toLowerCase(Locale.ROOT));
+            String regex = requireAt ? "@" + q + "(?![\\w])" : "(?<![\\w])@?" + q + "(?![\\w])";
+            if (Pattern.compile(regex, Pattern.CASE_INSENSITIVE).matcher(text).find()) return w;
+        }
+        return null;
+    }
+
+    private static String shorten(String s) { return s.length() > 60 ? s.substring(0, 57) + "..." : s; }
+}
