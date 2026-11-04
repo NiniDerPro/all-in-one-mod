@@ -23,6 +23,7 @@ public final class WaypointScreen implements UiScreen {
     private float scroll;
     private Waypoint editing;
     private String buffer = "";
+    private boolean bufferAll;
     private Waypoint confirmDelete;
 
     public WaypointScreen(AioCore core, WaypointsModule module) {
@@ -69,13 +70,15 @@ public final class WaypointScreen implements UiScreen {
         float nameX = x + 22;
         if (editing == wp) {
             r.fill(nameX - 2, y + 4, nameX + 120, y + 18, 0xFF2A2A34);
-            boolean caret = (System.currentTimeMillis() / 500) % 2 == 0;
+            if (bufferAll) dev.aio.core.ui.TextEdit.drawSelection(r, nameX, y + 7, buffer);
+            boolean caret = !bufferAll && (System.currentTimeMillis() / 500) % 2 == 0;
             r.text(buffer + (caret ? "_" : ""), nameX, y + 7, Theme.TEXT, false);
         } else {
             r.text(r.trim(wp.name(), 118), nameX, y + 7, wp.visible() ? Theme.TEXT : Theme.TEXT_MUTED, false);
             hitClipped(nameX - 2, y + 4, nameX + 120, y + 18, top, bottom, b -> {
                 editing = wp;
                 buffer = wp.name();
+                bufferAll = false;
             });
         }
         String coords = wp.x() + " " + wp.y() + " " + wp.z() + (wp.dimension().equals(dim) ? "" : "  (" + dimName(wp.dimension()) + ")");
@@ -161,13 +164,19 @@ public final class WaypointScreen implements UiScreen {
         if (editing == null) return false;
         if (Keys.ENTER.equals(key)) commit();
         else if (Keys.ESCAPE.equals(key)) editing = null;
-        else if (Keys.BACKSPACE.equals(key) && !buffer.isEmpty()) buffer = buffer.substring(0, buffer.length() - 1);
+        else {
+            var res = dev.aio.core.ui.TextEdit.key(core.platform(), buffer, bufferAll, key);
+            buffer = res.text().length() > 32 ? res.text().substring(0, 32) : res.text();
+            bufferAll = res.allSelected();
+        }
         return true;
     }
 
     @Override public boolean charTyped(String text) {
         if (editing == null || text.isEmpty() || text.codePointAt(0) < 32) return false;
-        if (buffer.length() < 32) buffer += text;
+        buffer = dev.aio.core.ui.TextEdit.type(buffer, bufferAll, text);
+        if (buffer.length() > 32) buffer = buffer.substring(0, 32);
+        bufferAll = false;
         return true;
     }
 

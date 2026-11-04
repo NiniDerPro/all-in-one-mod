@@ -25,6 +25,7 @@ public final class CompassModule extends HudElement {
     private final EnumSetting<Style> style;
     private final NumberSetting barWidth;
     private final NumberSetting fieldOfView;
+    private final NumberSetting barHeight;
     private final NumberSetting radius;
     private final BooleanSetting showDegrees;
     private final BooleanSetting showWaypoints;
@@ -36,6 +37,8 @@ public final class CompassModule extends HudElement {
         barWidth.visibleWhen(() -> style.get() == Style.BAR);
         fieldOfView = add(new NumberSetting("fov", "Field of view", 180, 90, 360, 15, "°"));
         fieldOfView.visibleWhen(() -> style.get() == Style.BAR);
+        barHeight = add(new NumberSetting("barHeight", "Height", 15, 13, 30, 1, " px"));
+        barHeight.visibleWhen(() -> style.get() == Style.BAR);
         radius = add(new NumberSetting("radius", "Radius", 30, 18, 60, 1, " px"));
         radius.visibleWhen(() -> style.get() == Style.ROUND);
         showDegrees = add(new BooleanSetting("degrees", "Show degrees", true));
@@ -56,7 +59,7 @@ public final class CompassModule extends HudElement {
     }
 
     @Override public int height(Renderer r) {
-        return style.get() == Style.BAR ? 22 + (showDegrees.on() ? 10 : 0) : radius.intValue() * 2 + PADDING * 2 + (showDegrees.on() ? 10 : 0);
+        return style.get() == Style.BAR ? barHeight.intValue() + (showDegrees.on() ? 10 : 0) : radius.intValue() * 2 + PADDING * 2 + (showDegrees.on() ? 10 : 0);
     }
 
     @Override protected boolean drawsDefaultBackground() { return false; }
@@ -68,7 +71,10 @@ public final class CompassModule extends HudElement {
 
     private void renderBar(Renderer r) {
         int w = barWidth.intValue();
-        int barH = 22;
+        int barH = barHeight.intValue();
+        // Schrift bleibt immer gleich groß; nur der Platz für die Striche darunter wächst mit der Höhe
+        int textY = barH >= 20 ? 3 : 2;
+        int tickSpace = Math.max(2, barH - textY - 10);
         if (background.on()) r.fill(0, 0, w, barH, backgroundColor.argb());
         float h = heading();
         float fov = fieldOfView.floatValue();
@@ -87,25 +93,26 @@ public final class CompassModule extends HudElement {
                 boolean cardinal = label.length() == 1;
                 int color = cardinal ? (label.equals("N") ? 0xFFFF5555 : textColor()) : 0xFFBBBBBB;
                 if (colorMode() != ColorMode.STATIC) color = dynamicColor(x);
-                r.text(label, x - r.textWidth(label) / 2f, 3, color, shadow());
-                r.fill(x - 0.5f, barH - 7, x + 0.5f, barH - 1, 0xC0FFFFFF);
+                r.text(label, x - r.textWidth(label) / 2f, textY, color, shadow());
+                r.fill(x - 0.5f, barH - Math.min(6, tickSpace) - 1, x + 0.5f, barH - 1, 0xC0FFFFFF);
             } else {
-                float len = Math.floorMod(deg, 15) == 0 ? 5 : 3;
+                float len = Math.min(Math.floorMod(deg, 15) == 0 ? 5 : 3, tickSpace + 2);
                 r.fill(x - 0.5f, barH - len - 1, x + 0.5f, barH - 1, 0x80FFFFFF);
             }
         }
 
         if (showWaypoints.on()) {
             WaypointsModule wp = core.module(WaypointsModule.class);
-            if (wp != null && wp.isActive()) {
+            if (wp != null) {
                 Vec3 p = platform().playerPos();
-                for (Waypoint wpt : wp.visibleHere()) {
+                for (Waypoint wpt : wp.shownHere()) {
                     float b = Compass.bearing(wpt.x() + 0.5 - p.x(), wpt.z() + 0.5 - p.z());
                     float d = Compass.delta(h, b);
                     float x = Math.max(3, Math.min(w - 3, center + Math.max(-fov / 2, Math.min(fov / 2, d)) * pxPerDeg));
                     int c = wpt.color() | 0xFF000000;
-                    r.fill(x - 2, 13, x + 2, 17, c);
-                    r.fill(x - 1, 12, x + 1, 18, c);
+                    float my = barH - 4;
+                    r.fill(x - 2, my - 2, x + 2, my + 2, c);
+                    r.fill(x - 1, my - 3, x + 1, my + 3, c);
                 }
             }
         }
@@ -159,9 +166,9 @@ public final class CompassModule extends HudElement {
         // Wegpunkte als Punkte am Rand
         if (showWaypoints.on()) {
             WaypointsModule wp = core.module(WaypointsModule.class);
-            if (wp != null && wp.isActive()) {
+            if (wp != null) {
                 Vec3 p = platform().playerPos();
-                for (Waypoint wpt : wp.visibleHere()) {
+                for (Waypoint wpt : wp.shownHere()) {
                     double ang = Math.toRadians(Compass.bearing(wpt.x() + 0.5 - p.x(), wpt.z() + 0.5 - p.z()) - h);
                     float x = cx + (float) Math.sin(ang) * (rad - 2);
                     float y = cy - (float) Math.cos(ang) * (rad - 2);

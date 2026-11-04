@@ -46,6 +46,8 @@ public final class ClickGuiScreen implements UiScreen {
     private Category category = Category.HUD;
     private String search = "";
     private boolean searchFocused;
+    /** Strg+A im Suchfeld bzw. im gerade bearbeiteten Textfeld. */
+    private boolean searchAll, editAll;
     private Module selected;
     private float scroll;
     private float maxScroll;
@@ -268,7 +270,8 @@ public final class ClickGuiScreen implements UiScreen {
         if (searchFocused) r.fill(sx1, y + 13, sx2, y + 14, accent);
         String shown = search.isEmpty() && !searchFocused ? "Search…" : search;
         while (r.textWidth(shown) > sw - 10 && shown.length() > 1) shown = shown.substring(1);
-        boolean caret = searchFocused && (System.currentTimeMillis() / 500) % 2 == 0;
+        if (searchFocused && searchAll) TextEdit.drawSelection(r, sx1 + 4, y + 3, shown);
+        boolean caret = searchFocused && !searchAll && (System.currentTimeMillis() / 500) % 2 == 0;
         r.text(shown + (caret ? "_" : ""), sx1 + 4, y + 3, search.isEmpty() && !searchFocused ? Theme.TEXT_MUTED : Theme.TEXT, false);
         hit(sx1, y, sx2, y + 14, b -> {
             resetFocus();
@@ -440,13 +443,15 @@ public final class ClickGuiScreen implements UiScreen {
             String vis = shown;
             float maxW = right - fx - 12;
             while (r.textWidth(vis) > maxW && vis.length() > 1) vis = vis.substring(1);
-            boolean caret = focused && (System.currentTimeMillis() / 500) % 2 == 0;
+            if (focused && editAll) TextEdit.drawSelection(r, fx + 4, textY, vis);
+            boolean caret = focused && !editAll && (System.currentTimeMillis() / 500) % 2 == 0;
             r.text(vis + (caret ? "_" : ""), fx + 4, textY, focused ? Theme.TEXT : Theme.TEXT_DIM, false);
             hit(fx, y + 3, right - 4, y + ROW_H - 3, btn -> {
                 if (editing != str) {
                     resetFocus();
                     editing = str;
                     editBuffer = str.get();
+                    editAll = false;
                 }
             });
             return y + ROW_H + 2;
@@ -650,10 +655,14 @@ public final class ClickGuiScreen implements UiScreen {
 
     @Override public boolean keyPressed(String key) {
         if (searchFocused) {
-            boolean ctrl = core.platform().isKeyDown(Keys.LEFT_CONTROL) || core.platform().isKeyDown(Keys.RIGHT_CONTROL);
-            if (Keys.ESCAPE.equals(key) || Keys.ENTER.equals(key)) searchFocused = false;
-            else if (Keys.BACKSPACE.equals(key) && !search.isEmpty()) setSearch(search.substring(0, search.length() - 1));
-            else if (ctrl && Keys.V.equals(key)) setSearch(search + core.platform().clipboard().replaceAll("[\\r\\n]", ""));
+            if (Keys.ESCAPE.equals(key) || Keys.ENTER.equals(key)) {
+                searchFocused = false;
+                searchAll = false;
+            } else {
+                TextEdit.Result res = TextEdit.key(core.platform(), search, searchAll, key);
+                if (!res.text().equals(search)) setSearch(res.text());
+                searchAll = res.allSelected();
+            }
             return true;
         }
         if (selected == null && "key.keyboard.f".equals(key)
@@ -667,17 +676,16 @@ public final class ClickGuiScreen implements UiScreen {
             return true;
         }
         if (editing != null) {
-            boolean ctrl = core.platform().isKeyDown(Keys.LEFT_CONTROL) || core.platform().isKeyDown(Keys.RIGHT_CONTROL);
             if (Keys.ESCAPE.equals(key)) {
                 editing = null;
+                editAll = false;
             } else if (Keys.ENTER.equals(key)) {
+                editAll = false;
                 commitEdit();
-            } else if (Keys.BACKSPACE.equals(key)) {
-                if (!editBuffer.isEmpty()) editBuffer = editBuffer.substring(0, editBuffer.offsetByCodePoints(editBuffer.length(), -1));
-            } else if (ctrl && Keys.V.equals(key)) {
-                insert(core.platform().clipboard());
-            } else if (ctrl && Keys.C.equals(key)) {
-                core.platform().setClipboard(editBuffer);
+            } else {
+                TextEdit.Result res = TextEdit.key(core.platform(), editBuffer, editAll, key);
+                editBuffer = res.text().length() > editing.maxLength() ? res.text().substring(0, editing.maxLength()) : res.text();
+                editAll = res.allSelected();
             }
             return true;
         }
@@ -704,7 +712,8 @@ public final class ClickGuiScreen implements UiScreen {
             searchFocused = true;
         }
         if (searchFocused && text != null && !text.isEmpty() && text.codePointAt(0) >= 32) {
-            setSearch(search + text);
+            setSearch(TextEdit.type(search, searchAll, text));
+            searchAll = false;
             return true;
         }
         if (editing == null || text == null || text.isEmpty() || text.codePointAt(0) < 32 || text.codePointAt(0) == 127) return false;
@@ -715,7 +724,8 @@ public final class ClickGuiScreen implements UiScreen {
     private void insert(String text) {
         if (text == null || editing == null) return;
         String clean = text.replaceAll("[\\r\\n\\t]", "");
-        editBuffer = (editBuffer + clean);
+        editBuffer = TextEdit.type(editBuffer, editAll, clean);
+        editAll = false;
         if (editBuffer.length() > editing.maxLength()) editBuffer = editBuffer.substring(0, editing.maxLength());
     }
 

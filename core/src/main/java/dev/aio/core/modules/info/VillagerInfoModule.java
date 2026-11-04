@@ -53,8 +53,7 @@ public final class VillagerInfoModule extends HudElement {
         for (WorldLabel label : labels) {
             List<WorldLabel.Line> lines = filter(label.lines());
             if (lines.isEmpty()) continue;
-            Projection.Point pt = Projection.project(label.x(), label.y(), label.z(), cam.x(), cam.y(), cam.z(),
-                    cam.yaw(), cam.pitch(), cam.fov(), w, h);
+            Projection.Point pt = Projection.project(label.x(), label.y(), label.z(), cam, w, h);
             if (!pt.onScreen()) continue;
             // Weiter weg etwas kleiner, wie Namensschilder
             float scale = (float) Math.max(0.6, Math.min(1.0, 8.0 / Math.max(1, label.distance())));

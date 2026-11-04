@@ -14,10 +14,15 @@ public final class DeathPointModule extends Module {
     private boolean wasDead;
 
     public DeathPointModule() {
-        super("deathpoint", "Death Waypoint", "Waypoint where you died, removed when you get there", Category.QOL, false);
+        super("deathpoint", "Death Waypoint", "Marks where you died (works without Waypoints), removed when you get there", Category.QOL, false);
         arriveDistance = add(new NumberSetting("arrive", "Remove within", 4, 1, 20, 1, " blocks"));
         chatMessage = add(new BooleanSetting("message", "Announce coordinates", true));
         on(Events.Tick.class, e -> tick());
+        // Funktioniert auch ohne das Waypoints-Modul: dann zeichnet dieses Modul den Todespunkt selbst
+        on(Events.RenderHud.class, e -> {
+            WaypointsModule wp = waypoints();
+            if (wp != null && !wp.isActive()) wp.drawMarkers(e.renderer, e.tickDelta);
+        });
     }
 
 

@@ -318,6 +318,12 @@ public final class FabricPlatform implements Platform {
     @Override public CameraView camera(float partial) {
         LocalPlayer p = player();
         if (p == null) return new CameraView(0, 0, 0, 0, 0, 70);
+        double fov0 = FabricHooks.lastFov > 1 ? FabricHooks.lastFov : (client.options == null ? 70 : client.options.fov().get());
+        if (System.nanoTime() - FabricHooks.camNanos < 250_000_000L) {
+            // Genau die Kamera, mit der die Welt in diesem Frame gezeichnet wurde (inkl. Wackeln, Freecam, 3rd Person an Wänden)
+            return new CameraView(FabricHooks.camX, FabricHooks.camY, FabricHooks.camZ, FabricHooks.camYaw, FabricHooks.camPitch,
+                    fov0, FabricHooks.camBobWalk, FabricHooks.camBob);
+        }
         var fl = AioCore.get() == null ? null : AioCore.get().module(FreelookModule.class);
         boolean free = fl != null && fl.isEngaged() && freelookSupported();
         float yaw = free ? fl.cameraYaw() : p.getViewYRot(partial);
@@ -577,6 +583,8 @@ public final class FabricPlatform implements Platform {
     }
 
     @Override public boolean isKeyDown(String key) { return InputState.isDown(key); }
+
+    @Override public boolean windowFocused() { return client.isWindowActive(); }
 
     @Override public boolean matchesGameKey(GameKey gameKey, String key) {
         return client.options != null && !Keys.isNone(key) && key.equals(mapping(gameKey).saveString());
