@@ -27,7 +27,7 @@ import java.util.function.IntConsumer;
  * Klicks werden gegen die Flächen des letzten Frames geprüft.
  */
 public final class ClickGuiScreen implements UiScreen {
-    private static final int SIDEBAR_W = 104;
+    private static final int SIDEBAR_W = 118;
     private static final int CARD_H = 44;
     private static final int CARD_MIN_W = 132;
     private static final int GAP = 6;
@@ -140,7 +140,7 @@ public final class ClickGuiScreen implements UiScreen {
         int used = 1; // "All"
         for (Category c : Category.values()) if (!core.modules().byCategory(c).isEmpty()) used++;
         // Zeilenhöhe an den Platz bis zum Profilbereich anpassen (kleine Bildschirme)
-        float rowH = Math.max(11, Math.min(17, (ph - 62 - 28 - 26) / (float) Math.max(1, used)));
+        float rowH = Math.max(12, Math.min(19, (ph - 62 - 28 - 26) / (float) Math.max(1, used)));
         y = sidebarRow(r, mx, my, px, y, rowH, null, "All", 0xFFFFFFFF);
         for (Category c : Category.values()) {
             if (core.modules().byCategory(c).isEmpty()) continue;
@@ -190,18 +190,55 @@ public final class ClickGuiScreen implements UiScreen {
         });
     }
 
+    private final java.util.Map<String, dev.aio.core.platform.ItemRef> icons = new java.util.HashMap<>();
+
+    private dev.aio.core.platform.ItemRef icon(String id) {
+        return icons.computeIfAbsent(id, k -> core.platform().item(k, 1));
+    }
+
+    /**
+     * Eine Kategorie in der Seitenleiste: Item-Symbol, Name und rechts "aktiv/gesamt". Die gewählte
+     * Kategorie bekommt einen Farbverlauf in ihrer Farbe und eine Leiste am Rand.
+     */
     private float sidebarRow(Renderer r, int mx, int my, int px, float y, float rowH, Category c, String label, int cc) {
         boolean sel = c == category && search.isEmpty();
         boolean hover = inside(mx, my, px, y, px + SIDEBAR_W, y + rowH - 1);
         float rh = rowH - 1, ty = y + (rh - 8) / 2f;
-        if (sel) {
-            r.fill(px, y, px + SIDEBAR_W, y + rh, dev.aio.core.util.Colors.withAlpha(cc, 0x38));
-            r.fill(px, y, px + 2, y + rh, cc);
-        } else if (hover) {
-            r.fill(px, y, px + SIDEBAR_W, y + rh, dev.aio.core.util.Colors.withAlpha(cc, 0x18));
+        float x1 = px + 4, x2 = px + SIDEBAR_W - 4;
+        if (sel || hover) {
+            // Verlauf von der Kategoriefarbe nach rechts auslaufend
+            int steps = 12;
+            float w = (x2 - x1) / steps;
+            int base = sel ? 0x50 : 0x22;
+            for (int i = 0; i < steps; i++) {
+                int a = base * (steps - i) / steps;
+                float sx = Math.round(x1 + i * w), ex = Math.round(x1 + (i + 1) * w); // ganze Pixel: keine Streifen
+                r.fill(sx, y, ex, y + rh, dev.aio.core.util.Colors.withAlpha(cc, Math.max(a, sel ? 0x10 : 0x06)));
+            }
+            if (sel) r.fill(x1, y, x1 + 2, y + rh, cc);
         }
-        r.fill(px + 10, ty + 2, px + 14, ty + 6, cc);
-        r.text(r.trim(label, SIDEBAR_W - 24), px + 19, ty, sel ? Theme.TEXT : Theme.TEXT_DIM, false);
+        // Symbol (Item, etwas kleiner)
+        dev.aio.core.platform.ItemRef ic = icon(c == null ? "minecraft:nether_star" : c.icon());
+        float iconSize = Math.min(12, rh - 2);
+        if (ic != null && !ic.isEmpty()) {
+            r.push();
+            r.translate(x1 + 5, y + (rh - iconSize) / 2f);
+            r.scale(iconSize / 16f);
+            r.item(ic, 0, 0, false);
+            r.pop();
+        }
+        // Zähler aktiv/gesamt
+        List<Module> mods = c == null ? core.modules().all() : core.modules().byCategory(c);
+        int on = 0;
+        for (Module m : mods) if (m.isEnabled()) on++;
+        String count = on + "/" + mods.size();
+        float cw = r.textWidth(count) * 0.75f;
+        r.push();
+        r.translate(x2 - 4 - cw, ty + 1);
+        r.scale(0.75f);
+        r.text(count, 0, 0, sel ? dev.aio.core.util.Colors.withAlpha(cc, 0xFF) : Theme.TEXT_MUTED, false);
+        r.pop();
+        r.text(r.trim(label, x2 - x1 - 26 - cw), x1 + 9 + iconSize, ty, sel ? Theme.TEXT : hover ? 0xFFDDDDE6 : Theme.TEXT_DIM, sel);
         hit(px, y, px + SIDEBAR_W, y + rh, b -> {
             category = c;
             selected = null;

@@ -33,7 +33,7 @@ public final class ChatModule extends Module {
     private boolean synced;
 
     public ChatModule() {
-        super("chat", "Chat", "Timestamps, longer history, size and copying", Category.CHAT, false);
+        super("chat", "Chat", "Timestamps, longer history, size and copying", Category.QOL, false);
         timestamps = add(new BooleanSetting("timestamps", "Timestamps", true));
         seconds = add(new BooleanSetting("seconds", "With seconds", false));
         seconds.visibleWhen(timestamps::on);

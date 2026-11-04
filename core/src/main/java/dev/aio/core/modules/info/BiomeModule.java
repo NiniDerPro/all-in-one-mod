@@ -9,7 +9,7 @@ public final class BiomeModule extends TextHudElement {
     private final BooleanSetting label;
 
     public BiomeModule() {
-        super("biome", "Biome", "Shows the current biome", Category.INFO, false, 0.0, 0.24);
+        super("biome", "Biome", "Shows the current biome", Category.QOL, false, 0.0, 0.24);
         label = add(new BooleanSetting("label", "Show label", true));
     }
 

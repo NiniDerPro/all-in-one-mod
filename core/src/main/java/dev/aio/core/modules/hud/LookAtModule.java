@@ -74,7 +74,7 @@ public final class LookAtModule extends HudElement {
     private int heartsW;
 
     public LookAtModule() {
-        super("lookat", "Block Info", "Shows the block or mob under your crosshair", dev.aio.core.module.Category.INFO, false, 0.5, 0.0);
+        super("lookat", "Block Info", "Shows the block or mob under your crosshair", dev.aio.core.module.Category.QOL, false, 0.5, 0.0);
         style = add(new EnumSetting<>("style", "Style", Style.CLASSIC));
         showIcon = add(new BooleanSetting("showIcon", "Icon", true));
         showModName = add(new BooleanSetting("showModName", "Mod name", true));

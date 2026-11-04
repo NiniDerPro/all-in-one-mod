@@ -21,7 +21,7 @@ public final class FreelookModule extends KeyActivatedModule {
     private boolean changedPerspective;
 
     public FreelookModule() {
-        super("freelook", "Freelook", "Look around freely without turning your player", Category.RENDER, Keys.LEFT_ALT);
+        super("freelook", "Freelook", "Look around freely without turning your player", Category.VISUALS, Keys.LEFT_ALT);
         thirdPerson = add(new BooleanSetting("thirdPerson", "Switch to third person", true));
         invertPitch = add(new BooleanSetting("invertPitch", "Invert vertical", false));
     }

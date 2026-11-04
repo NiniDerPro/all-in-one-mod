@@ -9,7 +9,7 @@ public final class FullbrightModule extends Module {
     private final NumberSetting gamma;
 
     public FullbrightModule() {
-        super("fullbright", "Fullbright", "Maximum brightness, even in caves", Category.RENDER, true);
+        super("fullbright", "Fullbright", "Maximum brightness, even in caves", Category.VISUALS, true);
         gamma = add(new NumberSetting("gamma", "Brightness", 15, 1, 15, 0.5, "x"));
     }
 

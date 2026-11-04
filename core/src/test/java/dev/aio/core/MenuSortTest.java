@@ -43,7 +43,7 @@ class MenuSortTest {
         List<Module> all = core.modules().all();
         assertTrue(SortMode.search(all, "fps").contains(core.module(FpsModule.class)));
         assertTrue(SortMode.search(all, "compass").stream().anyMatch(m -> m.id().equals("compass")));
-        assertTrue(SortMode.search(all, "inventory").size() >= 3, "nach Kategorie");
+        assertTrue(SortMode.search(all, "qol").size() >= 3, "nach Kategorie");
         assertTrue(SortMode.search(all, "gibtsnicht").isEmpty());
         assertEquals(all, SortMode.search(all, " "));
     }

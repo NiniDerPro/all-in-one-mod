@@ -24,7 +24,7 @@ public final class VillagerInfoModule extends HudElement {
     private final NumberSetting distance;
 
     public VillagerInfoModule() {
-        super("villagerinfo", "Villager Info", "Enchanted books and prices above villagers", Category.INFO, false, 0, 0);
+        super("villagerinfo", "Villager Info", "Enchanted books and prices above villagers", Category.QOL, false, 0, 0);
         booksOnly = add(new BooleanSetting("booksOnly", "Only enchanted books", true));
         firstOnly = add(new BooleanSetting("firstOnly", "Only the first book", false));
         hideSoldOut = add(new BooleanSetting("hideSoldOut", "Hide sold out", false));

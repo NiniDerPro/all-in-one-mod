@@ -38,7 +38,7 @@ public final class WaypointsModule extends HudElement {
     private boolean loaded;
 
     public WaypointsModule() {
-        super("waypoints", "Waypoints", "Waypoints with distance on screen and on the compass", Category.NAVIGATION, false, 0, 0);
+        super("waypoints", "Waypoints", "Waypoints with distance on screen and on the compass", Category.QOL, false, 0, 0);
         // nur noch zum Übernehmen alter Daten (früher im Profil gespeichert)
         data = add(new StringSetting("data", "Data (old)", "[]", 1_000_000));
         data.hidden();
