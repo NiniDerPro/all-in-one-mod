@@ -15,7 +15,6 @@ public final class FoodInfoModule extends Module {
     private static final String FOOD_HALF = "minecraft:hud/food_half";
     private static final String HEART_FULL = "minecraft:hud/heart/full";
     private static final String HEART_HALF = "minecraft:hud/heart/half";
-    private static final int SATURATION_COLOR = 0xFFFFC21F;
 
     private final BooleanSetting tooltip;
     private final BooleanSetting saturation;
@@ -54,7 +53,11 @@ public final class FoodInfoModule extends Module {
         if (!isActive() || !s.visible() || !exhaustion.on() || !Float.isFinite(s.exhaustion())) return;
         float ratio = Math.max(0, Math.min(1, s.exhaustion() / FoodMath.MAX_EXHAUSTION));
         float w = ratio * 81;
-        if (w >= 1) r.fill(right - w, top, right, top + 9, 0x60FFFFFF);
+        // Erschöpfung als heller Balken hinter den Symbolen, von rechts wachsend
+        if (w >= 1) {
+            r.fill(right - w, top + 1, right, top + 8, 0x70FFFFFF);
+            r.fill(right - w, top + 8, right, top + 9, 0x40FFFFFF);
+        }
     }
 
     /** Über der Hungerleiste: Sättigung als goldene Rahmen und die Vorschau des gehaltenen Essens. */
@@ -82,21 +85,45 @@ public final class FoodInfoModule extends Module {
         }
     }
 
-    /** Sättigung von {@code from} bis {@code to} als Rahmen um die Hunger-Symbole. */
+    /**
+     * Goldene Keule (9×9, eigene Pixelgrafik) für Sättigung: '#' Rand, 'o' Gold, 'h' Glanz, 'w' Knochen.
+     * Halbe Sättigung zeigt nur die rechte Hälfte, wie halbe Hunger-Symbole.
+     */
+    private static final String[] SHANK = {
+            ".....###.",
+            "....#hoo#",
+            "...#hooo#",
+            "..#ooooo#",
+            "..#oooo#.",
+            ".##ooo#..",
+            "#w#ooo#..",
+            "#ww###...",
+            ".##......"};
+
+    private static void drawShank(Renderer r, float x, float y, boolean half, float alpha) {
+        int a = Math.round(Math.max(0, Math.min(1, alpha)) * 255) << 24;
+        for (int row = 0; row < 9; row++) {
+            String line = SHANK[row];
+            for (int col = half ? 4 : 0; col < 9; col++) {
+                int rgb = switch (line.charAt(col)) {
+                    case '#' -> 0x6B4A00;
+                    case 'o' -> 0xF2B807;
+                    case 'h' -> 0xFFE57A;
+                    case 'w' -> 0xFFF6D8;
+                    default -> -1;
+                };
+                if (rgb >= 0) r.fill(x + col, y + row, x + col + 1, y + row + 1, a | rgb);
+            }
+        }
+    }
+
+    /** Sättigung von {@code from} bis {@code to} als goldene Keulen über den Hunger-Symbolen. */
     private static void drawSaturation(Renderer r, float right, float top, float from, float to, float alpha) {
-        int color = (Math.round(alpha * 255) << 24) | (SATURATION_COLOR & 0xFFFFFF);
         for (int i = 0; i < 10; i++) {
             float lo = i * 2f, hi = lo + 2f;
-            float amount = Math.min(hi, to) - Math.max(lo, from);
-            if (amount <= 0) continue;
-            float x = right - i * 8 - 9;
-            boolean full = Math.min(hi, to) >= hi && Math.max(lo, from) <= lo;
-            // voller Rahmen für 2 Punkte, sonst nur die rechte Hälfte (wie halbe Symbole)
-            float x1 = full ? x : x + 4;
-            r.fill(x1, top, x + 9, top + 1, color);
-            r.fill(x1, top + 8, x + 9, top + 9, color);
-            r.fill(x + 8, top, x + 9, top + 9, color);
-            if (full) r.fill(x, top, x + 1, top + 9, color);
+            float end = Math.min(hi, to), start = Math.max(lo, from);
+            if (end - start <= 0) continue;
+            drawShank(r, right - i * 8 - 9, top, end - start <= 1, alpha); // 1 Punkt = halbe Keule
         }
     }
 
