@@ -52,8 +52,8 @@ public final class WaypointsModule extends HudElement {
         maxDistance = add(new NumberSetting("maxDistance", "Max distance", 0, 0, 10000, 100, " m (0 = ∞)"));
         on(Events.Key.class, e -> {
             if (!e.isPress() || e.screenOpen()) return;
-            if (addKey.matches(e.key())) addHere("Waypoint " + (waypoints.size() + 1));
-            else if (manageKey.matches(e.key())) platform().openScreen(new WaypointScreen(core, this));
+            if (addKey.triggeredBy(platform(), e.key())) addHere("Waypoint " + (waypoints.size() + 1));
+            else if (manageKey.triggeredBy(platform(), e.key())) platform().openScreen(new WaypointScreen(core, this));
         });
         data.onChange(v -> { if (!saving && core != null && loaded) load(); });
     }
@@ -194,40 +194,91 @@ public final class WaypointsModule extends HudElement {
     /** Vom HUD-Manager jeden Frame aufgerufen. */
     @Override public void renderOverlay(Renderer r, float partialTick) {
         if (!isActive() || !hasContent()) return;
-        // echte Kamera: interpoliert, 3. Person, Freelook und tatsächliches FOV (Sprinten, Zoom)
+        drawMarkers(r, partialTick);
+    }
+
+    /**
+     * Wegpunkte, die gerade angezeigt werden: alle sichtbaren, wenn das Modul an ist; sonst nur der
+     * Todespunkt, falls "Death Waypoint" an ist (der funktioniert auch ohne dieses Modul).
+     */
+    public List<Waypoint> shownHere() {
+        if (core == null) return List.of();
+        if (isActive()) return visibleHere();
+        DeathPointModule death = core.module(DeathPointModule.class);
+        if (death == null || !death.isActive()) return List.of();
+        List<Waypoint> out = new ArrayList<>();
+        for (Waypoint w : visibleHere()) if (w.death()) out.add(w);
+        return out;
+    }
+
+    /** Radius (px) um das Fadenkreuz, in dem ein Punkt als "angezielt" gilt. */
+    static final float HOVER_RADIUS = 9;
+
+    /**
+     * Marker wie bei Xaero: im Bild nur ein kleiner Punkt; zielt man mit dem Fadenkreuz darauf,
+     * erscheinen Name und Entfernung (nur beim nächstgelegenen angezielten Punkt).
+     */
+    public void drawMarkers(Renderer r, float partialTick) {
+        if (!platform().inWorld() || platform().isScreenOpen()) return;
+        List<Waypoint> list = shownHere();
+        if (list.isEmpty()) return;
+        // exakt die Kamera, mit der die Welt gezeichnet wurde (inkl. Laufwackeln) → kein Zittern
         CameraView cam = platform().camera(partialTick);
         Vec3 pos = platform().playerPos();
-        float w = r.screenWidth(), h = r.screenHeight();
+        float w = r.screenWidth(), h = r.screenHeight(), cx = w / 2f, cy = h / 2f;
         double max = maxDistance.get();
 
-        for (Waypoint wp : visibleHere()) {
+        Waypoint hovered = null;
+        float hx = 0, hy = 0, best = Float.MAX_VALUE;
+        double hoveredDist = 0;
+        for (Waypoint wp : list) {
             double dist = wp.distanceTo(pos.x(), pos.y(), pos.z());
-            if (max > 0 && dist > max) continue;
-            Projection.Point pt = Projection.project(wp.x() + 0.5, wp.y() + 1.0, wp.z() + 0.5, cam.x(), cam.y(), cam.z(),
-                    cam.yaw(), cam.pitch(), cam.fov(), w, h);
+            if (max > 0 && dist > max && !wp.death()) continue;
+            Projection.Point pt = Projection.project(wp.x() + 0.5, wp.y() + 1.0, wp.z() + 0.5, cam, w, h);
             float x = pt.x(), y = pt.y();
             boolean edge = !pt.onScreen();
             if (edge) {
                 if (!edgeMarkers.on()) continue;
-                x = Math.max(8, Math.min(w - 8, x));
-                y = Math.max(8, Math.min(h - 20, y));
+                x = Math.max(6, Math.min(w - 6, x));
+                y = Math.max(6, Math.min(h - 6, y));
             }
-            drawMarker(r, wp, dist, x, y, edge);
+            drawDot(r, wp.color() | 0xFF000000, x, y, edge);
+            if (!edge) {
+                float d = (x - cx) * (x - cx) + (y - cy) * (y - cy);
+                if (d <= HOVER_RADIUS * HOVER_RADIUS && d < best) {
+                    best = d;
+                    hovered = wp;
+                    hx = x;
+                    hy = y;
+                    hoveredDist = dist;
+                }
+            }
+        }
+        if (hovered != null) drawLabel(r, hovered, hoveredDist, hx, hy);
+    }
+
+    private static void drawDot(Renderer r, int color, float x, float y, boolean edge) {
+        int s = edge ? 2 : 3;
+        diamond(r, x, y, s + 1, 0xB0000000); // dunkler Rand, gut sichtbar auf hellem und dunklem Grund
+        diamond(r, x, y, s, color);
+    }
+
+    /** Raute aus Pixelzeilen, Mittelpunkt (x, y), Radius s. */
+    private static void diamond(Renderer r, float x, float y, int s, int color) {
+        x = Math.round(x);
+        y = Math.round(y);
+        for (int dy = -s; dy < s; dy++) {
+            int half = s - (dy < 0 ? -dy - 1 : dy);
+            r.fill(x - half, y + dy, x + half, y + dy + 1, color);
         }
     }
 
-    private void drawMarker(Renderer r, Waypoint wp, double dist, float x, float y, boolean edge) {
-        int color = wp.color() | 0xFF000000;
-        // Raute
-        r.fill(x - 1, y - 4, x + 1, y + 4, color);
-        r.fill(x - 2, y - 3, x + 2, y + 3, color);
-        r.fill(x - 3, y - 2, x + 3, y + 2, color);
-        r.fill(x - 4, y - 1, x + 4, y + 1, color);
-        if (edge) return;
-        String label = wp.name() + (showDistance.on() ? " (" + formatDistance(dist) + ")" : "");
+    private void drawLabel(Renderer r, Waypoint wp, double dist, float x, float y) {
+        String label = wp.name() + (showDistance.on() ? "  " + formatDistance(dist) : "");
         float tw = r.textWidth(label);
-        r.fill(x - tw / 2 - 2, y - 15, x + tw / 2 + 2, y - 5, 0x90000000);
-        r.text(label, x - tw / 2, y - 14, color, shadow());
+        float top = y - 7 - r.fontHeight() - 3;
+        r.fill(x - tw / 2 - 3, top, x + tw / 2 + 3, top + r.fontHeight() + 3, 0xA0000000);
+        r.text(label, x - tw / 2, top + 2, wp.color() | 0xFF000000, shadow());
     }
 
     public static String formatDistance(double d) {

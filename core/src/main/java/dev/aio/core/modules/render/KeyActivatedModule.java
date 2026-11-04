@@ -3,6 +3,7 @@ package dev.aio.core.modules.render;
 import dev.aio.core.event.Events;
 import dev.aio.core.module.Category;
 import dev.aio.core.module.Module;
+import dev.aio.core.platform.Hotkeys;
 import dev.aio.core.platform.Keys;
 import dev.aio.core.setting.EnumSetting;
 import dev.aio.core.setting.KeybindSetting;
@@ -31,13 +32,30 @@ public abstract class KeyActivatedModule extends Module {
     }
 
 
+    private final Hotkeys.Tap tap = new Hotkeys.Tap();
+
     private void onInput(String key, boolean press, boolean release, boolean screenOpen) {
-        if (!activationKey.matches(key)) return;
+        if (press) tap.pressed(key);
+        if (!activationKey.matches(key)) {
+            // Kombi dazugedrückt (z. B. Alt halten, dann Tab): gehaltene Aktivierung sofort beenden
+            if (press && engaged && mode.get() == ActivationMode.HOLD && Hotkeys.isCombo(key)
+                    && platform().isKeyDown(activationKey.key())) {
+                setEngaged(false);
+            }
+            return;
+        }
         if (press && !screenOpen) {
-            if (mode.get() == ActivationMode.TOGGLE) setEngaged(!engaged);
-            else setEngaged(true);
-        } else if (release && mode.get() == ActivationMode.HOLD) {
-            setEngaged(false);
+            if (Hotkeys.otherComboHeld(platform(), key)) return; // F3+F4 ist nicht F4
+            if (mode.get() == ActivationMode.TOGGLE) {
+                // Strg/Alt/Windows erst beim Loslassen, damit Alt+Tab nichts umschaltet
+                if (Hotkeys.isModifier(key)) tap.arm(key);
+                else setEngaged(!engaged);
+            } else {
+                setEngaged(true);
+            }
+        } else if (release) {
+            if (mode.get() == ActivationMode.HOLD) setEngaged(false);
+            else if (tap.released(key, platform().windowFocused()) && !screenOpen) setEngaged(!engaged);
         }
     }
 

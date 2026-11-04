@@ -21,6 +21,7 @@ public final class KeyBindsScreen implements UiScreen {
     private final AioCore core;
     private final KeyBindIndex index;
     private String query = "";
+    private boolean queryAll;
     private KeyBindIndex.Filter filter = KeyBindIndex.Filter.ALL;
     private KeyBindIndex.Sort sort = KeyBindIndex.Sort.DEFAULT;
     private KeyBinding listening;
@@ -64,7 +65,8 @@ public final class KeyBindsScreen implements UiScreen {
         float sx = px + 8, sy = py + 22, sw = pw - 16;
         r.fill(sx, sy, sx + sw, sy + 14, 0xF0202028);
         r.outline(sx, sy, sx + sw, sy + 14, 1, Theme.accent(core));
-        boolean caret = (System.currentTimeMillis() / 500) % 2 == 0;
+        boolean caret = !queryAll && (System.currentTimeMillis() / 500) % 2 == 0;
+        if (queryAll) dev.aio.core.ui.TextEdit.drawSelection(r, sx + 4, sy + 3, r.trim(query, sw - 8));
         String shown = query.isEmpty() ? "Search: name, category or key…" : query + (caret ? "_" : "");
         r.text(r.trim(shown, sw - 8), sx + 4, sy + 3, query.isEmpty() ? Theme.TEXT_MUTED : Theme.TEXT, false);
 
@@ -209,17 +211,18 @@ public final class KeyBindsScreen implements UiScreen {
             assign(Keys.ESCAPE.equals(key) ? Keys.NONE : key);
             return true;
         }
-        if (Keys.BACKSPACE.equals(key)) {
-            if (!query.isEmpty()) query = query.substring(0, query.length() - 1);
-            scroll = 0;
-            return true;
-        }
-        return false;
+        var res = dev.aio.core.ui.TextEdit.key(core.platform(), query, queryAll, key);
+        if (!res.text().equals(query)) scroll = 0;
+        query = res.text().length() > 40 ? res.text().substring(0, 40) : res.text();
+        queryAll = res.allSelected();
+        return res.handled();
     }
 
     @Override public boolean charTyped(String text) {
         if (listening != null || text.isEmpty() || text.codePointAt(0) < 32) return false;
-        if (query.length() < 40) query += text;
+        query = dev.aio.core.ui.TextEdit.type(query, queryAll, text);
+        if (query.length() > 40) query = query.substring(0, 40);
+        queryAll = false;
         scroll = 0;
         return true;
     }

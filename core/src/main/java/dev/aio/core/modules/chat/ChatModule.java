@@ -52,7 +52,7 @@ public final class ChatModule extends Module {
         on(Events.ChatReceived.class, e -> chatHistory.add(e.text()));
         on(Events.Tick.class, e -> { if (!synced) readFromVanilla(); });
         on(Events.Key.class, e -> {
-            if (e.isPress() && !e.screenOpen() && copyKey.matches(e.key())) openCopy();
+            if (e.isPress() && !e.screenOpen() && copyKey.triggeredBy(platform(), e.key())) openCopy();
         });
     }
 

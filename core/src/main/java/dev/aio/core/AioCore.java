@@ -135,6 +135,7 @@ public final class AioCore {
         bus.subscribe(Events.Tick.class, e -> config.tick());
         bus.subscribe(Events.Key.class, this::onKey, EventBus.PRIORITY_HIGH);
         bus.subscribe(Events.MouseButton.class, e -> {
+            if (e.isPress()) tap.pressed(Keys.mouse(e.button()));
             if (e.isPress() && !e.screenOpen()) handleKeybind(Keys.mouse(e.button()));
         });
         bus.subscribe(Events.ServerJoin.class, e -> {
@@ -157,13 +158,38 @@ public final class AioCore {
 
     // ---- Eingaben ----
 
+    /** Strg/Alt/Windows als Hotkey: erst beim Loslassen auslösen, wenn nichts dazwischen kam. */
+    private final dev.aio.core.platform.Hotkeys.Tap tap = new dev.aio.core.platform.Hotkeys.Tap();
+
     private void onKey(Events.Key e) {
-        if (!e.isPress() || e.screenOpen()) return;
+        if (e.isRelease()) {
+            if (tap.released(e.key(), platform.windowFocused()) && !e.screenOpen()) fireKeybind(e.key());
+            return;
+        }
+        if (!e.isPress()) return;
+        tap.pressed(e.key());
+        if (e.screenOpen()) return;
         handleKeybind(e.key());
     }
 
     private void handleKeybind(String key) {
         if (Keys.isNone(key)) return;
+        // Nur allein gedrückte Hotkeys zählen (F3+F4 löst F4 nicht aus)
+        if (dev.aio.core.platform.Hotkeys.otherComboHeld(platform, key)) return;
+        if (dev.aio.core.platform.Hotkeys.isModifier(key) && isBoundAnywhere(key)) {
+            tap.arm(key);
+            return;
+        }
+        fireKeybind(key);
+    }
+
+    private boolean isBoundAnywhere(String key) {
+        if (clientSettings.guiKey.matches(key) || clientSettings.hudEditorKey.matches(key)) return true;
+        for (Module m : modules.all()) if (m.canToggle() && m.toggleKey().matches(key)) return true;
+        return false;
+    }
+
+    private void fireKeybind(String key) {
         if (clientSettings.guiKey.matches(key)) {
             openClickGui(null);
             return;
