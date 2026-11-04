@@ -34,9 +34,8 @@ public final class AioFabricClient implements ClientModInitializer {
         AioCore core = AioCore.init(platform, FabricLoader.getInstance().getConfigDir().resolve("aio"));
         FabricRenderer hudRenderer = new FabricRenderer(client);
 
-        // Ganz oben über allen Vanilla-HUD-Elementen zeichnen.
+        // Ganz oben über allen Vanilla-HUD-Elementen zeichnen (F1 blendet das HUD samt diesem Element aus).
         HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("aio", "hud"), (graphics, deltaTracker) -> {
-            if (client.options.hideGui) return;
             hudRenderer.begin(graphics);
             core.bus().post(new Events.RenderHud(hudRenderer, deltaTracker.getGameTimeDeltaPartialTick(false)));
         });
@@ -48,7 +47,7 @@ public final class AioFabricClient implements ClientModInitializer {
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, c) -> {
             ServerData info = c.getCurrentServer();
-            String address = c.isSingleplayer() || info == null ? null : info.ip;
+            String address = c.hasSingleplayerServer() || info == null ? null : info.ip;
             core.bus().post(new Events.ServerJoin(address));
         });
         ClientPlayConnectionEvents.DISCONNECT.register((handler, c) -> c.execute(() -> core.bus().post(Events.ServerLeave.INSTANCE)));

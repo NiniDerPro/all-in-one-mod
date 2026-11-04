@@ -51,7 +51,7 @@ public final class FabricPlatform implements Platform {
 
     @Override public boolean inWorld() { return client.player != null && client.level != null; }
 
-    @Override public boolean isSingleplayer() { return client.isSingleplayer(); }
+    @Override public boolean isSingleplayer() { return client.hasSingleplayerServer(); }
 
     @Override public String serverAddress() {
         ServerData info = client.getCurrentServer();
@@ -196,16 +196,16 @@ public final class FabricPlatform implements Platform {
         if (pendingScreen != null) {
             UiScreen s = pendingScreen;
             pendingScreen = null;
-            client.setScreen(new AioScreen(s));
+            client.gui.setScreen(new AioScreen(s));
         } else if (pendingClose) {
             pendingClose = false;
-            if (client.screen instanceof AioScreen) client.setScreen(null);
+            if (client.gui.screen() instanceof AioScreen) client.gui.setScreen(null);
         }
     }
 
-    @Override public boolean isScreenOpen() { return client.screen != null; }
+    @Override public boolean isScreenOpen() { return client.gui.screen() != null; }
 
-    @Override public boolean isOwnScreenOpen() { return client.screen instanceof AioScreen; }
+    @Override public boolean isOwnScreenOpen() { return client.gui.screen() instanceof AioScreen; }
 
     @Override public String clipboard() { return client.keyboardHandler.getClipboard(); }
 
