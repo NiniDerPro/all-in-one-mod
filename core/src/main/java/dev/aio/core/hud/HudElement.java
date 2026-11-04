@@ -17,10 +17,13 @@ import dev.aio.core.setting.NumberSetting;
  */
 public abstract class HudElement extends Module {
     public static final int PADDING = 4;
+    public static final double MIN_SCALE = 0.25;
+    public static final double MAX_SCALE = 5.0;
 
     protected final NumberSetting posX;
     protected final NumberSetting posY;
     protected final NumberSetting scale;
+    protected final NumberSetting scaleY;
     protected final EnumSetting<ColorMode> colorMode;
     protected final ColorSetting textColor;
     protected final ColorSetting secondColor;
@@ -40,7 +43,10 @@ public abstract class HudElement extends Module {
         posX.hidden();
         posY = add(new NumberSetting("y", "Y", defaultY, 0, 1, 0));
         posY.hidden();
-        scale = add(new NumberSetting("scale", "Größe", 1.0, 0.5, 3.0, 0.05, "x"));
+        // Breite und Höhe getrennt, damit man im HUD-Editor an jeder Kante/Ecke frei ziehen kann.
+        // Die ID "scale" bleibt für alte Configs (dort war es die gemeinsame Größe).
+        scale = add(new NumberSetting("scale", "Breite", 1.0, MIN_SCALE, MAX_SCALE, 0.01, "x"));
+        scaleY = add(new NumberSetting("scaleY", "Höhe", 1.0, MIN_SCALE, MAX_SCALE, 0.01, "x"));
         colorMode = add(new EnumSetting<>("colorMode", "Farbmodus", defaultColorMode()));
         textColor = add(new ColorSetting("textColor", "Textfarbe", 0xFFFFFFFF));
         textColor.visibleWhen(() -> colorMode.get() != ColorMode.CHROMA);
@@ -94,12 +100,11 @@ public abstract class HudElement extends Module {
 
     public final void render(Renderer r, boolean preview) {
         if (!preview && !hasContent()) return;
-        float s = scale.floatValue();
         float x = screenX(r);
         float y = screenY(r);
         r.push();
         r.translate(x, y);
-        r.scale(s);
+        r.scale(scaleX(), scaleY());
         if (background.on() && drawsDefaultBackground()) r.fill(0, 0, width(r), height(r), backgroundColor.argb());
         renderContent(r, preview);
         r.pop();
@@ -107,9 +112,34 @@ public abstract class HudElement extends Module {
 
     // ---- Position (Bildschirmpixel, skaliert) ----
 
-    public float scaledWidth(Renderer r) { return width(r) * scale.floatValue(); }
+    public float scaleX() { return scale.floatValue(); }
 
-    public float scaledHeight(Renderer r) { return height(r) * scale.floatValue(); }
+    public float scaleY() { return scaleY.floatValue(); }
+
+    public float scaledWidth(Renderer r) { return width(r) * scaleX(); }
+
+    public float scaledHeight(Renderer r) { return height(r) * scaleY(); }
+
+    /**
+     * Setzt das Element auf ein Rechteck in Bildschirmpixeln (HUD-Editor). Breite und Höhe werden
+     * auf den erlaubten Bereich begrenzt.
+     */
+    public void setScreenBounds(Renderer r, float x, float y, float w, float h) {
+        int bw = Math.max(1, width(r)), bh = Math.max(1, height(r));
+        scale.set(clampScale(w / bw));
+        scaleY.set(clampScale(h / bh));
+        setScreenPos(r, x, y);
+    }
+
+    /** Position und Größe auf die Standardwerte zurücksetzen. */
+    public void resetLayout() {
+        scale.reset();
+        scaleY.reset();
+        posX.reset();
+        posY.reset();
+    }
+
+    private static double clampScale(double v) { return Math.max(MIN_SCALE, Math.min(MAX_SCALE, v)); }
 
     public float screenX(Renderer r) {
         return (float) Math.max(0, posX.get() * Math.max(0, r.screenWidth() - scaledWidth(r)));

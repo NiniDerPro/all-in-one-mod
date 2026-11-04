@@ -119,6 +119,14 @@ public final class ChatModule extends Module {
 
     public NumberSetting scaleSetting() { return scale; }
 
+    /** Chatgröße auf die Vanilla-Standardwerte zurücksetzen (HUD-Editor). */
+    public void resetBox() {
+        width.reset();
+        heightFocused.reset();
+        heightUnfocused.reset();
+        scale.reset();
+    }
+
     /** Präfix wie {@code [12:34] } oder null, wenn deaktiviert. */
     public String timestampPrefix() {
         if (!isActive() || !timestamps.on()) return null;
