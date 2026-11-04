@@ -19,8 +19,19 @@ public final class AioScreen extends Screen {
     public AioScreen(UiScreen ui, Screen parent) {
         super(Component.literal(ui.title()));
         this.ui = ui;
-        this.parent = parent instanceof AioScreen a && a.ui.getClass() == ui.getClass() ? a.parent : parent;
+        this.parent = collapse(parent, ui);
         this.renderer = new FabricRenderer(Minecraft.getInstance());
+    }
+
+    /** Direkt derselbe Screen-Typ (z. B. Rezept → Rezept) ersetzt sich, statt die Kette zu verlängern. */
+    private static Screen collapse(Screen parent, UiScreen ui) {
+        return parent instanceof AioScreen a && a.ui.getClass() == ui.getClass() ? a.parent : parent;
+    }
+
+    /** Wird bei jedem Anzeigen aufgerufen, auch bei der Rückkehr zu diesem Screen. */
+    @Override protected void init() {
+        super.init();
+        ui.onOpen();
     }
 
     @Override public void onClose() {

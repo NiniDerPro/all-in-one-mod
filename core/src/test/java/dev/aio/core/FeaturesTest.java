@@ -169,7 +169,7 @@ class FeaturesTest {
         assertEquals(0.3, p.options.get(VanillaOption.CHAT_WIDTH));
         chat.resizeTo(40 + 280 * 0.8f, 20 + 160 * 0.5f);
         assertEquals(0.8, p.options.get(VanillaOption.CHAT_WIDTH), 0.01);
-        assertEquals(0.5, p.options.get(VanillaOption.CHAT_HEIGHT_FOCUSED), 0.01);
+        assertEquals(0.5, p.options.get(VanillaOption.CHAT_HEIGHT_FOCUSED), 0.05, "auf ganze Zeilen gerundet");
     }
 
     @Test void chatHistoryCollectsMessages() {
@@ -192,6 +192,15 @@ class FeaturesTest {
         assertEquals(5, p.selected);
         core.bus().post(Events.Tick.INSTANCE);
         assertEquals(5, p.selected, "bleibt, solange abgebaut wird");
+        p.heldGameKeys.remove(GameKey.ATTACK);
+        core.bus().post(Events.Tick.INSTANCE);
+        assertEquals(5, p.selected, "Standard: bleibt beim Werkzeug");
+
+        // Mit "Danach zurückwechseln" geht es zum alten Slot
+        ((dev.aio.core.setting.BooleanSetting) m.setting("restore")).set(true);
+        p.selected = 2;
+        p.heldGameKeys.add(GameKey.ATTACK);
+        core.bus().post(new Events.StartBreak(0, 0, 0));
         p.heldGameKeys.remove(GameKey.ATTACK);
         core.bus().post(Events.Tick.INSTANCE);
         assertEquals(2, p.selected, "zurück zum alten Slot");

@@ -16,7 +16,7 @@ public final class AutoToolModule extends Module {
 
     public AutoToolModule() {
         super("autotool", "Auto Tool", "Wechselt beim Abbauen zum passenden Werkzeug", Category.COMBAT, true);
-        restore = add(new BooleanSetting("restore", "Danach zurückwechseln", true));
+        restore = add(new BooleanSetting("restore", "Danach zurückwechseln", false));
         on(Events.StartBreak.class, e -> onBreak());
         on(Events.Tick.class, e -> tick());
     }

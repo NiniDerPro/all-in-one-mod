@@ -15,6 +15,21 @@ public interface Renderer {
 
     void text(String text, float x, float y, int argb, boolean shadow);
 
+    /**
+     * Text mit eigener Farbe je Zeichen (Regenbogen, Verlauf). Der Adapter zeichnet das in einem
+     * Aufruf; die Standardumsetzung zeichnet Zeichen für Zeichen.
+     *
+     * @param colors  ARGB je Codepoint, Alpha vom ersten Eintrag gilt für alle
+     * @param offsets x-Versatz je Codepoint (für die Umsetzung Zeichen für Zeichen)
+     */
+    default void coloredText(String text, int[] colors, float[] offsets, float x, float y, boolean shadow) {
+        for (int i = 0, idx = 0; i < text.length() && idx < colors.length; idx++) {
+            int cp = text.codePointAt(i);
+            text(new String(Character.toChars(cp)), x + offsets[idx], y, colors[idx], shadow);
+            i += Character.charCount(cp);
+        }
+    }
+
     void fill(float x1, float y1, float x2, float y2, int argb);
 
     /** Zeichnet ein Item-Icon (16x16). {@code overlay} zeigt Anzahl und Haltbarkeitsbalken. */

@@ -7,57 +7,36 @@ import dev.aio.core.util.Colors;
 public final class ColoredText {
     private ColoredText() {}
 
-    /** Zerlegter Text: einzelne Zeichen und ihre x-Versätze. Wird pro Text gecacht, nicht pro Frame gemessen. */
-    private record Glyphs(String[] chars, float[] offsets) {}
-
-    private static final int CACHE_LIMIT = 256;
-    /** LRU: wenig benutzte Texte fliegen einzeln raus, statt den ganzen Cache zu leeren. */
-    private static final java.util.Map<String, Glyphs> CACHE = new java.util.LinkedHashMap<>(64, 0.75f, true) {
-        @Override protected boolean removeEldestEntry(java.util.Map.Entry<String, Glyphs> eldest) { return size() > CACHE_LIMIT; }
-    };
-
     /** Breite je Zeichen: MC-Schrift hat kein Kerning, also Text = Summe der Zeichen. */
     private static final java.util.Map<Integer, Integer> CHAR_WIDTH = new java.util.HashMap<>();
     private static int probeWidth = -1;
 
-    private static int charWidth(Renderer r, int cp, String ch) {
+    private static int charWidth(Renderer r, int cp) {
         Integer w = CHAR_WIDTH.get(cp);
         if (w == null) {
-            w = r.textWidth(ch);
+            w = r.textWidth(new String(Character.toChars(cp)));
             CHAR_WIDTH.put(cp, w);
         }
         return w;
     }
 
-    private static Glyphs glyphs(Renderer r, String text) {
-        Glyphs g = CACHE.get(text);
-        if (g != null) return g;
-        // Schriftwechsel (z. B. Unicode-Schrift) erkennen: dann alle Breiten neu messen
-        int probe = CHAR_WIDTH.isEmpty() ? -1 : r.textWidth("W");
+    /** Schriftwechsel (z. B. Unicode-Schrift) erkennen: dann alle Breiten neu messen. */
+    private static int drawsSinceProbe = Integer.MAX_VALUE;
+
+    private static void checkFont(Renderer r) {
+        if (++drawsSinceProbe < 512 && probeWidth != -1) return; // selten prüfen reicht
+        drawsSinceProbe = 0;
+        int probe = r.textWidth("W");
         if (probe != probeWidth) {
-            if (probeWidth != -1) clearCache();
-            probeWidth = r.textWidth("W");
+            CHAR_WIDTH.clear();
+            probeWidth = probe;
         }
-        int n = text.codePointCount(0, text.length());
-        String[] chars = new String[n];
-        float[] offsets = new float[n];
-        float x = 0;
-        for (int i = 0, idx = 0; i < text.length(); idx++) {
-            int cp = text.codePointAt(i);
-            chars[idx] = new String(Character.toChars(cp));
-            offsets[idx] = x;
-            x += charWidth(r, cp, chars[idx]);
-            i += Character.charCount(cp);
-        }
-        g = new Glyphs(chars, offsets);
-        CACHE.put(text, g);
-        return g;
     }
 
-    /** Leert den Glyphen-Cache, z. B. nach einem Wechsel der Schriftart. */
+    /** Leert den Breiten-Cache, z. B. nach einem Wechsel der Schriftart. */
     public static void clearCache() {
-        CACHE.clear();
         CHAR_WIDTH.clear();
+        probeWidth = -1;
     }
 
     /**
@@ -72,18 +51,27 @@ public final class ColoredText {
         }
         int alpha = Colors.alpha(primary);
         double t = System.nanoTime() / 1e9 * speed;
-        Glyphs g = glyphs(r, text);
-        for (int i = 0; i < g.chars.length; i++) {
-            float cx = x + g.offsets[i];
-            int color;
+        checkFont(r);
+        // Ohne Cache pro Text: Koordinaten & Co. ändern sich ständig und würden ihn nur füllen
+        int n = text.codePointCount(0, text.length());
+        // Eigenes Array je Aufruf: Minecraft wertet den Text erst später beim Zeichnen aus
+        int[] colors = new int[n];
+        float[] offsets = new float[n];
+        float cx = x;
+        for (int i = 0, idx = 0; i < text.length(); idx++) {
+            int cp = text.codePointAt(i);
+            offsets[idx] = cx - x;
             if (mode == ColorMode.CHROMA) {
-                color = Colors.chroma(screenOffset + cx, speed, alpha);
+                colors[idx] = Colors.chroma(screenOffset + cx, speed, alpha);
             } else {
                 float phase = (float) (0.5 + 0.5 * Math.sin((t * Math.PI * 2) - (screenOffset + cx) / 40.0));
-                color = Colors.lerp(primary, secondary, phase);
+                colors[idx] = Colors.lerp(primary, secondary, phase);
             }
-            r.text(g.chars[i], cx, y, color, shadow);
+            cx += charWidth(r, cp);
+            i += Character.charCount(cp);
         }
+        // Ein Aufruf für die ganze Zeile statt einem pro Zeichen (spart viel Arbeit pro Frame)
+        r.coloredText(text, colors, offsets, x, y, shadow);
     }
 
     /** Einzelne dynamische Farbe (z. B. für Flächen) passend zum Modus. */

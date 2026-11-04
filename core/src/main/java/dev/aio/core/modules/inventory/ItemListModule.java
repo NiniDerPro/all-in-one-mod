@@ -11,7 +11,7 @@ public final class ItemListModule extends Module {
     private ItemPanel panel;
 
     public ItemListModule() {
-        super("itemlist", "Item-Liste", "Alle Items rechts im Inventar, Suche mit @mod, Rezepte (R/U)", Category.INVENTORY, false);
+        super("itemlist", "Item-Browser", "Alle Items rechts im Inventar (auch Kreativ), Suche mit @mod, Rezepte (R/U)", Category.INVENTORY, false);
         maxColumns = add(new NumberSetting("columns", "Max. Spalten", 9, 3, 16, 1));
     }
 

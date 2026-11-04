@@ -2,6 +2,7 @@ package dev.aio.fabric;
 
 import dev.aio.core.AioCore;
 import dev.aio.core.modules.chat.ChatModule;
+import dev.aio.core.modules.chat.ChatResizer;
 import dev.aio.core.modules.inventory.InventoryTweaksModule;
 import dev.aio.core.modules.inventory.ItemListModule;
 import dev.aio.core.modules.inventory.ItemPanel;
@@ -12,7 +13,9 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.network.chat.Component;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -29,22 +32,32 @@ final class ScreenHooks {
     static void register(AioCore core, Minecraft client) {
         FabricRenderer renderer = new FabricRenderer(client);
         ScreenEvents.AFTER_INIT.register((mc, screen, w, h) -> {
-            if (screen instanceof ChatScreen) hookChat(core, screen);
-            if (screen instanceof AbstractContainerScreen<?> acs && !(screen instanceof CreativeModeInventoryScreen)) {
-                hookContainer(core, client, renderer, acs);
+            if (screen instanceof ChatScreen) hookChat(core, renderer, screen);
+            // Auch im Kreativ-Inventar (dort nur die Item-Liste, die Maus-Tweaks bleiben Vanilla)
+            if (screen instanceof AbstractContainerScreen<?> acs) {
+                hookContainer(core, client, renderer, acs, screen instanceof CreativeModeInventoryScreen);
             }
         });
     }
 
-    private static void hookChat(AioCore core, Screen screen) {
+    private static void hookChat(AioCore core, FabricRenderer renderer, Screen screen) {
+        ChatResizer resizer = new ChatResizer(core);
+        ScreenEvents.afterExtract(screen).register((s, graphics, mx, my, delta) -> {
+            renderer.begin(graphics);
+            resizer.render(renderer, mx, my);
+        });
         ScreenMouseEvents.allowMouseClick(screen).register((s, event) -> {
+            int button = FabricPlatform.button(event.button());
+            if (resizer.mouseClicked(renderer, event.x(), event.y(), button)) return false;
             ChatModule chat = core.module(ChatModule.class);
-            if (FabricPlatform.button(event.button()) == 1 && chat != null && chat.isActive()) {
+            if (button == 1 && chat != null && chat.isActive()) {
                 chat.openCopy();
                 return false;
             }
             return true;
         });
+        ScreenMouseEvents.allowMouseDrag(screen).register((s, event, dx, dy) -> !resizer.mouseDragged(event.x(), event.y()));
+        ScreenMouseEvents.allowMouseRelease(screen).register((s, event) -> !resizer.mouseReleased());
     }
 
     private static boolean shift() {
@@ -61,16 +74,38 @@ final class ScreenHooks {
         return null;
     }
 
-    private static void hookContainer(AioCore core, Minecraft client, FabricRenderer renderer, AbstractContainerScreen<?> screen) {
+    /**
+     * Unser Suchfeld ist kein Vanilla-Widget. Seit 26.3 (SDL) kommen getippte Zeichen aber nur an,
+     * solange Minecraft die Texteingabe eingeschaltet hat, und das tut es für ein fokussiertes
+     * Textfeld. Darum hält ein unsichtbares Vanilla-Textfeld den Fokus, solange unser Feld aktiv ist.
+     */
+    private static void syncTextInput(Screen screen, ItemPanel panel, EditBox[] proxy) {
+        boolean want = panel != null && panel.isFocused();
+        if (want && proxy[0] == null) {
+            EditBox box = new EditBox(Minecraft.getInstance().font, -1000, -1000, 1, 1, Component.empty());
+            box.setFocused(true);
+            screen.setFocused(box);
+            proxy[0] = box;
+        } else if (!want && proxy[0] != null) {
+            proxy[0].setFocused(false);
+            if (screen.getFocused() == proxy[0]) screen.setFocused(null);
+            proxy[0] = null;
+        }
+    }
+
+    private static void hookContainer(AioCore core, Minecraft client, FabricRenderer renderer, AbstractContainerScreen<?> screen,
+                                      boolean creative) {
         AbstractContainerScreenAccessor acc = (AbstractContainerScreenAccessor) screen;
         ItemListModule list = core.module(ItemListModule.class);
         InventoryTweaksModule tweaks = core.module(InventoryTweaksModule.class);
         double[] mouse = new double[2];
+        EditBox[] textProxy = new EditBox[1];
 
         ScreenEvents.afterExtract(screen).register((s, graphics, mx, my, delta) -> {
             mouse[0] = mx;
             mouse[1] = my;
             ItemPanel panel = list.panel();
+            syncTextInput(s, panel, textProxy);
             if (panel == null) return;
             renderer.begin(graphics);
             panel.render(renderer, mx, my, acc.aio$leftPos() + acc.aio$imageWidth());
@@ -78,19 +113,22 @@ final class ScreenHooks {
 
         ScreenMouseEvents.allowMouseClick(screen).register((s, event) -> {
             ItemPanel panel = list.panel();
-            if (panel != null && panel.mouseClicked(renderer, event.x(), event.y(), FabricPlatform.button(event.button()))) return false;
+            boolean used = panel != null && panel.mouseClicked(renderer, event.x(), event.y(), FabricPlatform.button(event.button()));
+            syncTextInput(s, panel, textProxy);
+            if (used) return false;
+            if (creative) return true;
             Slot slot = slotAt(screen, event.x(), event.y());
             int index = slot == null ? -1 : slot.index;
             if (FabricPlatform.button(event.button()) == 2) {
-                boolean creative = client.player != null && client.player.isCreative();
-                if (tweaks.onMiddleClick(core.platform().container(), index, creative)) return false;
+                boolean creativeMode = client.player != null && client.player.isCreative();
+                if (tweaks.onMiddleClick(core.platform().container(), index, creativeMode)) return false;
             }
             if (FabricPlatform.button(event.button()) == 0 && shift()) tweaks.onDragStart(index);
             return true;
         });
 
         ScreenMouseEvents.allowMouseDrag(screen).register((s, event, dx, dy) -> {
-            if (FabricPlatform.button(event.button()) == 0 && shift()) {
+            if (!creative && FabricPlatform.button(event.button()) == 0 && shift()) {
                 Slot slot = slotAt(screen, event.x(), event.y());
                 if (slot != null) tweaks.onDrag(core.platform().container(), slot.index, true);
             }
@@ -105,6 +143,7 @@ final class ScreenHooks {
         ScreenMouseEvents.allowMouseScroll(screen).register((s, mx, my, h, v) -> {
             ItemPanel panel = list.panel();
             if (panel != null && panel.mouseScrolled(mx, my, v)) return false;
+            if (creative) return true;
             Slot slot = slotAt(screen, mx, my);
             // Über Bündeln wählt das Mausrad in Vanilla das Item aus: nicht dazwischenfunken
             if (slot == null || slot.getItem().has(DataComponents.BUNDLE_CONTENTS)) return true;
@@ -116,7 +155,9 @@ final class ScreenHooks {
             if (panel == null) return true;
             Slot slot = slotAt(screen, mouse[0], mouse[1]);
             ItemRef hovered = slot == null ? ItemRef.EMPTY : FabricItemRef.of(slot.getItem());
-            return !panel.keyPressed(FabricPlatform.keyName(event), hovered);
+            boolean used = panel.keyPressed(FabricPlatform.keyName(event), hovered);
+            syncTextInput(s, panel, textProxy);
+            return !used;
         });
 
         ScreenKeyboardEvents.allowCharType(screen).register((s, event) -> {
@@ -127,6 +168,7 @@ final class ScreenHooks {
         ScreenEvents.remove(screen).register(s -> {
             ItemPanel panel = list.panel();
             if (panel != null) panel.onClose();
+            syncTextInput(s, null, textProxy);
             tweaks.onRelease();
         });
     }
