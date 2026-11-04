@@ -663,6 +663,9 @@ public final class ClickGuiScreen implements UiScreen {
         if (editBuffer.length() > editing.maxLength()) editBuffer = editBuffer.substring(0, editing.maxLength());
     }
 
+    /** Aus dem HUD-Editor (Rechtsklick) geöffnet: ESC führt zurück in den Editor. */
+    @Override public boolean returnsToPrevious() { return true; }
+
     @Override public void onClose() {
         commitEdit();
         core.config().save();

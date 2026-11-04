@@ -24,6 +24,9 @@ public interface UiScreen {
 
     default void onClose() {}
 
+    /** Wird bei jedem Anzeigen aufgerufen, auch wenn man zu diesem Screen zurückkehrt. */
+    default void onOpen() {}
+
     /** Ob der Screen beim Schließen zum vorherigen Screen zurückkehrt (z. B. Rezepte → Inventar). */
     default boolean returnsToPrevious() { return false; }
 

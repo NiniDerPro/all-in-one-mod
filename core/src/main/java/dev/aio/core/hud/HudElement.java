@@ -31,6 +31,8 @@ public abstract class HudElement extends Module {
     protected final BooleanSetting background;
     protected final ColorSetting backgroundColor;
     protected final BooleanSetting shadow;
+    /** Ob das Element schon einen Platz bekommen hat (beim ersten Einschalten automatisch). */
+    protected final BooleanSetting placed;
 
     protected HudElement(String id, String name, String description, double defaultX, double defaultY) {
         this(id, name, description, Category.HUD, false, defaultX, defaultY);
@@ -54,14 +56,19 @@ public abstract class HudElement extends Module {
         secondColor.visibleWhen(() -> colorMode.get() == ColorMode.GRADIENT);
         colorSpeed = add(new NumberSetting("colorSpeed", "Farbtempo", 0.4, 0.05, 2, 0.05, "x"));
         colorSpeed.visibleWhen(() -> colorMode.get() != ColorMode.STATIC);
-        background = add(new BooleanSetting("background", "Hintergrund", true));
+        background = add(new BooleanSetting("background", "Hintergrund", defaultBackground()));
         backgroundColor = add(new ColorSetting("backgroundColor", "Hintergrundfarbe", defaultBackgroundColor()));
         backgroundColor.visibleWhen(background::on);
         shadow = add(new BooleanSetting("shadow", "Textschatten", true));
+        placed = add(new BooleanSetting("placed", "Platziert", false));
+        placed.hidden();
     }
 
     /** Standard-Farbmodus. Wird im Konstruktor abgefragt, darf also nur eine Konstante liefern. */
     protected ColorMode defaultColorMode() { return ColorMode.CHROMA; }
+
+    /** Ob der Hintergrund standardmäßig an ist. Wie oben: nur eine Konstante liefern. */
+    protected boolean defaultBackground() { return true; }
 
     /** Standard-Hintergrundfarbe (ARGB). Wie oben: nur eine Konstante liefern. */
     protected int defaultBackgroundColor() { return 0x6F000000; }
@@ -157,6 +164,10 @@ public abstract class HudElement extends Module {
     }
 
     public NumberSetting scaleSetting() { return scale; }
+
+    public boolean isPlaced() { return placed.on(); }
+
+    public void markPlaced() { placed.set(true); }
 
     protected int textColor() { return textColor.argb(); }
 

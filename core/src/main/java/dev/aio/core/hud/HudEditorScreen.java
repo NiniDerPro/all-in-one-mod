@@ -132,6 +132,7 @@ public final class HudEditorScreen implements UiScreen {
         if (selected == CHAT && chat() == null) selected = null;
         if (selected instanceof HudElement el && !(el.isActive() && el.editable())) selected = null;
 
+        core.hud().placeNew(r);
         int w = r.screenWidth(), h = r.screenHeight();
         r.fill(0, 0, w, h, 0x30000000);
         r.fill(w / 2f - 0.5f, 0, w / 2f + 0.5f, h, 0x18FFFFFF);
@@ -143,8 +144,7 @@ public final class HudEditorScreen implements UiScreen {
         // Chat-Fläche
         float[] cb = bounds(r, CHAT);
         if (cb != null) {
-            r.fill(cb[0], cb[1], cb[0] + cb[2], cb[1] + cb[3], 0x40000000);
-            r.text("Chat", cb[0] + 4, cb[1] + 4, 0xC0FFFFFF, true);
+            chat().renderPreview(r, cb[0], cb[1] + cb[3]);
             if (selected != CHAT) frame(r, cb, hovered == CHAT ? accent : 0x60FFFFFF);
         }
 
@@ -374,6 +374,11 @@ public final class HudEditorScreen implements UiScreen {
         }
         return false;
     }
+
+    @Override public void onOpen() { core.hud().setEditorOpen(true); }
+
+    /** ESC führt dorthin zurück, woher man kam (z. B. ins Menü). */
+    @Override public boolean returnsToPrevious() { return true; }
 
     @Override public void onClose() {
         core.hud().setEditorOpen(false);
