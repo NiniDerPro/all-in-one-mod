@@ -81,7 +81,7 @@ Server-Sperre = vom Server-Schutz sperrbar (Standard: Schutz aus).
 | Grafik | Block-Outline | – | Farbe (auch Regenbogen), Dicke, Füllung |
 | Inventar | Shulker-Vorschau | – | Inhalt als Raster im Tooltip (Shift), in Kistenfarbe |
 | Inventar | Maus-Tweaks & Sortieren | – | Mausrad = einzelne Items verschieben (Shift = Stack), Shift + Ziehen, Mittelklick sortiert |
-| Inventar | Item-Liste | – | Alle Items rechts im Inventar, Suche (`@mod`, `$id`, `-ausschließen`), Rezepte (Klick/R) und Verwendungen (Rechtsklick/U) |
+| Inventar | Item-Liste | – | Alle Items rechts im Inventar, Suche (`@mod`, `$id`, `-ausschließen`), Rezepte (Klick/R) und Verwendungen (Rechtsklick/U). **+** legt das Rezept ins 2×2, die Werkbank, den Ofen/Schmelz-/Räucherofen oder die Steinsäge (Shift = so viele wie möglich), fehlende Zutaten werden rot markiert |
 | Spieler & Kampf | Toggle Sprint | ja | Dauersprinten per Sprint-Taste |
 | Spieler & Kampf | Auto Tool | ja | Bestes Werkzeug beim Abbauen, danach zurück |
 | Spieler & Kampf | Auto Sword | ja | Beste Waffe vor dem Schlag (Krit zählt mit der Waffe) |
@@ -135,7 +135,7 @@ Minecraft 26.3, Fabric Loader 0.20.1, Fabric API 0.165.0+26.3, Loom 1.19, Gradle
 
 ## Stand der Verifikation
 
-- **Kern:** kompiliert, 65 Tests grün, u. a. Sortieren und Item-Verschieben gegen ein simuliertes
+- **Kern:** kompiliert, 71 Tests grün, u. a. Sortieren und Item-Verschieben gegen ein simuliertes
   MC-Inventar, Projektion der Wegpunkt-Marker, Kompass-Mathe, Todespunkt, Namens-Alarm,
   Chat-Optionen, Item-Suche, Auto Tool/Sword.
 - **Adapter 26.3:** kompiliert gegen Minecraft 26.3 (CI). Die Namen stammen aus den 26.3-Quellen
@@ -143,4 +143,7 @@ Minecraft 26.3, Fabric Loader 0.20.1, Fabric API 0.165.0+26.3, Loom 1.19, Gradle
   ShulkerBoxTooltip, JEI, Jade); übernommen wurden nur API-Namen, kein Code.
   Hooks mit `require = 0` (kosten bei falschem Namen nur die Funktion, nie den Start):
   - Freelook-Kamerarotation, Chat-Zeitstempel/Verlaufslänge, No Hurtcam (`bobHurt`)
-- **Grenzen:** Bienen-Anzahl und Rezepte nur im Singleplayer bzw. auf Servern, die sie senden.
+- **Rezeptquellen:** Singleplayer → Rezepte des integrierten Servers (inkl. Datenpakete);
+  Server mit Fabric-Rezept-Sync → die Rezepte des Servers (auch geänderte);
+  sonst → die Standard-Rezepte aus dem Minecraft-Jar (`data/minecraft/recipe`).
+- **Grenzen:** Die Bienenanzahl kennt nur der Server (steht auch nicht in F3), auf Servern fehlt sie daher.

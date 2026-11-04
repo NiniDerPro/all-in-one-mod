@@ -5,7 +5,13 @@ import dev.aio.core.platform.ItemRef;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import dev.aio.core.platform.RecipeKind;
+import net.minecraft.world.inventory.BlastFurnaceMenu;
 import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.CraftingMenu;
+import net.minecraft.world.inventory.FurnaceMenu;
+import net.minecraft.world.inventory.SmokerMenu;
+import net.minecraft.world.inventory.StonecutterMenu;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.DispenserMenu;
 import net.minecraft.world.inventory.HopperMenu;
@@ -14,6 +20,7 @@ import net.minecraft.world.inventory.ShulkerBoxMenu;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Offenes Inventar für Maus-Tweaks und Sortieren. Bei Menüs mit Sonderslots (Werkbank, Ofen, ...)
@@ -23,19 +30,41 @@ final class FabricContainerView implements ContainerView {
     private final Minecraft client;
     private final AbstractContainerMenu menu;
     private final boolean storage;
+    private final Grid grid;
 
     FabricContainerView(Minecraft client, AbstractContainerMenu menu) {
         this.client = client;
         this.menu = menu;
         this.storage = menu instanceof ChestMenu || menu instanceof ShulkerBoxMenu || menu instanceof HopperMenu
                 || menu instanceof DispenserMenu;
+        this.grid = gridOf(menu);
     }
+
+    /** Eingabeslots nach den festen Slot-Reihenfolgen der Vanilla-Menüs. */
+    private static Grid gridOf(AbstractContainerMenu menu) {
+        if (menu instanceof InventoryMenu) return new Grid(Set.of(RecipeKind.CRAFTING), 2, 2, new int[]{1, 2, 3, 4});
+        if (menu instanceof CraftingMenu) return new Grid(Set.of(RecipeKind.CRAFTING), 3, 3, new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9});
+        if (menu instanceof BlastFurnaceMenu) return new Grid(Set.of(RecipeKind.BLAST_FURNACE), 1, 1, new int[]{0});
+        if (menu instanceof SmokerMenu) return new Grid(Set.of(RecipeKind.SMOKER), 1, 1, new int[]{0});
+        if (menu instanceof FurnaceMenu) return new Grid(Set.of(RecipeKind.FURNACE), 1, 1, new int[]{0});
+        if (menu instanceof StonecutterMenu) return new Grid(Set.of(RecipeKind.STONECUTTER), 1, 1, new int[]{0});
+        return null;
+    }
+
+    private boolean isGridSlot(int index) {
+        if (grid == null) return false;
+        for (int i : grid.slots()) if (i == index) return true;
+        return false;
+    }
+
+    @Override public Grid grid() { return grid; }
 
     @Override public List<ContainerView.Slot> slots() {
         List<ContainerView.Slot> out = new ArrayList<>(menu.slots.size());
         for (net.minecraft.world.inventory.Slot s : menu.slots) {
             boolean player = s.container instanceof Inventory;
-            if (!player && !storage) continue;
+            // Ergebnisslots nie, Rasterslots immer (für Rezept-Übertragung), sonst nur echte Truhen
+            if (!player && !storage && !isGridSlot(s.index)) continue;
             out.add(new ContainerView.Slot(s.index, FabricItemRef.of(s.getItem()), player, s.getContainerSlot()));
         }
         return out;
