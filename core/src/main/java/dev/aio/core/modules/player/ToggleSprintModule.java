@@ -1,0 +1,53 @@
+package dev.aio.core.modules.player;
+
+import dev.aio.core.event.Events;
+import dev.aio.core.hud.TextHudElement;
+import dev.aio.core.module.Category;
+import dev.aio.core.platform.GameKey;
+import dev.aio.core.setting.BooleanSetting;
+
+/**
+ * Toggle Sprint: Ein Druck auf die Sprint-Taste schaltet Dauersprinten ein oder aus.
+ * Entspricht der Vanilla-Option "Sprinten: Umschalten", nur mit Statusanzeige.
+ */
+public final class ToggleSprintModule extends TextHudElement {
+    private final BooleanSetting showStatus;
+    private boolean toggled;
+    private boolean holding;
+
+    public ToggleSprintModule() {
+        super("togglesprint", "Toggle Sprint", "Sprint-Taste schaltet Dauersprinten um", Category.PLAYER, true, 0.0, 1.0);
+        showStatus = add(new BooleanSetting("showStatus", "Status anzeigen", true));
+        on(Events.Key.class, e -> {
+            if (e.isPress() && !e.screenOpen() && platform().matchesGameKey(GameKey.SPRINT, e.key())) toggled = !toggled;
+        });
+        on(Events.Tick.class, e -> tick());
+        on(Events.ServerLeave.class, e -> toggled = false);
+    }
+
+    private void tick() {
+        if (toggled) {
+            platform().setGameKeyPressed(GameKey.SPRINT, true);
+            holding = true;
+        } else if (holding) {
+            platform().setGameKeyPressed(GameKey.SPRINT, false);
+            holding = false;
+        }
+    }
+
+    @Override protected void onDeactivate() {
+        toggled = false;
+        if (holding) {
+            platform().setGameKeyPressed(GameKey.SPRINT, false);
+            holding = false;
+        }
+    }
+
+    public boolean isToggled() { return toggled && isActive(); }
+
+    @Override protected String getText() {
+        return showStatus.on() && toggled ? "[Sprinten (umgeschaltet)]" : "";
+    }
+
+    @Override protected String previewText() { return "[Sprinten (umgeschaltet)]"; }
+}

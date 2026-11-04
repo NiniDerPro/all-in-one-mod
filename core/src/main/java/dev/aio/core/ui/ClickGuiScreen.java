@@ -1,0 +1,583 @@
+package dev.aio.core.ui;
+
+import dev.aio.core.AioCore;
+import dev.aio.core.config.ConfigManager;
+import dev.aio.core.module.Category;
+import dev.aio.core.module.Module;
+import dev.aio.core.platform.Keys;
+import dev.aio.core.platform.Renderer;
+import dev.aio.core.setting.BooleanSetting;
+import dev.aio.core.setting.ColorSetting;
+import dev.aio.core.setting.EnumSetting;
+import dev.aio.core.setting.KeybindSetting;
+import dev.aio.core.setting.NumberSetting;
+import dev.aio.core.setting.Setting;
+import dev.aio.core.setting.StringSetting;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.DoubleConsumer;
+import java.util.function.IntConsumer;
+
+/**
+ * Einstellungsmenü: Kategorien links, Module als Karten, pro Modul Ein/Aus, Einstellungen und
+ * Tastenbelegung an einem Ort; unten links Profile (wechseln, neu, exportieren, importieren, löschen).
+ *
+ * <p>Immediate-Mode: Jeder Frame zeichnet alles neu und merkt sich die klickbaren Flächen.
+ * Klicks werden gegen die Flächen des letzten Frames geprüft.
+ */
+public final class ClickGuiScreen implements UiScreen {
+    private static final int SIDEBAR_W = 104;
+    private static final int CARD_H = 44;
+    private static final int CARD_MIN_W = 132;
+    private static final int GAP = 6;
+    private static final int ROW_H = 20;
+
+    private record Hit(float x1, float y1, float x2, float y2, boolean clipped, IntConsumer action) {
+        boolean contains(double x, double y) { return x >= x1 && x <= x2 && y >= y1 && y <= y2; }
+    }
+
+    private record SliderDrag(float x1, float x2, DoubleConsumer setter) {
+        void apply(double mx) { setter.accept((mx - x1) / Math.max(1, x2 - x1)); }
+    }
+
+    private final AioCore core;
+    private Category category = Category.HUD;
+    private Module selected;
+    private float scroll;
+    private float maxScroll;
+
+    private final List<Hit> hits = new ArrayList<>();
+    private SliderDrag slider;
+    private KeybindSetting listening;
+    private StringSetting editing;
+    private String editBuffer = "";
+    private ColorSetting expandedColor;
+    private boolean confirmDelete;
+    private boolean deleteTouched;
+    private String status;
+    private int statusColor;
+    private long statusUntil;
+
+    // Inhaltsbereich des letzten Frames, für das Clipping der Hits
+    private float viewY1, viewY2;
+    private boolean clipHits;
+
+    public ClickGuiScreen(AioCore core, Module focus) {
+        this.core = core;
+        if (focus != null) {
+            category = focus.category();
+            selected = focus;
+        }
+    }
+
+    @Override public String title() { return AioCore.NAME; }
+
+    // =====================================================================
+    // Zeichnen
+    // =====================================================================
+
+    @Override public void render(Renderer r, int mx, int my, float delta) {
+        hits.clear();
+        int w = r.screenWidth(), h = r.screenHeight();
+        int accent = Theme.accent(core);
+        r.fill(0, 0, w, h, Theme.OVERLAY);
+
+        int pw = Math.min(w - 20, 480);
+        int ph = Math.min(h - 20, 290);
+        int px = (w - pw) / 2;
+        int py = (h - ph) / 2;
+        r.fill(px, py, px + pw, py + ph, Theme.PANEL);
+        r.fill(px, py, px + SIDEBAR_W, py + ph, Theme.SIDEBAR);
+        r.fill(px, py, px + pw, py + 1, accent);
+
+        renderSidebar(r, mx, my, px, py, ph, accent);
+
+        int cx = px + SIDEBAR_W + 8;
+        int cw = pw - SIDEBAR_W - 16;
+        int cy = py + 8;
+        if (selected != null) renderSettingsHeader(r, mx, my, cx, cy, cw, accent);
+        else r.text(category.displayName(), cx, cy + 3, Theme.TEXT, false);
+
+        int viewTop = cy + 20;
+        int viewBottom = py + ph - 8;
+        viewY1 = viewTop;
+        viewY2 = viewBottom;
+        r.enableScissor(cx - 2, viewTop, cx + cw + 2, viewBottom);
+        clipHits = true;
+        float contentH = selected != null
+                ? renderSettings(r, mx, my, cx, viewTop - scroll, cw, accent)
+                : renderCards(r, mx, my, cx, viewTop - scroll, cw, accent);
+        clipHits = false;
+        r.disableScissor();
+        maxScroll = Math.max(0, contentH - (viewBottom - viewTop));
+        scroll = Math.max(0, Math.min(maxScroll, scroll));
+        if (maxScroll > 0) {
+            float trackH = viewBottom - viewTop;
+            float barH = Math.max(16, trackH * trackH / contentH);
+            float barY = viewTop + (trackH - barH) * (scroll / maxScroll);
+            r.fill(px + pw - 4, barY, px + pw - 2, barY + barH, 0x80FFFFFF);
+        }
+
+        if (status != null && System.currentTimeMillis() < statusUntil) {
+            float sw = r.textWidth(status) + 12;
+            float sx = px + SIDEBAR_W + (pw - SIDEBAR_W - sw) / 2f;
+            float sy = py + ph - 20;
+            r.fill(sx, sy, sx + sw, sy + 14, 0xF0202028);
+            r.fill(sx, sy + 13, sx + sw, sy + 14, statusColor);
+            r.text(status, sx + 6, sy + 3, Theme.TEXT, false);
+        }
+    }
+
+    private void renderSidebar(Renderer r, int mx, int my, int px, int py, int ph, int accent) {
+        r.text(AioCore.NAME, px + 10, py + 9, Theme.TEXT, true);
+        float y = py + 28;
+        for (Category c : Category.values()) {
+            if (core.modules().byCategory(c).isEmpty()) continue;
+            boolean sel = c == category;
+            boolean hover = inside(mx, my, px, y, px + SIDEBAR_W, y + 16);
+            if (sel) {
+                r.fill(px, y, px + SIDEBAR_W, y + 16, 0x30FFFFFF);
+                r.fill(px, y, px + 2, y + 16, accent);
+            } else if (hover) {
+                r.fill(px, y, px + SIDEBAR_W, y + 16, 0x18FFFFFF);
+            }
+            r.text(c.displayName(), px + 10, y + 4, sel ? Theme.TEXT : Theme.TEXT_DIM, false);
+            Category target = c;
+            hit(px, y, px + SIDEBAR_W, y + 16, b -> {
+                category = target;
+                selected = null;
+                scroll = 0;
+                resetFocus();
+            });
+            y += 17;
+        }
+
+        y += 6;
+        if (core.platform().inWorld()) {
+            button(r, mx, my, px + 6, y, px + SIDEBAR_W - 6, y + 16, "HUD bearbeiten", accent, true,
+                    b -> core.openHudEditor());
+        }
+
+        // Profile unten
+        ConfigManager cfg = core.config();
+        float by = py + ph - 62;
+        r.text("Profil", px + 8, by, Theme.TEXT_MUTED, false);
+        by += 11;
+        List<String> profiles = cfg.profiles();
+        String active = cfg.activeProfile();
+        button(r, mx, my, px + 6, by, px + 18, by + 14, "<", accent, false, b -> cycleProfile(-1));
+        button(r, mx, my, px + SIDEBAR_W - 18, by, px + SIDEBAR_W - 6, by + 14, ">", accent, false, b -> cycleProfile(1));
+        r.centeredText(r.trim(active, SIDEBAR_W - 44), px + SIDEBAR_W / 2f, by + 3, Theme.TEXT, false);
+        if (profiles.size() > 1) {
+            String count = (profiles.indexOf(active) + 1) + "/" + profiles.size();
+            r.text(count, px + SIDEBAR_W - 8 - r.textWidth(count), by - 11, Theme.TEXT_MUTED, false);
+        }
+        by += 17;
+        float half = (SIDEBAR_W - 12 - 3) / 2f;
+        button(r, mx, my, px + 6, by, px + 6 + half, by + 14, "Neu", accent, false, b -> {
+            String name = cfg.createProfile("profil");
+            showStatus("Profil \"" + name + "\" erstellt", accent);
+        });
+        button(r, mx, my, px + 9 + half, by, px + SIDEBAR_W - 6, by + 14, confirmDelete ? "Sicher?" : "Löschen",
+                confirmDelete ? Theme.DANGER : accent, false, b -> deleteActiveProfile());
+        by += 17;
+        button(r, mx, my, px + 6, by, px + 6 + half, by + 14, "Export", accent, false, b -> {
+            core.platform().setClipboard(cfg.exportProfile());
+            showStatus("Profil in Zwischenablage und exports/ gespeichert", accent);
+        });
+        button(r, mx, my, px + 9 + half, by, px + SIDEBAR_W - 6, by + 14, "Import", accent, false, b -> {
+            try {
+                String name = cfg.importProfile(core.platform().clipboard());
+                showStatus("Profil \"" + name + "\" importiert", accent);
+            } catch (IllegalArgumentException e) {
+                showStatus("Import fehlgeschlagen: " + e.getMessage(), Theme.DANGER);
+            }
+        });
+    }
+
+    private float renderCards(Renderer r, int mx, int my, float x, float y, float w, int accent) {
+        List<Module> list = core.modules().byCategory(category);
+        int cols = Math.max(1, (int) ((w + GAP) / (CARD_MIN_W + GAP)));
+        float cardW = (w - (cols - 1) * GAP) / cols;
+        for (int i = 0; i < list.size(); i++) {
+            Module m = list.get(i);
+            float x1 = x + (i % cols) * (cardW + GAP);
+            float y1 = y + (i / cols) * (CARD_H + GAP);
+            float x2 = x1 + cardW, y2 = y1 + CARD_H;
+            boolean hover = inside(mx, my, x1, y1, x2, y2) && my >= viewY1 && my <= viewY2;
+            r.fill(x1, y1, x2, y2, hover ? Theme.CARD_HOVER : Theme.CARD);
+            if (m.isActive()) r.fill(x1, y1, x1 + 2, y2, accent);
+            else if (m.isEnabled() && m.isBlocked()) r.fill(x1, y1, x1 + 2, y2, Theme.WARNING);
+
+            r.text(r.trim(m.name(), cardW - 40), x1 + 8, y1 + 7, Theme.TEXT, false);
+            r.text(r.trim(m.description(), cardW - 16), x1 + 8, y1 + 19, Theme.TEXT_DIM, false);
+            String footer = m.isBlocked() ? "Gesperrt (Server)" :
+                    m.toggleKey().isBound() ? "Taste: " + core.platform().keyName(m.toggleKey().key()) : "";
+            r.text(r.trim(footer, cardW - 30), x1 + 8, y1 + 31, m.isBlocked() ? Theme.WARNING : Theme.TEXT_MUTED, false);
+            r.text("›", x2 - 10, y1 + 31, hover ? Theme.TEXT : Theme.TEXT_MUTED, false);
+
+            // Karte öffnet die Einstellungen, der Schalter schaltet um (Schalter wird später registriert und gewinnt)
+            hit(x1, y1, x2, y2, b -> openSettings(m));
+            if (m.canToggle()) {
+                float sx = x2 - 28, sy = y1 + 6;
+                toggleSwitch(r, sx, sy, m.isEnabled(), m.isBlocked(), accent);
+                hit(sx - 2, sy - 2, sx + 22, sy + 12, b -> m.toggle());
+            }
+        }
+        int rows = (list.size() + cols - 1) / cols;
+        return rows * (CARD_H + GAP) - GAP;
+    }
+
+    private void renderSettingsHeader(Renderer r, int mx, int my, float x, float y, float w, int accent) {
+        button(r, mx, my, x, y, x + 54, y + 14, "‹ Zurück", accent, false, b -> closeSettings());
+        r.text(r.trim(selected.name(), w - 120), x + 62, y + 3, Theme.TEXT, false);
+        if (selected.canToggle()) {
+            float sx = x + w - 22, sy = y + 2;
+            toggleSwitch(r, sx, sy, selected.isEnabled(), selected.isBlocked(), accent);
+            Module m = selected;
+            hit(sx - 2, sy - 2, sx + 22, sy + 12, b -> m.toggle());
+            if (m.isBlocked()) {
+                String t = "Gesperrt";
+                r.text(t, sx - 6 - r.textWidth(t), y + 3, Theme.WARNING, false);
+            }
+        }
+    }
+
+    private float renderSettings(Renderer r, int mx, int my, float x, float y, float w, int accent) {
+        float startY = y;
+        r.text(r.trim(selected.description(), w), x, y, Theme.TEXT_DIM, false);
+        y += 14;
+        if (selected.isGameplayAffecting()) {
+            r.text(r.trim("Kann auf Servern als Vorteil gelten und wird vom Kompatibilitätsmodus gesperrt.", w), x, y, Theme.WARNING, false);
+            y += 14;
+        }
+        y += 2;
+        for (Setting<?> s : selected.settings()) {
+            if (!s.isVisible()) continue;
+            y = renderSetting(r, mx, my, s, x, y, w, accent);
+        }
+        y += 6;
+        Module m = selected;
+        button(r, mx, my, x, y, x + 90, y + 14, "Zurücksetzen", Theme.DANGER, false, b -> {
+            for (Setting<?> s : m.settings()) {
+                if (!"x".equals(s.id()) && !"y".equals(s.id())) s.reset();
+            }
+            showStatus(m.name() + " zurückgesetzt", accent);
+        });
+        y += 14;
+        return y - startY;
+    }
+
+    private float renderSetting(Renderer r, int mx, int my, Setting<?> s, float x, float y, float w, int accent) {
+        float right = x + w;
+        float textY = y + (ROW_H - 8) / 2f;
+        r.fill(x, y, right, y + ROW_H, 0x10FFFFFF);
+        r.text(r.trim(s.name(), w * 0.5f), x + 6, textY, Theme.TEXT, false);
+
+        if (s instanceof BooleanSetting b) {
+            float sx = right - 26, sy = y + 5;
+            toggleSwitch(r, sx, sy, b.on(), false, accent);
+            hit(x, y, right, y + ROW_H, btn -> b.toggle());
+            return y + ROW_H + 2;
+        }
+        if (s instanceof NumberSetting n) {
+            String v = n.display();
+            r.text(v, right - 6 - r.textWidth(v), textY, Theme.TEXT_DIM, false);
+            float tx1 = x + w * 0.5f, tx2 = right - 12 - r.textWidth(v);
+            slider(r, mx, my, tx1, tx2, y + ROW_H / 2f, n.fraction(), accent, n::setFraction);
+            return y + ROW_H + 2;
+        }
+        if (s instanceof EnumSetting<?> e) {
+            String v = "< " + e.display() + " >";
+            float bx = right - 6 - r.textWidth(v);
+            boolean hover = inside(mx, my, bx - 4, y, right, y + ROW_H);
+            r.text(v, bx, textY, hover ? Theme.TEXT : Theme.TEXT_DIM, false);
+            hit(x, y, right, y + ROW_H, btn -> e.cycle(btn == 1 ? -1 : 1));
+            return y + ROW_H + 2;
+        }
+        if (s instanceof KeybindSetting k) {
+            String v = listening == k ? "> Taste drücken <" : (k.isBound() ? core.platform().keyName(k.key()) : "Keine");
+            float bw = Math.max(50, r.textWidth(v) + 12);
+            float bx = right - 4 - bw;
+            boolean hover = inside(mx, my, bx, y + 3, right - 4, y + ROW_H - 3);
+            r.fill(bx, y + 3, right - 4, y + ROW_H - 3, listening == k ? accent : hover ? 0xFF3A3A46 : Theme.TRACK);
+            r.centeredText(v, bx + bw / 2f, textY, Theme.TEXT, false);
+            hit(bx, y + 3, right - 4, y + ROW_H - 3, btn -> {
+                if (listening == k && btn >= 2) {
+                    k.set(Keys.mouse(btn));
+                    listening = null;
+                } else {
+                    resetFocus();
+                    listening = k;
+                }
+            });
+            return y + ROW_H + 2;
+        }
+        if (s instanceof StringSetting str) {
+            boolean focused = editing == str;
+            float fx = x + w * 0.45f;
+            r.fill(fx, y + 3, right - 4, y + ROW_H - 3, focused ? 0xFF2A2A34 : Theme.TRACK);
+            if (focused) r.fill(fx, y + ROW_H - 4, right - 4, y + ROW_H - 3, accent);
+            String shown = focused ? editBuffer : str.get();
+            if (shown.isEmpty() && !focused) shown = "—";
+            String vis = shown;
+            float maxW = right - fx - 12;
+            while (r.textWidth(vis) > maxW && vis.length() > 1) vis = vis.substring(1);
+            boolean caret = focused && (System.currentTimeMillis() / 500) % 2 == 0;
+            r.text(vis + (caret ? "_" : ""), fx + 4, textY, focused ? Theme.TEXT : Theme.TEXT_DIM, false);
+            hit(fx, y + 3, right - 4, y + ROW_H - 3, btn -> {
+                if (editing != str) {
+                    resetFocus();
+                    editing = str;
+                    editBuffer = str.get();
+                }
+            });
+            return y + ROW_H + 2;
+        }
+        if (s instanceof ColorSetting c) {
+            float sw = 24;
+            float sx = right - 6 - sw;
+            // Schachbrett für Transparenz
+            r.fill(sx, y + 4, sx + sw, y + ROW_H - 4, 0xFFBBBBBB);
+            r.fill(sx, y + 4, sx + sw / 2, y + ROW_H / 2f, 0xFF777777);
+            r.fill(sx + sw / 2, y + ROW_H / 2f, sx + sw, y + ROW_H - 4, 0xFF777777);
+            r.fill(sx, y + 4, sx + sw, y + ROW_H - 4, c.argb());
+            r.outline(sx, y + 4, sx + sw, y + ROW_H - 4, 1, 0x80FFFFFF);
+            String hex = String.format("#%08X", c.argb());
+            r.text(hex, sx - 6 - r.textWidth(hex), textY, Theme.TEXT_MUTED, false);
+            hit(x, y, right, y + ROW_H, btn -> expandedColor = expandedColor == c ? null : c);
+            y += ROW_H;
+            if (expandedColor == c) {
+                String[] labels = {"Rot", "Grün", "Blau", "Deckkraft"};
+                int[] shifts = {16, 8, 0, 24};
+                for (int i = 0; i < 4; i++) {
+                    int shift = shifts[i];
+                    r.fill(x, y, right, y + 16, 0x08FFFFFF);
+                    r.text(labels[i], x + 14, y + 4, Theme.TEXT_DIM, false);
+                    String v = String.valueOf(c.channel(shift));
+                    r.text(v, right - 6 - r.textWidth(v), y + 4, Theme.TEXT_MUTED, false);
+                    slider(r, mx, my, x + w * 0.5f, right - 30, y + 8, c.channel(shift) / 255.0, accent,
+                            f -> c.setChannel(shift, (int) Math.round(f * 255)));
+                    y += 16;
+                }
+            }
+            return y + 2;
+        }
+        return y + ROW_H + 2;
+    }
+
+    // =====================================================================
+    // Widgets
+    // =====================================================================
+
+    private void toggleSwitch(Renderer r, float x, float y, boolean on, boolean blocked, int accent) {
+        int track = on ? (blocked ? Theme.WARNING : accent) : Theme.TRACK;
+        r.fill(x, y, x + 20, y + 10, track);
+        float kx = on ? x + 11 : x + 1;
+        r.fill(kx, y + 1, kx + 8, y + 9, 0xFFFFFFFF);
+    }
+
+    private void slider(Renderer r, int mx, int my, float x1, float x2, float cy, double fraction, int accent, DoubleConsumer setter) {
+        if (x2 - x1 < 10) return;
+        r.fill(x1, cy - 1, x2, cy + 1, Theme.TRACK);
+        float fx = (float) (x1 + (x2 - x1) * Math.max(0, Math.min(1, fraction)));
+        r.fill(x1, cy - 1, fx, cy + 1, accent);
+        boolean hover = inside(mx, my, x1 - 3, cy - 6, x2 + 3, cy + 6);
+        r.fill(fx - 2, cy - 4, fx + 2, cy + 4, hover || slider != null ? 0xFFFFFFFF : 0xFFDDDDDD);
+        hit(x1 - 3, cy - 7, x2 + 3, cy + 7, b -> {
+            if (b != 0) return;
+            slider = new SliderDrag(x1, x2, setter);
+        });
+    }
+
+    private void button(Renderer r, int mx, int my, float x1, float y1, float x2, float y2, String label,
+                        int accent, boolean filled, IntConsumer action) {
+        boolean hover = inside(mx, my, x1, y1, x2, y2);
+        int bg = filled ? (hover ? brighten(accent) : accent) : (hover ? 0xFF33333E : 0xFF24242C);
+        r.fill(x1, y1, x2, y2, bg);
+        if (!filled && hover) r.fill(x1, y2 - 1, x2, y2, accent);
+        r.centeredText(r.trim(label, x2 - x1 - 4), (x1 + x2) / 2f, y1 + (y2 - y1 - 8) / 2f, Theme.TEXT, false);
+        hit(x1, y1, x2, y2, action);
+    }
+
+    private static int brighten(int c) {
+        int r = Math.min(255, ((c >> 16) & 0xFF) + 25);
+        int g = Math.min(255, ((c >> 8) & 0xFF) + 25);
+        int b = Math.min(255, (c & 0xFF) + 25);
+        return (c & 0xFF000000) | r << 16 | g << 8 | b;
+    }
+
+    /** Registriert eine klickbare Fläche; im Inhaltsbereich wird sie auf den sichtbaren Teil beschnitten. */
+    private void hit(float x1, float y1, float x2, float y2, IntConsumer action) {
+        hits.add(new Hit(x1, y1, x2, y2, clipHits, action));
+    }
+
+    private static boolean inside(double mx, double my, float x1, float y1, float x2, float y2) {
+        return mx >= x1 && mx <= x2 && my >= y1 && my <= y2;
+    }
+
+    // =====================================================================
+    // Aktionen
+    // =====================================================================
+
+    private void openSettings(Module m) {
+        selected = m;
+        scroll = 0;
+        resetFocus();
+    }
+
+    private void closeSettings() {
+        selected = null;
+        scroll = 0;
+        resetFocus();
+    }
+
+    private void resetFocus() {
+        commitEdit();
+        listening = null;
+        expandedColor = null;
+        confirmDelete = false;
+    }
+
+    private void commitEdit() {
+        if (editing != null) {
+            editing.set(editBuffer);
+            editing = null;
+        }
+    }
+
+    private void cycleProfile(int dir) {
+        List<String> profiles = core.config().profiles();
+        if (profiles.size() < 2) return;
+        int idx = profiles.indexOf(core.config().activeProfile());
+        String next = profiles.get(Math.floorMod(idx + dir, profiles.size()));
+        core.config().switchProfile(next);
+        showStatus("Profil: " + next, Theme.accent(core));
+    }
+
+    private void deleteActiveProfile() {
+        deleteTouched = true;
+        ConfigManager cfg = core.config();
+        String active = cfg.activeProfile();
+        List<String> profiles = cfg.profiles();
+        if (profiles.size() < 2) {
+            showStatus("Das letzte Profil kann nicht gelöscht werden", Theme.DANGER);
+            return;
+        }
+        if (!confirmDelete) {
+            confirmDelete = true;
+            return;
+        }
+        confirmDelete = false;
+        String fallback = profiles.contains(ConfigManager.DEFAULT_PROFILE) && !active.equals(ConfigManager.DEFAULT_PROFILE)
+                ? ConfigManager.DEFAULT_PROFILE
+                : profiles.get(profiles.indexOf(active) == 0 ? 1 : 0);
+        cfg.switchProfile(fallback);
+        if (cfg.deleteProfile(active)) showStatus("Profil \"" + active + "\" gelöscht", Theme.accent(core));
+    }
+
+    private void showStatus(String message, int color) {
+        status = message;
+        statusColor = color;
+        statusUntil = System.currentTimeMillis() + 3000;
+    }
+
+    // =====================================================================
+    // Eingaben
+    // =====================================================================
+
+    @Override public boolean mouseClicked(double mx, double my, int button) {
+        boolean wasConfirming = confirmDelete;
+        deleteTouched = false;
+        for (int i = hits.size() - 1; i >= 0; i--) {
+            Hit h = hits.get(i);
+            if (!h.contains(mx, my) || !isClickable(h, my)) continue;
+            commitEdit(); // Textfeld verliert den Fokus, ein Klick auf das Feld fokussiert es neu
+            h.action.accept(button);
+            if (slider != null) slider.apply(mx);
+            if (wasConfirming && !deleteTouched) confirmDelete = false;
+            return true;
+        }
+        commitEdit();
+        listening = null;
+        confirmDelete = false;
+        return false;
+    }
+
+    /** Hits im scrollbaren Inhaltsbereich zählen nur im sichtbaren Teil. */
+    private boolean isClickable(Hit h, double my) {
+        return !h.clipped || (my >= viewY1 && my <= viewY2);
+    }
+
+    @Override public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
+        if (slider != null) {
+            slider.apply(mx);
+            return true;
+        }
+        return false;
+    }
+
+    @Override public boolean mouseReleased(double mx, double my, int button) {
+        if (slider != null) {
+            slider = null;
+            return true;
+        }
+        return false;
+    }
+
+    @Override public boolean mouseScrolled(double mx, double my, double amount) {
+        scroll = (float) Math.max(0, Math.min(maxScroll, scroll - amount * 20));
+        return true;
+    }
+
+    @Override public boolean keyPressed(int key, int scancode, int modifiers) {
+        if (listening != null) {
+            listening.set(key == Keys.ESCAPE || key == Keys.BACKSPACE || key == Keys.DELETE ? Keys.NONE : key);
+            listening = null;
+            return true;
+        }
+        if (editing != null) {
+            boolean ctrl = (modifiers & 2) != 0;
+            if (key == Keys.ESCAPE) {
+                editing = null;
+            } else if (key == Keys.ENTER) {
+                commitEdit();
+            } else if (key == Keys.BACKSPACE) {
+                if (!editBuffer.isEmpty()) editBuffer = editBuffer.substring(0, editBuffer.length() - 1);
+            } else if (ctrl && key == Keys.V) {
+                insert(core.platform().clipboard());
+            } else if (ctrl && key == Keys.C) {
+                core.platform().setClipboard(editBuffer);
+            }
+            return true;
+        }
+        if (key == Keys.ESCAPE && selected != null) {
+            closeSettings();
+            return true;
+        }
+        if (key == core.clientSettings().guiKey.key()) {
+            core.platform().closeScreen();
+            return true;
+        }
+        return false;
+    }
+
+    @Override public boolean charTyped(char chr, int modifiers) {
+        if (editing == null || chr < 32 || chr == 127) return false;
+        insert(String.valueOf(chr));
+        return true;
+    }
+
+    private void insert(String text) {
+        if (text == null || editing == null) return;
+        String clean = text.replaceAll("[\\r\\n\\t]", "");
+        editBuffer = (editBuffer + clean);
+        if (editBuffer.length() > editing.maxLength()) editBuffer = editBuffer.substring(0, editing.maxLength());
+    }
+
+    @Override public void onClose() {
+        commitEdit();
+        core.config().save();
+    }
+}

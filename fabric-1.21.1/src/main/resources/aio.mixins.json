@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.aio.fabric.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "CameraMixin",
+    "ChatHudMixin",
+    "EntityMixin",
+    "GameOptionsMixin",
+    "GameRendererMixin",
+    "KeyboardMixin",
+    "MouseMixin",
+    "SimpleOptionMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
