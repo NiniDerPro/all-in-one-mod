@@ -33,7 +33,7 @@ public enum Category {
     private static final Map<String, Category> BY_MODULE = Map.ofEntries(
             // HUD: reine Anzeigen
             Map.entry("fps", HUD), Map.entry("armorhud", HUD), Map.entry("potions", HUD), Map.entry("coordinates", HUD),
-            Map.entry("ping", HUD), Map.entry("biome", HUD), Map.entry("daycounter", HUD), Map.entry("worldtime", HUD),
+            Map.entry("ping", HUD), Map.entry("biome", HUD), Map.entry("daycounter", HUD), Map.entry("worldtime", HUD), Map.entry("datetime", HUD),
             Map.entry("playtime", HUD), Map.entry("serverinfo", HUD), Map.entry("compass", HUD), Map.entry("helditeminfo", HUD),
             // PvP
             Map.entry("cps", PVP), Map.entry("keystrokes", PVP), Map.entry("totems", PVP), Map.entry("arrows", PVP),

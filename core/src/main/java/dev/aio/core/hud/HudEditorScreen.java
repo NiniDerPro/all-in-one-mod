@@ -19,6 +19,9 @@ import java.util.List;
  *   <li>Das ausgewählte Element hat einen Rahmen mit acht Griffen: an Kanten und Ecken ziehen
  *       ändert Breite und Höhe unabhängig, Shift an einer Ecke behält das Seitenverhältnis.</li>
  *   <li>Rechtsklick öffnet die Einstellungen, R/Entf oder der Knopf oben setzt die Auswahl zurück.</li>
+ *   <li>Teile eines Moduls (Uhrzeit/Datum, Rüstungsteile) sind einzeln verschiebbar. Ziehen auf
+ *       freier Fläche zieht einen Auswahlrahmen: alles darin wird gemeinsam verschoben. Strg+Klick
+ *       fügt hinzu/entfernt, Doppelklick wählt alle Teile desselben Moduls.</li>
  *   <li>Der Chat lässt sich ebenso auswählen, oben und rechts in der Größe ziehen und zurücksetzen.
  *       Seine Position legt Minecraft fest (unten links).</li>
  * </ul>
@@ -34,11 +37,17 @@ public final class HudEditorScreen implements UiScreen {
 
     private final AioCore core;
 
-    /** Ausgewähltes Ziel: ein HUD-Element oder {@link #CHAT}. */
+    /** Ausgewähltes Ziel: ein {@link HudTarget} oder {@link #CHAT}. */
     private Object selected;
+    /** Mehrfachauswahl (Auswahlrahmen, Strg+Klick, Doppelklick). Leer oder ≥ 2 Einträge. */
+    private final List<HudTarget> group = new ArrayList<>();
+    private float[] groupStart;
+    private float marqueeX, marqueeY;
+    private long lastClickTime;
+    private Object lastClickTarget;
     private static final Object CHAT = new Object();
 
-    private enum Mode { NONE, MOVE, RESIZE }
+    private enum Mode { NONE, MOVE, RESIZE, MARQUEE, GROUP_MOVE }
     private Mode mode = Mode.NONE;
     private int edges;
     /** Startzustand beim Ziehen: Maus und Rechteck. */
@@ -60,6 +69,21 @@ public final class HudEditorScreen implements UiScreen {
         return list;
     }
 
+    /** Alles, was einzeln verschoben werden kann: Elemente bzw. ihre Teile, wenn getrennt. */
+    private List<HudTarget> targets() {
+        List<HudTarget> list = new ArrayList<>();
+        for (HudElement el : visibleElements()) {
+            if (el.separated()) list.addAll(el.visibleParts(true));
+            else list.add(el);
+        }
+        return list;
+    }
+
+    private boolean valid(Object t) {
+        if (t == CHAT) return chat() != null;
+        return t instanceof HudTarget ht && targets().contains(ht);
+    }
+
     // =====================================================================
     // Ziele (Element oder Chat) als Rechteck
     // =====================================================================
@@ -71,7 +95,7 @@ public final class HudEditorScreen implements UiScreen {
 
     /** x, y, Breite, Höhe des Ziels oder null. */
     private float[] bounds(Renderer r, Object target) {
-        if (target instanceof HudElement el) {
+        if (target instanceof HudTarget el) {
             return new float[]{el.screenX(r), el.screenY(r), el.scaledWidth(r), el.scaledHeight(r)};
         }
         if (target == CHAT) {
@@ -90,7 +114,7 @@ public final class HudEditorScreen implements UiScreen {
 
     private Object targetAt(Renderer r, double mx, double my) {
         if (r == null) return null;
-        List<HudElement> list = visibleElements();
+        List<HudTarget> list = targets();
         for (int i = list.size() - 1; i >= 0; i--) {
             if (inside(bounds(r, list.get(i)), mx, my, 0)) return list.get(i);
         }
@@ -117,7 +141,7 @@ public final class HudEditorScreen implements UiScreen {
     }
 
     private String nameOf(Object target) {
-        if (target instanceof HudElement el) return el.name();
+        if (target instanceof HudTarget el) return el.name();
         return target == CHAT ? "Chat" : "";
     }
 
@@ -129,8 +153,9 @@ public final class HudEditorScreen implements UiScreen {
         lastRenderer = r;
         lastMouseX = mouseX;
         lastMouseY = mouseY;
-        if (selected == CHAT && chat() == null) selected = null;
-        if (selected instanceof HudElement el && !(el.isActive() && el.editable())) selected = null;
+        if (selected != null && !valid(selected)) selected = null;
+        group.removeIf(t -> !valid(t));
+        if (group.size() < 2) group.clear();
 
         core.hud().placeNew(r);
         int w = r.screenWidth(), h = r.screenHeight();
@@ -151,7 +176,21 @@ public final class HudEditorScreen implements UiScreen {
         for (HudElement el : visibleElements()) {
             el.update();
             el.render(r, true);
-            if (el != selected) frame(r, bounds(r, el), el == hovered ? accent : 0x60FFFFFF);
+        }
+        for (HudTarget t : targets()) {
+            if (t == selected) continue;
+            boolean inGroup = group.contains(t);
+            frame(r, bounds(r, t), inGroup ? accent : t == hovered ? accent : 0x60FFFFFF);
+            if (inGroup) {
+                float[] b = bounds(r, t);
+                r.fill(b[0], b[1], b[0] + b[2], b[1] + b[3], (accent & 0x00FFFFFF) | 0x30000000);
+            }
+        }
+        if (mode == Mode.MARQUEE) {
+            float x1 = Math.min(marqueeX, mouseX), y1 = Math.min(marqueeY, mouseY);
+            float x2 = Math.max(marqueeX, mouseX), y2 = Math.max(marqueeY, mouseY);
+            r.fill(x1, y1, x2, y2, (accent & 0x00FFFFFF) | 0x28000000);
+            r.outline(x1, y1, x2, y2, 1, accent);
         }
 
         // Auswahl mit Griffen zuletzt, damit sie über allem liegt
@@ -162,20 +201,25 @@ public final class HudEditorScreen implements UiScreen {
             drawHandles(r, sb, allowedEdges(selected), hot, accent);
         }
 
-        if (mode == Mode.MOVE && lastSnap != null) {
+        if ((mode == Mode.MOVE || mode == Mode.GROUP_MOVE) && lastSnap != null) {
             if (lastSnap.hasGuideX()) r.fill(lastSnap.guideX() - 0.5f, 0, lastSnap.guideX() + 0.5f, h, accent);
             if (lastSnap.hasGuideY()) r.fill(0, lastSnap.guideY() - 0.5f, w, lastSnap.guideY() + 0.5f, accent);
         }
 
-        Object info = mode != Mode.NONE ? selected : hovered;
+        Object info = mode == Mode.MARQUEE || mode == Mode.GROUP_MOVE ? null : mode != Mode.NONE ? selected : hovered;
         if (info != null) tooltip(r, info, mouseX, mouseY);
+        if (!group.isEmpty() && mode != Mode.MARQUEE) {
+            String sel = group.size() + " selected";
+            r.centeredText(sel, w / 2f, 26, accent, true);
+        }
 
-        String hint = "Left click: select/drag · Edge/corner: resize · Shift: free/keep ratio · Right click: settings · R: reset";
-        if (r.textWidth(hint) > w - 8) hint = "Drag · Edge/corner · Shift · Right click · R";
+        String hint = "Drag: move · Edges: resize · Drag on empty space: select several · Ctrl+click: add · Double click: all parts · Right click: settings · R: reset";
+        if (r.textWidth(hint) > w - 8) hint = "Drag · Edges: resize · Drag empty: select · Ctrl+click · Double click · R";
+        if (r.textWidth(hint) > w - 8) hint = "Drag · Edges · Select · Right click · R";
         r.centeredText(hint, w / 2f, h - 14, 0xB0FFFFFF, true);
 
         drawButton(r, settingsButton(r), "Settings", true, mouseX, mouseY);
-        drawButton(r, resetButton(r), "Reset", selected != null, mouseX, mouseY);
+        drawButton(r, resetButton(r), "Reset", selected != null || !group.isEmpty(), mouseX, mouseY);
     }
 
     private static void frame(Renderer r, float[] b, int color) {
@@ -199,8 +243,8 @@ public final class HudEditorScreen implements UiScreen {
 
     private void tooltip(Renderer r, Object target, int mx, int my) {
         String label;
-        if (target instanceof HudElement el) {
-            label = el.name() + "  B " + Math.round(el.scaleX() * 100) + "% · H " + Math.round(el.scaleY() * 100) + "%";
+        if (target instanceof HudTarget el) {
+            label = el.name() + "  W " + Math.round(el.scaleX() * 100) + "% · H " + Math.round(el.scaleY() * 100) + "%";
         } else {
             float[] b = bounds(r, target);
             if (b == null) return;
@@ -253,24 +297,123 @@ public final class HudEditorScreen implements UiScreen {
 
         if (button == 1) {
             Object t = targetAt(r, mx, my);
-            if (t instanceof HudElement el) core.openClickGui(el);
+            if (t instanceof HudTarget el) core.openClickGui(el.owner());
             else if (t == CHAT) core.openClickGui(chat());
             return t != null;
         }
         if (button != 0) return false;
 
         // Erst die Griffe der Auswahl (liegen teils außerhalb des Elements)
-        int e = edgesAt(r, mx, my);
+        int e = group.isEmpty() ? edgesAt(r, mx, my) : 0;
         if (e != 0) {
             begin(r, Mode.RESIZE, e, mx, my);
             return true;
         }
         Object t = targetAt(r, mx, my);
+        long now = System.currentTimeMillis();
+        boolean doubleClick = t != null && t == lastClickTarget && now - lastClickTime < 350;
+        lastClickTime = now;
+        lastClickTarget = t;
+
+        if (t == null) {
+            // Freie Fläche: Auswahlrahmen aufziehen
+            selected = null;
+            if (!ctrl()) group.clear();
+            mode = Mode.MARQUEE;
+            marqueeX = (float) mx;
+            marqueeY = (float) my;
+            return true;
+        }
+        if (t instanceof HudTarget ht) {
+            if (doubleClick && ht.owner().separated()) {
+                // Doppelklick: alle Teile desselben Moduls
+                group.clear();
+                group.addAll(ht.owner().visibleParts(true));
+                if (group.size() < 2) group.clear();
+                selected = group.isEmpty() ? ht : null;
+                if (!group.isEmpty()) beginGroup(r, mx, my);
+                return true;
+            }
+            if (ctrl()) {
+                // Strg+Klick: zur Gruppe hinzufügen/entfernen
+                if (group.isEmpty() && selected instanceof HudTarget cur && cur != ht) group.add(cur);
+                if (group.contains(ht)) group.remove(ht);
+                else group.add(ht);
+                selected = null;
+                if (group.size() == 1) {
+                    selected = group.get(0);
+                    group.clear();
+                }
+                return true;
+            }
+            if (group.contains(ht)) {
+                beginGroup(r, mx, my);
+                return true;
+            }
+        }
+        group.clear();
         selected = t;
-        if (t == null) return false;
         // Der Chat sitzt fest unten links, dort nur auswählen
         begin(r, t == CHAT ? Mode.NONE : Mode.MOVE, 0, mx, my);
         return true;
+    }
+
+    private boolean ctrl() {
+        return core.platform().isKeyDown(Keys.LEFT_CONTROL) || core.platform().isKeyDown(Keys.RIGHT_CONTROL);
+    }
+
+    private void beginGroup(Renderer r, double mx, double my) {
+        mode = Mode.GROUP_MOVE;
+        lastSnap = null;
+        startMx = (float) mx;
+        startMy = (float) my;
+        groupStart = new float[group.size() * 2];
+        for (int i = 0; i < group.size(); i++) {
+            groupStart[i * 2] = group.get(i).screenX(r);
+            groupStart[i * 2 + 1] = group.get(i).screenY(r);
+        }
+    }
+
+    /** Verschiebt die Gruppe gemeinsam; der umgebende Rahmen rastet wie ein einzelnes Element ein. */
+    private void moveGroup(Renderer r, float ddx, float ddy, boolean free) {
+        if (groupStart == null || groupStart.length != group.size() * 2) return;
+        float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE;
+        for (int i = 0; i < group.size(); i++) {
+            HudTarget t = group.get(i);
+            minX = Math.min(minX, groupStart[i * 2]);
+            minY = Math.min(minY, groupStart[i * 2 + 1]);
+            maxX = Math.max(maxX, groupStart[i * 2] + t.scaledWidth(r));
+            maxY = Math.max(maxY, groupStart[i * 2 + 1] + t.scaledHeight(r));
+        }
+        float gw = maxX - minX, gh = maxY - minY;
+        float nx = minX + ddx, ny = minY + ddy;
+        if (free) {
+            lastSnap = new Snapper.Result(Math.max(0, Math.min(r.screenWidth() - gw, nx)),
+                    Math.max(0, Math.min(r.screenHeight() - gh, ny)), Float.NaN, Float.NaN);
+        } else {
+            List<Snapper.Rect> others = new ArrayList<>();
+            for (HudTarget o : targets()) {
+                if (!group.contains(o)) others.add(new Snapper.Rect(o.screenX(r), o.screenY(r), o.scaledWidth(r), o.scaledHeight(r)));
+            }
+            lastSnap = Snapper.snap(new Snapper.Rect(nx, ny, gw, gh), others, r.screenWidth(), r.screenHeight(), SNAP_THRESHOLD);
+        }
+        float dx = lastSnap.x() - minX, dy = lastSnap.y() - minY;
+        for (int i = 0; i < group.size(); i++) group.get(i).setScreenPos(r, groupStart[i * 2] + dx, groupStart[i * 2 + 1] + dy);
+    }
+
+    private void finishMarquee(Renderer r, double mx, double my) {
+        float x1 = Math.min(marqueeX, (float) mx), y1 = Math.min(marqueeY, (float) my);
+        float x2 = Math.max(marqueeX, (float) mx), y2 = Math.max(marqueeY, (float) my);
+        if (x2 - x1 < 2 && y2 - y1 < 2) return; // nur geklickt
+        for (HudTarget t : targets()) {
+            float[] b = bounds(r, t);
+            boolean hit = b[0] < x2 && b[0] + b[2] > x1 && b[1] < y2 && b[1] + b[3] > y1;
+            if (hit && !group.contains(t)) group.add(t);
+        }
+        if (group.size() == 1) {
+            selected = group.get(0);
+            group.clear();
+        }
     }
 
     private void begin(Renderer r, Mode m, int e, double mx, double my) {
@@ -289,16 +432,22 @@ public final class HudEditorScreen implements UiScreen {
 
     @Override public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
         Renderer r = lastRenderer;
-        if (r == null || button != 0 || mode == Mode.NONE || selected == null) return false;
+        if (r == null || button != 0 || mode == Mode.NONE) return false;
+        if (mode == Mode.MARQUEE) return true;
         float ddx = (float) mx - startMx, ddy = (float) my - startMy;
         boolean shift = core.platform().isKeyDown(Keys.LEFT_SHIFT) || core.platform().isKeyDown(Keys.RIGHT_SHIFT);
+        if (mode == Mode.GROUP_MOVE) {
+            moveGroup(r, ddx, ddy, shift);
+            return true;
+        }
+        if (selected == null) return false;
         if (mode == Mode.MOVE) move(r, startX + ddx, startY + ddy, shift);
         else resize(r, ddx, ddy, shift);
         return true;
     }
 
     private void move(Renderer r, float nx, float ny, boolean free) {
-        if (!(selected instanceof HudElement el)) return;
+        if (!(selected instanceof HudTarget el)) return;
         float w = el.scaledWidth(r), h = el.scaledHeight(r);
         if (free) {
             lastSnap = new Snapper.Result(
@@ -306,7 +455,7 @@ public final class HudEditorScreen implements UiScreen {
                     Math.max(0, Math.min(r.screenHeight() - h, ny)), Float.NaN, Float.NaN);
         } else {
             List<Snapper.Rect> others = new ArrayList<>();
-            for (HudElement o : visibleElements()) {
+            for (HudTarget o : targets()) {
                 if (o != el) others.add(new Snapper.Rect(o.screenX(r), o.screenY(r), o.scaledWidth(r), o.scaledHeight(r)));
             }
             lastSnap = Snapper.snap(new Snapper.Rect(nx, ny, w, h), others, r.screenWidth(), r.screenHeight(), SNAP_THRESHOLD);
@@ -331,7 +480,7 @@ public final class HudEditorScreen implements UiScreen {
             if ((edges & TOP) != 0) y1 = y2 - nh; else y2 = y1 + nh;
         }
 
-        if (selected instanceof HudElement el) {
+        if (selected instanceof HudTarget el) {
             el.setScreenBounds(r, x1, y1, x2 - x1, y2 - y1);
             // Begrenzung der Skalierung: die gegenüberliegende Kante bleibt stehen
             float w = el.scaledWidth(r), h = el.scaledHeight(r);
@@ -345,6 +494,7 @@ public final class HudEditorScreen implements UiScreen {
 
     @Override public boolean mouseReleased(double mx, double my, int button) {
         if (button == 0 && mode != Mode.NONE) {
+            if (mode == Mode.MARQUEE && lastRenderer != null) finishMarquee(lastRenderer, mx, my);
             mode = Mode.NONE;
             lastSnap = null;
             return true;
@@ -356,15 +506,32 @@ public final class HudEditorScreen implements UiScreen {
     @Override public boolean mouseScrolled(double mx, double my, double amount) { return false; }
 
     @Override public boolean keyPressed(String key) {
+        if ("key.keyboard.a".equals(key) && ctrl()) {
+            // Strg+A: alles auswählen
+            selected = null;
+            group.clear();
+            group.addAll(targets());
+            if (group.size() < 2) group.clear();
+            return true;
+        }
+        if (Keys.ESCAPE.equals(key) && (!group.isEmpty() || selected != null)) {
+            group.clear();
+            selected = null;
+            return true;
+        }
         if (Keys.R.equals(key) || Keys.DELETE.equals(key) || Keys.BACKSPACE.equals(key)) {
-            if (selected == null) selected = targetAt(lastRenderer, lastMouseX, lastMouseY);
+            if (selected == null && group.isEmpty()) selected = targetAt(lastRenderer, lastMouseX, lastMouseY);
             return resetSelected();
         }
         return false;
     }
 
     private boolean resetSelected() {
-        if (selected instanceof HudElement el) {
+        if (!group.isEmpty()) {
+            for (HudTarget t : group) t.resetLayout();
+            return true;
+        }
+        if (selected instanceof HudTarget el) {
             el.resetLayout();
             return true;
         }
