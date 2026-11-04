@@ -37,15 +37,15 @@ public final class AioScreen extends Screen {
     @Override public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {}
 
     @Override public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        return ui.mouseClicked(event.x(), event.y(), event.button());
+        return ui.mouseClicked(event.x(), event.y(), FabricPlatform.button(event.button()));
     }
 
     @Override public boolean mouseReleased(MouseButtonEvent event) {
-        return ui.mouseReleased(event.x(), event.y(), event.button());
+        return ui.mouseReleased(event.x(), event.y(), FabricPlatform.button(event.button()));
     }
 
     @Override public boolean mouseDragged(MouseButtonEvent event, double deltaX, double deltaY) {
-        return ui.mouseDragged(event.x(), event.y(), event.button(), deltaX, deltaY);
+        return ui.mouseDragged(event.x(), event.y(), FabricPlatform.button(event.button()), deltaX, deltaY);
     }
 
     @Override public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {

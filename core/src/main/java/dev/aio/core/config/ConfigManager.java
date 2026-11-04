@@ -275,6 +275,10 @@ public final class ConfigManager {
                     for (Setting<?> s : m.settings()) {
                         if (settings.has(s.id())) s.fromJson(settings.get(s.id()));
                     }
+                    // Alte Configs kannten nur eine gemeinsame Größe ("scale"): für die Höhe übernehmen
+                    if (m instanceof dev.aio.core.hud.HudElement el && settings.has("scale") && !settings.has("scaleY")) {
+                        el.setting("scaleY").fromJson(settings.get("scale"));
+                    }
                 }
                 if (obj.has("enabled") && obj.get("enabled").isJsonPrimitive()) enabled = obj.get("enabled").getAsBoolean();
             } catch (RuntimeException e) {

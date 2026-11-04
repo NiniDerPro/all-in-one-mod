@@ -39,7 +39,7 @@ final class ScreenHooks {
     private static void hookChat(AioCore core, Screen screen) {
         ScreenMouseEvents.allowMouseClick(screen).register((s, event) -> {
             ChatModule chat = core.module(ChatModule.class);
-            if (event.button() == 1 && chat != null && chat.isActive()) {
+            if (FabricPlatform.button(event.button()) == 1 && chat != null && chat.isActive()) {
                 chat.openCopy();
                 return false;
             }
@@ -78,19 +78,19 @@ final class ScreenHooks {
 
         ScreenMouseEvents.allowMouseClick(screen).register((s, event) -> {
             ItemPanel panel = list.panel();
-            if (panel != null && panel.mouseClicked(renderer, event.x(), event.y(), event.button())) return false;
+            if (panel != null && panel.mouseClicked(renderer, event.x(), event.y(), FabricPlatform.button(event.button()))) return false;
             Slot slot = slotAt(screen, event.x(), event.y());
             int index = slot == null ? -1 : slot.index;
-            if (event.button() == 2) {
+            if (FabricPlatform.button(event.button()) == 2) {
                 boolean creative = client.player != null && client.player.isCreative();
                 if (tweaks.onMiddleClick(core.platform().container(), index, creative)) return false;
             }
-            if (event.button() == 0 && shift()) tweaks.onDragStart(index);
+            if (FabricPlatform.button(event.button()) == 0 && shift()) tweaks.onDragStart(index);
             return true;
         });
 
         ScreenMouseEvents.allowMouseDrag(screen).register((s, event, dx, dy) -> {
-            if (event.button() == 0 && shift()) {
+            if (FabricPlatform.button(event.button()) == 0 && shift()) {
                 Slot slot = slotAt(screen, event.x(), event.y());
                 if (slot != null) tweaks.onDrag(core.platform().container(), slot.index, true);
             }

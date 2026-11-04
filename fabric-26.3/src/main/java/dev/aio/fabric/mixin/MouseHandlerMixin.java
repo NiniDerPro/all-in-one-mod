@@ -3,6 +3,7 @@ package dev.aio.fabric.mixin;
 import dev.aio.core.AioCore;
 import dev.aio.core.event.Events;
 import dev.aio.core.platform.Keys;
+import dev.aio.fabric.FabricPlatform;
 import dev.aio.fabric.InputState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
@@ -18,9 +19,9 @@ public abstract class MouseHandlerMixin {
     private void aio$onButton(long window, MouseButtonInfo info, int action, CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
         if (window != client.getWindow().handle()) return;
-        InputState.update(Keys.mouse(info.button()), action);
+        InputState.update(Keys.mouse(FabricPlatform.button(info.button())), action);
         AioCore core = AioCore.get();
-        if (core != null) core.bus().post(new Events.MouseButton(info.button(), action, client.gui.screen() != null));
+        if (core != null) core.bus().post(new Events.MouseButton(FabricPlatform.button(info.button()), action, client.gui.screen() != null));
     }
 
     @Inject(method = "onScroll", at = @At("HEAD"), cancellable = true)

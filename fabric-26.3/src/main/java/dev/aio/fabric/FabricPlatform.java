@@ -96,6 +96,17 @@ public final class FabricPlatform implements Platform {
         return InputConstants.getKey(event).getName();
     }
 
+    /**
+     * Übersetzt die MC-Maustaste in die Nummerierung des Kerns (0 = links, 1 = rechts, 2 = Mitte).
+     * 26.3 nutzt SDL, die Rohwerte müssen deshalb nicht den alten GLFW-Werten entsprechen.
+     */
+    public static int button(int raw) {
+        if (raw == InputConstants.MOUSE_BUTTON_LEFT) return 0;
+        if (raw == InputConstants.MOUSE_BUTTON_RIGHT) return 1;
+        if (raw == InputConstants.MOUSE_BUTTON_MIDDLE) return 2;
+        return raw < 3 ? 3 + raw : raw; // Seitentasten: nie mit 0..2 verwechseln
+    }
+
     private LocalPlayer player() { return client.player; }
 
     // ---- Zustand ----

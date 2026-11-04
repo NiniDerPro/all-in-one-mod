@@ -3,6 +3,7 @@ package dev.aio.core;
 import dev.aio.core.config.ConfigManager;
 import dev.aio.core.modules.hud.FpsModule;
 import dev.aio.core.modules.hud.KeystrokesModule;
+import dev.aio.core.hud.HudElement;
 import dev.aio.core.setting.NumberSetting;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -50,7 +51,8 @@ class ConfigTest {
                 "{\"enabled\":true,\"settings\":{\"scale\":99,\"textColor\":\"nope\",\"showAverage\":\"x\"}}");
         AioCore core = newCore();
         assertTrue(core.module(FpsModule.class).isEnabled());
-        assertEquals(3.0, ((NumberSetting) core.module(FpsModule.class).setting("scale")).get());
+        assertEquals(HudElement.MAX_SCALE, ((NumberSetting) core.module(FpsModule.class).setting("scale")).get());
+        assertEquals(HudElement.MAX_SCALE, ((NumberSetting) core.module(FpsModule.class).setting("scaleY")).get(), "alte Größe gilt auch für die Höhe");
         assertEquals(0xFFFFFFFF, core.module(FpsModule.class).setting("textColor").get());
     }
 

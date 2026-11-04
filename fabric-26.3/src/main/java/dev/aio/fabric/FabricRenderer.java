@@ -78,6 +78,8 @@ public final class FabricRenderer implements Renderer {
 
     @Override public void scale(float factor) { g.pose().scale(factor); }
 
+    @Override public void scale(float sx, float sy) { g.pose().scale(sx, sy); }
+
     @Override public void enableScissor(int x1, int y1, int x2, int y2) { g.enableScissor(x1, y1, x2, y2); }
 
     @Override public void disableScissor() { g.disableScissor(); }
