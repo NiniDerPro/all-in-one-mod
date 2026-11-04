@@ -15,14 +15,18 @@ import java.util.List;
  */
 public final class HeldItemInfoModule extends HudElement {
     private static final int LINE = 10;
+    /** Abstand zwischen Itemname und Verzauberungen. */
+    private static final int NAME_GAP = 6;
 
     private final NumberSetting duration;
     private final BooleanSetting always;
     private final NumberSetting maxLines;
+    private final BooleanSetting showName;
 
     private int lastSlot = -1;
     private String lastKey = "";
     private List<String> lines = List.of();
+    private String itemName = "";
     private long shownAt;
     private int cachedW = -1;
 
@@ -31,6 +35,8 @@ public final class HeldItemInfoModule extends HudElement {
         duration = add(new NumberSetting("duration", "Anzeigedauer", 3, 1, 10, 0.5, " s"));
         always = add(new BooleanSetting("always", "Immer anzeigen", false));
         maxLines = add(new NumberSetting("maxLines", "Max. Zeilen", 6, 1, 12, 1));
+        showName = add(new BooleanSetting("showName", "Itemname anzeigen", true));
+        showName.onChange(v -> cachedW = -1);
     }
 
     @Override protected dev.aio.core.hud.ColorMode defaultColorMode() { return dev.aio.core.hud.ColorMode.STATIC; }
@@ -54,6 +60,7 @@ public final class HeldItemInfoModule extends HudElement {
                 next = cut;
             }
             lines = next;
+            itemName = held.isEmpty() ? "" : held.name();
             cachedW = -1;
             shownAt = System.currentTimeMillis();
         }
@@ -68,33 +75,51 @@ public final class HeldItemInfoModule extends HudElement {
         return elapsed < fadeStart ? 1f : 1f - (elapsed - fadeStart) / 500f;
     }
 
-    @Override public boolean hasContent() { return !lines.isEmpty() && alpha() > 0.02f; }
+    /** Ob der Itemname über den Verzauberungen steht (dann blendet der Adapter den Vanilla-Namen aus). */
+    public boolean replacesVanillaName() { return isActive() && showName.on(); }
+
+    @Override public boolean hasContent() { return (!lines.isEmpty() || !name(false).isEmpty()) && alpha() > 0.02f; }
+
+    private boolean previewing(boolean preview) { return lines.isEmpty() && preview; }
 
     private List<String> shown(boolean preview) {
-        return lines.isEmpty() && preview ? List.of("Schärfe V", "Plünderung III", "Haltbarkeit III") : lines;
+        return previewing(preview) ? List.of("Schärfe V", "Plünderung III", "Haltbarkeit III") : lines;
     }
+
+    private String name(boolean preview) {
+        if (!showName.on()) return "";
+        return previewing(preview) ? "Diamantschwert" : itemName;
+    }
+
+    private int nameHeight(boolean preview) { return name(preview).isEmpty() ? 0 : LINE + NAME_GAP; }
 
     @Override public int width(Renderer r) {
         if (cachedW < 0 || lines.isEmpty()) {
-            int w = 0;
+            int w = r.textWidth(name(true));
             for (String l : shown(true)) w = Math.max(w, r.textWidth(l));
             cachedW = w + PADDING * 2;
         }
         return cachedW;
     }
 
-    @Override public int height(Renderer r) { return PADDING * 2 + shown(true).size() * LINE - 2; }
+    @Override public int height(Renderer r) { return PADDING * 2 + nameHeight(true) + shown(true).size() * LINE - 2; }
 
     @Override protected void renderContent(Renderer r, boolean preview) {
         float a = preview ? 1f : alpha();
         List<String> s = shown(preview);
         int w = width(r);
+        String name = name(preview);
+        if (!name.isEmpty()) {
+            int c = Colors.fade(0xFFFFFFFF, a);
+            if (Colors.alpha(c) >= 8) r.text(name, (w - r.textWidth(name)) / 2f, PADDING, c, shadow());
+        }
+        float top = PADDING + nameHeight(preview);
         for (int i = 0; i < s.size(); i++) {
             String line = s.get(i);
             float x = (w - r.textWidth(line)) / 2f;
             int color = Colors.fade(colorMode() == dev.aio.core.hud.ColorMode.STATIC ? 0xFFAAAAFF : dynamicColor(i * 12), a);
             if (Colors.alpha(color) < 8) continue;
-            r.text(line, x, PADDING + i * LINE, color, shadow());
+            r.text(line, x, top + i * LINE, color, shadow());
         }
     }
 }

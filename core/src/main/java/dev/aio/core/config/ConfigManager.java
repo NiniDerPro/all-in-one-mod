@@ -279,6 +279,10 @@ public final class ConfigManager {
                     if (m instanceof dev.aio.core.hud.HudElement el && settings.has("scale") && !settings.has("scaleY")) {
                         el.setting("scaleY").fromJson(settings.get("scale"));
                     }
+                    // Configs von vor der Auto-Platzierung: vorhandene Positionen nicht verschieben
+                    if (m instanceof dev.aio.core.hud.HudElement el && settings.has("x") && !settings.has("placed")) {
+                        el.markPlaced();
+                    }
                 }
                 if (obj.has("enabled") && obj.get("enabled").isJsonPrimitive()) enabled = obj.get("enabled").getAsBoolean();
             } catch (RuntimeException e) {

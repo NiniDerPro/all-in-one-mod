@@ -50,14 +50,16 @@ public final class ArmorHudModule extends HudElement {
 
     public ArmorHudModule() {
         super("armorhud", "ArmorHUD", "Rüstung, Haltbarkeit und Item in der Hand", 1.0, 0.5);
-        durability = add(new EnumSetting<>("durability", "Haltbarkeit", DurabilityMode.NUMBER));
+        durability = add(new EnumSetting<>("durability", "Haltbarkeit", DurabilityMode.PERCENT));
         orientation = add(new EnumSetting<>("orientation", "Ausrichtung", Orientation.VERTICAL));
         showMainHand = add(new BooleanSetting("mainHand", "Item in der Hand", true));
-        showOffHand = add(new BooleanSetting("offHand", "Zweithand", false));
+        showOffHand = add(new BooleanSetting("offHand", "Zweithand", true));
         colorByDurability = add(new BooleanSetting("colorByDurability", "Farbe nach Haltbarkeit", true));
         durability.onChange(v -> invalidate());
         orientation.onChange(v -> invalidate());
     }
+
+    @Override protected boolean defaultBackground() { return false; }
 
     private void invalidate() {
         cachedW = -1;
@@ -69,9 +71,10 @@ public final class ArmorHudModule extends HudElement {
     @Override public void update() {
         List<Entry> next = new ArrayList<>(6);
         if (platform().inWorld()) {
-            if (showMainHand.on()) addEntry(next, platform().mainHand());
+            // Zweithand über der Rüstung, Haupthand darunter
             if (showOffHand.on()) addEntry(next, platform().offHand());
             for (ItemRef item : platform().armor()) addEntry(next, item);
+            if (showMainHand.on()) addEntry(next, platform().mainHand());
         }
         if (!sameKeys(next, entries)) invalidate();
         entries = next; // Item-Handles immer aktualisieren, gemessen wird nur bei Änderung

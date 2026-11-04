@@ -10,6 +10,11 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.recipe.v1.sync.ClientRecipeSynchronizedEvent;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import dev.aio.core.modules.hud.HeldItemInfoModule;
+import dev.aio.core.modules.hud.PotionStatusModule;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
@@ -38,8 +43,19 @@ public final class AioFabricClient implements ClientModInitializer {
 
         // Ganz oben über allen Vanilla-HUD-Elementen zeichnen (F1 blendet das HUD samt diesem Element aus).
         HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("aio", "hud"), (graphics, deltaTracker) -> {
+            if (hideHudFor(client.gui.screen())) return;
             hudRenderer.begin(graphics);
             core.bus().post(new Events.RenderHud(hudRenderer, deltaTracker.getGameTimeDeltaPartialTick(false)));
+        });
+
+        // Vanilla-Teile ausblenden, die ein aktives AIO-Modul ersetzt
+        HudElementRegistry.replaceElement(VanillaHudElements.MOB_EFFECTS, vanilla -> (graphics, delta) -> {
+            PotionStatusModule potions = core.module(PotionStatusModule.class);
+            if (potions == null || !potions.isActive()) vanilla.extractRenderState(graphics, delta);
+        });
+        HudElementRegistry.replaceElement(VanillaHudElements.HELD_ITEM_TOOLTIP, vanilla -> (graphics, delta) -> {
+            HeldItemInfoModule info = core.module(HeldItemInfoModule.class);
+            if (info == null || !info.replacesVanillaName()) vanilla.extractRenderState(graphics, delta);
         });
 
         ScreenHooks.register(core, client);
@@ -74,5 +90,14 @@ public final class AioFabricClient implements ClientModInitializer {
         }));
 
         ClientLifecycleEvents.CLIENT_STOPPING.register(c -> core.shutdown());
+    }
+
+    /**
+     * In Menüs und Inventaren (Werkbank, Truhe, Pause, ...) ist das AIO-HUD ausgeblendet.
+     * Im Chat bleibt es sichtbar, die AIO-eigenen Screens zeichnen selbst, was sie brauchen.
+     * Das Item-Panel rechts hängt am Inventar-Screen und ist davon nicht betroffen.
+     */
+    private static boolean hideHudFor(Screen screen) {
+        return screen != null && !(screen instanceof ChatScreen) && !(screen instanceof AioScreen);
     }
 }

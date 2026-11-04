@@ -11,6 +11,8 @@ import org.joml.Matrix3x2fStack;
 
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.network.chat.Style;
+import net.minecraft.util.FormattedCharSequence;
 
 /** {@link Renderer} über dem {@link GuiGraphicsExtractor} von 26.3. Pro Frame per {@link #begin} gesetzt. */
 public final class FabricRenderer implements Renderer {
@@ -41,6 +43,24 @@ public final class FabricRenderer implements Renderer {
         pose.pushMatrix();
         pose.translate(x, y);
         g.text(font(), text, 0, 0, argb, shadow);
+        pose.popMatrix();
+    }
+
+    @Override public void coloredText(String text, int[] colors, float[] offsets, float x, float y, boolean shadow) {
+        if (text.isEmpty() || colors.length == 0 || (colors[0] >>> 24) == 0) return;
+        FormattedCharSequence seq = sink -> {
+            for (int i = 0, idx = 0; i < text.length(); idx++) {
+                int cp = text.codePointAt(i);
+                int c = colors[Math.min(idx, colors.length - 1)];
+                if (!sink.accept(i, Style.EMPTY.withColor(c & 0xFFFFFF), cp)) return false;
+                i += Character.charCount(cp);
+            }
+            return true;
+        };
+        Matrix3x2fStack pose = g.pose();
+        pose.pushMatrix();
+        pose.translate(x, y);
+        g.text(font(), seq, 0, 0, colors[0] | 0x00FFFFFF, shadow);
         pose.popMatrix();
     }
 
