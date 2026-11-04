@@ -64,24 +64,12 @@ public final class AioFabricClient implements ClientModInitializer {
 
         // Essens-Info direkt an Hunger- und Lebensleiste (Positionen wie Vanilla: Mitte ± 91, 39 über unten)
         FabricRenderer foodRenderer = new FabricRenderer(client);
-        HudElementRegistry.attachElementBefore(VanillaHudElements.FOOD_BAR, Identifier.fromNamespaceAndPath("aio", "food_under"), (g, d) -> {
-            FoodInfoModule food = core.module(FoodInfoModule.class);
-            if (food == null || !food.isActive()) return;
-            foodRenderer.begin(g);
-            food.renderUnderFood(foodRenderer, platform.foodState(), g.guiWidth() / 2f + 91, g.guiHeight() - 39);
-        });
-        HudElementRegistry.attachElementAfter(VanillaHudElements.FOOD_BAR, Identifier.fromNamespaceAndPath("aio", "food_over"), (g, d) -> {
-            FoodInfoModule food = core.module(FoodInfoModule.class);
-            if (food == null || !food.isActive()) return;
-            foodRenderer.begin(g);
-            food.renderOverFood(foodRenderer, platform.foodState(), g.guiWidth() / 2f + 91, g.guiHeight() - 39);
-        });
-        HudElementRegistry.attachElementAfter(VanillaHudElements.HEALTH_BAR, Identifier.fromNamespaceAndPath("aio", "health_over"), (g, d) -> {
-            FoodInfoModule food = core.module(FoodInfoModule.class);
-            if (food == null || !food.isActive()) return;
-            foodRenderer.begin(g);
-            food.renderOverHealth(foodRenderer, platform.foodState(), g.guiWidth() / 2f - 91, g.guiHeight() - 39);
-        });
+        HudElementRegistry.attachElementBefore(VanillaHudElements.FOOD_BAR, Identifier.fromNamespaceAndPath("aio", "food_under"),
+                (g, d) -> FoodHud.renderUnder(g, core.module(FoodInfoModule.class), g.guiWidth() / 2 + 91, g.guiHeight() - 39));
+        HudElementRegistry.attachElementAfter(VanillaHudElements.FOOD_BAR, Identifier.fromNamespaceAndPath("aio", "food_over"),
+                (g, d) -> FoodHud.renderOver(g, core.module(FoodInfoModule.class), g.guiWidth() / 2 + 91, g.guiHeight() - 39));
+        HudElementRegistry.attachElementAfter(VanillaHudElements.HEALTH_BAR, Identifier.fromNamespaceAndPath("aio", "health_over"),
+                (g, d) -> FoodHud.renderHealth(g, core.module(FoodInfoModule.class), g.guiWidth() / 2 - 91, g.guiHeight() - 39));
 
         ScreenHooks.register(core, client);
         BlockOutlineRenderer.register(core, client);
@@ -101,6 +89,7 @@ public final class AioFabricClient implements ClientModInitializer {
             if (!c.isWindowActive()) InputState.clear();
             platform.applyPendingScreen();
             Culler.tick();
+            FoodHud.tick();
             long t0 = System.nanoTime();
             platform.saveOptionsIfDirty();
             core.bus().post(Events.Tick.INSTANCE);

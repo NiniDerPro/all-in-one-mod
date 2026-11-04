@@ -37,6 +37,16 @@ public final class FoodInfoModule extends Module {
 
     public boolean showTooltip() { return isActive() && tooltip.on(); }
 
+    public boolean showSaturation() { return isActive() && saturation.on(); }
+
+    public boolean showExhaustion() { return isActive() && exhaustion.on(); }
+
+    public boolean showPreview() { return isActive() && preview.on(); }
+
+    public boolean showHealthPreview() { return isActive() && preview.on() && healthPreview.on(); }
+
+    public boolean showValues() { return isActive() && values.on(); }
+
     /** Blinken der Vorschau wie bei AppleSkin-ähnlichen Anzeigen: sanft pulsierend. */
     private static float pulse() {
         double t = (System.currentTimeMillis() % 1500) / 1500.0;
