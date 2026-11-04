@@ -67,6 +67,10 @@ public final class FakeContainer implements ContainerView {
 
     @Override public boolean isPlayerOnly() { return playerOnly; }
 
+    public Grid grid;
+
+    @Override public Grid grid() { return grid; }
+
     @Override public void click(int i, int button, Click type) {
         clicks++;
         Stack slot = items[i];

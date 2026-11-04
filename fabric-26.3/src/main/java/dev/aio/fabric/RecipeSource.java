@@ -1,6 +1,7 @@
 package dev.aio.fabric;
 
 import dev.aio.core.platform.ItemRef;
+import dev.aio.core.platform.RecipeKind;
 import dev.aio.core.platform.RecipeView;
 import net.fabricmc.fabric.api.recipe.v1.FabricRecipeManager;
 import net.fabricmc.fabric.api.recipe.v1.sync.SynchronizedRecipes;
@@ -33,11 +34,13 @@ final class RecipeSource {
 
     static void onSynced(SynchronizedRecipes recipes) { synced = recipes; }
 
-    static void clear() { synced = null; }
-
-    static boolean available(Minecraft client) {
-        return client.getSingleplayerServer() != null || synced != null;
+    static void clear() {
+        synced = null;
+        VanillaRecipes.clear();
     }
+
+    /** Immer verfügbar: notfalls die Vanilla-Rezepte aus dem Spiel selbst. */
+    static boolean available(Minecraft client) { return client.level != null; }
 
     private static Collection<RecipeHolder<?>> all(Minecraft client) {
         var server = client.getSingleplayerServer();
@@ -53,7 +56,8 @@ final class RecipeSource {
             return out;
         }
         SynchronizedRecipes s = synced;
-        return s == null ? List.of() : s.recipes();
+        if (s != null) return s.recipes(); // vom Server geschickt: auch geänderte Rezepte
+        return VanillaRecipes.get(client);   // sonst die Standard-Rezepte von Minecraft
     }
 
     static List<RecipeView> find(Minecraft client, ItemRef item, boolean usages) {
@@ -61,8 +65,9 @@ final class RecipeSource {
         ContextMap ctx = SlotDisplayContext.fromLevel(client.level);
         List<RecipeView> out = new ArrayList<>();
         for (RecipeHolder<?> holder : all(client)) {
+            RecipeKind kind = kindOf(holder.value().getType());
             for (RecipeDisplay display : holder.value().display()) {
-                RecipeView view = convert(display, ctx);
+                RecipeView view = convert(display, ctx, kind);
                 if (view == null) continue;
                 if (usages ? uses(view, target) : produces(view, target)) out.add(view);
                 if (out.size() >= LIMIT) return out;
@@ -84,24 +89,43 @@ final class RecipeSource {
         return false;
     }
 
-    private static RecipeView convert(RecipeDisplay display, ContextMap ctx) {
+    private static RecipeKind kindOf(RecipeType<?> type) {
+        if (type == RecipeType.CRAFTING) return RecipeKind.CRAFTING;
+        if (type == RecipeType.SMELTING) return RecipeKind.FURNACE;
+        if (type == RecipeType.BLASTING) return RecipeKind.BLAST_FURNACE;
+        if (type == RecipeType.SMOKING) return RecipeKind.SMOKER;
+        if (type == RecipeType.CAMPFIRE_COOKING) return RecipeKind.CAMPFIRE;
+        if (type == RecipeType.STONECUTTING) return RecipeKind.STONECUTTER;
+        return RecipeKind.OTHER;
+    }
+
+    private static String furnaceName(RecipeKind kind) {
+        return switch (kind) {
+            case BLAST_FURNACE -> "Schmelzofen";
+            case SMOKER -> "Räucherofen";
+            case CAMPFIRE -> "Lagerfeuer";
+            default -> "Ofen";
+        };
+    }
+
+    private static RecipeView convert(RecipeDisplay display, ContextMap ctx, RecipeKind kind) {
         ItemRef result = first(display.result(), ctx);
         if (result.isEmpty()) return null;
         ItemRef station = first(display.craftingStation(), ctx);
         if (display instanceof ShapedCraftingRecipeDisplay shaped) {
-            return new RecipeView("Werkbank", shaped.width(), shaped.height(), resolveAll(shaped.ingredients(), ctx), result, station);
+            return new RecipeView("Werkbank", shaped.width(), shaped.height(), resolveAll(shaped.ingredients(), ctx), result, station, RecipeKind.CRAFTING);
         }
         if (display instanceof ShapelessCraftingRecipeDisplay shapeless) {
             List<List<ItemRef>> slots = resolveAll(shapeless.ingredients(), ctx);
             int n = slots.size();
             int w = n <= 1 ? 1 : n <= 4 ? 2 : 3;
-            return new RecipeView("Werkbank (formlos)", w, (n + w - 1) / w, slots, result, station);
+            return new RecipeView("Werkbank (formlos)", w, (n + w - 1) / w, slots, result, station, RecipeKind.CRAFTING);
         }
         if (display instanceof FurnaceRecipeDisplay furnace) {
-            return new RecipeView("Ofen", 1, 1, List.of(resolve(furnace.ingredient(), ctx)), result, station);
+            return new RecipeView(furnaceName(kind), 1, 1, List.of(resolve(furnace.ingredient(), ctx)), result, station, kind);
         }
         if (display instanceof StonecutterRecipeDisplay cutter) {
-            return new RecipeView("Steinsäge", 1, 1, List.of(resolve(cutter.input(), ctx)), result, station);
+            return new RecipeView("Steinsäge", 1, 1, List.of(resolve(cutter.input(), ctx)), result, station, RecipeKind.STONECUTTER);
         }
         return null;
     }

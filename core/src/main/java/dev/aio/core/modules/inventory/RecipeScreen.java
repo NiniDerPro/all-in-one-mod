@@ -25,7 +25,9 @@ public final class RecipeScreen implements UiScreen {
     private View view;
     private int index;
     private ItemRef hoveredItem;
-    private float[] prevBtn = new float[4], nextBtn = new float[4];
+    private float[] prevBtn = new float[4], nextBtn = new float[4], plusBtn = new float[4];
+    private RecipeTransfer.Status transferStatus = RecipeTransfer.Status.WRONG_STATION;
+    private RecipeView shownRecipe;
     private final java.util.List<Object[]> slotHits = new java.util.ArrayList<>();
 
     public RecipeScreen(AioCore core, ItemRef item, boolean usages) {
@@ -57,8 +59,7 @@ public final class RecipeScreen implements UiScreen {
         r.text(r.trim(head, pw - 40), px + 28, py + 11, Theme.TEXT, true);
 
         if (!core.platform().recipesAvailable()) {
-            r.text("Rezepte sind nur im Singleplayer", px + 10, py + 50, Theme.TEXT_DIM, false);
-            r.text("oder mit Fabric-Rezept-Sync verfügbar.", px + 10, py + 62, Theme.TEXT_DIM, false);
+            r.text("Rezepte sind erst in einer Welt verfügbar.", px + 10, py + 50, Theme.TEXT_DIM, false);
             return;
         }
         List<RecipeView> rs = view.recipes;
@@ -68,6 +69,11 @@ public final class RecipeScreen implements UiScreen {
         }
         index = Math.max(0, Math.min(rs.size() - 1, index));
         RecipeView rec = rs.get(index);
+        shownRecipe = rec;
+        dev.aio.core.platform.ContainerView container = core.platform().container();
+        transferStatus = RecipeTransfer.check(container, rec);
+        java.util.List<Integer> missing = transferStatus == RecipeTransfer.Status.MISSING_ITEMS
+                ? RecipeTransfer.missing(container, rec) : java.util.List.of();
         r.text(rec.type(), px + 10, py + 30, Theme.TEXT_DIM, false);
 
         int gw = Math.max(1, rec.width()), gh = Math.max(1, rec.height());
@@ -76,6 +82,7 @@ public final class RecipeScreen implements UiScreen {
         for (int i = 0; i < gw * gh; i++) {
             float sx = gx + (i % gw) * SLOT, sy = gy + (i / gw) * SLOT;
             drawSlot(r, sx, sy);
+            if (missing.contains(i)) r.fill(sx + 1, sy + 1, sx + SLOT - 1, sy + SLOT - 1, 0x80FF3030);
             if (i < rec.slots().size()) {
                 List<ItemRef> opts = rec.slots().get(i);
                 if (!opts.isEmpty()) {
@@ -95,6 +102,27 @@ public final class RecipeScreen implements UiScreen {
         if (mx >= rx && mx < rx + SLOT && my >= ry && my < ry + SLOT) hoveredItem = rec.result();
         if (rec.station() != null && !rec.station().isEmpty()) r.item(rec.station(), rx + 30, ry + 1, false);
 
+        // "+": ins offene Inventar übertragen
+        plusBtn = new float[]{px + pw - 30, py + 44, px + pw - 10, py + 60};
+        boolean ok = transferStatus == RecipeTransfer.Status.OK;
+        boolean hoverPlus = mx >= plusBtn[0] && mx <= plusBtn[2] && my >= plusBtn[1] && my <= plusBtn[3];
+        int plusColor = ok ? (hoverPlus ? Theme.accent(core) : 0xFF2E7D32)
+                : transferStatus == RecipeTransfer.Status.MISSING_ITEMS ? 0xFF8A3030 : 0xFF3A3A44;
+        r.fill(plusBtn[0], plusBtn[1], plusBtn[2], plusBtn[3], plusColor);
+        r.centeredText("+", (plusBtn[0] + plusBtn[2]) / 2, plusBtn[1] + 4, ok ? Theme.TEXT : Theme.TEXT_MUTED, true);
+        if (hoverPlus) {
+            String tip = switch (transferStatus) {
+                case OK -> "Klick: einmal  ·  Shift: so viele wie möglich";
+                case MISSING_ITEMS -> "Es fehlen Zutaten (rot markiert)";
+                case TOO_BIG -> "Passt nicht ins 2×2 – Werkbank öffnen";
+                case WRONG_STATION -> stationHint(rec.kind());
+            };
+            float tw = r.textWidth(tip);
+            float tx = Math.max(2, Math.min(mx - tw / 2, w - tw - 4));
+            r.fill(tx - 3, plusBtn[3] + 2, tx + tw + 3, plusBtn[3] + 13, 0xF0100010);
+            r.text(tip, tx, plusBtn[3] + 4, 0xFFFFFFFF, false);
+        }
+
         String counter = (index + 1) + " / " + rs.size();
         r.centeredText(counter, px + pw / 2f, py + ph - 18, Theme.TEXT_DIM, false);
         prevBtn = new float[]{px + 10, py + ph - 22, px + 34, py + ph - 8};
@@ -109,6 +137,17 @@ public final class RecipeScreen implements UiScreen {
             r.fill(tx - 3, my - 14, tx + r.textWidth(n) + 3, my - 3, 0xF0100010);
             r.text(n, tx, my - 12, 0xFFFFFFFF, true);
         }
+    }
+
+    private static String stationHint(dev.aio.core.platform.RecipeKind kind) {
+        return switch (kind) {
+            case CRAFTING -> "Inventar oder Werkbank öffnen";
+            case FURNACE -> "Ofen öffnen";
+            case BLAST_FURNACE -> "Schmelzofen öffnen";
+            case SMOKER -> "Räucherofen öffnen";
+            case STONECUTTER -> "Steinsäge öffnen";
+            default -> "Kann nicht übertragen werden";
+        };
     }
 
     private void drawSlot(Renderer r, float x, float y) {
@@ -128,6 +167,13 @@ public final class RecipeScreen implements UiScreen {
     private static boolean in(float[] b, double x, double y) { return x >= b[0] && x <= b[2] && y >= b[1] && y <= b[3]; }
 
     @Override public boolean mouseClicked(double mx, double my, int button) {
+        if (in(plusBtn, mx, my) && shownRecipe != null) {
+            if (transferStatus == RecipeTransfer.Status.OK) {
+                boolean shift = core.platform().isKeyDown(Keys.LEFT_SHIFT) || core.platform().isKeyDown(Keys.RIGHT_SHIFT);
+                if (RecipeTransfer.transfer(core.platform().container(), shownRecipe, shift) > 0) core.platform().closeScreen();
+            }
+            return true;
+        }
         if (in(prevBtn, mx, my)) { index--; return true; }
         if (in(nextBtn, mx, my)) { index++; return true; }
         if (hoveredItem != null && !hoveredItem.isEmpty()) {
