@@ -29,6 +29,7 @@ public class FakePlatform implements Platform {
     public UiScreen screen;
     public String clipboard = "";
     public List<EffectInfo> effects = new ArrayList<>();
+    public dev.aio.core.platform.LookTarget lookTarget;
     public List<ItemRef> armor = new ArrayList<>(List.of(ItemRef.EMPTY, ItemRef.EMPTY, ItemRef.EMPTY, ItemRef.EMPTY));
 
     @Override public boolean inWorld() { return inWorld; }
@@ -44,6 +45,7 @@ public class FakePlatform implements Platform {
     @Override public ItemRef mainHand() { return ItemRef.EMPTY; }
     @Override public ItemRef offHand() { return ItemRef.EMPTY; }
     @Override public List<EffectInfo> effects() { return effects; }
+    @Override public dev.aio.core.platform.LookTarget lookTarget() { return lookTarget; }
     @Override public boolean isGameKeyDown(GameKey key) { return heldGameKeys.contains(key); }
     @Override public String gameKeyName(GameKey key) { return key.name().substring(0, 1); }
     @Override public boolean isKeyDown(String key) { return heldKeys.contains(key); }

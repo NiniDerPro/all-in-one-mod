@@ -5,6 +5,7 @@ import dev.aio.core.platform.EffectInfo;
 import dev.aio.core.platform.GameKey;
 import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.Keys;
+import dev.aio.core.platform.LookTarget;
 import dev.aio.core.platform.Perspective;
 import dev.aio.core.platform.Platform;
 import dev.aio.core.platform.Vec3;
@@ -19,6 +20,18 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.player.LocalPlayer;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -27,6 +40,8 @@ import net.minecraft.world.entity.EquipmentSlot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** {@link Platform}-Implementierung für Minecraft 26.3 (offizielle Mojang-Namen). */
 public final class FabricPlatform implements Platform {
@@ -109,6 +124,68 @@ public final class FabricPlatform implements Platform {
                     effect.getCategory() == MobEffectCategory.BENEFICIAL));
         }
         return list;
+    }
+
+    // ---- Blick-Info ----
+
+    private final Map<String, String> modNames = new ConcurrentHashMap<>();
+
+    /** Anzeigename einer Mod zu einem Namespace ("minecraft" -> "Minecraft"). */
+    private String modName(String namespace) {
+        return modNames.computeIfAbsent(namespace, ns -> FabricLoader.getInstance().getModContainer(ns)
+                .map(c -> c.getMetadata().getName())
+                .orElse(ns.isEmpty() ? ns : Character.toUpperCase(ns.charAt(0)) + ns.substring(1)));
+    }
+
+    @Override public LookTarget lookTarget() {
+        LocalPlayer p = player();
+        HitResult hit = client.hitResult;
+        if (p == null || client.level == null || hit == null || hit.getType() == HitResult.Type.MISS) return null;
+
+        if (hit instanceof EntityHitResult eh) {
+            Entity e = eh.getEntity();
+            String source = modName(BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()).getNamespace());
+            ItemRef icon = e instanceof ItemEntity item ? FabricItemRef.of(item.getItem()) : ItemRef.EMPTY;
+            BlockPos pos = e.blockPosition();
+            if (e instanceof LivingEntity living) {
+                return LookTarget.entity(e.getDisplayName().getString(), source, icon,
+                        living.getHealth(), living.getMaxHealth(), living.getArmorValue(), pos.getX(), pos.getY(), pos.getZ());
+            }
+            return LookTarget.entity(e.getDisplayName().getString(), source, icon, Float.NaN, Float.NaN, -1,
+                    pos.getX(), pos.getY(), pos.getZ());
+        }
+
+        if (hit instanceof BlockHitResult bh) {
+            BlockPos pos = bh.getBlockPos();
+            BlockState state = client.level.getBlockState(pos);
+            if (state.isAir()) return null;
+            String source = modName(BuiltInRegistries.BLOCK.getKey(state.getBlock()).getNamespace());
+            ItemRef icon = FabricItemRef.of(state.getCloneItemStack(client.level, pos, false));
+
+            String tool = toolType(state);
+            Boolean correct = null;
+            if (state.requiresCorrectToolForDrops()) {
+                correct = p.hasCorrectToolForDrops(state); // ohne passendes Werkzeug kein Drop
+            } else if (tool != null && p.getMainHandItem().getDestroySpeed(state) > 1f) {
+                correct = Boolean.TRUE; // passendes Werkzeug in der Hand (abbaubar ist es auch ohne)
+            }
+
+            float growth = Float.NaN;
+            if (state.getBlock() instanceof CropBlock crop && crop.getMaxAge() > 0) {
+                growth = crop.getAge(state) / (float) crop.getMaxAge();
+            }
+            return LookTarget.block(state.getBlock().getName().getString(), source, icon, correct, tool, growth,
+                    pos.getX(), pos.getY(), pos.getZ());
+        }
+        return null;
+    }
+
+    private static String toolType(BlockState state) {
+        if (state.is(BlockTags.MINEABLE_WITH_PICKAXE)) return "Spitzhacke";
+        if (state.is(BlockTags.MINEABLE_WITH_AXE)) return "Axt";
+        if (state.is(BlockTags.MINEABLE_WITH_SHOVEL)) return "Schaufel";
+        if (state.is(BlockTags.MINEABLE_WITH_HOE)) return "Hacke";
+        return null;
     }
 
     // ---- Eingabe ----

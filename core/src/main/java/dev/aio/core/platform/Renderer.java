@@ -52,6 +52,19 @@ public interface Renderer {
         return text.substring(0, end) + ellipsis;
     }
 
+    /** Vertikaler Farbverlauf (zeilenweise aus fill zusammengesetzt). */
+    default void fillGradient(float x1, float y1, float x2, float y2, int top, int bottom) {
+        float h = y2 - y1;
+        if (h <= 0) return;
+        if (top == bottom) {
+            fill(x1, y1, x2, y2, top);
+            return;
+        }
+        for (float y = y1; y < y2; y += 1) {
+            fill(x1, y, x2, Math.min(y2, y + 1), dev.aio.core.util.Colors.lerp(top, bottom, (y - y1) / h));
+        }
+    }
+
     default void centeredText(String text, float cx, float y, int argb, boolean shadow) {
         text(text, cx - textWidth(text) / 2f, y, argb, shadow);
     }

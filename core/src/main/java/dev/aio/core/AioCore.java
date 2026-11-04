@@ -15,6 +15,7 @@ import dev.aio.core.modules.hud.CoordinatesModule;
 import dev.aio.core.modules.hud.CpsModule;
 import dev.aio.core.modules.hud.FpsModule;
 import dev.aio.core.modules.hud.KeystrokesModule;
+import dev.aio.core.modules.hud.LookAtModule;
 import dev.aio.core.modules.hud.PingModule;
 import dev.aio.core.modules.hud.PotionStatusModule;
 import dev.aio.core.modules.player.ToggleSprintModule;
@@ -77,6 +78,7 @@ public final class AioCore {
         modules.register(new CoordinatesModule());
         modules.register(new PingModule());
         modules.register(new PotionStatusModule());
+        modules.register(new LookAtModule());
         modules.register(new FreelookModule());
         modules.register(new ZoomModule());
         modules.register(new FullbrightModule());
