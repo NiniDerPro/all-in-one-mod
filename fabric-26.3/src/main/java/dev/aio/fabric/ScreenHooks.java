@@ -16,6 +16,7 @@ import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.inventory.Slot;
 
 /**
@@ -105,7 +106,9 @@ final class ScreenHooks {
             ItemPanel panel = list.panel();
             if (panel != null && panel.mouseScrolled(mx, my, v)) return false;
             Slot slot = slotAt(screen, mx, my);
-            return slot == null || !tweaks.onScroll(core.platform().container(), slot.index, v, shift());
+            // Über Bündeln wählt das Mausrad in Vanilla das Item aus: nicht dazwischenfunken
+            if (slot == null || slot.getItem().has(DataComponents.BUNDLE_CONTENTS)) return true;
+            return !tweaks.onScroll(core.platform().container(), slot.index, v, shift());
         });
 
         ScreenKeyboardEvents.allowKeyPress(screen).register((s, event) -> {

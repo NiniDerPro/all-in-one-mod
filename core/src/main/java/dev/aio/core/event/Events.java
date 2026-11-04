@@ -47,8 +47,14 @@ public final class Events {
     /** Kurz bevor der Spieler ein Wesen schlägt (vor dem Senden an den Server). */
     public record AttackEntity(boolean living) {}
 
-    /** Eine empfangene Chat- oder Systemnachricht als reiner Text. */
-    public record ChatReceived(String text, boolean system) {}
+    /**
+     * Eine empfangene Chat- oder Systemnachricht als reiner Text.
+     *
+     * @param fromSelf vom eigenen Spieler gesendet (laut Absender, nur bei signierten Chatnachrichten bekannt)
+     */
+    public record ChatReceived(String text, boolean system, boolean fromSelf) {
+        public ChatReceived(String text, boolean system) { this(text, system, false); }
+    }
 
     /** Beim Betreten einer Welt bzw. eines Servers. {@code address} ist bei Singleplayer null. */
     public record ServerJoin(String address) {}

@@ -64,8 +64,8 @@ class RecipeTransferTest {
         FakeContainer c = inventory2x2();
         c.set(10, "oak_planks", 10);
         assertEquals(2, RecipeTransfer.transfer(c, table(), true), "10 Bretter reichen für 2× (je 4)");
-        for (int i = 0; i < 4; i++) assertEquals(2, c.get(i).count());
-        assertEquals(10, c.total("oak_planks"));
+        for (int i = 0; i < 4; i++) assertEquals(2, c.get(i).count(), "gleichmäßig verteilt");
+        assertEquals(10, c.total("oak_planks"), "Rest bleibt im Inventar");
     }
 
     @Test void smallRecipeFitsInto2x2ButBigDoesNot() {
@@ -97,6 +97,24 @@ class RecipeTransferTest {
         RecipeView smelt = new RecipeView("Ofen", 1, 1, List.of(List.of(ref("iron_ore"))), ref("iron_ingot"), ItemRef.EMPTY, RecipeKind.FURNACE);
         assertEquals(40, RecipeTransfer.transfer(c, smelt, true), "Shift füllt den Eingang");
         assertEquals(40, c.get(0).count());
+    }
+
+    @Test void shiftUsesFewPacketsAndFillsFullStacks() {
+        FakeContainer c = craftingTable();
+        for (int i = 0; i < 8; i++) c.set(9 + i, "cobblestone", 64);
+        assertEquals(64, RecipeTransfer.transfer(c, furnace(), true));
+        for (int i = 0; i < 9; i++) assertEquals(i == 4 ? 0 : 64, c.get(i).count());
+        assertTrue(c.clicks < 150, "wenige Pakete statt ~1500: " + c.clicks);
+        assertTrue(c.clicks <= RecipeTransfer.MAX_CLICKS);
+    }
+
+    @Test void abortsWhenGridCannotBeCleared() {
+        FakeContainer c = inventory2x2();
+        for (int i = 4; i < 40; i++) c.set(i, "stone", 64); // Inventar komplett voll
+        c.set(39, "oak_planks", 4);
+        c.set(0, "dirt", 1);                                // Raster belegt, kann nicht weg
+        assertEquals(0, RecipeTransfer.transfer(c, table(), false));
+        assertEquals("dirt", c.get(0).id(), "nichts vertauscht");
     }
 
     @Test void clearsOldGridContentFirst() {

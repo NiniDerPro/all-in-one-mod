@@ -9,7 +9,11 @@ import dev.aio.core.platform.LookTarget;
 import dev.aio.core.platform.Perspective;
 import dev.aio.core.platform.Platform;
 import dev.aio.core.platform.Vec3;
+import dev.aio.core.AioCore;
+import dev.aio.core.modules.render.FreelookModule;
+import dev.aio.core.platform.CameraView;
 import dev.aio.core.platform.ContainerView;
+import net.minecraft.world.level.storage.LevelResource;
 import dev.aio.core.platform.RecipeView;
 import dev.aio.core.platform.ServerInfo;
 import dev.aio.core.platform.VanillaOption;
@@ -175,9 +179,13 @@ public final class FabricPlatform implements Platform {
                 .orElse(ns.isEmpty() ? ns : Character.toUpperCase(ns.charAt(0)) + ns.substring(1)));
     }
 
-    @Override public LookTarget lookTarget() {
+    @Override public LookTarget lookTarget(double maxDistance) {
         LocalPlayer p = player();
         HitResult hit = client.hitResult;
+        if (p != null && maxDistance > 0 && (hit == null || hit.getType() == HitResult.Type.MISS)) {
+            // weiter als die Reichweite schauen (nur Blöcke, wie ein Fernglas für die Blick-Info)
+            hit = p.pick(maxDistance, client.getDeltaTracker().getGameTimeDeltaPartialTick(false), false);
+        }
         if (p == null || client.level == null || hit == null || hit.getType() == HitResult.Type.MISS) return null;
 
         if (hit instanceof EntityHitResult eh) {
@@ -244,7 +252,12 @@ public final class FabricPlatform implements Platform {
 
     @Override public String worldKey() {
         var server = client.getSingleplayerServer();
-        if (server != null) return "sp:" + server.getWorldData().getLevelName();
+        if (server != null) {
+            // Ordnername ist eindeutig, der Anzeigename nicht
+            var root = server.getWorldPath(LevelResource.ROOT).toAbsolutePath().normalize();
+            var folder = root.getFileName();
+            return "sp:" + (folder != null ? folder.toString() : server.getWorldData().getLevelName());
+        }
         ServerData info = client.getCurrentServer();
         return info == null ? "unbekannt" : "server:" + info.ip.toLowerCase(java.util.Locale.ROOT);
     }
@@ -262,14 +275,41 @@ public final class FabricPlatform implements Platform {
         return dim.toString();
     }
 
-    @Override public Vec3 eyePos() {
+    @Override public CameraView camera(float partial) {
         LocalPlayer p = player();
-        if (p == null) return Vec3.ZERO;
-        var eye = p.getEyePosition();
-        return new Vec3(eye.x, eye.y, eye.z);
+        if (p == null) return new CameraView(0, 0, 0, 0, 0, 70);
+        var fl = AioCore.get() == null ? null : AioCore.get().module(FreelookModule.class);
+        boolean free = fl != null && fl.isEngaged() && freelookSupported();
+        float yaw = free ? fl.cameraYaw() : p.getViewYRot(partial);
+        float pitch = free ? fl.cameraPitch() : p.getViewXRot(partial);
+        var eye = p.getEyePosition(partial);
+        double x = eye.x, y = eye.y, z = eye.z;
+        Perspective persp = perspective();
+        if (persp != Perspective.FIRST_PERSON) {
+            // Vanilla-Kamera steht 4 Blöcke hinter (bzw. vor) dem Kopf; Wände verkürzen das, wird hier ignoriert
+            double ry = Math.toRadians(yaw), rp = Math.toRadians(pitch);
+            double fx = -Math.sin(ry) * Math.cos(rp), fy = -Math.sin(rp), fz = Math.cos(ry) * Math.cos(rp);
+            double d = persp == Perspective.THIRD_PERSON_BACK ? -4 : 4;
+            x += fx * d;
+            y += fy * d;
+            z += fz * d;
+            if (persp == Perspective.THIRD_PERSON_FRONT) {
+                yaw += 180;
+                pitch = -pitch;
+            }
+        }
+        double fov = FabricHooks.lastFov > 1 ? FabricHooks.lastFov : (client.options == null ? 70 : client.options.fov().get());
+        return new CameraView(x, y, z, yaw, pitch, fov);
     }
 
-    @Override public double fov() { return client.options.fov().get(); }
+    @Override public boolean freelookSupported() { return FabricHooks.cameraHookSeen; }
+
+    @Override public boolean isModLoaded(String modId) { return FabricLoader.getInstance().isModLoaded(modId); }
+
+    @Override public boolean crosshairOnLiving() {
+        return client.hitResult instanceof EntityHitResult eh && eh.getEntity() instanceof LivingEntity le
+                && le.isAlive() && !(le instanceof net.minecraft.world.entity.decoration.ArmorStand);
+    }
 
     @Override public boolean isDead() { return player() != null && player().isDeadOrDying(); }
 
@@ -437,6 +477,7 @@ public final class FabricPlatform implements Platform {
     }
 
     @Override public double option(VanillaOption o) {
+        if (client.options == null) return Double.NaN; // Spielstart: Optionen noch nicht geladen
         Object v = optionInstance(o).get();
         if (v instanceof Boolean b) return b ? 1 : 0;
         return v instanceof Number n ? n.doubleValue() : 0;
@@ -444,6 +485,7 @@ public final class FabricPlatform implements Platform {
 
     @SuppressWarnings("unchecked")
     @Override public void setOption(VanillaOption o, double value) {
+        if (client.options == null) return;
         if (o == VanillaOption.FORCE_UNICODE_FONT) {
             OptionInstance<Boolean> opt = (OptionInstance<Boolean>) optionInstance(o);
             boolean b = value > 0.5;
@@ -456,7 +498,7 @@ public final class FabricPlatform implements Platform {
 
     /** Vom Tick aufgerufen: Optionen gesammelt speichern (nicht bei jedem Zieh-Schritt). */
     void saveOptionsIfDirty() {
-        if (optionsDirtyAt > 0 && System.currentTimeMillis() - optionsDirtyAt > 1000) {
+        if (client.options != null && optionsDirtyAt > 0 && System.currentTimeMillis() - optionsDirtyAt > 1000) {
             optionsDirtyAt = -1;
             client.options.save();
         }
@@ -483,9 +525,10 @@ public final class FabricPlatform implements Platform {
         };
     }
 
-    @Override public boolean isGameKeyDown(GameKey key) { return mapping(key).isDown(); }
+    @Override public boolean isGameKeyDown(GameKey key) { return client.options != null && mapping(key).isDown(); }
 
     @Override public String gameKeyName(GameKey key) {
+        if (client.options == null) return "";
         String name = mapping(key).getTranslatedKeyMessage().getString();
         return name.length() > 4 ? name.substring(0, 4) : name;
     }
@@ -493,10 +536,11 @@ public final class FabricPlatform implements Platform {
     @Override public boolean isKeyDown(String key) { return InputState.isDown(key); }
 
     @Override public boolean matchesGameKey(GameKey gameKey, String key) {
-        return !Keys.isNone(key) && key.equals(mapping(gameKey).saveString());
+        return client.options != null && !Keys.isNone(key) && key.equals(mapping(gameKey).saveString());
     }
 
     @Override public void setGameKeyPressed(GameKey key, boolean pressed) {
+        if (client.options == null) return;
         KeyMapping m = mapping(key);
         // Bei aktivierter Vanilla-Option "Umschalten" würde setDown jedes Mal umschalten.
         if (m instanceof ToggleKeyMapping) return;
@@ -515,6 +559,7 @@ public final class FabricPlatform implements Platform {
     // ---- Kamera ----
 
     @Override public Perspective perspective() {
+        if (client.options == null) return Perspective.FIRST_PERSON;
         return switch (client.options.getCameraType()) {
             case FIRST_PERSON -> Perspective.FIRST_PERSON;
             case THIRD_PERSON_BACK -> Perspective.THIRD_PERSON_BACK;
@@ -523,6 +568,7 @@ public final class FabricPlatform implements Platform {
     }
 
     @Override public void setPerspective(Perspective perspective) {
+        if (client.options == null) return;
         client.options.setCameraType(switch (perspective) {
             case FIRST_PERSON -> CameraType.FIRST_PERSON;
             case THIRD_PERSON_BACK -> CameraType.THIRD_PERSON_BACK;

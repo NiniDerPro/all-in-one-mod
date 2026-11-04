@@ -27,15 +27,23 @@ import java.util.List;
  * Server per Fabric synchronisierte Rezepte (nur wenn der Server das anbietet).
  */
 final class RecipeSource {
-    private static final int LIMIT = 200;
+    private static final int LIMIT = 1000;
     private static volatile SynchronizedRecipes synced;
+    /** Umgewandelte Rezepte der aktuellen Quelle; einmal pro Welt/Quelle statt bei jedem Öffnen. */
+    private static volatile List<RecipeView> cache;
+    private static volatile Object cacheSource;
 
     private RecipeSource() {}
 
-    static void onSynced(SynchronizedRecipes recipes) { synced = recipes; }
+    static void onSynced(SynchronizedRecipes recipes) {
+        synced = recipes;
+        cache = null;
+    }
 
     static void clear() {
         synced = null;
+        cache = null;
+        cacheSource = null;
         VanillaRecipes.clear();
     }
 
@@ -62,18 +70,31 @@ final class RecipeSource {
 
     static List<RecipeView> find(Minecraft client, ItemRef item, boolean usages) {
         if (client.level == null || !(item instanceof FabricItemRef target)) return List.of();
-        ContextMap ctx = SlotDisplayContext.fromLevel(client.level);
         List<RecipeView> out = new ArrayList<>();
+        for (RecipeView view : views(client)) {
+            if (usages ? uses(view, target) : produces(view, target)) out.add(view);
+            if (out.size() >= LIMIT) break;
+        }
+        return out;
+    }
+
+    /** Alle Rezepte der aktuellen Quelle als Anzeige-Daten (gecacht, Quelle = Server/Sync/Vanilla). */
+    private static List<RecipeView> views(Minecraft client) {
+        Object source = client.getSingleplayerServer() != null ? client.getSingleplayerServer() : synced != null ? synced : client.level;
+        List<RecipeView> c = cache;
+        if (c != null && source == cacheSource) return c;
+        ContextMap ctx = SlotDisplayContext.fromLevel(client.level);
+        List<RecipeView> list = new ArrayList<>();
         for (RecipeHolder<?> holder : all(client)) {
             RecipeKind kind = kindOf(holder.value().getType());
             for (RecipeDisplay display : holder.value().display()) {
                 RecipeView view = convert(display, ctx, kind);
-                if (view == null) continue;
-                if (usages ? uses(view, target) : produces(view, target)) out.add(view);
-                if (out.size() >= LIMIT) return out;
+                if (view != null) list.add(view);
             }
         }
-        return out;
+        cache = List.copyOf(list);
+        cacheSource = source;
+        return cache;
     }
 
     private static boolean produces(RecipeView v, FabricItemRef target) {

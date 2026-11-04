@@ -40,8 +40,21 @@ public interface Platform {
 
     List<EffectInfo> effects();
 
-    /** Block oder Wesen unter dem Fadenkreuz, null wenn nichts. */
-    LookTarget lookTarget();
+    /**
+     * Block oder Wesen, das der Spieler ansieht, null wenn nichts.
+     *
+     * @param maxDistance 0 = wie das Vanilla-Fadenkreuz (Reichweite), sonst weiter (nur Blöcke)
+     */
+    LookTarget lookTarget(double maxDistance);
+
+    /** Ob das Fadenkreuz gerade auf einem Lebewesen liegt (für Auto Sword). */
+    boolean crosshairOnLiving();
+
+    /** Ob eine andere Mod geladen ist (z. B. "jei"), um doppelte Funktionen abzuschalten. */
+    boolean isModLoaded(String modId);
+
+    /** Ob der Kamera-Hook für Freelook in dieser MC-Version greift. Sonst darf Freelook die Maus nicht abfangen. */
+    boolean freelookSupported();
 
     // ---- Welt ----
 
@@ -56,11 +69,11 @@ public interface Platform {
     /** "overworld", "the_nether", "the_end" oder die ID einer anderen Dimension. */
     String dimension();
 
-    /** Augenposition des Spielers (für Wegpunkt-Marker). */
-    Vec3 eyePos();
-
-    /** Eingestelltes Sichtfeld in Grad (vertikal). */
-    double fov();
+    /**
+     * Die tatsächliche Kamera für Bildschirm-Projektionen (Wegpunkt-Marker): interpoliert,
+     * mit 3.-Person-Abstand, Freelook-Richtung und dem echten Sichtfeld (Sprinten, Zoom, ...).
+     */
+    CameraView camera(float partialTick);
 
     boolean isDead();
 
@@ -109,6 +122,7 @@ public interface Platform {
 
     // ---- Optionen / Sonstiges ----
 
+    /** Wert einer Vanilla-Option oder {@code NaN}, solange die Optionen noch nicht geladen sind (Spielstart). */
     double option(VanillaOption option);
 
     void setOption(VanillaOption option, double value);
