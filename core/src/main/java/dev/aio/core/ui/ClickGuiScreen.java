@@ -42,7 +42,10 @@ public final class ClickGuiScreen implements UiScreen {
     }
 
     private final AioCore core;
+    /** null = "Alle". */
     private Category category = Category.HUD;
+    private String search = "";
+    private boolean searchFocused;
     private Module selected;
     private float scroll;
     private float maxScroll;
@@ -97,10 +100,7 @@ public final class ClickGuiScreen implements UiScreen {
         int cw = pw - SIDEBAR_W - 16;
         int cy = py + 8;
         if (selected != null) renderSettingsHeader(r, mx, my, cx, cy, cw, accent);
-        else {
-            r.text(category.displayName(), cx, cy + 3, category.color(), true);
-            r.fill(cx, cy + 14, cx + r.textWidth(category.displayName()), cy + 15, category.color());
-        }
+        else renderListHeader(r, mx, my, cx, cy, cw, accent);
 
         int viewTop = cy + 20;
         int viewBottom = py + ph - 8;
@@ -137,32 +137,14 @@ public final class ClickGuiScreen implements UiScreen {
                 core.clientSettings().rainbowAccent.on() ? dev.aio.core.hud.ColorMode.CHROMA : dev.aio.core.hud.ColorMode.STATIC,
                 accent, accent, 0.25f, true, 0);
         float y = py + 28;
-        int used = 0;
+        int used = 1; // "Alle"
         for (Category c : Category.values()) if (!core.modules().byCategory(c).isEmpty()) used++;
         // Zeilenhöhe an den Platz bis zum Profilbereich anpassen (kleine Bildschirme)
         float rowH = Math.max(11, Math.min(17, (ph - 62 - 28 - 26) / (float) Math.max(1, used)));
+        y = sidebarRow(r, mx, my, px, y, rowH, null, "Alle", 0xFFFFFFFF);
         for (Category c : Category.values()) {
             if (core.modules().byCategory(c).isEmpty()) continue;
-            boolean sel = c == category;
-            boolean hover = inside(mx, my, px, y, px + SIDEBAR_W, y + rowH - 1);
-            int cc = c.color();
-            float rh = rowH - 1, ty = y + (rh - 8) / 2f;
-            if (sel) {
-                r.fill(px, y, px + SIDEBAR_W, y + rh, dev.aio.core.util.Colors.withAlpha(cc, 0x38));
-                r.fill(px, y, px + 2, y + rh, cc);
-            } else if (hover) {
-                r.fill(px, y, px + SIDEBAR_W, y + rh, dev.aio.core.util.Colors.withAlpha(cc, 0x18));
-            }
-            r.fill(px + 10, ty + 2, px + 14, ty + 6, cc);
-            r.text(r.trim(c.displayName(), SIDEBAR_W - 24), px + 19, ty, sel ? Theme.TEXT : Theme.TEXT_DIM, false);
-            Category target = c;
-            hit(px, y, px + SIDEBAR_W, y + rh, b -> {
-                category = target;
-                selected = null;
-                scroll = 0;
-                resetFocus();
-            });
-            y += rowH;
+            y = sidebarRow(r, mx, my, px, y, rowH, c, c.displayName(), c.color());
         }
 
         y += 6;
@@ -208,8 +190,67 @@ public final class ClickGuiScreen implements UiScreen {
         });
     }
 
+    private float sidebarRow(Renderer r, int mx, int my, int px, float y, float rowH, Category c, String label, int cc) {
+        boolean sel = c == category && search.isEmpty();
+        boolean hover = inside(mx, my, px, y, px + SIDEBAR_W, y + rowH - 1);
+        float rh = rowH - 1, ty = y + (rh - 8) / 2f;
+        if (sel) {
+            r.fill(px, y, px + SIDEBAR_W, y + rh, dev.aio.core.util.Colors.withAlpha(cc, 0x38));
+            r.fill(px, y, px + 2, y + rh, cc);
+        } else if (hover) {
+            r.fill(px, y, px + SIDEBAR_W, y + rh, dev.aio.core.util.Colors.withAlpha(cc, 0x18));
+        }
+        r.fill(px + 10, ty + 2, px + 14, ty + 6, cc);
+        r.text(r.trim(label, SIDEBAR_W - 24), px + 19, ty, sel ? Theme.TEXT : Theme.TEXT_DIM, false);
+        hit(px, y, px + SIDEBAR_W, y + rh, b -> {
+            category = c;
+            selected = null;
+            scroll = 0;
+            search = "";
+            resetFocus();
+        });
+        return y + rowH;
+    }
+
+    /** Module der Ansicht: Suche (über alle Kategorien), sonst Kategorie bzw. "Alle"; dann sortiert. */
+    private List<Module> visibleModules() {
+        List<Module> base = !search.isEmpty() || category == null ? core.modules().all() : core.modules().byCategory(category);
+        return core.clientSettings().sortMode.get().sort(SortMode.search(base, search));
+    }
+
+    private void renderListHeader(Renderer r, int mx, int my, float x, float y, float w, int accent) {
+        String title = !search.isEmpty() ? "Suche" : category == null ? "Alle Module" : category.displayName();
+        int color = category == null || !search.isEmpty() ? Theme.TEXT : category.color();
+        r.text(title, x, y + 3, color, true);
+        r.fill(x, y + 14, x + r.textWidth(title), y + 15, color);
+
+        // Suchfeld rechts
+        float sw = Math.min(110, w * 0.38f);
+        float sx2 = x + w, sx1 = sx2 - sw;
+        r.fill(sx1, y, sx2, y + 14, searchFocused ? 0xFF2A2A34 : Theme.TRACK);
+        if (searchFocused) r.fill(sx1, y + 13, sx2, y + 14, accent);
+        String shown = search.isEmpty() && !searchFocused ? "Suchen…" : search;
+        while (r.textWidth(shown) > sw - 10 && shown.length() > 1) shown = shown.substring(1);
+        boolean caret = searchFocused && (System.currentTimeMillis() / 500) % 2 == 0;
+        r.text(shown + (caret ? "_" : ""), sx1 + 4, y + 3, search.isEmpty() && !searchFocused ? Theme.TEXT_MUTED : Theme.TEXT, false);
+        hit(sx1, y, sx2, y + 14, b -> {
+            resetFocus();
+            searchFocused = true;
+            if (b == 1) search = "";
+        });
+
+        // Sortier-Knopf links daneben
+        String label = "↕ " + core.clientSettings().sortMode.get().displayName();
+        float bw = r.textWidth(label) + 10;
+        float bx2 = sx1 - 4, bx1 = bx2 - bw;
+        if (bx1 > x + r.textWidth(title) + 6) {
+            button(r, mx, my, bx1, y, bx2, y + 14, label, accent, false,
+                    b -> core.clientSettings().sortMode.cycle(b == 1 ? -1 : 1));
+        }
+    }
+
     private float renderCards(Renderer r, int mx, int my, float x, float y, float w, int accent) {
-        List<Module> list = core.modules().byCategory(category);
+        List<Module> list = visibleModules();
         int cols = Math.max(1, (int) ((w + GAP) / (CARD_MIN_W + GAP)));
         float cardW = (w - (cols - 1) * GAP) / cols;
         for (int i = 0; i < list.size(); i++) {
@@ -230,7 +271,8 @@ public final class ClickGuiScreen implements UiScreen {
             r.text(r.trim(m.name(), cardW - 40), x1 + 8, y1 + 7, Theme.TEXT, false);
             r.text(r.trim(m.description(), cardW - 16), x1 + 8, y1 + 19, Theme.TEXT_DIM, false);
             String footer = m.isBlocked() ? "Gesperrt (Server)" :
-                    m.toggleKey().isBound() ? "Taste: " + core.platform().keyName(m.toggleKey().key()) : "";
+                    m.toggleKey().isBound() ? "Taste: " + core.platform().keyName(m.toggleKey().key()) :
+                    category == null || !search.isEmpty() ? m.category().displayName() : "";
             r.text(r.trim(footer, cardW - 30), x1 + 8, y1 + 31, m.isBlocked() ? Theme.WARNING : Theme.TEXT_MUTED, false);
             r.text("›", x2 - 10, y1 + 31, hover ? Theme.TEXT : Theme.TEXT_MUTED, false);
 
@@ -456,6 +498,7 @@ public final class ClickGuiScreen implements UiScreen {
     }
 
     private void resetFocus() {
+        searchFocused = false;
         commitEdit();
         listening = null;
         expandedColor = null;
@@ -554,6 +597,18 @@ public final class ClickGuiScreen implements UiScreen {
     }
 
     @Override public boolean keyPressed(String key) {
+        if (searchFocused) {
+            boolean ctrl = core.platform().isKeyDown(Keys.LEFT_CONTROL) || core.platform().isKeyDown(Keys.RIGHT_CONTROL);
+            if (Keys.ESCAPE.equals(key) || Keys.ENTER.equals(key)) searchFocused = false;
+            else if (Keys.BACKSPACE.equals(key) && !search.isEmpty()) setSearch(search.substring(0, search.length() - 1));
+            else if (ctrl && Keys.V.equals(key)) setSearch(search + core.platform().clipboard().replaceAll("[\\r\\n]", ""));
+            return true;
+        }
+        if (selected == null && "key.keyboard.f".equals(key)
+                && (core.platform().isKeyDown(Keys.LEFT_CONTROL) || core.platform().isKeyDown(Keys.RIGHT_CONTROL))) {
+            searchFocused = true;
+            return true;
+        }
         if (listening != null) {
             listening.set(Keys.ESCAPE.equals(key) || Keys.BACKSPACE.equals(key) || Keys.DELETE.equals(key) ? Keys.NONE : key);
             listening = null;
@@ -585,7 +640,16 @@ public final class ClickGuiScreen implements UiScreen {
         return false;
     }
 
+    private void setSearch(String q) {
+        search = q.length() > 40 ? q.substring(0, 40) : q;
+        scroll = 0;
+    }
+
     @Override public boolean charTyped(String text) {
+        if (searchFocused && text != null && !text.isEmpty() && text.codePointAt(0) >= 32) {
+            setSearch(search + text);
+            return true;
+        }
         if (editing == null || text == null || text.isEmpty() || text.codePointAt(0) < 32 || text.codePointAt(0) == 127) return false;
         insert(text);
         return true;
