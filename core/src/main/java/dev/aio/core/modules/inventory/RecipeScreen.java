@@ -110,9 +110,13 @@ public final class RecipeScreen implements UiScreen {
             if (list == null || !list.worldInfoPending()) setView(new View(view.item, view.usages, load(view.item, view.usages)), false);
         }
         int sw = r.screenWidth(), sh = r.screenHeight();
-        r.fill(0, 0, sw, sh, 0x80000000);
-
+        lastRenderer = r;
+        // Wie bekannte Item-Listen: keine Abdunklung, die Welt bleibt sichtbar
+        ItemPanel panel = itemPanel();
+        // mittig wie gewohnt; reicht der Platz rechts nicht für die Item-Liste, nach links rücken
+        float panelW = panel != null ? 8 * 18 + 8 : 0;
         float px = (sw - W) / 2f;
+        if (px + W + 4 > sw - panelW) px = Math.max(30, sw - panelW - W - 4);
         float maxH = sh - TAB_H - 16;
         List<RecipeView> recs = categories.isEmpty() ? List.of() : byCategory.get(categories.get(category));
         float boxW = W - 16;
@@ -177,7 +181,17 @@ public final class RecipeScreen implements UiScreen {
         }
         if (pendingInfo && !recs.isEmpty()) r.text("lädt…", px + W - 30, py + ph + 3, 0xFFB0B0B0, true);
 
-        renderTooltip(r, mx, my);
+        // Item-Liste rechts daneben (suchen, R/U, Klick öffnet Rezepte)
+        if (panel != null) panel.render(r, mx, my, px + W + 4);
+
+        if (panel == null || panel.hovered() == null) renderTooltip(r, mx, my);
+    }
+
+    private Renderer lastRenderer;
+
+    private ItemPanel itemPanel() {
+        ItemListModule list = core.module(ItemListModule.class);
+        return list == null ? null : list.panel();
     }
 
     /** Reiter oben: je Kategorie das Symbol ihrer Station (bzw. des ersten Ergebnisses). */
@@ -379,6 +393,8 @@ public final class RecipeScreen implements UiScreen {
     // =====================================================================
 
     @Override public boolean mouseClicked(double mx, double my, int button) {
+        ItemPanel panel = itemPanel();
+        if (panel != null && lastRenderer != null && panel.mouseClicked(lastRenderer, mx, my, button)) return true;
         for (Hit h : hits) {
             if (h.in(mx, my)) {
                 h.action.run();
@@ -405,11 +421,16 @@ public final class RecipeScreen implements UiScreen {
     }
 
     @Override public boolean mouseScrolled(double x, double y, double amount) {
+        ItemPanel panel = itemPanel();
+        if (panel != null && panel.mouseScrolled(x, y, amount)) return true;
         page = Math.floorMod(page + (amount < 0 ? 1 : -1), Math.max(1, pageCount));
         return true;
     }
 
     @Override public boolean keyPressed(String key) {
+        ItemPanel panel = itemPanel();
+        if (panel != null && panel.isFocused()) return panel.keyPressed(key, ItemRef.EMPTY);
+        if (panel != null && panel.hovered() != null && panel.keyPressed(key, ItemRef.EMPTY)) return true;
         if (Keys.BACKSPACE.equals(key) && !history.isEmpty()) {
             setView(history.pop(), true);
             return true;
@@ -423,5 +444,15 @@ public final class RecipeScreen implements UiScreen {
         if ("key.keyboard.up".equals(key) && !categories.isEmpty()) { category = Math.floorMod(category - 1, categories.size()); page = 0; return true; }
         if ("key.keyboard.down".equals(key) && !categories.isEmpty()) { category = (category + 1) % categories.size(); page = 0; return true; }
         return false;
+    }
+
+    @Override public boolean charTyped(String text) {
+        ItemPanel panel = itemPanel();
+        return panel != null && panel.charTyped(text);
+    }
+
+    @Override public void onClose() {
+        ItemPanel panel = itemPanel();
+        if (panel != null) panel.onClose();
     }
 }
