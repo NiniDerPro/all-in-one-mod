@@ -34,6 +34,10 @@ public abstract class EntityMixin {
     private void aio$freelook(double dx, double dy, CallbackInfo ci) {
         AioCore core = AioCore.get();
         if (core == null || !aio$isLocalPlayer()) return;
+        if (dev.aio.fabric.Freecam.turn(dx, dy)) { // Freecam: Maus dreht die Kamera
+            ci.cancel();
+            return;
+        }
         if (core.module(FreelookModule.class).consumeMouse(dx, dy)) ci.cancel();
     }
 
