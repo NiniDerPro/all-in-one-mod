@@ -87,7 +87,23 @@ Server-Sperre = vom Server-Schutz sperrbar (Standard: Schutz aus).
 | Spieler & Kampf | Auto Sword | ja | Beste Waffe vor dem Schlag (Krit zählt mit der Waffe) |
 | Chat | Chat | – | Zeitstempel, langer Verlauf, Größe/Schrift/Deckkraft, **Chat kopieren** (Rechtsklick im Chat), Chatbox im HUD-Editor an der Ecke ziehen |
 | Chat | Namens-Alarm | – | Ton + Hinweis bei deinem Namen (mit/ohne @) und eigenen Stichwörtern |
-| Client | Client | – | Menü-Taste, HUD-Editor-Taste, Server-Schutz, Farben |
+| Client | Client | – | Menü-Taste, HUD-Editor-Taste, Server-Schutz, Farben, Sortierung |
+
+## Bedienung
+
+- **Rechts-Shift**: Einstellungsmenü. Links die Kategorien (ganz oben „Alle“), Module als Karten mit
+  Schalter; ein Klick auf die Karte öffnet Einstellungen, Tastenbelegung, Farben und Aktionen.
+  Oben rechts das **Suchfeld** (Strg+F) über alle Kategorien und der Knopf **↕** für die Sortierung:
+  Standard, A–Z, Aktive zuerst (wird gespeichert). Unten links die Profile: wechseln, neu, löschen,
+  Export/Import über die Zwischenablage.
+- **HUD bearbeiten** (Button im Menü oder eigene Taste): Elemente ziehen, Mausrad = Größe,
+  Einrasten an Rändern, Mitte und anderen Elementen (Shift = frei), Rechtsklick = Einstellungen,
+  R = zurücksetzen. Die Chatbox unten links an der Ecke (⤢) ziehen, Mausrad = Schriftgröße.
+- **Linke Alt-Taste** (halten): Freelook. **C** (halten): Zoom. **B**: Wegpunkt setzen, **N**: Wegpunkte verwalten.
+- **Im Inventar:** Mausrad über Items verschiebt einzeln (Shift = ganzer Stack), Shift + Ziehen
+  verschiebt alle überfahrenen Stacks, Mittelklick sortiert. Rechts die Item-Liste (Suchfeld unten,
+  Strg+F); Klick oder R zeigt Rezepte, Rechtsklick oder U die Verwendungen.
+- **Im Chat:** Rechtsklick öffnet „Chat kopieren“ (Zeilen markieren, Strg+C).
 
 ## Ein neues HUD-Modul
 
@@ -119,7 +135,7 @@ Minecraft 26.3, Fabric Loader 0.20.1, Fabric API 0.165.0+26.3, Loom 1.19, Gradle
 
 ## Stand der Verifikation
 
-- **Kern:** kompiliert, 62 Tests grün, u. a. Sortieren und Item-Verschieben gegen ein simuliertes
+- **Kern:** kompiliert, 65 Tests grün, u. a. Sortieren und Item-Verschieben gegen ein simuliertes
   MC-Inventar, Projektion der Wegpunkt-Marker, Kompass-Mathe, Todespunkt, Namens-Alarm,
   Chat-Optionen, Item-Suche, Auto Tool/Sword.
 - **Adapter 26.3:** kompiliert gegen Minecraft 26.3 (CI). Die Namen stammen aus den 26.3-Quellen
