@@ -106,11 +106,110 @@ class UiSmokeTest {
         assertTrue(fps.screenX(r) > 100, "Element wurde verschoben");
 
         double before = fps.scaleSetting().get();
-        editor.mouseScrolled(fps.screenX(r) + 2, fps.screenY(r) + 2, 1);
-        assertTrue(fps.scaleSetting().get() > before);
+        assertFalse(editor.mouseScrolled(fps.screenX(r) + 2, fps.screenY(r) + 2, 1), "Mausrad ändert nichts");
+        assertEquals(before, fps.scaleSetting().get());
 
         editor.onClose();
         assertFalse(core.hud().isEditorOpen());
+    }
+
+    /** Element im Editor auswählen (Linksklick in die Mitte) und loslassen. */
+    private static void select(HudEditorScreen editor, FakeRenderer r, HudElement el) {
+        float cx = el.screenX(r) + el.scaledWidth(r) / 2f, cy = el.screenY(r) + el.scaledHeight(r) / 2f;
+        assertTrue(editor.mouseClicked(cx, cy, 0));
+        editor.mouseReleased(cx, cy, 0);
+        editor.render(r, (int) cx, (int) cy, 0);
+    }
+
+    @Test void editorResizesEdgesIndependently() {
+        FakePlatform p = new FakePlatform();
+        AioCore core = newCore(p);
+        FpsModule fps = core.module(FpsModule.class);
+        fps.setEnabled(true);
+        fps.update();
+        FakeRenderer r = new FakeRenderer();
+        HudEditorScreen editor = new HudEditorScreen(core);
+        editor.render(r, 0, 0, 0);
+        fps.setScreenPos(r, 100, 100);
+        select(editor, r, fps);
+
+        // Rechte Kante: nur die Breite wächst, linke Kante bleibt stehen
+        float x = fps.screenX(r), y = fps.screenY(r), w = fps.scaledWidth(r), h = fps.scaledHeight(r);
+        float ex = x + w, ey = y + h / 2f;
+        assertTrue(editor.mouseClicked(ex, ey, 0));
+        editor.mouseDragged(ex + 20, ey + 30, 0, 0, 0);
+        editor.mouseReleased(ex + 20, ey + 30, 0);
+        assertEquals(w + 20, fps.scaledWidth(r), 0.6);
+        assertEquals(h, fps.scaledHeight(r), 0.01, "Höhe unverändert");
+        assertEquals(x, fps.screenX(r), 0.6, "linke Kante bleibt");
+
+        // Obere linke Ecke: beide Achsen, rechte untere Ecke bleibt stehen
+        x = fps.screenX(r); y = fps.screenY(r); w = fps.scaledWidth(r); h = fps.scaledHeight(r);
+        assertTrue(editor.mouseClicked(x, y, 0));
+        editor.mouseDragged(x - 10, y - 15, 0, 0, 0);
+        editor.mouseReleased(x - 10, y - 15, 0);
+        assertEquals(w + 10, fps.scaledWidth(r), 0.6);
+        assertEquals(h + 15, fps.scaledHeight(r), 0.6);
+        assertEquals(x + w, fps.screenX(r) + fps.scaledWidth(r), 0.6, "rechte Kante bleibt");
+        assertEquals(y + h, fps.screenY(r) + fps.scaledHeight(r), 0.6, "untere Kante bleibt");
+
+        // Shift an der Ecke behält das Seitenverhältnis
+        p.heldKeys.add(dev.aio.core.platform.Keys.LEFT_SHIFT);
+        x = fps.screenX(r); y = fps.screenY(r); w = fps.scaledWidth(r); h = fps.scaledHeight(r);
+        assertTrue(editor.mouseClicked(x + w, y + h, 0));
+        editor.mouseDragged(x + w + 40, y + h, 0, 0, 0);
+        editor.mouseReleased(x + w + 40, y + h, 0);
+        assertEquals(w / h, fps.scaledWidth(r) / fps.scaledHeight(r), 0.05);
+        p.heldKeys.clear();
+
+        // Zurücksetzen über R
+        assertTrue(editor.keyPressed(dev.aio.core.platform.Keys.R));
+        assertEquals(1.0, fps.scaleX(), 1e-6);
+        assertEquals(1.0, fps.scaleY(), 1e-6);
+    }
+
+    @Test void editorRightClickOpensSettingsLeftClickDoesNot() {
+        FakePlatform p = new FakePlatform();
+        AioCore core = newCore(p);
+        FpsModule fps = core.module(FpsModule.class);
+        fps.setEnabled(true);
+        fps.update();
+        FakeRenderer r = new FakeRenderer();
+        HudEditorScreen editor = new HudEditorScreen(core);
+        editor.render(r, 0, 0, 0);
+        fps.setScreenPos(r, 100, 100);
+        float cx = fps.screenX(r) + 3, cy = fps.screenY(r) + 3;
+        editor.mouseClicked(cx, cy, 0);
+        editor.mouseReleased(cx, cy, 0);
+        assertFalse(p.screen instanceof ClickGuiScreen, "Linksklick öffnet keine Einstellungen");
+        editor.mouseClicked(cx, cy, 1);
+        assertTrue(p.screen instanceof ClickGuiScreen, "Rechtsklick öffnet die Einstellungen");
+    }
+
+    @Test void chatCanBeSelectedResizedAndReset() {
+        FakePlatform p = new FakePlatform();
+        AioCore core = newCore(p);
+        dev.aio.core.modules.chat.ChatModule chat = core.module(dev.aio.core.modules.chat.ChatModule.class);
+        chat.setEnabled(true);
+        core.bus().post(Events.Tick.INSTANCE);
+        FakeRenderer r = new FakeRenderer();
+        HudEditorScreen editor = new HudEditorScreen(core);
+        editor.render(r, 0, 0, 0);
+        float bottom = r.height - 40;
+        float w = chat.boxWidth(), h = chat.boxHeight();
+        // Auswählen
+        assertTrue(editor.mouseClicked(10, bottom - 5, 0));
+        editor.mouseReleased(10, bottom - 5, 0);
+        editor.render(r, 10, (int) bottom - 5, 0);
+        // Rechte Kante schmaler ziehen
+        assertTrue(editor.mouseClicked(2 + w, bottom - h / 2f, 0));
+        editor.mouseDragged(2 + w - 50, bottom - h / 2f, 0, 0, 0);
+        editor.mouseReleased(2 + w - 50, bottom - h / 2f, 0);
+        assertEquals(w - 50, chat.boxWidth(), 1.0);
+        assertEquals(h, chat.boxHeight(), 0.01);
+        // Zurücksetzen
+        assertTrue(editor.keyPressed(dev.aio.core.platform.Keys.R));
+        assertEquals(1.0, chat.setting("width").get());
     }
 
     @Test void colorModesDrawPerCharacter() {

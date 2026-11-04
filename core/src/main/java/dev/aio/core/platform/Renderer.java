@@ -31,6 +31,9 @@ public interface Renderer {
 
     void scale(float factor);
 
+    /** Getrennte Skalierung für Breite und Höhe. */
+    default void scale(float sx, float sy) { scale(sx); }
+
     /** Beschränkt das Zeichnen auf ein Rechteck (GUI-Koordinaten, ohne Transformation). */
     void enableScissor(int x1, int y1, int x2, int y2);
 
