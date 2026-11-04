@@ -139,6 +139,9 @@ public interface Platform {
     /** Prüft, ob eine Taste oder Maustaste (MC-Tastenname, siehe {@link Keys}) gerade gehalten wird. */
     boolean isKeyDown(String key);
 
+    /** Ob das Spielfenster den Fokus hat (nach Alt+Tab nicht mehr). */
+    default boolean windowFocused() { return true; }
+
     /** Ob ein Tastenname der aktuellen Belegung einer Vanilla-Taste entspricht. */
     boolean matchesGameKey(GameKey gameKey, String key);
 

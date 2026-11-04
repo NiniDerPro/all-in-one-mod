@@ -27,7 +27,7 @@ public final class ElytraSwapModule extends Module {
         key = add(new KeybindSetting("key", "Key", "key.keyboard.grave.accent"));
         on(Events.Key.class, e -> {
             // auch im offenen Spielerinventar (dort prüft swap(), dass nur das eigene Inventar offen ist)
-            if (e.isPress() && key.matches(e.key()) && (!e.screenOpen() || platform().containerScreenOpen())) swap();
+            if (e.isPress() && key.triggeredBy(platform(), e.key()) && (!e.screenOpen() || platform().containerScreenOpen())) swap();
         });
     }
 
