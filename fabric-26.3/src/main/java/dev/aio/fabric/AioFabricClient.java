@@ -12,6 +12,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import dev.aio.core.modules.hud.HeldItemInfoModule;
+import dev.aio.core.modules.player.FoodInfoModule;
 import dev.aio.core.modules.hud.PotionStatusModule;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -56,6 +57,27 @@ public final class AioFabricClient implements ClientModInitializer {
         HudElementRegistry.replaceElement(VanillaHudElements.HELD_ITEM_TOOLTIP, vanilla -> (graphics, delta) -> {
             HeldItemInfoModule info = core.module(HeldItemInfoModule.class);
             if (info == null || !info.replacesVanillaName()) vanilla.extractRenderState(graphics, delta);
+        });
+
+        // Essens-Info direkt an Hunger- und Lebensleiste (Positionen wie Vanilla: Mitte ± 91, 39 über unten)
+        FabricRenderer foodRenderer = new FabricRenderer(client);
+        HudElementRegistry.attachElementBefore(VanillaHudElements.FOOD_BAR, Identifier.fromNamespaceAndPath("aio", "food_under"), (g, d) -> {
+            FoodInfoModule food = core.module(FoodInfoModule.class);
+            if (food == null || !food.isActive()) return;
+            foodRenderer.begin(g);
+            food.renderUnderFood(foodRenderer, platform.foodState(), g.guiWidth() / 2f + 91, g.guiHeight() - 39);
+        });
+        HudElementRegistry.attachElementAfter(VanillaHudElements.FOOD_BAR, Identifier.fromNamespaceAndPath("aio", "food_over"), (g, d) -> {
+            FoodInfoModule food = core.module(FoodInfoModule.class);
+            if (food == null || !food.isActive()) return;
+            foodRenderer.begin(g);
+            food.renderOverFood(foodRenderer, platform.foodState(), g.guiWidth() / 2f + 91, g.guiHeight() - 39);
+        });
+        HudElementRegistry.attachElementAfter(VanillaHudElements.HEALTH_BAR, Identifier.fromNamespaceAndPath("aio", "health_over"), (g, d) -> {
+            FoodInfoModule food = core.module(FoodInfoModule.class);
+            if (food == null || !food.isActive()) return;
+            foodRenderer.begin(g);
+            food.renderOverHealth(foodRenderer, platform.foodState(), g.guiWidth() / 2f - 91, g.guiHeight() - 39);
         });
 
         ScreenHooks.register(core, client);

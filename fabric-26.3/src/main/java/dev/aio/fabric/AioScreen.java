@@ -3,6 +3,7 @@ package dev.aio.fabric;
 import dev.aio.core.ui.UiScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -31,10 +32,19 @@ public final class AioScreen extends Screen {
     /** Wird bei jedem Anzeigen aufgerufen, auch bei der Rückkehr zu diesem Screen. */
     @Override protected void init() {
         super.init();
+        // Unsichtbares Textfeld mit Fokus: Seit 26.3 (SDL) liefert Minecraft getippte Zeichen nur,
+        // solange ein Textfeld fokussiert ist. Die Zeichen gehen trotzdem an unseren Screen (charTyped).
+        EditBox textInput = new EditBox(font, -1000, -1000, 1, 1, Component.empty());
+        textInput.setFocused(true);
+        setFocused(textInput);
         ui.onOpen();
     }
 
     @Override public void onClose() {
+        if (ui.replacesParent() && parent != null) {
+            parent.onClose(); // dorthin, wohin der ersetzte Vanilla-Screen zurückgeführt hätte
+            return;
+        }
         if (ui.returnsToPrevious() && parent != null) Minecraft.getInstance().gui.setScreen(parent);
         else super.onClose();
     }

@@ -30,5 +30,11 @@ public interface UiScreen {
     /** Ob der Screen beim Schließen zum vorherigen Screen zurückkehrt (z. B. Rezepte → Inventar). */
     default boolean returnsToPrevious() { return false; }
 
+    /**
+     * Ersetzt dieser Screen einen Vanilla-Screen (z. B. die Tastenbelegung)? Dann führt Schließen
+     * dorthin zurück, wohin der ersetzte Screen geführt hätte.
+     */
+    default boolean replacesParent() { return false; }
+
     default String title() { return "AIO"; }
 }

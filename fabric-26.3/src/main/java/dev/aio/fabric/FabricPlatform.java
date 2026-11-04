@@ -558,6 +558,49 @@ public final class FabricPlatform implements Platform {
         m.setDown(pressed);
     }
 
+    @Override public dev.aio.core.platform.FoodState foodState() {
+        LocalPlayer p = player();
+        if (p == null || client.gameMode == null) return dev.aio.core.platform.FoodState.NONE;
+        // Hungerleiste wie Vanilla nur im Überleben/Abenteuer und nicht auf Reittieren mit Leben
+        boolean visible = client.gameMode.canHurtPlayer() && !(p.getVehicle() instanceof net.minecraft.world.entity.LivingEntity);
+        net.minecraft.world.food.FoodData fd = p.getFoodData();
+        float exhaustion = Float.NaN;
+        var server = client.getSingleplayerServer();
+        if (server != null) {
+            // Der Server schickt die Erschöpfung nicht; im Einzelspieler direkt lesen (nur ein float)
+            var sp = server.getPlayerList().getPlayer(p.getUUID());
+            if (sp != null) exhaustion = ((dev.aio.fabric.mixin.FoodDataAccessor) sp.getFoodData()).aio$exhaustion();
+        }
+        net.minecraft.world.food.FoodProperties food = p.getMainHandItem().get(net.minecraft.core.component.DataComponents.FOOD);
+        if (food == null) food = p.getOffhandItem().get(net.minecraft.core.component.DataComponents.FOOD);
+        int nutrition = food == null ? 0 : food.nutrition();
+        float sat = food == null ? 0 : food.saturation();
+        boolean canEat = food != null && p.canEat(food.canAlwaysEat());
+        return new dev.aio.core.platform.FoodState(fd.getFoodLevel(), fd.getSaturationLevel(), exhaustion,
+                p.getHealth(), p.getMaxHealth(), p.getAbsorptionAmount(), nutrition, sat, canEat, visible);
+    }
+
+    @Override public List<dev.aio.core.platform.KeyBinding> keyBindings() {
+        List<dev.aio.core.platform.KeyBinding> out = new ArrayList<>();
+        if (client.options == null) return out;
+        for (KeyMapping km : client.options.keyMappings) {
+            out.add(new dev.aio.core.platform.KeyBinding(km.getName(), Component.translatable(km.getName()).getString(),
+                    km.getCategory().label().getString(), km.saveString(), km.getDefaultKey().getName()));
+        }
+        return out;
+    }
+
+    @Override public void setKeyBinding(String id, String key) {
+        if (client.options == null) return;
+        for (KeyMapping km : client.options.keyMappings) {
+            if (!km.getName().equals(id)) continue;
+            km.setKey(Keys.isNone(key) ? InputConstants.UNKNOWN : InputConstants.getKey(key));
+            KeyMapping.resetMapping();
+            client.options.save();
+            return;
+        }
+    }
+
     @Override public String keyName(String key) {
         if (Keys.isNone(key)) return "Keine";
         try {

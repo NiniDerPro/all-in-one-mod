@@ -148,6 +148,15 @@ public interface Platform {
     /** Lesbarer, lokalisierter Name einer Taste. */
     String keyName(String key);
 
+    /** Hunger, Sättigung, Leben und das Essen in der Hand (Essens-Info). */
+    default FoodState foodState() { return FoodState.NONE; }
+
+    /** Alle Tastenbelegungen von Minecraft und Mods (Steuerung). */
+    default java.util.List<KeyBinding> keyBindings() { return java.util.List.of(); }
+
+    /** Belegt eine Minecraft-/Mod-Taste neu und speichert die Optionen. Leer = nicht belegt. */
+    default void setKeyBinding(String id, String key) {}
+
     // ---- Kamera ----
     Perspective perspective();
 

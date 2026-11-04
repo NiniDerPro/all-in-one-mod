@@ -112,6 +112,9 @@ public final class AioCore {
         // Spieler & Kampf
         modules.register(new dev.aio.core.modules.combat.AutoToolModule());
         modules.register(new dev.aio.core.modules.combat.AutoWeaponModule());
+        modules.register(new dev.aio.core.modules.player.ElytraSwapModule());
+        modules.register(new dev.aio.core.modules.client.KeyBindsModule());
+        modules.register(new dev.aio.core.modules.player.FoodInfoModule());
     }
 
     /** Hängt alle Module an, lädt die Config und registriert die Kern-Listener. */
