@@ -44,8 +44,8 @@ Tasten werden über ihre MC-Namen gespeichert (`key.keyboard.right.shift`, `key.
   1 s nach der letzten Änderung geschrieben. Beschädigte Dateien fallen auf Standardwerte zurück.
 - **Server-Kompatibilität:** Module mit `gameplayAffecting = true` (Freelook, Zoom, Fullbright,
   Toggle Sprint) werden je nach Modus gesperrt:
-  - *Aus*: nie
-  - *Auto* (Standard): auf Multiplayer-Servern, außer der Server steht auf der Erlaubt-Liste
+  - *Aus* (Standard): nie
+  - *Auto*: auf Multiplayer-Servern, außer der Server steht auf der Erlaubt-Liste
   - *Immer*: überall
 
   Der Wunsch des Spielers bleibt gespeichert; nach dem Verlassen laufen die Module wieder.

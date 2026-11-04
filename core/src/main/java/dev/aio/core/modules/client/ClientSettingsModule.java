@@ -24,7 +24,7 @@ public final class ClientSettingsModule extends Module {
         super("client", "Client", "Menütaste, Server-Kompatibilität und Design", Category.CLIENT, false);
         guiKey = add(new KeybindSetting("guiKey", "Menü-Taste", Keys.RIGHT_SHIFT));
         hudEditorKey = add(new KeybindSetting("hudEditorKey", "HUD-Editor-Taste", Keys.NONE));
-        compatMode = add(new EnumSetting<>("compatMode", "Server-Kompatibilität", CompatMode.AUTO));
+        compatMode = add(new EnumSetting<>("compatMode", "Server-Kompatibilität", CompatMode.OFF));
         allowList = add(new StringSetting("allowList", "Erlaubte Server (Komma)", "", 256));
         allowList.visibleWhen(() -> compatMode.get() == CompatMode.AUTO);
         toggleMessages = add(new BooleanSetting("toggleMessages", "Meldung beim Umschalten", true));

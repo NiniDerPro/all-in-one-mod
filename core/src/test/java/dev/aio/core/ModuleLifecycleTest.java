@@ -58,6 +58,7 @@ class ModuleLifecycleTest {
         assertTrue(fb.isActive());
         assertEquals(15, fb.gammaOverride());
 
+        core.clientSettings().compatMode.set(CompatMode.AUTO);
         p.singleplayer = false;
         core.bus().post(new Events.ServerJoin("play.example.net:25565"));
         assertTrue(fb.isBlocked());
@@ -79,6 +80,18 @@ class ModuleLifecycleTest {
 
         core.clientSettings().compatMode.set(CompatMode.ALWAYS);
         assertTrue(fb.isBlocked());
+    }
+
+    @Test void compatModeIsOffByDefault() {
+        FakePlatform p = new FakePlatform();
+        AioCore core = newCore(p);
+        assertEquals(CompatMode.OFF, core.clientSettings().compatMode.get());
+        FullbrightModule fb = core.module(FullbrightModule.class);
+        fb.setEnabled(true);
+        p.singleplayer = false;
+        core.bus().post(new Events.ServerJoin("play.example.net"));
+        assertFalse(fb.isBlocked(), "Standard: nichts wird gesperrt");
+        assertTrue(fb.isActive());
     }
 
     @Test void freelookSwitchesToThirdPersonAndBack() {
@@ -123,6 +136,7 @@ class ModuleLifecycleTest {
         FreelookModule fl = core.module(FreelookModule.class);
         p.heldKeys.add(Keys.LEFT_ALT);
         core.bus().post(new Events.Key(Keys.LEFT_ALT, 1, false));
+        core.clientSettings().compatMode.set(CompatMode.AUTO);
         p.singleplayer = false;
         core.bus().post(new Events.ServerJoin("mc.server.net"));
         assertFalse(fl.isEngaged());
