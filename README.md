@@ -54,30 +54,40 @@ Tasten werden über ihre MC-Namen gespeichert (`key.keyboard.right.shift`, `key.
 
 ## Module
 
-| Modul | Kategorie | Server-Sperre | Inhalt |
+Server-Sperre = vom Server-Schutz sperrbar (Standard: Schutz aus).
+
+| Kategorie | Modul | Sperre | Inhalt |
 |---|---|---|---|
-| FPS | HUD | – | FPS, optional Ø und Min/Max über ein Zeitfenster |
-| CPS | HUD | – | Klicks/s links und rechts (Queue, älter als 1 s fliegt raus) |
-| Keystrokes | HUD | – | WASD, Maus (mit CPS), Leertaste; sanfter Farbwechsel; 3 Layouts |
-| ArmorHUD | HUD | – | Rüstung, Hand/Zweithand; Haltbarkeit als Balken, Zahl oder % |
-| Koordinaten | HUD | – | XYZ, Blickrichtung, Biom |
-| Ping | HUD | – | Latenz laut Spielerliste |
-| Trank-Effekte | HUD | – | Effekte mit Stufe und Restzeit |
-| Blick-Info | HUD | – | Wie Jade: Tooltip oben mittig mit Icon, Name, Werkzeug (✔/✘), Wachstum, Herzen/Leben, Rüstung, Mod-Name; klassischer Tooltip-Look oder Farbmodus. Block-Details nur beim passenden Block: Honig + Bienen (Bienen nur Singleplayer), Komposter, Kessel, Seelenanker, Ackerboden-Feuchte, Redstone-Stärke, Verstärker-Verzögerung, Komparator-Modus, Notenblock-Ton, Seegurken, Kerzen, Schildkröteneier, Schneeschichten |
-| Freelook | Grafik | ja | Kamera frei drehen (Halten/Umschalten), 3. Person und zurück |
-| Zoom | Grafik | ja | Faktor einstellbar, sanft, Mausrad, Maus verlangsamen |
-| Fullbright | Grafik | ja | Helligkeit über die Lightmap, `options.txt` bleibt unverändert |
-| Toggle Sprint | Spieler | ja | Sprint-Taste schaltet Dauersprinten, mit Statusanzeige |
-| Chat | Chat | – | Zeitstempel, Verlauf bis 2000 Zeilen |
-| Client | Client | – | Menü-Taste, HUD-Editor-Taste, Kompatibilitätsmodus, Akzentfarbe |
-
-## Bedienung
-
-- **Rechts-Shift**: Einstellungsmenü (Kategorien links, Module als Karten, Schalter, Slider,
-  Tastenbelegung, Farben, Profile unten links: wechseln, neu, löschen, Export/Import über die Zwischenablage).
-- **HUD bearbeiten** (Button im Menü oder eigene Taste): Elemente ziehen, Mausrad = Größe,
-  Einrasten an Rändern, Mitte und anderen Elementen (Shift = frei), Rechtsklick = Einstellungen, R = zurücksetzen.
-- **Linke Alt-Taste** (halten): Freelook. **C** (halten): Zoom.
+| HUD | FPS | – | FPS, optional Ø und Min/Max |
+| HUD | CPS | – | Klicks/s links und rechts |
+| HUD | Keystrokes | – | WASD, Maus (mit CPS), Leertaste; sanfter Farbwechsel; 3 Layouts |
+| HUD | ArmorHUD | – | Rüstung, Hand/Zweithand; Haltbarkeit als Balken, Zahl oder % |
+| HUD | Trank-Effekte | – | Original-Effekt-Icons, Stufe und Restzeit |
+| HUD | Totem-Zähler / Pfeil-Zähler | – | Anzahl im Inventar mit Icon, rot bei 0 |
+| HUD | Item-Info | – | Verzauberungen des Items in der Hand über der Hotbar, blendet aus |
+| Info | Koordinaten, Ping | – | XYZ + Richtung + Biom; Latenz |
+| Info | Biom, Tagzähler, Uhrzeit (Welt) | – | Biomname, „Tag 42“, Weltzeit mit ☀/☾ |
+| Info | Spielzeit | – | Aus der Statistik der Welt, z. B. „2 T 3 Std 14 Min“ |
+| Info | Server-Info | – | Name, IP, Ping, Spieler, Version, Software |
+| Info | Blick-Info | – | Wie Jade: Icon, Name, Werkzeug ✔/✘, Wachstum, Entity-Typ, Herzen + HP, Rüstung, Mod; Block-Details nur beim passenden Block (Honig/Bienen, Komposter, Kessel, Seelenanker, Ackerboden, Redstone, Notenblock, …) |
+| Navigation | Kompass | – | Leiste oben oder rund, mit Wegpunkten |
+| Navigation | Wegpunkte | – | B = setzen, N = verwalten; Marker mit Name + Entfernung im Bild und am Rand; pro Welt und Dimension |
+| Navigation | Todespunkt | – | Wegpunkt beim Tod, verschwindet bei Ankunft |
+| Navigation | Portalrechner | – | Nether-/Oberwelt-Koordinaten (÷8 / ×8) |
+| Grafik | Freelook, Zoom, Fullbright | ja | wie bisher |
+| Grafik | NoFog | ja | Klares Wasser, klare Lava, optional kein Sichtweiten-Nebel |
+| Grafik | No Hurtcam | – | Kein Kamerawackeln bei Schaden |
+| Grafik | No Pumpkin Overlay | ja | Kein Kürbis-Sichtrahmen |
+| Grafik | Block-Outline | – | Farbe (auch Regenbogen), Dicke, Füllung |
+| Inventar | Shulker-Vorschau | – | Inhalt als Raster im Tooltip (Shift), in Kistenfarbe |
+| Inventar | Maus-Tweaks & Sortieren | – | Mausrad = einzelne Items verschieben (Shift = Stack), Shift + Ziehen, Mittelklick sortiert |
+| Inventar | Item-Liste | – | Alle Items rechts im Inventar, Suche (`@mod`, `$id`, `-ausschließen`), Rezepte (Klick/R) und Verwendungen (Rechtsklick/U) |
+| Spieler & Kampf | Toggle Sprint | ja | Dauersprinten per Sprint-Taste |
+| Spieler & Kampf | Auto Tool | ja | Bestes Werkzeug beim Abbauen, danach zurück |
+| Spieler & Kampf | Auto Sword | ja | Beste Waffe vor dem Schlag (Krit zählt mit der Waffe) |
+| Chat | Chat | – | Zeitstempel, langer Verlauf, Größe/Schrift/Deckkraft, **Chat kopieren** (Rechtsklick im Chat), Chatbox im HUD-Editor an der Ecke ziehen |
+| Chat | Namens-Alarm | – | Ton + Hinweis bei deinem Namen (mit/ohne @) und eigenen Stichwörtern |
+| Client | Client | – | Menü-Taste, HUD-Editor-Taste, Server-Schutz, Farben |
 
 ## Ein neues HUD-Modul
 
@@ -109,10 +119,12 @@ Minecraft 26.3, Fabric Loader 0.20.1, Fabric API 0.165.0+26.3, Loom 1.19, Gradle
 
 ## Stand der Verifikation
 
-- **Kern:** kompiliert, 35 Tests grün (Event-Bus, Lebenszyklus, Config/Profile, Kompatibilitätsmodus,
-  Freelook/Zoom-Logik, HUD-Caching, Farben, GUI-Smoke-Test).
-- **Adapter 26.3:** Die Signaturen stammen aus den 26.3-Quellen der Fabric API und aus Mods, die schon
-  auf 26.x portiert sind (Freecam, Zoomify). Einige Namen sind trotzdem nicht belegt. Diese Hooks laufen
-  mit `require = 0`, ein fehlendes Ziel kostet also nur die Funktion und keinen Absturz:
-  - Freelook-Kamerarotation (`Camera` → `Entity.getViewYRot/getViewXRot`)
-  - Chat-Zeitstempel und Verlaufslänge (`ChatComponent`)
+- **Kern:** kompiliert, 62 Tests grün, u. a. Sortieren und Item-Verschieben gegen ein simuliertes
+  MC-Inventar, Projektion der Wegpunkt-Marker, Kompass-Mathe, Todespunkt, Namens-Alarm,
+  Chat-Optionen, Item-Suche, Auto Tool/Sword.
+- **Adapter 26.3:** kompiliert gegen Minecraft 26.3 (CI). Die Namen stammen aus den 26.3-Quellen
+  der Fabric API und aus Mods, die schon auf 26.x laufen (u. a. Freecam, Tweakeroo, MiniHUD,
+  ShulkerBoxTooltip, JEI, Jade); übernommen wurden nur API-Namen, kein Code.
+  Hooks mit `require = 0` (kosten bei falschem Namen nur die Funktion, nie den Start):
+  - Freelook-Kamerarotation, Chat-Zeitstempel/Verlaufslänge, No Hurtcam (`bobHurt`)
+- **Grenzen:** Bienen-Anzahl und Rezepte nur im Singleplayer bzw. auf Servern, die sie senden.
