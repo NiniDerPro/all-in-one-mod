@@ -8,6 +8,7 @@ public enum Category {
     INVENTORY("Inventar", 0xFFFF8A4C),
     COMBAT("Spieler & Kampf", 0xFFFF5370),
     CHAT("Chat", 0xFFFF6FB5),
+    PERFORMANCE("Performance", 0xFF5CE1A0),
     CLIENT("Client", 0xFFA98BFF);
 
     private final String displayName;

@@ -50,7 +50,7 @@ public abstract class HudElement extends Module {
         scale = add(new NumberSetting("scale", "Breite", 1.0, MIN_SCALE, MAX_SCALE, 0.01, "x"));
         scaleY = add(new NumberSetting("scaleY", "Höhe", 1.0, MIN_SCALE, MAX_SCALE, 0.01, "x"));
         colorMode = add(new EnumSetting<>("colorMode", "Farbmodus", defaultColorMode()));
-        textColor = add(new ColorSetting("textColor", "Textfarbe", 0xFFFFFFFF));
+        textColor = add(new ColorSetting("textColor", "Textfarbe", defaultTextColor()));
         textColor.visibleWhen(() -> colorMode.get() != ColorMode.CHROMA);
         secondColor = add(new ColorSetting("secondColor", "Zweite Farbe", 0xFF4FC3FF));
         secondColor.visibleWhen(() -> colorMode.get() == ColorMode.GRADIENT);
@@ -66,6 +66,9 @@ public abstract class HudElement extends Module {
 
     /** Standard-Farbmodus. Wird im Konstruktor abgefragt, darf also nur eine Konstante liefern. */
     protected ColorMode defaultColorMode() { return ColorMode.CHROMA; }
+
+    /** Standard-Textfarbe (ARGB). Wie oben: nur eine Konstante liefern. */
+    protected int defaultTextColor() { return 0xFFFFFFFF; }
 
     /** Ob der Hintergrund standardmäßig an ist. Wie oben: nur eine Konstante liefern. */
     protected boolean defaultBackground() { return true; }

@@ -16,7 +16,9 @@ import java.util.List;
 public final class HeldItemInfoModule extends HudElement {
     private static final int LINE = 10;
     /** Abstand zwischen Itemname und Verzauberungen. */
-    private static final int NAME_GAP = 6;
+    private static final int NAME_GAP = 2;
+    /** Abstand zur Bildschirmunterkante: Hotbar (22) plus Luft; im Überleben zusätzlich über Herzen/Hunger. */
+    private static final int MARGIN_CREATIVE = 27, MARGIN_SURVIVAL = 51;
 
     private final NumberSetting duration;
     private final BooleanSetting always;
@@ -27,11 +29,12 @@ public final class HeldItemInfoModule extends HudElement {
     private String lastKey = "";
     private List<String> lines = List.of();
     private String itemName = "";
+    private int itemNameColor = 0xFFFFFFFF;
     private long shownAt;
     private int cachedW = -1;
 
     public HeldItemInfoModule() {
-        super("helditeminfo", "Item-Info", "Verzauberungen des Items in der Hand über der Hotbar", 0.5, 0.80);
+        super("helditeminfo", "Item-Info", "Verzauberungen des Items in der Hand über der Hotbar", 0.5, 1.0);
         duration = add(new NumberSetting("duration", "Anzeigedauer", 3, 1, 10, 0.5, " s"));
         always = add(new BooleanSetting("always", "Immer anzeigen", false));
         maxLines = add(new NumberSetting("maxLines", "Max. Zeilen", 6, 1, 12, 1));
@@ -42,6 +45,35 @@ public final class HeldItemInfoModule extends HudElement {
     @Override protected dev.aio.core.hud.ColorMode defaultColorMode() { return dev.aio.core.hud.ColorMode.STATIC; }
 
     @Override protected int defaultBackgroundColor() { return 0x00000000; }
+
+    @Override protected boolean defaultBackground() { return false; }
+
+    @Override protected int defaultTextColor() { return 0xFFAAAAAA; }
+
+    /** Feste Standardposition über der Hotbar: nicht automatisch verschieben. */
+    @Override public boolean isPlaced() { return true; }
+
+    /** Alte Standardposition (0,80) auf die neue, unten verankerte umstellen. */
+    @Override public void afterLoad() {
+        if (Math.abs(posY.get() - 0.80) < 1e-6) posY.reset();
+        if (textColor.argb() == 0xFFFFFFFF) textColor.reset(); // früher fest blau, jetzt grau wie Vanilla
+    }
+
+    /** Unten verankert: 1,0 = direkt über der Hotbar (bzw. über Herzen und Hunger im Überleben). */
+    private float bottomMargin() {
+        return core != null && platform().foodState().visible() ? MARGIN_SURVIVAL : MARGIN_CREATIVE;
+    }
+
+    @Override public float screenY(Renderer r) {
+        float free = Math.max(0, r.screenHeight() - bottomMargin() - scaledHeight(r));
+        return (float) (posY.get() * free);
+    }
+
+    @Override public void setScreenPos(Renderer r, float x, float y) {
+        super.setScreenPos(r, x, y);
+        float free = r.screenHeight() - bottomMargin() - scaledHeight(r);
+        posY.set(free <= 0 ? 0.0 : Math.max(0.0, Math.min(1.0, y / (double) free)));
+    }
 
     @Override public void update() {
         if (!platform().inWorld()) return;
@@ -61,6 +93,7 @@ public final class HeldItemInfoModule extends HudElement {
             }
             lines = next;
             itemName = held.isEmpty() ? "" : held.name();
+            itemNameColor = held.isEmpty() ? 0xFFFFFFFF : held.nameColor();
             cachedW = -1;
             shownAt = System.currentTimeMillis();
         }
@@ -110,14 +143,15 @@ public final class HeldItemInfoModule extends HudElement {
         int w = width(r);
         String name = name(preview);
         if (!name.isEmpty()) {
-            int c = Colors.fade(0xFFFFFFFF, a);
+            int c = Colors.fade(previewing(preview) ? 0xFF55FFFF : itemNameColor, a);
             if (Colors.alpha(c) >= 8) r.text(name, (w - r.textWidth(name)) / 2f, PADDING, c, shadow());
         }
         float top = PADDING + nameHeight(preview);
         for (int i = 0; i < s.size(); i++) {
             String line = s.get(i);
             float x = (w - r.textWidth(line)) / 2f;
-            int color = Colors.fade(colorMode() == dev.aio.core.hud.ColorMode.STATIC ? 0xFFAAAAFF : dynamicColor(i * 12), a);
+            // Grau wie die Verzauberungen im Vanilla-Tooltip (Flüche bringen ihr Rot selbst mit)
+            int color = Colors.fade(colorMode() == dev.aio.core.hud.ColorMode.STATIC ? textColor() : dynamicColor(i * 12), a);
             if (Colors.alpha(color) < 8) continue;
             r.text(line, x, top + i * LINE, color, shadow());
         }

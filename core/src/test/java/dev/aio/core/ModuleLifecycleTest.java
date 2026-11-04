@@ -157,6 +157,25 @@ class ModuleLifecycleTest {
         assertTrue(zoom.fovMultiplier() < 1);
     }
 
+    @Test void zoomIsInstantThreeTimesAndScrollStepsByTenPercent() {
+        FakePlatform p = new FakePlatform();
+        AioCore core = newCore(p);
+        ZoomModule zoom = core.module(ZoomModule.class);
+        p.heldKeys.add(Keys.C);
+        core.bus().post(new Events.Key(Keys.C, 1, false));
+        assertEquals(1 / 3.0, zoom.fovMultiplier(), 1e-9, "sofort 3×, ohne Übergang");
+        core.bus().post(new Events.MouseScroll(1));
+        assertEquals(1 / 3.3, zoom.fovMultiplier(), 1e-9);
+        assertTrue(zoom.sensitivityMultiplier() < 1);
+        // Loslassen und neu drücken: wieder 3×
+        p.heldKeys.remove(Keys.C);
+        core.bus().post(new Events.Key(Keys.C, 0, false));
+        assertEquals(1.0, zoom.fovMultiplier(), 1e-9);
+        p.heldKeys.add(Keys.C);
+        core.bus().post(new Events.Key(Keys.C, 1, false));
+        assertEquals(1 / 3.0, zoom.fovMultiplier(), 1e-9);
+    }
+
     @Test void toggleKeyTogglesModuleWithMessage() {
         FakePlatform p = new FakePlatform();
         AioCore core = newCore(p);

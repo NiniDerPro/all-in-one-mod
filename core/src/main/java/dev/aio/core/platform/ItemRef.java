@@ -26,6 +26,9 @@ public interface ItemRef {
     /** Anzeigename der Mod, aus der das Item stammt. */
     default String modName() { return ""; }
 
+    /** Farbe des Namens wie im Tooltip (Seltenheit, verzaubert = türkis, …), ARGB. */
+    default int nameColor() { return 0xFFFFFFFF; }
+
     default int maxStackSize() { return 64; }
 
     /** Gleiches Item mit gleichen Komponenten (stapelbar). */
