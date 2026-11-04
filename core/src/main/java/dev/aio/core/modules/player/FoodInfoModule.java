@@ -22,6 +22,7 @@ public final class FoodInfoModule extends Module {
     private final BooleanSetting exhaustion;
     private final BooleanSetting preview;
     private final BooleanSetting healthPreview;
+    private final BooleanSetting values;
 
     public FoodInfoModule() {
         super("foodinfo", "Essens-Info", "Nährwert im Tooltip, Sättigung/Erschöpfung auf der Hungerleiste, Vorschau beim Essen",
@@ -31,6 +32,7 @@ public final class FoodInfoModule extends Module {
         exhaustion = add(new BooleanSetting("exhaustion", "Erschöpfung anzeigen (nur Einzelspieler)", true));
         preview = add(new BooleanSetting("preview", "Vorschau beim Halten von Essen", true));
         healthPreview = add(new BooleanSetting("healthPreview", "Vorschau geheilter Herzen", true));
+        values = add(new BooleanSetting("values", "Werte als Zahl über der Hungerleiste", false));
     }
 
     @Override public boolean enabledByDefault() { return true; }
@@ -64,6 +66,11 @@ public final class FoodInfoModule extends Module {
         if (saturation.on()) {
             drawSaturation(r, right, top, 0, sat, 1f);
             if (holding && newSat > sat) drawSaturation(r, right, top, sat, newSat, pulse());
+        }
+        if (values.on()) {
+            String text = "Hunger " + s.food() + " · Sätt. " + String.format(java.util.Locale.GERMANY, "%.1f", sat)
+                    + (Float.isFinite(s.exhaustion()) ? " · Erschöpf. " + String.format(java.util.Locale.GERMANY, "%.2f", s.exhaustion()) : "");
+            r.text(text, right - r.textWidth(text), top - 10, 0xFFE0E0E0, true);
         }
         if (holding) {
             int newFood = FoodMath.foodAfter(s.food(), s.heldNutrition());

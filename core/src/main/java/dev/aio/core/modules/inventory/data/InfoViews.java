@@ -97,7 +97,7 @@ public final class InfoViews {
                     List.of("Beruf: " + prof.name(), "Ein Dorfbewohner in der Nähe nimmt diesen Beruf an.")));
             for (WorldInfo.TradeEntry t : info.trades()) if (t.profession() == prof) out.add(tradeView(t));
         }
-        if (id.equals(VILLAGER_EGG)) out.addAll(professionList());
+        if (id.equals(VILLAGER_EGG) || id.equals("minecraft:emerald")) out.addAll(professionList());
         if (id.equals(WANDERING_EGG)) {
             for (WorldInfo.TradeEntry t : info.trades()) if (t.profession() == null) out.add(tradeView(t));
         }
@@ -125,7 +125,9 @@ public final class InfoViews {
         for (Profession prof : info.professions()) {
             if (prof.jobBlock().isEmpty()) continue;
             ItemRef block = p.item(prof.jobBlock(), 1);
-            rows.add(new RecipeView.Row(block, prof.name() + " · " + block.name()));
+            String ns = prof.id().contains(":") ? prof.id().substring(0, prof.id().indexOf(':')) : "minecraft";
+            String mod = ns.equals("minecraft") ? "" : " [" + ns + "]"; // Berufe aus Mods mit Mod-ID
+            rows.add(new RecipeView.Row(block, prof.name() + mod + " · " + block.name()));
         }
         List<RecipeView> out = new ArrayList<>();
         page(out, "Berufe", p.item(VILLAGER_EGG, 1), List.of("Arbeitsblock → Beruf"), rows);
