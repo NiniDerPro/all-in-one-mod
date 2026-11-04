@@ -63,6 +63,7 @@ Tasten werden über ihre MC-Namen gespeichert (`key.keyboard.right.shift`, `key.
 | Koordinaten | HUD | – | XYZ, Blickrichtung, Biom |
 | Ping | HUD | – | Latenz laut Spielerliste |
 | Trank-Effekte | HUD | – | Effekte mit Stufe und Restzeit |
+| Blick-Info | HUD | – | Wie Jade: Tooltip oben mittig mit Icon, Name, Werkzeug (✔/✘), Wachstum, Herzen/Leben, Rüstung, Mod-Name; klassischer Tooltip-Look oder Farbmodus |
 | Freelook | Grafik | ja | Kamera frei drehen (Halten/Umschalten), 3. Person und zurück |
 | Zoom | Grafik | ja | Faktor einstellbar, sanft, Mausrad, Maus verlangsamen |
 | Fullbright | Grafik | ja | Helligkeit über die Lightmap, `options.txt` bleibt unverändert |

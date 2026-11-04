@@ -40,6 +40,9 @@ public interface Platform {
 
     List<EffectInfo> effects();
 
+    /** Block oder Wesen unter dem Fadenkreuz, null wenn nichts. */
+    LookTarget lookTarget();
+
     // ---- Eingabe ----
     boolean isGameKeyDown(GameKey key);
 
