@@ -64,6 +64,7 @@ public final class LookAtModule extends HudElement {
     private final BooleanSetting showArmor;
     private final BooleanSetting showCoords;
     private final BooleanSetting hideInMenus;
+    private final dev.aio.core.setting.NumberSetting range;
 
     private LookTarget target;
     private String name = "";
@@ -84,6 +85,7 @@ public final class LookAtModule extends HudElement {
         showArmor = add(new BooleanSetting("showArmor", "Rüstung", true));
         showCoords = add(new BooleanSetting("showCoords", "Koordinaten", false));
         hideInMenus = add(new BooleanSetting("hideInMenus", "In Menüs ausblenden", true));
+        range = add(new dev.aio.core.setting.NumberSetting("range", "Reichweite (Blöcke)", 0, 0, 32, 1, " (0 = normal)"));
     }
 
     @Override protected int defaultBackgroundColor() { return BG; }
@@ -97,7 +99,7 @@ public final class LookAtModule extends HudElement {
     // ---- Daten ----
 
     @Override public void update() {
-        LookTarget t = platform().inWorld() ? platform().lookTarget() : null;
+        LookTarget t = platform().inWorld() ? platform().lookTarget(range.get()) : null;
         setTarget(t);
     }
 

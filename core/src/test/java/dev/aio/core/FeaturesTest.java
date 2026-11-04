@@ -197,18 +197,22 @@ class FeaturesTest {
         assertEquals(2, p.selected, "zurück zum alten Slot");
     }
 
-    @Test void autoWeaponSwitchesBeforeHit() {
+    @Test void autoWeaponSwitchesWhileAimingNotOnHit() {
         FakePlatform p = new FakePlatform();
         AioCore core = newCore(p);
         AutoWeaponModule m = core.module(AutoWeaponModule.class);
         m.setEnabled(true);
+        ((dev.aio.core.setting.BooleanSetting) m.setting("restore")).set(true);
         p.selected = 0;
         p.bestWeapon = 3;
         core.bus().post(new Events.AttackEntity(true));
-        assertEquals(3, p.selected);
-        p.selected = 0;
-        core.bus().post(new Events.AttackEntity(false));
-        assertEquals(0, p.selected, "Gegenstände (z. B. Rahmen) ignorieren");
+        assertEquals(0, p.selected, "kein Wechsel im Angriffs-Tick (Attribute Swapping)");
+        p.onLiving = true;
+        core.bus().post(Events.Tick.INSTANCE);
+        assertEquals(3, p.selected, "Wechsel schon beim Anvisieren");
+        p.onLiving = false;
+        for (int i = 0; i < 25; i++) core.bus().post(Events.Tick.INSTANCE);
+        assertEquals(0, p.selected, "danach zurück");
     }
 
     @Test void sortMergesAndOrdersChest() {

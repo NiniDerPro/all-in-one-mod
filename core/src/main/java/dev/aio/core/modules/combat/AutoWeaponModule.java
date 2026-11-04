@@ -7,43 +7,39 @@ import dev.aio.core.platform.GameKey;
 import dev.aio.core.setting.BooleanSetting;
 
 /**
- * Wechselt beim Schlagen eines Wesens zur besten Waffe in der Hotbar, bevor der Schlag
- * an den Server geht. Der Treffer (auch ein Krit) zählt dadurch direkt mit der Waffe.
+ * Wechselt zur besten Waffe, sobald das Fadenkreuz auf einem Lebewesen liegt, also bevor man
+ * zuschlägt. Wechsel und Schlag im selben Tick würden mit den Werten des alten Items rechnen
+ * (Server aktualisiert Attribute erst im nächsten Tick) und gelten als "Attribute Swapping".
  */
 public final class AutoWeaponModule extends Module {
+    private static final int RESTORE_AFTER_TICKS = 20;
+
     private final BooleanSetting preferAxe;
-    private final BooleanSetting onlyLiving;
     private final BooleanSetting restore;
     private int previousSlot = -1;
     private int idleTicks;
 
     public AutoWeaponModule() {
-        super("autoweapon", "Auto Sword", "Wechselt beim Schlagen zur besten Waffe", Category.COMBAT, true);
+        super("autoweapon", "Auto Sword", "Nimmt die beste Waffe, sobald man ein Lebewesen anvisiert", Category.COMBAT, true);
         preferAxe = add(new BooleanSetting("preferAxe", "Axt bevorzugen", false));
-        onlyLiving = add(new BooleanSetting("onlyLiving", "Nur bei Lebewesen", true));
         restore = add(new BooleanSetting("restore", "Danach zurückwechseln", false));
-        on(Events.AttackEntity.class, this::onAttack);
         on(Events.Tick.class, e -> tick());
     }
 
-    private void onAttack(Events.AttackEntity e) {
-        if (onlyLiving.on() && !e.living()) return;
-        int best = platform().bestWeaponSlot(preferAxe.on());
-        int current = platform().selectedSlot();
-        idleTicks = 0;
-        if (best < 0 || best == current) return;
-        if (previousSlot < 0) previousSlot = current;
-        platform().selectSlot(best);
-    }
-
     private void tick() {
-        if (previousSlot < 0) return;
-        if (platform().isGameKeyDown(GameKey.ATTACK)) {
+        if (!platform().inWorld() || platform().isScreenOpen()) return;
+        if (platform().crosshairOnLiving()) {
             idleTicks = 0;
+            int best = platform().bestWeaponSlot(preferAxe.on());
+            int current = platform().selectedSlot();
+            if (best >= 0 && best != current) {
+                if (previousSlot < 0) previousSlot = current;
+                platform().selectSlot(best);
+            }
             return;
         }
-        // eine Sekunde nach dem letzten Schlag zurück
-        if (++idleTicks >= 20) {
+        if (previousSlot < 0 || platform().isGameKeyDown(GameKey.ATTACK)) return;
+        if (++idleTicks >= RESTORE_AFTER_TICKS) {
             if (restore.on()) platform().selectSlot(previousSlot);
             previousSlot = -1;
         }

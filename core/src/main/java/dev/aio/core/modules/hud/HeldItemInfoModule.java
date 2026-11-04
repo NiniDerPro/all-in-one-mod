@@ -40,12 +40,13 @@ public final class HeldItemInfoModule extends HudElement {
     @Override public void update() {
         if (!platform().inWorld()) return;
         ItemRef held = platform().mainHand();
-        String key = held.isEmpty() ? "" : held.id() + "|" + held.name();
         int slot = platform().selectedSlot();
+        // Details gehören zum Schlüssel, damit z. B. eine neue Verzauberung am Amboss auch erscheint
+        List<String> next = held.isEmpty() ? List.of() : platform().heldItemDetails();
+        String key = held.isEmpty() ? "" : held.id() + "|" + held.name() + "|" + next;
         if (slot != lastSlot || !key.equals(lastKey)) {
             lastSlot = slot;
             lastKey = key;
-            List<String> next = held.isEmpty() ? List.of() : platform().heldItemDetails();
             int max = maxLines.intValue();
             if (next.size() > max) {
                 List<String> cut = new java.util.ArrayList<>(next.subList(0, max - 1));

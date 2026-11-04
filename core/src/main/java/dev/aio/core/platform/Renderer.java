@@ -36,14 +36,6 @@ public interface Renderer {
 
     void disableScissor();
 
-    /**
-     * Scissor in lokalen Koordinaten (nach translate/scale). Die Umrechnung übernimmt der Renderer,
-     * wenn er die aktuelle Transformation kennt; die Standardumsetzung clippt nicht.
-     */
-    default void enableScissorLocal(float x1, float y1, float x2, float y2) {}
-
-    default void disableScissorLocal() {}
-
     // ---- Hilfsfunktionen auf Basis der Primitive ----
 
     default void outline(float x1, float y1, float x2, float y2, float thickness, int argb) {

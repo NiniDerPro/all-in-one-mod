@@ -24,6 +24,12 @@ public interface ContainerView {
     /** button 0 = links, 1 = rechts. */
     void click(int slotIndex, int button, Click type);
 
+    /**
+     * Verteilt den Stack am Cursor gleichmäßig auf die Slots, wie Ziehen mit gedrückter linker
+     * Maustaste (Vanilla "Quick Craft"). Rest bleibt am Cursor. Wenige Pakete statt vieler Einzelklicks.
+     */
+    void dragSplit(int[] slotIndices);
+
     /** Ob nur das Spielerinventar offen ist (keine Truhe o. Ä.). */
     boolean isPlayerOnly();
 

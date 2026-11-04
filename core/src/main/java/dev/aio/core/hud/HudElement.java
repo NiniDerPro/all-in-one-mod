@@ -76,7 +76,7 @@ public abstract class HudElement extends Module {
     protected abstract void renderContent(Renderer r, boolean preview);
 
     /** Zeichnet frei über den ganzen Bildschirm (z. B. Wegpunkt-Marker). Standard: nichts. */
-    public void renderOverlay(Renderer r) {}
+    public void renderOverlay(Renderer r, float partialTick) {}
 
     /** Ob das Element im HUD-Editor verschoben werden kann. */
     public boolean editable() { return true; }

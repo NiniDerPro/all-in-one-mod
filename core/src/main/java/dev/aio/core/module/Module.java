@@ -7,6 +7,7 @@ import dev.aio.core.platform.Keys;
 import dev.aio.core.platform.Platform;
 import dev.aio.core.setting.KeybindSetting;
 import dev.aio.core.setting.Setting;
+import dev.aio.core.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -118,11 +119,23 @@ public abstract class Module {
         active = shouldBeActive;
         if (active) {
             for (ListenerDecl<?> d : listenerDecls) subscriptions.add(d.subscribe(core.bus()));
-            onActivate();
+            try {
+                onActivate();
+            } catch (RuntimeException e) {
+                // Ein fehlerhaftes Modul darf nie das Spiel abbrechen: Modul wieder aushängen.
+                Log.error("Modul " + id + " konnte nicht aktiviert werden", e);
+                active = false;
+                for (Subscription s : subscriptions) s.cancel();
+                subscriptions.clear();
+            }
         } else {
             for (Subscription s : subscriptions) s.cancel();
             subscriptions.clear();
-            onDeactivate();
+            try {
+                onDeactivate();
+            } catch (RuntimeException e) {
+                Log.error("Modul " + id + " konnte nicht sauber deaktiviert werden", e);
+            }
         }
     }
 
@@ -170,7 +183,12 @@ public abstract class Module {
 
     /** Setzt alles auf Standard (ohne Speichern auszulösen, das übernimmt der Aufrufer). */
     public void resetToDefaults() {
-        for (Setting<?> s : settings) s.reset();
+        resetSettings();
         setEnabled(enabledByDefault());
+    }
+
+    /** Setzt nur die Einstellungen zurück, der Ein/Aus-Zustand bleibt. */
+    public void resetSettings() {
+        for (Setting<?> s : settings) s.reset();
     }
 }

@@ -86,19 +86,32 @@ final class BlockDetails {
         return out;
     }
 
+    /** Zuletzt vom Server-Thread gelesene Bienenanzahl je Position. */
+    private static final java.util.Map<BlockPos, Integer> BEES = new java.util.concurrent.ConcurrentHashMap<>();
+    private static volatile BlockPos requested;
+
     /**
      * Bienen im Stock. Der Server schickt diese Zahl nicht an den Client, deshalb nur im
-     * Singleplayer über den integrierten Server lesbar. Sonst -1 (Zeile wird weggelassen).
+     * Singleplayer. Die Serverwelt darf nur auf dem Server-Thread gelesen werden (vom Client-Thread
+     * liefert sie keine Block-Entities), darum wird dort angefragt und das Ergebnis zwischengespeichert.
+     * Bis die erste Antwort da ist (ein Tick), -1 = Zeile weglassen.
      */
     private static int beeCount(Minecraft client, BlockPos pos) {
-        try {
-            var server = client.getSingleplayerServer();
-            if (server == null || client.level == null) return -1;
-            ServerLevel level = server.getLevel(client.level.dimension());
-            if (level != null && level.getBlockEntity(pos) instanceof BeehiveBlockEntity hive) return hive.getOccupantCount();
-        } catch (RuntimeException ignored) {
-            // nur Anzeige: im Zweifel weglassen
+        var server = client.getSingleplayerServer();
+        if (server == null || client.level == null) {
+            BEES.clear();
+            return -1;
         }
-        return -1;
+        var dim = client.level.dimension();
+        BlockPos key = pos.immutable();
+        if (!key.equals(requested)) {
+            requested = key;
+            if (BEES.size() > 64) BEES.clear();
+        }
+        server.execute(() -> {
+            ServerLevel level = server.getLevel(dim);
+            if (level != null && level.getBlockEntity(key) instanceof BeehiveBlockEntity hive) BEES.put(key, hive.getOccupantCount());
+        });
+        return BEES.getOrDefault(key, -1);
     }
 }

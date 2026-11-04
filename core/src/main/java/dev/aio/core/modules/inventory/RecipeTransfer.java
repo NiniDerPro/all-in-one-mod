@@ -9,16 +9,25 @@ import dev.aio.core.platform.RecipeView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Legt ein Rezept per echten Klicks in das Eingabe-Raster (wie der "+"-Knopf in JEI/REI):
- * erst das Raster leeren, dann pro Zutat ein Item aus dem Spielerinventar hineinlegen.
- * Mit {@code max} wird so oft wiederholt, wie Zutaten da sind (höchstens bis zur Stapelgröße).
+ * Legt ein Rezept per echten Klicks in das Eingabe-Raster (wie der "+"-Knopf in JEI/REI).
+ *
+ * <ul>
+ *   <li>Einfach: pro Zutat genau ein Item (höchstens 3 Klicks pro Slot).</li>
+ *   <li>Maximal: ganze Stacks per Ziehen-Verteilen auf alle Slots derselben Zutat, bis die Slots
+ *       voll sind oder nichts mehr da ist. Das braucht nur wenige Pakete (Server-Spamschutz!).</li>
+ * </ul>
+ * Vorher wird das Raster geleert; klappt das nicht (Inventar voll), wird abgebrochen.
  */
 public final class RecipeTransfer {
     public enum Status { OK, WRONG_STATION, TOO_BIG, MISSING_ITEMS }
+
+    /** Obergrenze an Klickpaketen pro Übertragung, damit kein Server wegen Spam kickt. */
+    public static final int MAX_CLICKS = 300;
 
     private RecipeTransfer() {}
 
@@ -33,33 +42,111 @@ public final class RecipeTransfer {
     /** Indizes der Rezept-Slots, für die im Inventar (inkl. Raster) kein passendes Item liegt. */
     public static List<Integer> missing(ContainerView c, RecipeView recipe) { return missing(c, recipe, true); }
 
-    /** Überträgt das Rezept. @return wie oft es ins Raster gelegt wurde (0 = gar nicht) */
+    /**
+     * Überträgt das Rezept.
+     *
+     * @return wie oft das Rezept jetzt hergestellt werden kann (0 = nichts übertragen)
+     */
     public static int transfer(ContainerView c, RecipeView recipe, boolean max) {
         if (check(c, recipe) != Status.OK || !c.cursor().isEmpty()) return 0;
         Grid g = c.grid();
-        // 1. Raster leeren
-        for (int idx : g.slots()) c.click(idx, 0, Click.QUICK_MOVE);
-        if (!c.cursor().isEmpty()) return 0;
+        int[] clicks = {0};
 
-        int limit = max ? maxRepeats(recipe) : 1;
-        int done = 0;
-        for (; done < limit; done++) {
-            if (!missing(c, recipe, false).isEmpty()) break;
-            for (int i = 0; i < recipe.slots().size(); i++) {
-                List<ItemRef> opts = recipe.slots().get(i);
-                if (opts.isEmpty()) continue;
-                int target = g.slots()[(i / recipe.width()) * g.width() + (i % recipe.width())];
-                Slot targetSlot = InventoryOps.slot(c, target);
-                // liegt schon etwas im Zielslot (vorherige Runde), muss es dasselbe Item sein
-                String wanted = targetSlot != null && !targetSlot.item().isEmpty() ? targetSlot.item().id() : null;
-                Slot src = findSource(c, opts, wanted);
-                if (src == null) return done;
-                c.click(src.index(), 0, Click.PICKUP);
-                c.click(target, 1, Click.PICKUP);
-                c.click(src.index(), 0, Click.PICKUP);
+        // 1. Raster leeren, bei vollem Inventar abbrechen statt Items zu vertauschen
+        for (int idx : g.slots()) {
+            Slot s = InventoryOps.slot(c, idx);
+            if (s != null && !s.item().isEmpty()) click(c, clicks, idx, 0, Click.QUICK_MOVE);
+        }
+        for (int idx : g.slots()) {
+            Slot s = InventoryOps.slot(c, idx);
+            if (s != null && !s.item().isEmpty()) return 0;
+        }
+        if (!c.cursor().isEmpty() || !missing(c, recipe, false).isEmpty()) return 0;
+
+        return max ? transferMax(c, recipe, g, clicks) : transferOnce(c, recipe, g, clicks);
+    }
+
+    private static int transferOnce(ContainerView c, RecipeView recipe, Grid g, int[] clicks) {
+        Map<String, Integer> available = availableCounts(c, false);
+        for (int i = 0; i < recipe.slots().size(); i++) {
+            List<ItemRef> opts = recipe.slots().get(i);
+            if (opts.isEmpty()) continue;
+            String id = pick(opts, available);
+            if (id == null) return 0;
+            available.merge(id, -1, Integer::sum);
+            Slot src = findSource(c, id);
+            if (src == null) return 0;
+            int target = targetIndex(recipe, g, i);
+            click(c, clicks, src.index(), 0, Click.PICKUP);
+            click(c, clicks, target, 1, Click.PICKUP);
+            click(c, clicks, src.index(), 0, Click.PICKUP);
+        }
+        return 1;
+    }
+
+    private static int transferMax(ContainerView c, RecipeView recipe, Grid g, int[] clicks) {
+        // Zutat pro Slot festlegen (die mit dem größten Vorrat) und Ziel-Slots je Item-ID sammeln
+        Map<String, Integer> available = availableCounts(c, false);
+        Map<String, List<Integer>> groups = new LinkedHashMap<>();
+        for (int i = 0; i < recipe.slots().size(); i++) {
+            List<ItemRef> opts = recipe.slots().get(i);
+            if (opts.isEmpty()) continue;
+            String best = null;
+            for (ItemRef o : opts) {
+                int n = available.getOrDefault(o.id(), 0);
+                if (n > 0 && (best == null || n > available.getOrDefault(best, 0))) best = o.id();
+            }
+            if (best == null) return 0;
+            groups.computeIfAbsent(best, k -> new ArrayList<>()).add(targetIndex(recipe, g, i));
+        }
+
+        for (Map.Entry<String, List<Integer>> e : groups.entrySet()) {
+            String id = e.getKey();
+            List<Integer> targets = e.getValue();
+            while (clicks[0] < MAX_CLICKS) {
+                Slot src = findSource(c, id);
+                if (src == null) break;
+                int cap = Math.max(1, src.item().maxStackSize());
+                List<Integer> needing = new ArrayList<>();
+                for (int t : targets) if (count(c, t) < cap) needing.add(t);
+                if (needing.isEmpty()) break;
+
+                click(c, clicks, src.index(), 0, Click.PICKUP);
+                int k = c.cursor().count();
+                boolean distributed = k >= needing.size();
+                if (distributed) {
+                    c.dragSplit(toArray(needing));
+                    clicks[0] += needing.size() + 2;
+                }
+                // Rest (oder zu wenig für alle Slots) zurücklegen: alle Slots bleiben gleich voll
+                if (!c.cursor().isEmpty()) click(c, clicks, src.index(), 0, Click.PICKUP);
+                if (!distributed || !c.cursor().isEmpty()) break;
             }
         }
-        return done;
+
+        int crafts = Integer.MAX_VALUE;
+        for (List<Integer> targets : groups.values()) for (int t : targets) crafts = Math.min(crafts, count(c, t));
+        return crafts == Integer.MAX_VALUE ? 0 : crafts;
+    }
+
+    private static void click(ContainerView c, int[] clicks, int slot, int button, Click type) {
+        c.click(slot, button, type);
+        clicks[0]++;
+    }
+
+    private static int targetIndex(RecipeView recipe, Grid g, int i) {
+        return g.slots()[(i / recipe.width()) * g.width() + (i % recipe.width())];
+    }
+
+    private static int count(ContainerView c, int index) {
+        Slot s = InventoryOps.slot(c, index);
+        return s == null || s.item().isEmpty() ? 0 : s.item().count();
+    }
+
+    private static int[] toArray(List<Integer> list) {
+        int[] a = new int[list.size()];
+        for (int i = 0; i < a.length; i++) a[i] = list.get(i);
+        return a;
     }
 
     private static List<Integer> missing(ContainerView c, RecipeView recipe, boolean includeGrid) {
@@ -73,15 +160,6 @@ public final class RecipeTransfer {
             else available.merge(pick, -1, Integer::sum);
         }
         return out;
-    }
-
-    /** Wie oft man das Rezept stapeln kann, bevor ein Rasterslot voll ist. */
-    private static int maxRepeats(RecipeView recipe) {
-        int max = 64;
-        for (List<ItemRef> opts : recipe.slots()) {
-            for (ItemRef it : opts) max = Math.min(max, Math.max(1, it.maxStackSize()));
-        }
-        return max;
     }
 
     private static String pick(List<ItemRef> opts, Map<String, Integer> available) {
@@ -105,16 +183,10 @@ public final class RecipeTransfer {
         return m;
     }
 
-    /**
-     * Quelle im Spielerinventar. Liegt im Zielslot schon ein Item, nur genau dieses nehmen
-     * (ein anderes würde MC beim Rechtsklick tauschen statt stapeln).
-     */
-    private static Slot findSource(ContainerView c, List<ItemRef> opts, String requiredId) {
+    /** Erster Stack dieser Item-ID im Spielerinventar (Hauptinventar oder Hotbar). */
+    private static Slot findSource(ContainerView c, String id) {
         for (Slot s : c.slots()) {
-            if (s.item().isEmpty() || !(s.playerMain() || s.hotbar())) continue;
-            for (ItemRef o : opts) {
-                if (o.id().equals(s.item().id()) && (requiredId == null || requiredId.equals(o.id()))) return s;
-            }
+            if (!s.item().isEmpty() && (s.playerMain() || s.hotbar()) && id.equals(s.item().id())) return s;
         }
         return null;
     }

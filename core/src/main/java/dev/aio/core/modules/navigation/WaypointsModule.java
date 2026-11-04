@@ -7,8 +7,7 @@ import com.google.gson.JsonParser;
 import dev.aio.core.event.Events;
 import dev.aio.core.hud.HudElement;
 import dev.aio.core.module.Category;
-import dev.aio.core.modules.render.FreelookModule;
-import dev.aio.core.modules.render.ZoomModule;
+import dev.aio.core.platform.CameraView;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.platform.Vec3;
 import dev.aio.core.setting.ActionSetting;
@@ -40,7 +39,8 @@ public final class WaypointsModule extends HudElement {
 
     public WaypointsModule() {
         super("waypoints", "Wegpunkte", "Wegpunkte mit Entfernung im Bild und auf dem Kompass", Category.NAVIGATION, false, 0, 0);
-        data = add(new StringSetting("data", "Daten", "[]", 1_000_000));
+        // nur noch zum Übernehmen alter Daten (früher im Profil gespeichert)
+        data = add(new StringSetting("data", "Daten (alt)", "[]", 1_000_000));
         data.hidden();
         posX.hidden();
         posY.hidden();
@@ -55,7 +55,7 @@ public final class WaypointsModule extends HudElement {
             if (addKey.matches(e.key())) addHere("Wegpunkt " + (waypoints.size() + 1));
             else if (manageKey.matches(e.key())) platform().openScreen(new WaypointScreen(core, this));
         });
-        data.onChange(v -> { if (!saving) load(); });
+        data.onChange(v -> { if (!saving && core != null && loaded) load(); });
     }
 
     @Override public boolean enabledByDefault() { return true; }
@@ -64,25 +64,50 @@ public final class WaypointsModule extends HudElement {
 
     // ---- Daten ----
 
+    /** Eigene Datei, unabhängig von Profilen und vom "Zurücksetzen" im Menü. */
+    static final String FILE = "waypoints.json";
+
     private boolean saving;
 
     private void load() {
         waypoints.clear();
+        String json = core.config().readText(FILE);
+        if (json != null) parseInto(json, waypoints);
+        // Alte Versionen speicherten die Wegpunkte als Einstellung im Profil: einmalig übernehmen
+        String legacy = data.get();
+        if (legacy != null && !legacy.isBlank() && !legacy.trim().equals("[]")) {
+            List<Waypoint> old = new ArrayList<>();
+            parseInto(legacy, old);
+            for (Waypoint w : old) if (!waypoints.contains(w)) waypoints.add(w);
+            saving = true;
+            try {
+                data.set("[]");
+            } finally {
+                saving = false;
+            }
+            save();
+        }
+        loaded = true;
+    }
+
+    private static void parseInto(String json, List<Waypoint> out) {
         try {
-            JsonElement el = JsonParser.parseString(data.get());
-            if (el.isJsonArray()) {
-                for (JsonElement e : el.getAsJsonArray()) {
+            JsonElement el = JsonParser.parseString(json);
+            if (!el.isJsonArray()) return;
+            for (JsonElement e : el.getAsJsonArray()) {
+                try {
                     JsonObject o = e.getAsJsonObject();
-                    waypoints.add(new Waypoint(o.get("name").getAsString(), o.get("x").getAsInt(), o.get("y").getAsInt(),
+                    out.add(new Waypoint(o.get("name").getAsString(), o.get("x").getAsInt(), o.get("y").getAsInt(),
                             o.get("z").getAsInt(), o.get("world").getAsString(), o.get("dim").getAsString(),
                             o.get("color").getAsInt(), !o.has("visible") || o.get("visible").getAsBoolean(),
                             o.has("death") && o.get("death").getAsBoolean()));
+                } catch (RuntimeException ignored) {
+                    // einzelnen kaputten Eintrag überspringen, Rest behalten
                 }
             }
         } catch (RuntimeException e) {
             Log.warn("Wegpunkte konnten nicht gelesen werden: " + e.getMessage());
         }
-        loaded = true;
     }
 
     private void save() {
@@ -100,12 +125,7 @@ public final class WaypointsModule extends HudElement {
             o.addProperty("death", w.death());
             arr.add(o);
         }
-        saving = true;
-        try {
-            data.set(arr.toString());
-        } finally {
-            saving = false;
-        }
+        core.config().writeText(FILE, arr.toString());
     }
 
     public List<Waypoint> all() {
@@ -173,24 +193,19 @@ public final class WaypointsModule extends HudElement {
     @Override public boolean editable() { return false; }
 
     /** Vom HUD-Manager jeden Frame aufgerufen. */
-    @Override public void renderOverlay(Renderer r) {
+    @Override public void renderOverlay(Renderer r, float partialTick) {
         if (!isActive() || !hasContent()) return;
-        Vec3 eye = platform().eyePos();
+        // echte Kamera: interpoliert, 3. Person, Freelook und tatsächliches FOV (Sprinten, Zoom)
+        CameraView cam = platform().camera(partialTick);
         Vec3 pos = platform().playerPos();
-        FreelookModule fl = core.module(FreelookModule.class);
-        boolean free = fl != null && fl.isEngaged();
-        float yaw = free ? fl.cameraYaw() : platform().playerYaw();
-        float pitch = free ? fl.cameraPitch() : platform().playerPitch();
-        ZoomModule zoom = core.module(ZoomModule.class);
-        double fov = platform().fov() * (zoom != null ? zoom.currentMultiplier() : 1);
         float w = r.screenWidth(), h = r.screenHeight();
         double max = maxDistance.get();
 
         for (Waypoint wp : visibleHere()) {
             double dist = wp.distanceTo(pos.x(), pos.y(), pos.z());
             if (max > 0 && dist > max) continue;
-            Projection.Point pt = Projection.project(wp.x() + 0.5, wp.y() + 1.0, wp.z() + 0.5, eye.x(), eye.y(), eye.z(),
-                    yaw, pitch, fov, w, h);
+            Projection.Point pt = Projection.project(wp.x() + 0.5, wp.y() + 1.0, wp.z() + 0.5, cam.x(), cam.y(), cam.z(),
+                    cam.yaw(), cam.pitch(), cam.fov(), w, h);
             float x = pt.x(), y = pt.y();
             boolean edge = !pt.onScreen();
             if (edge) {

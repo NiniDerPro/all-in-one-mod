@@ -29,6 +29,8 @@ public final class ChatModule extends Module {
     private final BooleanSetting unicodeFont;
     private final ChatHistory chatHistory = new ChatHistory(1000);
     private boolean applying;
+    /** Ob die Vanilla-Werte schon übernommen wurden (beim Spielstart gibt es sie noch nicht). */
+    private boolean synced;
 
     public ChatModule() {
         super("chat", "Chat", "Zeitstempel und längerer Chatverlauf", Category.CHAT, false);
@@ -48,6 +50,7 @@ public final class ChatModule extends Module {
         unicodeFont = add(new BooleanSetting("unicodeFont", "Unicode-Schrift", false));
         unicodeFont.onChange(v -> apply(VanillaOption.FORCE_UNICODE_FONT, v ? 1 : 0));
         on(Events.ChatReceived.class, e -> chatHistory.add(e.text()));
+        on(Events.Tick.class, e -> { if (!synced) readFromVanilla(); });
         on(Events.Key.class, e -> {
             if (e.isPress() && !e.screenOpen() && copyKey.matches(e.key())) openCopy();
         });
@@ -60,7 +63,7 @@ public final class ChatModule extends Module {
     }
 
     private void apply(VanillaOption option, double value) {
-        if (!isActive() || applying || core == null) return;
+        if (!isActive() || applying || core == null || !synced) return;
         platform().setOption(option, value);
     }
 
@@ -69,6 +72,7 @@ public final class ChatModule extends Module {
      * überschreibt. Geschrieben wird nur, wenn man im Menü oder Editor etwas ändert.
      */
     private void readFromVanilla() {
+        if (Double.isNaN(platform().option(VanillaOption.CHAT_WIDTH))) return; // noch nicht geladen, später erneut
         applying = true;
         try {
             width.set(platform().option(VanillaOption.CHAT_WIDTH));
@@ -79,12 +83,16 @@ public final class ChatModule extends Module {
             textOpacity.set(platform().option(VanillaOption.CHAT_OPACITY));
             backgroundOpacity.set(platform().option(VanillaOption.TEXT_BACKGROUND_OPACITY));
             unicodeFont.set(platform().option(VanillaOption.FORCE_UNICODE_FONT) > 0.5);
+            synced = true;
         } finally {
             applying = false;
         }
     }
 
-    @Override protected void onActivate() { readFromVanilla(); }
+    @Override protected void onActivate() {
+        synced = false;
+        readFromVanilla();
+    }
 
     @Override public boolean enabledByDefault() { return true; }
 

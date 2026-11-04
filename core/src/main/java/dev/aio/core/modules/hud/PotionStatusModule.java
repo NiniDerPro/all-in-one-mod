@@ -35,7 +35,10 @@ public final class PotionStatusModule extends HudElement {
         List<Integer> nextColors = new ArrayList<>();
         List<String> nextSprites = new ArrayList<>();
         if (platform().inWorld()) {
-            for (EffectInfo e : platform().effects()) {
+            List<EffectInfo> sorted = new ArrayList<>(platform().effects());
+            // stabil wie im Vanilla-Inventar: gute vor schlechten, dann nach Name
+            sorted.sort(java.util.Comparator.comparing((EffectInfo e) -> !e.beneficial()).thenComparing(EffectInfo::name));
+            for (EffectInfo e : sorted) {
                 nextLines.add(e.name() + " " + roman(e.amplifier()) + "  " + formatDuration(e));
                 nextColors.add(!colorByType.on() ? textColor() : e.beneficial() ? 0xFF8CF08C : 0xFFFF7070);
                 nextSprites.add(e.iconSprite() == null ? "" : e.iconSprite());

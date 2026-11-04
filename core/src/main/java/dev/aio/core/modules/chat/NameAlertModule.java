@@ -33,7 +33,7 @@ public final class NameAlertModule extends Module {
 
     private void onChat(Events.ChatReceived e) {
         String name = platform().playerName();
-        if (ignoreOwn.on() && isOwnMessage(e.text(), name)) return;
+        if (ignoreOwn.on() && (e.fromSelf() || isOwnMessage(e.text(), name))) return;
         String hit = match(e.text(), words(name), requireAt.on());
         if (hit == null) return;
         if (sound.on()) platform().playAlertSound();
@@ -47,11 +47,17 @@ public final class NameAlertModule extends Module {
         return list;
     }
 
-    /** "<Name> ..." oder "Name: ..." am Anfang = eigene Nachricht. */
+    /**
+     * Erkennt eigene Nachrichten auch bei Server-Chatformaten: Am Anfang dürfen Rang-Präfixe in
+     * Klammern stehen ("[VIP] ", "[Admin] [Lv 5] "), danach kommt der eigene Name, gefolgt von
+     * einem Trenner (":", ">", "»", "|", "→") oder einem Leerzeichen (Beitritts-/Systemmeldungen über
+     * einen selbst, z. B. "Steve joined the game").
+     */
     static boolean isOwnMessage(String text, String name) {
         if (name == null || name.isEmpty()) return false;
-        String t = text.trim();
-        return t.startsWith("<" + name + ">") || t.startsWith(name + ":") || t.startsWith("[" + name + "]");
+        String n = Pattern.quote(name);
+        String regex = "^\\s*(?:[\\[(][^\\])]{0,24}[\\])]\\s*)*<?" + n + ">?(?:\\s*[:>»|→]|\\s|$)";
+        return Pattern.compile(regex, Pattern.CASE_INSENSITIVE).matcher(text.replaceAll("§.", "")).find();
     }
 
     /** Liefert das gefundene Wort oder null. Ganze Wörter, ohne Groß/Klein. */

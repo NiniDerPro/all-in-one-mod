@@ -47,13 +47,17 @@ public final class AioFabricClient implements ClientModInitializer {
         ShulkerTooltipHook.register(core);
         ClientRecipeSynchronizedEvent.EVENT.register((c, recipes) -> RecipeSource.onSynced(recipes));
 
-        ClientReceiveMessageEvents.CHAT.register((message, signed, sender, params, timestamp) ->
-                core.bus().post(new Events.ChatReceived(message.getString(), false)));
+        ClientReceiveMessageEvents.CHAT.register((message, signed, sender, params, timestamp) -> {
+            boolean self = sender != null && client.player != null && sender.equals(client.player.getGameProfile());
+            core.bus().post(new Events.ChatReceived(message.getString(), false, self));
+        });
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
             if (!overlay) core.bus().post(new Events.ChatReceived(message.getString(), true));
         });
 
         ClientTickEvents.END_CLIENT_TICK.register(c -> {
+            // Fenster ohne Fokus (Alt+Tab): Loslassen kommt nicht mehr an, darum alles als losgelassen werten
+            if (!c.isWindowActive()) InputState.clear();
             platform.applyPendingScreen();
             platform.saveOptionsIfDirty();
             core.bus().post(Events.Tick.INSTANCE);

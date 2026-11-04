@@ -71,6 +71,24 @@ public final class FakeContainer implements ContainerView {
 
     @Override public Grid grid() { return grid; }
 
+    /** Wie Vanilla-Quick-Craft (Ziehen links): gleichmäßig verteilen, Stapelgrenze beachten, Rest am Cursor. */
+    @Override public void dragSplit(int[] slots) {
+        clicks += slots.length + 2;
+        if (cursor.isEmpty() || slots.length == 0) return;
+        if (slots.length == 1) { clicks -= 2; clicks--; click(slots[0], 0, Click.PICKUP); return; }
+        int each = cursor.count / slots.length;
+        int left = cursor.count;
+        for (int i : slots) {
+            Stack t = items[i];
+            if (!t.isEmpty() && !t.id.equals(cursor.id)) continue;
+            int have = t.isEmpty() ? 0 : t.count;
+            int now = Math.min(cursor.max, have + each);
+            left -= now - have;
+            items[i] = cursor.withCount(now);
+        }
+        cursor = left > 0 ? cursor.withCount(left) : EMPTY;
+    }
+
     @Override public void click(int i, int button, Click type) {
         clicks++;
         Stack slot = items[i];

@@ -33,11 +33,24 @@ public final class ShulkerTooltipHook {
         return stack.getItem() instanceof BlockItem bi && bi.getBlock() instanceof ShulkerBoxBlock;
     }
 
+    // Der Tooltip wird jeden Frame abgefragt: Ergebnis für denselben Inhalt wiederverwenden
+    private static ItemContainerContents lastContents;
+    private static boolean lastTint;
+    private static TooltipComponent lastData;
+
     /** Tooltip-Daten oder null, wenn das Item keine (gefüllte) Shulkerkiste ist. */
     public static TooltipComponent create(ItemStack stack, boolean tint) {
         if (!isShulker(stack)) return null;
         ItemContainerContents contents = stack.get(DataComponents.CONTAINER);
         if (contents == null) return null;
+        if (contents == lastContents && tint == lastTint) return lastData;
+        lastContents = contents;
+        lastTint = tint;
+        lastData = build(stack, contents, tint);
+        return lastData;
+    }
+
+    private static TooltipComponent build(ItemStack stack, ItemContainerContents contents, boolean tint) {
         NonNullList<ItemStack> items = NonNullList.withSize(27, ItemStack.EMPTY);
         contents.copyInto(items);
         boolean any = false;

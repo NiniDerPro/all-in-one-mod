@@ -10,8 +10,11 @@ public final class ColoredText {
     /** Zerlegter Text: einzelne Zeichen und ihre x-Versätze. Wird pro Text gecacht, nicht pro Frame gemessen. */
     private record Glyphs(String[] chars, float[] offsets) {}
 
-    private static final int CACHE_LIMIT = 512;
-    private static final java.util.Map<String, Glyphs> CACHE = new java.util.HashMap<>();
+    private static final int CACHE_LIMIT = 256;
+    /** LRU: wenig benutzte Texte fliegen einzeln raus, statt den ganzen Cache zu leeren. */
+    private static final java.util.Map<String, Glyphs> CACHE = new java.util.LinkedHashMap<>(64, 0.75f, true) {
+        @Override protected boolean removeEldestEntry(java.util.Map.Entry<String, Glyphs> eldest) { return size() > CACHE_LIMIT; }
+    };
 
     private static Glyphs glyphs(Renderer r, String text) {
         Glyphs g = CACHE.get(text);
@@ -27,7 +30,6 @@ public final class ColoredText {
             x += r.textWidth(chars[idx]);
             i += Character.charCount(cp);
         }
-        if (CACHE.size() >= CACHE_LIMIT) CACHE.clear();
         g = new Glyphs(chars, offsets);
         CACHE.put(text, g);
         return g;

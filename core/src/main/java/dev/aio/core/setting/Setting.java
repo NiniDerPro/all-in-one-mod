@@ -63,6 +63,9 @@ public abstract class Setting<T> {
 
     public boolean isVisible() { return !hidden && visibleWhen.getAsBoolean(); }
 
+    /** Interne Einstellung (Position, Daten), die nie im Menü erscheint und nicht zurückgesetzt wird. */
+    public boolean isHidden() { return hidden; }
+
     public abstract JsonElement toJson();
 
     /** Liest den Wert aus JSON. Bei ungültigem Inhalt bleibt der aktuelle Wert stehen. */
