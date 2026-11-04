@@ -1,0 +1,35 @@
+plugins {
+    id 'java-library'
+}
+
+group = project.maven_group
+version = project.mod_version
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+repositories {
+    maven { url = 'https://repo1.maven.org/maven2/' }
+}
+
+dependencies {
+    // Gson liefert Minecraft zur Laufzeit selbst mit.
+    compileOnly 'com.google.code.gson:gson:2.10.1'
+
+    testImplementation 'com.google.code.gson:gson:2.10.1'
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+
+test {
+    useJUnitPlatform()
+}
