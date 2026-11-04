@@ -174,6 +174,9 @@ public interface Platform {
      */
     default java.util.List<WorldLabel> villagerLabels(double maxDistance, float partialTick) { return java.util.List.of(); }
 
+    /** IDs aller Partikelarten, z. B. {@code minecraft:crit}. */
+    default java.util.List<String> particleTypes() { return java.util.List.of(); }
+
     /** Ob gerade ein Inventar-/Container-Screen offen ist (nicht Chat, Menü, ...). */
     default boolean containerScreenOpen() { return false; }
 
