@@ -46,16 +46,17 @@ public interface Platform {
     /** Anzeigename der aktuellen Belegung einer Vanilla-Taste, z. B. "W" oder "LMB". */
     String gameKeyName(GameKey key);
 
-    /** Prüft, ob ein GLFW-Tasten- oder Maus-Code (siehe {@link Keys}) gerade gehalten wird. */
-    boolean isKeyDown(int code);
+    /** Prüft, ob eine Taste oder Maustaste (MC-Tastenname, siehe {@link Keys}) gerade gehalten wird. */
+    boolean isKeyDown(String key);
 
-    /** Ob ein GLFW-Code der aktuellen Belegung einer Vanilla-Taste entspricht. */
-    boolean matchesGameKey(GameKey key, int code);
+    /** Ob ein Tastenname der aktuellen Belegung einer Vanilla-Taste entspricht. */
+    boolean matchesGameKey(GameKey gameKey, String key);
 
     /** Setzt den gedrückt-Zustand einer Vanilla-Taste, z. B. für Toggle Sprint. */
     void setGameKeyPressed(GameKey key, boolean pressed);
 
-    String keyName(int code);
+    /** Lesbarer, lokalisierter Name einer Taste. */
+    String keyName(String key);
 
     // ---- Kamera ----
     Perspective perspective();

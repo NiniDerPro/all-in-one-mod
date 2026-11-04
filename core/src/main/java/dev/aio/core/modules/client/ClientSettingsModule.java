@@ -18,6 +18,7 @@ public final class ClientSettingsModule extends Module {
     public final StringSetting allowList;
     public final BooleanSetting toggleMessages;
     public final ColorSetting accent;
+    public final BooleanSetting rainbowAccent;
 
     public ClientSettingsModule() {
         super("client", "Client", "Menütaste, Server-Kompatibilität und Design", Category.CLIENT, false);
@@ -27,7 +28,9 @@ public final class ClientSettingsModule extends Module {
         allowList = add(new StringSetting("allowList", "Erlaubte Server (Komma)", "", 256));
         allowList.visibleWhen(() -> compatMode.get() == CompatMode.AUTO);
         toggleMessages = add(new BooleanSetting("toggleMessages", "Meldung beim Umschalten", true));
+        rainbowAccent = add(new BooleanSetting("rainbowAccent", "Regenbogen-Akzent", true));
         accent = add(new ColorSetting("accent", "Akzentfarbe", 0xFF7C5CFF));
+        accent.visibleWhen(() -> !rainbowAccent.on());
     }
 
     @Override public boolean canToggle() { return false; }

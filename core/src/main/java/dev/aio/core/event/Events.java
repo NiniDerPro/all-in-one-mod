@@ -23,13 +23,13 @@ public final class Events {
         }
     }
 
-    /** Tastatur-Event. {@code action}: 0 = losgelassen, 1 = gedrückt, 2 = wiederholt (GLFW). */
-    public record Key(int key, int action, int modifiers, boolean screenOpen) {
+    /** Tastatur-Event mit MC-Tastennamen. {@code action}: 0 = losgelassen, 1 = gedrückt, 2 = wiederholt. */
+    public record Key(String key, int action, boolean screenOpen) {
         public boolean isPress() { return action == 1; }
         public boolean isRelease() { return action == 0; }
     }
 
-    /** Maustasten-Event. {@code button}: 0 = links, 1 = rechts, 2 = Mitte (GLFW). */
+    /** Maustasten-Event. {@code button}: 0 = links, 1 = rechts, 2 = Mitte. */
     public record MouseButton(int button, int action, boolean screenOpen) {
         public boolean isPress() { return action == 1; }
     }

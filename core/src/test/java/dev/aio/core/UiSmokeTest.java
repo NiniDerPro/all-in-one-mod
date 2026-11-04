@@ -81,7 +81,7 @@ class UiSmokeTest {
                     }
                     g.mouseScrolled(200, 100, -1);
                 }
-                g.keyPressed(256, 0, 0);
+                g.keyPressed(dev.aio.core.platform.Keys.ESCAPE);
                 g.onClose();
             }
         }
@@ -111,5 +111,21 @@ class UiSmokeTest {
 
         editor.onClose();
         assertFalse(core.hud().isEditorOpen());
+    }
+
+    @Test void colorModesDrawPerCharacter() {
+        FakePlatform p = new FakePlatform();
+        AioCore core = newCore(p);
+        FpsModule fps = core.module(FpsModule.class);
+        fps.setEnabled(true);
+        fps.update();
+        FakeRenderer r = new FakeRenderer();
+        assertEquals(dev.aio.core.hud.ColorMode.CHROMA, fps.colorMode(), "Regenbogen ist Standard");
+        fps.render(r, false);
+        assertEquals("120 FPS".length(), r.textCalls, "Regenbogen zeichnet pro Zeichen");
+        ((dev.aio.core.setting.EnumSetting<dev.aio.core.hud.ColorMode>) fps.setting("colorMode")).set(dev.aio.core.hud.ColorMode.STATIC);
+        r.textCalls = 0;
+        fps.render(r, false);
+        assertEquals(1, r.textCalls);
     }
 }

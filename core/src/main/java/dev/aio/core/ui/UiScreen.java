@@ -17,10 +17,10 @@ public interface UiScreen {
 
     default boolean mouseScrolled(double x, double y, double amount) { return false; }
 
-    /** @return true, wenn die Taste verbraucht wurde. Escape schließt sonst den Screen. */
-    default boolean keyPressed(int key, int scancode, int modifiers) { return false; }
+    /** @param key MC-Tastenname. @return true, wenn die Taste verbraucht wurde. Escape schließt sonst den Screen. */
+    default boolean keyPressed(String key) { return false; }
 
-    default boolean charTyped(char chr, int modifiers) { return false; }
+    default boolean charTyped(String text) { return false; }
 
     default void onClose() {}
 

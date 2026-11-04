@@ -1,6 +1,7 @@
 package dev.aio.core.ui;
 
 import dev.aio.core.AioCore;
+import dev.aio.core.util.Colors;
 
 /** Farben der Oberfläche. Die Akzentfarbe ist in den Client-Einstellungen wählbar. */
 public final class Theme {
@@ -19,7 +20,26 @@ public final class Theme {
     public static final int WARNING = 0xFFFFB02E;
     public static final int DANGER = 0xFFE5484D;
 
+    /** Akzentfarbe: fest oder (Standard) ein langsam wandernder Regenbogen. */
     public static int accent(AioCore core) {
+        return accent(core, 0);
+    }
+
+    /** Akzentfarbe mit Versatz, damit z. B. Leisten als Verlauf erscheinen. */
+    public static int accent(AioCore core, float offset) {
+        if (core.clientSettings().rainbowAccent.on()) return Colors.chroma(offset, 0.15f, 255);
         return core.clientSettings().accent.argb() | 0xFF000000;
+    }
+
+    /** Leiste als Farbverlauf (Regenbogen oder Akzent). */
+    public static void accentBar(dev.aio.core.platform.Renderer r, AioCore core, float x1, float y1, float x2, float y2) {
+        if (!core.clientSettings().rainbowAccent.on()) {
+            r.fill(x1, y1, x2, y2, accent(core));
+            return;
+        }
+        float step = 4;
+        for (float x = x1; x < x2; x += step) {
+            r.fill(x, y1, Math.min(x2, x + step), y2, accent(core, x));
+        }
     }
 }

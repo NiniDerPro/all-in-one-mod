@@ -89,7 +89,7 @@ public final class ClickGuiScreen implements UiScreen {
         int py = (h - ph) / 2;
         r.fill(px, py, px + pw, py + ph, Theme.PANEL);
         r.fill(px, py, px + SIDEBAR_W, py + ph, Theme.SIDEBAR);
-        r.fill(px, py, px + pw, py + 1, accent);
+        Theme.accentBar(r, core, px, py, px + pw, py + 2);
 
         renderSidebar(r, mx, my, px, py, ph, accent);
 
@@ -97,7 +97,10 @@ public final class ClickGuiScreen implements UiScreen {
         int cw = pw - SIDEBAR_W - 16;
         int cy = py + 8;
         if (selected != null) renderSettingsHeader(r, mx, my, cx, cy, cw, accent);
-        else r.text(category.displayName(), cx, cy + 3, Theme.TEXT, false);
+        else {
+            r.text(category.displayName(), cx, cy + 3, category.color(), true);
+            r.fill(cx, cy + 14, cx + r.textWidth(category.displayName()), cy + 15, category.color());
+        }
 
         int viewTop = cy + 20;
         int viewBottom = py + ph - 8;
@@ -130,19 +133,23 @@ public final class ClickGuiScreen implements UiScreen {
     }
 
     private void renderSidebar(Renderer r, int mx, int my, int px, int py, int ph, int accent) {
-        r.text(AioCore.NAME, px + 10, py + 9, Theme.TEXT, true);
+        dev.aio.core.hud.ColoredText.draw(r, AioCore.NAME, px + 10, py + 9,
+                core.clientSettings().rainbowAccent.on() ? dev.aio.core.hud.ColorMode.CHROMA : dev.aio.core.hud.ColorMode.STATIC,
+                accent, accent, 0.25f, true, 0);
         float y = py + 28;
         for (Category c : Category.values()) {
             if (core.modules().byCategory(c).isEmpty()) continue;
             boolean sel = c == category;
             boolean hover = inside(mx, my, px, y, px + SIDEBAR_W, y + 16);
+            int cc = c.color();
             if (sel) {
-                r.fill(px, y, px + SIDEBAR_W, y + 16, 0x30FFFFFF);
-                r.fill(px, y, px + 2, y + 16, accent);
+                r.fill(px, y, px + SIDEBAR_W, y + 16, dev.aio.core.util.Colors.withAlpha(cc, 0x38));
+                r.fill(px, y, px + 2, y + 16, cc);
             } else if (hover) {
-                r.fill(px, y, px + SIDEBAR_W, y + 16, 0x18FFFFFF);
+                r.fill(px, y, px + SIDEBAR_W, y + 16, dev.aio.core.util.Colors.withAlpha(cc, 0x18));
             }
-            r.text(c.displayName(), px + 10, y + 4, sel ? Theme.TEXT : Theme.TEXT_DIM, false);
+            r.fill(px + 10, y + 6, px + 14, y + 10, cc);
+            r.text(c.displayName(), px + 19, y + 4, sel ? Theme.TEXT : Theme.TEXT_DIM, false);
             Category target = c;
             hit(px, y, px + SIDEBAR_W, y + 16, b -> {
                 category = target;
@@ -206,9 +213,14 @@ public final class ClickGuiScreen implements UiScreen {
             float y1 = y + (i / cols) * (CARD_H + GAP);
             float x2 = x1 + cardW, y2 = y1 + CARD_H;
             boolean hover = inside(mx, my, x1, y1, x2, y2) && my >= viewY1 && my <= viewY2;
+            int cc = m.category().color();
             r.fill(x1, y1, x2, y2, hover ? Theme.CARD_HOVER : Theme.CARD);
-            if (m.isActive()) r.fill(x1, y1, x1 + 2, y2, accent);
-            else if (m.isEnabled() && m.isBlocked()) r.fill(x1, y1, x1 + 2, y2, Theme.WARNING);
+            if (m.isActive()) {
+                r.fill(x1, y1, x2, y2, dev.aio.core.util.Colors.withAlpha(cc, hover ? 0x2A : 0x1C));
+                r.fill(x1, y1, x1 + 2, y2, cc);
+            } else if (m.isEnabled() && m.isBlocked()) {
+                r.fill(x1, y1, x1 + 2, y2, Theme.WARNING);
+            }
 
             r.text(r.trim(m.name(), cardW - 40), x1 + 8, y1 + 7, Theme.TEXT, false);
             r.text(r.trim(m.description(), cardW - 16), x1 + 8, y1 + 19, Theme.TEXT_DIM, false);
@@ -221,7 +233,7 @@ public final class ClickGuiScreen implements UiScreen {
             hit(x1, y1, x2, y2, b -> openSettings(m));
             if (m.canToggle()) {
                 float sx = x2 - 28, sy = y1 + 6;
-                toggleSwitch(r, sx, sy, m.isEnabled(), m.isBlocked(), accent);
+                toggleSwitch(r, sx, sy, m.isEnabled(), m.isBlocked(), cc);
                 hit(sx - 2, sy - 2, sx + 22, sy + 12, b -> m.toggle());
             }
         }
@@ -304,7 +316,7 @@ public final class ClickGuiScreen implements UiScreen {
             r.fill(bx, y + 3, right - 4, y + ROW_H - 3, listening == k ? accent : hover ? 0xFF3A3A46 : Theme.TRACK);
             r.centeredText(v, bx + bw / 2f, textY, Theme.TEXT, false);
             hit(bx, y + 3, right - 4, y + ROW_H - 3, btn -> {
-                if (listening == k && btn >= 2) {
+                if (listening == k && btn >= 2) { // Mitte und Seitentasten lassen sich als Belegung nutzen
                     k.set(Keys.mouse(btn));
                     listening = null;
                 } else {
@@ -531,41 +543,41 @@ public final class ClickGuiScreen implements UiScreen {
         return true;
     }
 
-    @Override public boolean keyPressed(int key, int scancode, int modifiers) {
+    @Override public boolean keyPressed(String key) {
         if (listening != null) {
-            listening.set(key == Keys.ESCAPE || key == Keys.BACKSPACE || key == Keys.DELETE ? Keys.NONE : key);
+            listening.set(Keys.ESCAPE.equals(key) || Keys.BACKSPACE.equals(key) || Keys.DELETE.equals(key) ? Keys.NONE : key);
             listening = null;
             return true;
         }
         if (editing != null) {
-            boolean ctrl = (modifiers & 2) != 0;
-            if (key == Keys.ESCAPE) {
+            boolean ctrl = core.platform().isKeyDown(Keys.LEFT_CONTROL) || core.platform().isKeyDown(Keys.RIGHT_CONTROL);
+            if (Keys.ESCAPE.equals(key)) {
                 editing = null;
-            } else if (key == Keys.ENTER) {
+            } else if (Keys.ENTER.equals(key)) {
                 commitEdit();
-            } else if (key == Keys.BACKSPACE) {
-                if (!editBuffer.isEmpty()) editBuffer = editBuffer.substring(0, editBuffer.length() - 1);
-            } else if (ctrl && key == Keys.V) {
+            } else if (Keys.BACKSPACE.equals(key)) {
+                if (!editBuffer.isEmpty()) editBuffer = editBuffer.substring(0, editBuffer.offsetByCodePoints(editBuffer.length(), -1));
+            } else if (ctrl && Keys.V.equals(key)) {
                 insert(core.platform().clipboard());
-            } else if (ctrl && key == Keys.C) {
+            } else if (ctrl && Keys.C.equals(key)) {
                 core.platform().setClipboard(editBuffer);
             }
             return true;
         }
-        if (key == Keys.ESCAPE && selected != null) {
+        if (Keys.ESCAPE.equals(key) && selected != null) {
             closeSettings();
             return true;
         }
-        if (key == core.clientSettings().guiKey.key()) {
+        if (core.clientSettings().guiKey.matches(key)) {
             core.platform().closeScreen();
             return true;
         }
         return false;
     }
 
-    @Override public boolean charTyped(char chr, int modifiers) {
-        if (editing == null || chr < 32 || chr == 127) return false;
-        insert(String.valueOf(chr));
+    @Override public boolean charTyped(String text) {
+        if (editing == null || text == null || text.isEmpty() || text.codePointAt(0) < 32 || text.codePointAt(0) == 127) return false;
+        insert(text);
         return true;
     }
 

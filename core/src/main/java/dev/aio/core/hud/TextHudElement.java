@@ -55,6 +55,6 @@ public abstract class TextHudElement extends HudElement {
     @Override public int height(Renderer r) { return r.fontHeight() + PADDING * 2 - 2; }
 
     @Override protected void renderContent(Renderer r, boolean preview) {
-        r.text(displayedText(preview), PADDING, PADDING, textColor(), shadow());
+        drawText(r, displayedText(preview), PADDING, PADDING);
     }
 }

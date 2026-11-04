@@ -108,6 +108,21 @@ class UtilTest {
         assertEquals("\"#1000FF00\"", c.toJson().toString());
     }
 
+    @Test void mouseKeyNamesRoundTrip() {
+        for (int b = 0; b < 8; b++) assertEquals(b, dev.aio.core.platform.Keys.mouseButton(dev.aio.core.platform.Keys.mouse(b)));
+        assertEquals("key.mouse.left", dev.aio.core.platform.Keys.mouse(0));
+        assertEquals("key.mouse.4", dev.aio.core.platform.Keys.mouse(3));
+        assertEquals(-1, dev.aio.core.platform.Keys.mouseButton("key.keyboard.a"));
+    }
+
+    @Test void hsvAndChroma() {
+        assertEquals(0xFFFF0000, Colors.hsv(0, 1, 1, 255));
+        assertEquals(0xFF00FF00, Colors.hsv(1 / 3f, 1, 1, 255));
+        assertEquals(0xFF0000FF, Colors.hsv(2 / 3f, 1, 1, 255));
+        assertEquals(0xFFFF0000, Colors.hsv(1f, 1, 1, 255), "Farbton ist zyklisch");
+        assertEquals(0x80, Colors.alpha(Colors.chroma(10, 1, 0x80)));
+    }
+
     @Test void rollingStats() {
         RollingStats s = new RollingStats(3);
         s.add(10); s.add(20); s.add(30); s.add(60);

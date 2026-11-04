@@ -1,0 +1,18 @@
+package dev.aio.core.hud;
+
+import dev.aio.core.setting.EnumSetting;
+
+public enum ColorMode implements EnumSetting.Named {
+    /** Eine feste Farbe. */
+    STATIC("Fest"),
+    /** Regenbogen, der als Welle über den Text läuft. */
+    CHROMA("Regenbogen"),
+    /** Verlauf zwischen zwei Farben, der hin und her wandert. */
+    GRADIENT("Verlauf");
+
+    private final String displayName;
+
+    ColorMode(String displayName) { this.displayName = displayName; }
+
+    @Override public String displayName() { return displayName; }
+}

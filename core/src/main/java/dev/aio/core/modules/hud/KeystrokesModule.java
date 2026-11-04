@@ -48,6 +48,7 @@ public final class KeystrokesModule extends HudElement {
     private final ColorSetting pressedColor;
     private final ColorSetting pressedTextColor;
     private final BooleanSetting showCps;
+    private final BooleanSetting rainbowPressed;
 
     private List<KeyBox> boxes = List.of();
     private int totalW, totalH;
@@ -62,6 +63,7 @@ public final class KeystrokesModule extends HudElement {
         pressedColor = add(new ColorSetting("pressedColor", "Farbe gedrückt", 0xC0FFFFFF));
         pressedTextColor = add(new ColorSetting("pressedTextColor", "Textfarbe gedrückt", 0xFF000000));
         showCps = add(new BooleanSetting("showCps", "CPS in Maustasten", true));
+        rainbowPressed = add(new BooleanSetting("rainbowPressed", "Farbmodus beim Drücken", true));
         showCps.visibleWhen(() -> layout.get() != Layout.WASD);
         layout.onChange(v -> layoutDirty = true);
         keySize.onChange(v -> layoutDirty = true);
@@ -141,9 +143,13 @@ public final class KeystrokesModule extends HudElement {
         for (KeyBox b : boxes) {
             boolean down = platform().isGameKeyDown(b.key);
             float t = b.anim.update(down ? 1f : 0f, fade, now);
-            int bg = Colors.lerp(idle, pressedColor.argb(), t);
+            int pressed = rainbowPressed.on()
+                    ? Colors.withAlpha(dynamicColor(b.x + b.y), Colors.alpha(pressedColor.argb()))
+                    : pressedColor.argb();
+            int bg = Colors.lerp(idle, pressed, t);
             if (Colors.alpha(bg) > 0) r.fill(b.x, b.y, b.x + b.w, b.y + b.h, bg);
-            int fg = Colors.lerp(textColor(), pressedTextColor.argb(), t);
+            int baseText = colorMode() == dev.aio.core.hud.ColorMode.STATIC ? textColor() : dynamicColor(b.x + b.y + 40);
+            int fg = Colors.lerp(baseText, pressedTextColor.argb(), t);
 
             if ((b.key == GameKey.ATTACK || b.key == GameKey.USE) && showCps.on()) {
                 int cps = b.key == GameKey.ATTACK ? core.clicks().leftCps() : core.clicks().rightCps();

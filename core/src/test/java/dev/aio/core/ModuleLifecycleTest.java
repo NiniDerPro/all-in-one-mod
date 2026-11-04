@@ -7,6 +7,7 @@ import dev.aio.core.modules.hud.FpsModule;
 import dev.aio.core.modules.render.FreelookModule;
 import dev.aio.core.modules.render.FullbrightModule;
 import dev.aio.core.modules.render.ZoomModule;
+import dev.aio.core.platform.Keys;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -88,16 +89,16 @@ class ModuleLifecycleTest {
         p.yaw = 90;
         p.pitch = 10;
 
-        p.heldKeys.add(342);
-        core.bus().post(new Events.Key(342, 1, 0, false));
+        p.heldKeys.add(Keys.LEFT_ALT);
+        core.bus().post(new Events.Key(Keys.LEFT_ALT, 1, false));
         assertTrue(fl.isEngaged());
         assertEquals(dev.aio.core.platform.Perspective.THIRD_PERSON_BACK, p.perspective);
         assertTrue(fl.consumeMouse(100, 1000));
         assertEquals(105, fl.cameraYaw(), 1e-4);
         assertEquals(90, fl.cameraPitch(), 1e-4, "Pitch wird auf 90 begrenzt");
 
-        p.heldKeys.remove(342);
-        core.bus().post(new Events.Key(342, 0, 0, false));
+        p.heldKeys.remove(Keys.LEFT_ALT);
+        core.bus().post(new Events.Key(Keys.LEFT_ALT, 0, false));
         assertFalse(fl.isEngaged());
         assertEquals(dev.aio.core.platform.Perspective.FIRST_PERSON, p.perspective);
         assertFalse(fl.consumeMouse(1, 1));
@@ -107,10 +108,10 @@ class ModuleLifecycleTest {
         FakePlatform p = new FakePlatform();
         AioCore core = newCore(p);
         FreelookModule fl = core.module(FreelookModule.class);
-        p.heldKeys.add(342);
-        core.bus().post(new Events.Key(342, 1, 0, false));
+        p.heldKeys.add(Keys.LEFT_ALT);
+        core.bus().post(new Events.Key(Keys.LEFT_ALT, 1, false));
         assertTrue(fl.isEngaged());
-        p.heldKeys.remove(342); // losgelassen, aber Event nie angekommen
+        p.heldKeys.remove(Keys.LEFT_ALT); // losgelassen, aber Event nie angekommen
         core.bus().post(Events.Tick.INSTANCE);
         assertFalse(fl.isEngaged());
         assertEquals(dev.aio.core.platform.Perspective.FIRST_PERSON, p.perspective);
@@ -120,8 +121,8 @@ class ModuleLifecycleTest {
         FakePlatform p = new FakePlatform();
         AioCore core = newCore(p);
         FreelookModule fl = core.module(FreelookModule.class);
-        p.heldKeys.add(342);
-        core.bus().post(new Events.Key(342, 1, 0, false));
+        p.heldKeys.add(Keys.LEFT_ALT);
+        core.bus().post(new Events.Key(Keys.LEFT_ALT, 1, false));
         p.singleplayer = false;
         core.bus().post(new Events.ServerJoin("mc.server.net"));
         assertFalse(fl.isEngaged());
@@ -134,8 +135,8 @@ class ModuleLifecycleTest {
         ZoomModule zoom = core.module(ZoomModule.class);
         Events.MouseScroll s1 = core.bus().post(new Events.MouseScroll(1));
         assertFalse(s1.isCancelled());
-        p.heldKeys.add(67);
-        core.bus().post(new Events.Key(67, 1, 0, false));
+        p.heldKeys.add(Keys.C);
+        core.bus().post(new Events.Key(Keys.C, 1, false));
         assertTrue(zoom.isEngaged());
         Events.MouseScroll s2 = core.bus().post(new Events.MouseScroll(1));
         assertTrue(s2.isCancelled());
@@ -146,20 +147,20 @@ class ModuleLifecycleTest {
         FakePlatform p = new FakePlatform();
         AioCore core = newCore(p);
         FpsModule fps = core.module(FpsModule.class);
-        fps.toggleKey().set(70);
+        fps.toggleKey().set("key.keyboard.f");
         boolean before = fps.isEnabled();
-        core.bus().post(new Events.Key(70, 1, 0, false));
+        core.bus().post(new Events.Key("key.keyboard.f", 1, false));
         assertEquals(!before, fps.isEnabled());
         assertFalse(p.messages.isEmpty());
         // Mit offenem Screen keine Keybinds
-        core.bus().post(new Events.Key(70, 1, 0, true));
+        core.bus().post(new Events.Key("key.keyboard.f", 1, true));
         assertEquals(!before, fps.isEnabled());
     }
 
     @Test void guiKeyOpensClickGui() {
         FakePlatform p = new FakePlatform();
         AioCore core = newCore(p);
-        core.bus().post(new Events.Key(344, 1, 0, false));
+        core.bus().post(new Events.Key(Keys.RIGHT_SHIFT, 1, false));
         assertInstanceOf(dev.aio.core.ui.ClickGuiScreen.class, p.screen);
     }
 }

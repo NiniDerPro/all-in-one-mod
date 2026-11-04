@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "aio",
+  "version": "${version}",
+  "name": "AIO Client",
+  "description": "Modularer PvP-/QoL-Client: farbiges HUD (FPS, CPS, Keystrokes, ArmorHUD, ...), Freelook, Zoom und mehr. Mit Server-Kompatibilitätsmodus.",
+  "authors": ["niniderpro"],
+  "environment": "client",
+  "entrypoints": {
+    "client": ["dev.aio.fabric.AioFabricClient"]
+  },
+  "mixins": [
+    {
+      "config": "aio.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.20.1",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}

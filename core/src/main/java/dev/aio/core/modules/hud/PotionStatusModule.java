@@ -21,7 +21,7 @@ public final class PotionStatusModule extends HudElement {
 
     public PotionStatusModule() {
         super("potions", "Trank-Effekte", "Aktive Effekte mit Stufe und Restzeit", 1.0, 0.0);
-        colorByType = add(new BooleanSetting("colorByType", "Farbe nach Effektart", true));
+        colorByType = add(new BooleanSetting("colorByType", "Farbe nach Effektart", false));
     }
 
     @Override protected void onActivate() { update(); }
@@ -74,8 +74,11 @@ public final class PotionStatusModule extends HudElement {
     @Override protected void renderContent(Renderer r, boolean preview) {
         List<String> s = shown(preview);
         for (int i = 0; i < s.size(); i++) {
-            int color = i < colors.size() && !lines.isEmpty() ? colors.get(i) : textColor();
-            r.text(s.get(i), PADDING, PADDING + i * LINE, color, shadow());
+            if (colorByType.on() && i < colors.size() && !lines.isEmpty()) {
+                r.text(s.get(i), PADDING, PADDING + i * LINE, colors.get(i), shadow());
+            } else {
+                drawText(r, s.get(i), PADDING, PADDING + i * LINE);
+            }
         }
     }
 }

@@ -121,18 +121,18 @@ public final class AioCore {
         handleKeybind(e.key());
     }
 
-    private void handleKeybind(int code) {
-        if (code == Keys.NONE) return;
-        if (code == clientSettings.guiKey.key()) {
+    private void handleKeybind(String key) {
+        if (Keys.isNone(key)) return;
+        if (clientSettings.guiKey.matches(key)) {
             openClickGui(null);
             return;
         }
-        if (code == clientSettings.hudEditorKey.key()) {
+        if (clientSettings.hudEditorKey.matches(key)) {
             openHudEditor();
             return;
         }
         for (Module m : modules.all()) {
-            if (!m.canToggle() || m.toggleKey().key() != code) continue;
+            if (!m.canToggle() || !m.toggleKey().matches(key)) continue;
             toggleWithFeedback(m);
         }
     }

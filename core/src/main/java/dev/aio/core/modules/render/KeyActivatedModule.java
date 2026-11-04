@@ -16,7 +16,7 @@ public abstract class KeyActivatedModule extends Module {
     protected final EnumSetting<ActivationMode> mode;
     private boolean engaged;
 
-    protected KeyActivatedModule(String id, String name, String description, Category category, int defaultKey) {
+    protected KeyActivatedModule(String id, String name, String description, Category category, String defaultKey) {
         super(id, name, description, category, true);
         activationKey = add(new KeybindSetting("key", "Taste", defaultKey));
         mode = add(new EnumSetting<>("mode", "Modus", ActivationMode.HOLD));
@@ -27,8 +27,8 @@ public abstract class KeyActivatedModule extends Module {
 
     @Override public boolean enabledByDefault() { return true; }
 
-    private void onInput(int code, boolean press, boolean release, boolean screenOpen) {
-        if (code == Keys.NONE || code != activationKey.key()) return;
+    private void onInput(String key, boolean press, boolean release, boolean screenOpen) {
+        if (!activationKey.matches(key)) return;
         if (press && !screenOpen) {
             if (mode.get() == ActivationMode.TOGGLE) setEngaged(!engaged);
             else setEngaged(true);
