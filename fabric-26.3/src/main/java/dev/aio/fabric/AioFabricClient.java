@@ -90,6 +90,7 @@ public final class AioFabricClient implements ClientModInitializer {
             platform.applyPendingScreen();
             Culler.tick();
             FoodHud.tick();
+            Freecam.tick();
             long t0 = System.nanoTime();
             platform.saveOptionsIfDirty();
             core.bus().post(Events.Tick.INSTANCE);

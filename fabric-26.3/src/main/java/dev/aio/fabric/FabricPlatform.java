@@ -648,6 +648,10 @@ public final class FabricPlatform implements Platform {
 
     @Override public void restoreFpsBoost(String saved) { FpsBoost.restore(client, saved); }
 
+    @Override public void setFreecam(boolean on) { Freecam.set(on); }
+
+    @Override public boolean freecamActive() { return Freecam.active(); }
+
     @Override public List<String> particleTypes() {
         List<String> out = new ArrayList<>();
         for (Identifier id : BuiltInRegistries.PARTICLE_TYPE.keySet()) out.add(id.toString());

@@ -32,4 +32,38 @@ public abstract class MultiPlayerGameModeMixin {
         AioCore core = AioCore.get();
         if (core != null) core.bus().post(new Events.AttackEntity(target instanceof LivingEntity));
     }
+
+    // ---- Freecam: keine Interaktion aus der Kamera heraus ----
+
+    @Inject(method = "startDestroyBlock", at = @At("HEAD"), cancellable = true)
+    private void aio$freecamBreak(BlockPos pos, Direction face, CallbackInfoReturnable<Boolean> cir) {
+        if (dev.aio.fabric.Freecam.active()) cir.setReturnValue(false);
+    }
+
+    @Inject(method = "continueDestroyBlock", at = @At("HEAD"), cancellable = true)
+    private void aio$freecamContinue(BlockPos pos, Direction face, CallbackInfoReturnable<Boolean> cir) {
+        if (dev.aio.fabric.Freecam.active()) cir.setReturnValue(false);
+    }
+
+    @Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true)
+    private void aio$freecamUseOn(net.minecraft.client.player.LocalPlayer player, net.minecraft.world.InteractionHand hand,
+                                  net.minecraft.world.phys.BlockHitResult hit, CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
+        if (dev.aio.fabric.Freecam.active()) cir.setReturnValue(net.minecraft.world.InteractionResult.FAIL);
+    }
+
+    @Inject(method = "useItem", at = @At("HEAD"), cancellable = true)
+    private void aio$freecamUse(Player player, net.minecraft.world.InteractionHand hand, CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
+        if (dev.aio.fabric.Freecam.active()) cir.setReturnValue(net.minecraft.world.InteractionResult.FAIL);
+    }
+
+    @Inject(method = "attack", at = @At("HEAD"), cancellable = true)
+    private void aio$freecamAttack(Player player, Entity target, CallbackInfo ci) {
+        if (dev.aio.fabric.Freecam.active()) ci.cancel();
+    }
+
+    @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
+    private void aio$freecamInteract(Player player, Entity target, net.minecraft.world.phys.EntityHitResult hit,
+                                     net.minecraft.world.InteractionHand hand, CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
+        if (dev.aio.fabric.Freecam.active()) cir.setReturnValue(net.minecraft.world.InteractionResult.FAIL);
+    }
 }
