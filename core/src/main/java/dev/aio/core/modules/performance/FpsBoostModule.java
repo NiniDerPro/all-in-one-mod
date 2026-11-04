@@ -20,9 +20,12 @@ import java.util.Set;
  */
 public final class FpsBoostModule extends Module {
     public static final String BIOME_BLEND = "biomeBlend", SHADOWS = "shadows", CLOUDS = "clouds", CHUNK_UPDATES = "chunkUpdates",
-            TRANSPARENCY = "transparency", FADE_IN = "fadeIn", SMOOTH_LIGHT = "smoothLight";
+            TRANSPARENCY = "transparency", FADE_IN = "fadeIn", SMOOTH_LIGHT = "smoothLight",
+            WEATHER = "weather", VIGNETTE = "vignette", MENU_BLUR = "menuBlur", SOLID_LEAVES = "solidLeaves",
+            MIPMAPS = "mipmaps", ENTITY_DISTANCE = "entityDistance";
 
     private final BooleanSetting biomeBlend, shadows, clouds, chunkUpdates, transparency, fadeIn, smoothLight;
+    private final BooleanSetting weather, vignette, menuBlur, solidLeaves, mipmaps, entityDistance;
     private final BooleanSetting diagnose;
     /** Ursprüngliche Vanilla-Werte (vom Adapter kodiert), damit Ausschalten sie zurückholt. */
     private final StringSetting saved;
@@ -36,10 +39,17 @@ public final class FpsBoostModule extends Module {
         transparency = add(new BooleanSetting(TRANSPARENCY, "Verbesserte Transparenz aus", true));
         fadeIn = add(new BooleanSetting(FADE_IN, "Chunk-Einblenden aus", true));
         smoothLight = add(new BooleanSetting(SMOOTH_LIGHT, "Weiche Beleuchtung aus (mehr FPS, kantiger)", false));
+        weather = add(new BooleanSetting(WEATHER, "Kleinerer Regen-/Schnee-Radius", true));
+        vignette = add(new BooleanSetting(VIGNETTE, "Vignette (dunkler Rand) aus", true));
+        menuBlur = add(new BooleanSetting(MENU_BLUR, "Menü-Unschärfe aus", true));
+        solidLeaves = add(new BooleanSetting(SOLID_LEAVES, "Laub undurchsichtig (viel FPS in Wäldern)", false));
+        mipmaps = add(new BooleanSetting(MIPMAPS, "Mipmaps aus (lädt Texturen neu)", false));
+        entityDistance = add(new BooleanSetting(ENTITY_DISTANCE, "Entity-Sichtweite 75 %", false));
         diagnose = add(new BooleanSetting("diagnose", "Leistungs-Diagnose ins Log", true));
         saved = add(new StringSetting("saved", "Gespeicherte Werte", "", 4000));
         saved.hidden();
-        for (Setting<?> s : new Setting<?>[]{biomeBlend, shadows, clouds, chunkUpdates, transparency, fadeIn, smoothLight}) {
+        for (Setting<?> s : new Setting<?>[]{biomeBlend, shadows, clouds, chunkUpdates, transparency, fadeIn, smoothLight,
+                weather, vignette, menuBlur, solidLeaves, mipmaps, entityDistance}) {
             s.onChange(v -> { if (isActive()) apply(); });
         }
         // Optionen gibt es erst, wenn das Spiel geladen ist: beim Betreten einer Welt (erneut) anwenden
@@ -64,6 +74,12 @@ public final class FpsBoostModule extends Module {
         if (transparency.on()) tweaks.add(TRANSPARENCY);
         if (fadeIn.on()) tweaks.add(FADE_IN);
         if (smoothLight.on()) tweaks.add(SMOOTH_LIGHT);
+        if (weather.on()) tweaks.add(WEATHER);
+        if (vignette.on()) tweaks.add(VIGNETTE);
+        if (menuBlur.on()) tweaks.add(MENU_BLUR);
+        if (solidLeaves.on()) tweaks.add(SOLID_LEAVES);
+        if (mipmaps.on()) tweaks.add(MIPMAPS);
+        if (entityDistance.on()) tweaks.add(ENTITY_DISTANCE);
         String next = platform().applyFpsBoost(tweaks, saved.get());
         if (next != null) saved.set(next);
     }

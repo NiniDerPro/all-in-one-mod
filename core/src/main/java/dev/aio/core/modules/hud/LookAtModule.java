@@ -117,7 +117,7 @@ public final class LookAtModule extends HudElement {
         }
         List<Line> next = new ArrayList<>(5);
         if (t.kind() == LookTarget.Kind.BLOCK) {
-            if (showTool.on() && t.toolType() != null) {
+            if (showTool.on() && t.toolType() != null && t.toolIcon().isEmpty()) { // ohne Symbol als Text
                 // ✔ passendes Werkzeug in der Hand, ✘ ohne Werkzeug kein Drop, sonst neutral
                 if (t.correctTool() == null) next.add(new Line(t.toolType(), INFO, false));
                 else if (t.correctTool()) next.add(new Line("✔ " + t.toolType(), GOOD, false));
@@ -154,6 +154,7 @@ public final class LookAtModule extends HudElement {
         for (Line l : next) k.append('|').append(l.full());
         if (!Float.isNaN(t.health())) k.append('|').append(t.health()).append('/').append(t.maxHealth());
         k.append('|').append(t.icon() == null || t.icon().isEmpty() ? "" : t.icon().name());
+        k.append('|').append(t.toolIcon().id()).append(t.correctTool());
         String newKey = k.toString();
         if (!newKey.equals(key)) {
             key = newKey;
@@ -186,10 +187,18 @@ public final class LookAtModule extends HudElement {
     private List<Line> shownLines(boolean preview) {
         if (!previewing(preview)) return lines;
         List<Line> demo = new ArrayList<>();
-        if (showTool.on()) demo.add(new Line("✔ Schaufel", GOOD, false));
         if (showModName.on()) demo.add(new Line("§oMinecraft", MOD, false));
         return demo;
     }
+
+    /** Platz für das Werkzeug-Symbol (12 px, wie ein kleines Item) rechts neben dem Namen. */
+    private int toolWidth(boolean preview) {
+        if (!showTool.on()) return 0;
+        if (previewing(preview)) return 5 + TOOL;
+        return target != null && target.kind() == LookTarget.Kind.BLOCK && !target.toolIcon().isEmpty() ? 5 + TOOL : 0;
+    }
+
+    private static final int TOOL = 12;
 
     private int textLeft(boolean preview) { return PAD + (hasIcon(preview) ? ICON + 4 : 0); }
 
@@ -203,7 +212,7 @@ public final class LookAtModule extends HudElement {
         // Breite für Vorschau und echtes Ziel kann sich unterscheiden; gecacht wird nur das echte Ziel.
         boolean preview = target == null;
         if (!preview && cachedW >= 0) return cachedW;
-        int w = r.textWidth(shownName(preview));
+        int w = r.textWidth(shownName(preview)) + toolWidth(preview);
         heartsW = heartsWidth(r);
         for (Line l : shownLines(preview)) w = Math.max(w, l.hearts ? heartsW + r.textWidth(l.value) : r.textWidth(l.full()));
         int total = textLeft(preview) + w + PAD;
@@ -238,6 +247,7 @@ public final class LookAtModule extends HudElement {
         }
 
         drawText(r, shownName(preview), left, top);
+        if (toolWidth(preview) > 0) drawTool(r, w - PAD - TOOL, top - 3, preview);
         float y = top + LINE_H;
         for (Line l : ls) {
             if (l.hearts) {
@@ -271,6 +281,26 @@ public final class LookAtModule extends HudElement {
         r.fill(1, h - 2, w - 1, h - 1, bottom);
         r.fillGradient(1, 2, 2, h - 2, top, bottom);
         r.fillGradient(w - 2, 2, w - 1, h - 2, top, bottom);
+    }
+
+    /**
+     * Werkzeug wie bei Jade: kleines Item-Symbol rechts in der Namenszeile, darunter ✔ (grün, passt)
+     * oder ✕ (rot, ohne dieses Werkzeug kein Drop).
+     */
+    private void drawTool(Renderer r, float x, float y, boolean preview) {
+        r.push();
+        r.translate(x, y);
+        r.scale(0.75f);
+        if (previewing(preview)) r.fill(0, 0, 16, 16, 0x60AAAAAA);
+        else r.item(target.toolIcon(), 0, 0, false);
+        r.pop();
+        Boolean ok = previewing(preview) ? Boolean.TRUE : target.correctTool();
+        if (ok == null) return;
+        r.push();
+        r.translate(x + 8, y + 7);
+        r.scale(0.75f);
+        r.text(ok ? "✔" : "✕", 0, 0, ok ? GOOD : BAD, true);
+        r.pop();
     }
 
     /** Herzen mit den Original-Sprites aus dem Vanilla-HUD. */
