@@ -34,6 +34,18 @@ public final class WaypointsModule extends HudElement {
     private final BooleanSetting showDistance;
     private final BooleanSetting edgeMarkers;
     private final NumberSetting maxDistance;
+    private final BooleanSetting alwaysNames;
+    private final dev.aio.core.setting.EnumSetting<MarkerStyle> markerStyle;
+
+    public enum MarkerStyle implements dev.aio.core.setting.EnumSetting.Named {
+        DOT("Dot"), ICON("Icon with letter");
+
+        private final String displayName;
+
+        MarkerStyle(String displayName) { this.displayName = displayName; }
+
+        @Override public String displayName() { return displayName; }
+    }
     private final List<Waypoint> waypoints = new ArrayList<>();
     private boolean loaded;
 
@@ -50,6 +62,8 @@ public final class WaypointsModule extends HudElement {
         showDistance = add(new BooleanSetting("distance", "Show distance", true));
         edgeMarkers = add(new BooleanSetting("edge", "Show at screen edge", true));
         maxDistance = add(new NumberSetting("maxDistance", "Max distance", 0, 0, 10000, 100, " m (0 = ∞)"));
+        markerStyle = add(new dev.aio.core.setting.EnumSetting<>("markerStyle", "Marker", MarkerStyle.DOT));
+        alwaysNames = add(new BooleanSetting("alwaysNames", "Always show names", false));
         on(Events.Key.class, e -> {
             if (!e.isPress() || e.screenOpen()) return;
             if (addKey.triggeredBy(platform(), e.key())) platform().openScreen(new WaypointEditScreen(core, this, null));
@@ -212,15 +226,30 @@ public final class WaypointsModule extends HudElement {
     }
 
     /** Radius (px) um das Fadenkreuz, in dem ein Punkt als "angezielt" gilt. */
-    static final float HOVER_RADIUS = 9;
+    static final float HOVER_RADIUS = 10;
+
+    /** Einblend-Zustand der Beschriftung je Wegpunkt (0..1), für weiches Ein-/Ausblenden. */
+    private final java.util.Map<String, Float> labelFade = new java.util.HashMap<>();
+    private long lastFrame;
+
+    private static String key(Waypoint w) { return w.name() + '|' + w.x() + '|' + w.y() + '|' + w.z() + '|' + w.dimension(); }
 
     /**
-     * Marker wie bei Xaero: im Bild nur ein kleiner Punkt; zielt man mit dem Fadenkreuz darauf,
-     * erscheinen Name und Entfernung (nur beim nächstgelegenen angezielten Punkt).
+     * Marker im Stil der großen Wegpunkt-Mods, nur aufgeräumter:
+     * <ul>
+     *   <li>Im Bild ein kleiner Punkt (oder auf Wunsch ein Symbol mit Anfangsbuchstaben wie bei Xaero).</li>
+     *   <li>Zielt man darauf (oder "Always show names"), blendet die Beschriftung weich ein: Name in
+     *       der Wegpunktfarbe, Entfernung dahinter in Grau (wie JourneyMap).</li>
+     *   <li>Der angezielte Marker wird etwas größer, nahe Marker (< 4 Blöcke) blenden aus.</li>
+     *   <li>Außerhalb des Bildes ein kleiner Pfeil am Rand, der in die Richtung zeigt.</li>
+     * </ul>
      */
     public void drawMarkers(Renderer r, float partialTick) {
         if (!platform().inWorld() || platform().isScreenOpen()) return;
         List<Waypoint> list = shownHere();
+        long now = System.currentTimeMillis();
+        float dt = lastFrame == 0 ? 0 : Math.min(0.1f, (now - lastFrame) / 1000f);
+        lastFrame = now;
         if (list.isEmpty()) return;
         // exakt die Kamera, mit der die Welt gezeichnet wurde (inkl. Laufwackeln) → kein Zittern
         CameraView cam = platform().camera(partialTick);
@@ -228,42 +257,102 @@ public final class WaypointsModule extends HudElement {
         float w = r.screenWidth(), h = r.screenHeight(), cx = w / 2f, cy = h / 2f;
         double max = maxDistance.get();
 
-        Waypoint hovered = null;
-        float hx = 0, hy = 0, best = Float.MAX_VALUE;
-        double hoveredDist = 0;
+        // 1. Projektion und angezielten Marker bestimmen
+        record M(Waypoint wp, float x, float y, boolean edge, double dist) {}
+        List<M> ms = new ArrayList<>();
+        M hovered = null;
+        float best = Float.MAX_VALUE;
         for (Waypoint wp : list) {
             double dist = wp.distanceTo(pos.x(), pos.y(), pos.z());
             if (max > 0 && dist > max && !wp.death()) continue;
             Projection.Point pt = Projection.project(wp.x() + 0.5, wp.y() + 1.0, wp.z() + 0.5, cam, w, h);
-            float x = pt.x(), y = pt.y();
             boolean edge = !pt.onScreen();
+            float x = pt.x(), y = pt.y();
             if (edge) {
                 if (!edgeMarkers.on()) continue;
-                x = Math.max(6, Math.min(w - 6, x));
-                y = Math.max(6, Math.min(h - 6, y));
+                // vom Bildschirmmittelpunkt Richtung Ziel bis an den Rand
+                float dx = x - cx, dy = y - cy;
+                float m = 10, k = Math.min(Math.abs(dx) > 0.001f ? (cx - m) / Math.abs(dx) : Float.MAX_VALUE,
+                        Math.abs(dy) > 0.001f ? (cy - m) / Math.abs(dy) : Float.MAX_VALUE);
+                x = cx + dx * k;
+                y = cy + dy * k;
             }
-            drawDot(r, wp.color() | 0xFF000000, x, y, edge);
+            M mk = new M(wp, x, y, edge, dist);
+            ms.add(mk);
             if (!edge) {
                 float d = (x - cx) * (x - cx) + (y - cy) * (y - cy);
                 if (d <= HOVER_RADIUS * HOVER_RADIUS && d < best) {
                     best = d;
-                    hovered = wp;
-                    hx = x;
-                    hy = y;
-                    hoveredDist = dist;
+                    hovered = mk;
                 }
             }
         }
-        if (hovered != null) drawLabel(r, hovered, hoveredDist, hx, hy);
+
+        // 2. Weiter entfernte zuerst zeichnen, damit nahe darüber liegen
+        ms.sort((a, b2) -> Double.compare(b2.dist, a.dist));
+        java.util.Set<String> alive = new java.util.HashSet<>();
+        for (M m : ms) {
+            String k = key(m.wp);
+            alive.add(k);
+            boolean target = m == hovered || (alwaysNames.on() && !m.edge);
+            float f = labelFade.getOrDefault(k, 0f);
+            f = Math.max(0, Math.min(1, f + (target ? dt * 8 : -dt * 6)));
+            labelFade.put(k, f);
+            // nahe Wegpunkte blenden aus (man steht ja schon dort)
+            float near = (float) Math.max(0, Math.min(1, (m.dist - 2.5) / 3));
+            int color = m.wp.color() | 0xFF000000;
+            if (m.edge) drawArrow(r, color, m.x, m.y, m.x - cx, m.y - cy);
+            else drawMarker(r, m.wp, color, m.x, m.y, near, m == hovered);
+            if (!m.edge && f > 0.02f && near > 0.05f) drawLabel(r, m.wp, m.dist, m.x, m.y, f * near);
+        }
+        labelFade.keySet().retainAll(alive);
     }
 
-    private static void drawDot(Renderer r, int color, float x, float y, boolean edge) {
-        int s = edge ? 2 : 3;
-        // Über die Transformation statt gerundeter Koordinaten: bewegt sich stufenlos (Sub-Pixel)
+    private static int alpha(int argb, float a) {
+        int base = (argb >>> 24) & 0xFF;
+        return (Math.round(base * Math.max(0, Math.min(1, a))) << 24) | (argb & 0xFFFFFF);
+    }
+
+    private void drawMarker(Renderer r, Waypoint wp, int color, float x, float y, float a, boolean hovered) {
+        if (a <= 0.02f) return;
         r.push();
         r.translate(x, y);
-        diamond(r, s + 1, 0xB0000000); // dunkler Rand, gut sichtbar auf hellem und dunklem Grund
-        diamond(r, s, color);
+        if (hovered) r.scale(1.3f);
+        if (markerStyle.get() == MarkerStyle.ICON) {
+            // Quadrat mit Anfangsbuchstaben, wie bei Xaero
+            String letter = wp.death() ? "✖" : wp.name().isEmpty() ? "?" : wp.name().substring(0, 1).toUpperCase(Locale.ROOT);
+            int s = 5;
+            r.fill(-s - 1, -s - 1, s + 1, s + 1, alpha(0xC0000000, a));
+            r.fill(-s, -s, s, s, alpha(color, a));
+            int lum = ((color >> 16 & 0xFF) * 3 + (color >> 8 & 0xFF) * 6 + (color & 0xFF)) / 10;
+            r.text(letter, -r.textWidth(letter) / 2f + 0.5f, -3.5f, alpha(lum > 140 ? 0xFF000000 : 0xFFFFFFFF, a), false);
+        } else {
+            int s = wp.death() ? 4 : 3;
+            diamond(r, s + 1, alpha(0xB0000000, a)); // dunkler Rand: sichtbar auf hellem und dunklem Grund
+            diamond(r, s, alpha(color, a));
+            r.fill(-1, -1, 0, 0, alpha(0x60FFFFFF, a)); // kleiner Glanzpunkt
+        }
+        r.pop();
+    }
+
+    /** Kleiner Pfeil am Bildrand, zeigt grob in die Richtung (vier Grundrichtungen). */
+    private static void drawArrow(Renderer r, int color, float x, float y, float dx, float dy) {
+        r.push();
+        r.translate(x, y);
+        int dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 0 : 2) : (dy > 0 ? 1 : 3); // 0 rechts, 1 unten, 2 links, 3 oben
+        for (int pass = 0; pass < 2; pass++) {
+            int c = pass == 0 ? 0xB0000000 : color;
+            int s = pass == 0 ? 5 : 4;
+            for (int i = 0; i < s; i++) {
+                int half = s - 1 - i;
+                switch (dir) {
+                    case 0 -> r.fill(i - 2, -half - 1, i - 1, half + 1, c);
+                    case 2 -> r.fill(1 - i, -half - 1, 2 - i, half + 1, c);
+                    case 1 -> r.fill(-half - 1, i - 2, half + 1, i - 1, c);
+                    default -> r.fill(-half - 1, 1 - i, half + 1, 2 - i, c);
+                }
+            }
+        }
         r.pop();
     }
 
@@ -275,14 +364,23 @@ public final class WaypointsModule extends HudElement {
         }
     }
 
-    private void drawLabel(Renderer r, Waypoint wp, double dist, float x, float y) {
-        String label = wp.name() + (showDistance.on() ? "  " + formatDistance(dist) : "");
-        int tw = r.textWidth(label);
-        int top = -7 - r.fontHeight() - 3;
+    private void drawLabel(Renderer r, Waypoint wp, double dist, float x, float y, float a) {
+        String name = wp.name();
+        String d = showDistance.on() ? formatDistance(dist) : "";
+        int nw = r.textWidth(name), dw = d.isEmpty() ? 0 : r.textWidth(d) + 5;
+        int tw = nw + dw;
+        int fh = r.fontHeight();
+        float lift = (1 - a) * 3; // gleitet beim Einblenden leicht nach oben
         r.push();
-        r.translate(x, y);
-        r.fill(-tw / 2 - 3, top, tw - tw / 2 + 3, top + r.fontHeight() + 3, 0xA0000000);
-        r.text(label, -tw / 2, top + 2, wp.color() | 0xFF000000, shadow());
+        r.translate(x, y - 9 - fh + lift);
+        int x1 = -tw / 2 - 4, x2 = tw - tw / 2 + 4, y1 = -3, y2 = fh + 1;
+        int bg = alpha(0xB0101014, a);
+        r.fill(x1 + 1, y1, x2 - 1, y2, bg); // leicht abgerundete Ecken
+        r.fill(x1, y1 + 1, x1 + 1, y2 - 1, bg);
+        r.fill(x2 - 1, y1 + 1, x2, y2 - 1, bg);
+        r.fill(x1 + 1, y2 - 1, x2 - 1, y2, alpha(wp.color() | 0xFF000000, a * 0.9f)); // Farbstreifen unten
+        r.text(name, -tw / 2f, 0, alpha(0xFFFFFFFF, a), shadow());
+        if (!d.isEmpty()) r.text(d, -tw / 2f + nw + 5, 0, alpha(0xFFAAAAAA, a), shadow());
         r.pop();
     }
 
