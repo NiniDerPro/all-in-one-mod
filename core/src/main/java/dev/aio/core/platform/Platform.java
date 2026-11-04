@@ -174,6 +174,18 @@ public interface Platform {
      */
     default java.util.List<WorldLabel> villagerLabels(double maxDistance, float partialTick) { return java.util.List.of(); }
 
+    /**
+     * FPS-Boost: Vanilla-Einstellungen für die gewünschten Optimierungen setzen. Nicht mehr gewünschte
+     * werden auf ihren Ursprungswert zurückgestellt.
+     *
+     * @param saved bisher gespeicherte Ursprungswerte (vom Adapter kodiert)
+     * @return neue Ursprungswerte zum Speichern, null = unverändert (z. B. Optionen noch nicht geladen)
+     */
+    default String applyFpsBoost(java.util.Set<String> tweaks, String saved) { return null; }
+
+    /** FPS-Boost aus: Ursprungswerte wiederherstellen. */
+    default void restoreFpsBoost(String saved) {}
+
     /** IDs aller Partikelarten, z. B. {@code minecraft:crit}. */
     default java.util.List<String> particleTypes() { return java.util.List.of(); }
 

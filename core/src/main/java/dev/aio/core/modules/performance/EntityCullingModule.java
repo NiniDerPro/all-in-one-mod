@@ -22,7 +22,7 @@ public final class EntityCullingModule extends Module {
         entities = add(new BooleanSetting("entities", "Entities", true));
         blockEntities = add(new BooleanSetting("blockEntities", "Block-Entities (Truhen, Schilder, …)", true));
         tickCulling = add(new BooleanSetting("tickCulling", "Verdeckte Entities vereinfacht ticken", true));
-        traceDistance = add(new NumberSetting("traceDistance", "Prüfweite", 96, 16, 256, 8, " Blöcke"));
+        traceDistance = add(new NumberSetting("traceRange", "Prüfweite", 48, 16, 128, 8, " Blöcke"));
         refreshTicks = add(new NumberSetting("refresh", "Neu prüfen alle", 3, 1, 10, 1, " Ticks"));
     }
 
