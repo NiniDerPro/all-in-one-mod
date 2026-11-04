@@ -558,6 +558,56 @@ public final class FabricPlatform implements Platform {
         m.setDown(pressed);
     }
 
+    // ---- Daten für den Item-Browser ----
+
+    @Override public java.util.Map<String, com.google.gson.JsonElement> dataFiles(String dir) { return DataFiles.read(client, dir); }
+
+    @Override public ItemRef item(String id, int count) {
+        Identifier key = Identifier.tryParse(id);
+        if (key == null) return ItemRef.EMPTY;
+        return BuiltInRegistries.ITEM.getOptional(key)
+                .map(item -> new ItemStack(item, Math.max(1, count)))
+                .filter(stack -> !stack.isEmpty())
+                .map(stack -> (ItemRef) FabricItemRef.of(stack))
+                .orElse(ItemRef.EMPTY);
+    }
+
+    @Override public String translate(String key, String fallback) {
+        net.minecraft.locale.Language lang = net.minecraft.locale.Language.getInstance();
+        return lang.has(key) ? lang.getOrDefault(key) : fallback;
+    }
+
+    @Override public List<dev.aio.core.platform.Profession> professions() {
+        List<dev.aio.core.platform.Profession> out = new ArrayList<>();
+        var level = client.level;
+        if (level == null) return out;
+        try {
+            var access = level.registryAccess();
+            var pois = access.lookupOrThrow(net.minecraft.core.registries.Registries.POINT_OF_INTEREST_TYPE).listElements().toList();
+            access.lookupOrThrow(net.minecraft.core.registries.Registries.VILLAGER_PROFESSION).listElements().forEach(ref -> {
+                var prof = ref.value();
+                String jobBlock = "";
+                for (var poi : pois) {
+                    if (!prof.heldJobSite().test(poi) || poi.value().matchingStates().isEmpty()) continue;
+                    Item item = poi.value().matchingStates().iterator().next().getBlock().asItem();
+                    if (item != net.minecraft.world.item.Items.AIR) jobBlock = BuiltInRegistries.ITEM.getKey(item).toString();
+                    break;
+                }
+                java.util.Map<Integer, String> sets = new java.util.TreeMap<>();
+                prof.tradeSetsByLevel().forEach((lvl, key) -> { if (key != null) sets.put(lvl, key.identifier().toString()); });
+                out.add(new dev.aio.core.platform.Profession(ref.key().identifier().toString(), prof.name().getString(), jobBlock, sets));
+            });
+        } catch (RuntimeException e) {
+            AioFabricClient.LOGGER.warn("Berufe nicht lesbar: {}", e.toString());
+        }
+        return out;
+    }
+
+    @Override public List<RecipeView> trimViews(ItemRef template) {
+        if (!(template instanceof FabricItemRef ref) || client.level == null) return List.of();
+        return TrimPreview.views(client, ref.stack());
+    }
+
     @Override public dev.aio.core.platform.FoodState foodState() {
         LocalPlayer p = player();
         if (p == null || client.gameMode == null) return dev.aio.core.platform.FoodState.NONE;
