@@ -3,12 +3,20 @@
   "package": "dev.aio.fabric.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
+    "AbstractContainerScreenAccessor",
+    "AtmosphericFogMixin",
     "CameraMixin",
     "ChatComponentMixin",
     "EntityMixin",
+    "GameRendererMixin",
+    "HudMixin",
+    "ItemStackMixin",
     "KeyboardHandlerMixin",
+    "LavaFogMixin",
     "LightmapMixin",
-    "MouseHandlerMixin"
+    "MouseHandlerMixin",
+    "MultiPlayerGameModeMixin",
+    "WaterFogMixin"
   ],
   "injectors": {
     "defaultRequire": 1

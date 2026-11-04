@@ -6,6 +6,8 @@ import dev.aio.core.util.Log;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
+import net.fabricmc.fabric.api.client.recipe.v1.sync.ClientRecipeSynchronizedEvent;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.loader.api.FabricLoader;
@@ -40,8 +42,20 @@ public final class AioFabricClient implements ClientModInitializer {
             core.bus().post(new Events.RenderHud(hudRenderer, deltaTracker.getGameTimeDeltaPartialTick(false)));
         });
 
+        ScreenHooks.register(core, client);
+        BlockOutlineRenderer.register(core, client);
+        ShulkerTooltipHook.register(core);
+        ClientRecipeSynchronizedEvent.EVENT.register((c, recipes) -> RecipeSource.onSynced(recipes));
+
+        ClientReceiveMessageEvents.CHAT.register((message, signed, sender, params, timestamp) ->
+                core.bus().post(new Events.ChatReceived(message.getString(), false)));
+        ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
+            if (!overlay) core.bus().post(new Events.ChatReceived(message.getString(), true));
+        });
+
         ClientTickEvents.END_CLIENT_TICK.register(c -> {
             platform.applyPendingScreen();
+            platform.saveOptionsIfDirty();
             core.bus().post(Events.Tick.INSTANCE);
         });
 
@@ -50,7 +64,10 @@ public final class AioFabricClient implements ClientModInitializer {
             String address = c.hasSingleplayerServer() || info == null ? null : info.ip;
             core.bus().post(new Events.ServerJoin(address));
         });
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, c) -> c.execute(() -> core.bus().post(Events.ServerLeave.INSTANCE)));
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, c) -> c.execute(() -> {
+            RecipeSource.clear();
+            core.bus().post(Events.ServerLeave.INSTANCE);
+        }));
 
         ClientLifecycleEvents.CLIENT_STOPPING.register(c -> core.shutdown());
     }

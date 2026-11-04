@@ -24,5 +24,8 @@ public interface UiScreen {
 
     default void onClose() {}
 
+    /** Ob der Screen beim Schließen zum vorherigen Screen zurückkehrt (z. B. Rezepte → Inventar). */
+    default boolean returnsToPrevious() { return false; }
+
     default String title() { return "AIO"; }
 }

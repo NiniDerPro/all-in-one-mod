@@ -20,6 +20,19 @@ public interface ItemRef {
 
     String name();
 
+    /** Registry-ID, z. B. {@code minecraft:diamond_sword}. */
+    default String id() { return ""; }
+
+    /** Anzeigename der Mod, aus der das Item stammt. */
+    default String modName() { return ""; }
+
+    default int maxStackSize() { return 64; }
+
+    /** Gleiches Item mit gleichen Komponenten (stapelbar). */
+    default boolean sameItemAs(ItemRef other) {
+        return other != null && !isEmpty() && !other.isEmpty() && id().equals(other.id()) && name().equals(other.name());
+    }
+
     default boolean isDamageable() { return maxDamage() > 0; }
 
     default int durability() { return maxDamage() - damage(); }

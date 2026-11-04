@@ -2,8 +2,11 @@ package dev.aio.core.module;
 
 public enum Category {
     HUD("HUD", 0xFF4FC3FF),
+    INFO("Info", 0xFF3DDBD9),
+    NAVIGATION("Navigation", 0xFF8BE24C),
     RENDER("Grafik", 0xFFFFB02E),
-    PLAYER("Spieler", 0xFF5CE07A),
+    INVENTORY("Inventar", 0xFFFF8A4C),
+    COMBAT("Spieler & Kampf", 0xFFFF5370),
     CHAT("Chat", 0xFFFF6FB5),
     CLIENT("Client", 0xFFA98BFF);
 

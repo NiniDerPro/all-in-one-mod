@@ -16,6 +16,8 @@ public class FakeRenderer implements Renderer {
     @Override public void text(String text, float x, float y, int argb, boolean shadow) { textCalls++; }
     @Override public void fill(float x1, float y1, float x2, float y2, int argb) { fillCalls++; }
     @Override public void item(ItemRef item, float x, float y, boolean overlay) {}
+    public int spriteCalls;
+    @Override public void sprite(String id, float x, float y, int w, int h) { spriteCalls++; }
     @Override public void push() { depth++; }
     @Override public void pop() { depth--; }
     @Override public void translate(float x, float y) {}

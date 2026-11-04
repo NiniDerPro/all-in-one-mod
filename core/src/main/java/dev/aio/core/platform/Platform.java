@@ -43,6 +43,79 @@ public interface Platform {
     /** Block oder Wesen unter dem Fadenkreuz, null wenn nichts. */
     LookTarget lookTarget();
 
+    // ---- Welt ----
+
+    /** Eindeutiger Schlüssel der aktuellen Welt (Serveradresse oder Singleplayer-Weltname). */
+    String worldKey();
+
+    String playerName();
+
+    /** Zeit der Oberwelt-Uhr in Ticks (Tag = 24000). */
+    long dayTime();
+
+    /** "overworld", "the_nether", "the_end" oder die ID einer anderen Dimension. */
+    String dimension();
+
+    /** Augenposition des Spielers (für Wegpunkt-Marker). */
+    Vec3 eyePos();
+
+    /** Eingestelltes Sichtfeld in Grad (vertikal). */
+    double fov();
+
+    boolean isDead();
+
+    /** Spielzeit laut Statistik in Ticks, -1 wenn unbekannt. */
+    long playTimeTicks();
+
+    /** Fordert aktuelle Statistiken vom Server an (wie das Statistik-Menü). */
+    void requestStats();
+
+    ServerInfo serverInfo();
+
+    /** Zählt Items im Inventar: Registry-ID ({@code minecraft:arrow}) oder Tag ({@code #minecraft:arrows}). */
+    int countItems(String idOrTag);
+
+    /** Item-Icon zu einer Registry-ID. */
+    ItemRef item(String id);
+
+    /** Ausgewähltes Item in der Hotbar hat sich geändert, Rückgabe: Infozeilen (Verzauberungen o. Ä.). */
+    java.util.List<String> heldItemDetails();
+
+    // ---- Hotbar ----
+
+    int selectedSlot();
+
+    void selectSlot(int slot);
+
+    /** Bester Hotbar-Slot zum Abbauen des angesehenen Blocks, -1 wenn keiner besser ist. */
+    int bestToolSlot();
+
+    /** Bester Hotbar-Slot zum Kämpfen, -1 wenn keine Waffe da ist. */
+    int bestWeaponSlot(boolean preferAxe);
+
+    // ---- Inventar / Item-Liste ----
+
+    /** Das gerade offene Inventar oder null. */
+    ContainerView container();
+
+    /** Alle Items aus der Registry (für die Item-Liste). */
+    java.util.List<ItemRef> allItems();
+
+    /** Rezepte, die {@code item} herstellen ({@code usages = true}: die es verwenden). Kann leer sein. */
+    java.util.List<RecipeView> recipes(ItemRef item, boolean usages);
+
+    /** Ob Rezepte verfügbar sind (Singleplayer oder vom Server synchronisiert). */
+    boolean recipesAvailable();
+
+    // ---- Optionen / Sonstiges ----
+
+    double option(VanillaOption option);
+
+    void setOption(VanillaOption option, double value);
+
+    /** Kurzer Hinweiston (z. B. Namens-Alarm). */
+    void playAlertSound();
+
     // ---- Eingabe ----
     boolean isGameKeyDown(GameKey key);
 

@@ -33,7 +33,7 @@ public final class HudEditorScreen implements UiScreen {
 
     private List<HudElement> visibleElements() {
         List<HudElement> list = new ArrayList<>();
-        for (HudElement el : core.hud().elements()) if (el.isActive()) list.add(el);
+        for (HudElement el : core.hud().elements()) if (el.isActive() && el.editable()) list.add(el);
         return list;
     }
 
@@ -57,6 +57,8 @@ public final class HudEditorScreen implements UiScreen {
             r.outline(x - 1, y - 1, x + el.scaledWidth(r) + 1, y + el.scaledHeight(r) + 1, 1, color);
         }
 
+        renderChatBox(r, mouseX, mouseY);
+
         if (dragging != null && lastSnap != null) {
             int guide = Theme.accent(core);
             if (lastSnap.hasGuideX()) r.fill(lastSnap.guideX() - 0.5f, 0, lastSnap.guideX() + 0.5f, h, guide);
@@ -77,6 +79,41 @@ public final class HudEditorScreen implements UiScreen {
         r.centeredText(hint, w / 2f, hy, 0xB0FFFFFF, true);
 
         drawButton(r, settingsButton(r), "Einstellungen", mouseX, mouseY);
+    }
+
+    // ---- Chat-Box (Größe über die Vanilla-Chatoptionen) ----
+
+    private boolean resizingChat;
+
+    private dev.aio.core.modules.chat.ChatModule chat() {
+        dev.aio.core.modules.chat.ChatModule c = core.module(dev.aio.core.modules.chat.ChatModule.class);
+        return c != null && c.isActive() ? c : null;
+    }
+
+    /** Chatbox unten links: x1, y1, x2, y2. */
+    private float[] chatRect(Renderer r) {
+        dev.aio.core.modules.chat.ChatModule c = chat();
+        if (c == null) return null;
+        float bottom = r.screenHeight() - 40;
+        return new float[]{2, bottom - c.boxHeight(), 2 + c.boxWidth(), bottom};
+    }
+
+    private void renderChatBox(Renderer r, int mx, int my) {
+        float[] b = chatRect(r);
+        if (b == null) return;
+        boolean hover = mx >= b[0] && mx <= b[2] && my >= b[1] && my <= b[3];
+        r.fill(b[0], b[1], b[2], b[3], 0x40000000);
+        r.outline(b[0], b[1], b[2], b[3], 1, hover || resizingChat ? Theme.accent(core) : 0x60FFFFFF);
+        r.text("Chat", b[0] + 4, b[1] + 4, 0xC0FFFFFF, true);
+        // Ziehgriff oben rechts (Pfeil)
+        float hx = b[2] - 8, hy = b[1];
+        r.fill(hx, hy, hx + 8, hy + 8, resizingChat ? Theme.accent(core) : 0xD0FFFFFF);
+        r.text("⤢", hx, hy, 0xFF000000, false);
+    }
+
+    private boolean onChatHandle(Renderer r, double mx, double my) {
+        float[] b = chatRect(r);
+        return b != null && mx >= b[2] - 10 && mx <= b[2] + 2 && my >= b[1] - 2 && my <= b[1] + 10;
     }
 
     private float[] settingsButton(Renderer r) {
@@ -110,6 +147,10 @@ public final class HudEditorScreen implements UiScreen {
             core.openClickGui(null);
             return true;
         }
+        if (button == 0 && onChatHandle(r, mx, my)) {
+            resizingChat = true;
+            return true;
+        }
         HudElement el = elementAt(r, mx, my);
         if (el == null) return false;
         if (button == 0) {
@@ -128,6 +169,11 @@ public final class HudEditorScreen implements UiScreen {
 
     @Override public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
         Renderer r = lastRenderer;
+        if (resizingChat && r != null && chat() != null) {
+            float bottom = r.screenHeight() - 40;
+            chat().resizeTo((float) mx - 2, bottom - (float) my);
+            return true;
+        }
         if (dragging == null || r == null) return false;
         float nx = (float) mx - dragOffX;
         float ny = (float) my - dragOffY;
@@ -148,6 +194,10 @@ public final class HudEditorScreen implements UiScreen {
     }
 
     @Override public boolean mouseReleased(double mx, double my, int button) {
+        if (button == 0 && resizingChat) {
+            resizingChat = false;
+            return true;
+        }
         if (button == 0 && dragging != null) {
             dragging = null;
             lastSnap = null;
@@ -158,6 +208,11 @@ public final class HudEditorScreen implements UiScreen {
 
     @Override public boolean mouseScrolled(double mx, double my, double amount) {
         Renderer r = lastRenderer;
+        float[] cb = r == null ? null : chatRect(r);
+        if (cb != null && mx >= cb[0] && mx <= cb[2] && my >= cb[1] && my <= cb[3] && elementAt(r, mx, my) == null) {
+            chat().scaleSetting().set(chat().scaleSetting().get() + (amount > 0 ? 0.05 : -0.05));
+            return true;
+        }
         HudElement el = elementAt(r, mx, my);
         if (el == null || amount == 0) return false;
         // Um die Mitte herum skalieren
