@@ -41,7 +41,7 @@ public abstract class HudElement extends Module {
         posY = add(new NumberSetting("y", "Y", defaultY, 0, 1, 0));
         posY.hidden();
         scale = add(new NumberSetting("scale", "Größe", 1.0, 0.5, 3.0, 0.05, "x"));
-        colorMode = add(new EnumSetting<>("colorMode", "Farbmodus", ColorMode.CHROMA));
+        colorMode = add(new EnumSetting<>("colorMode", "Farbmodus", defaultColorMode()));
         textColor = add(new ColorSetting("textColor", "Textfarbe", 0xFFFFFFFF));
         textColor.visibleWhen(() -> colorMode.get() != ColorMode.CHROMA);
         secondColor = add(new ColorSetting("secondColor", "Zweite Farbe", 0xFF4FC3FF));
@@ -49,10 +49,16 @@ public abstract class HudElement extends Module {
         colorSpeed = add(new NumberSetting("colorSpeed", "Farbtempo", 0.4, 0.05, 2, 0.05, "x"));
         colorSpeed.visibleWhen(() -> colorMode.get() != ColorMode.STATIC);
         background = add(new BooleanSetting("background", "Hintergrund", true));
-        backgroundColor = add(new ColorSetting("backgroundColor", "Hintergrundfarbe", 0x6F000000));
+        backgroundColor = add(new ColorSetting("backgroundColor", "Hintergrundfarbe", defaultBackgroundColor()));
         backgroundColor.visibleWhen(background::on);
         shadow = add(new BooleanSetting("shadow", "Textschatten", true));
     }
+
+    /** Standard-Farbmodus. Wird im Konstruktor abgefragt, darf also nur eine Konstante liefern. */
+    protected ColorMode defaultColorMode() { return ColorMode.CHROMA; }
+
+    /** Standard-Hintergrundfarbe (ARGB). Wie oben: nur eine Konstante liefern. */
+    protected int defaultBackgroundColor() { return 0x6F000000; }
 
     // ---- Inhalt (von Unterklassen) ----
 
