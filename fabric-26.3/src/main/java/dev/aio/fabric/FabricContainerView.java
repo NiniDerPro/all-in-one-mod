@@ -11,7 +11,6 @@ import net.minecraft.world.inventory.DispenserMenu;
 import net.minecraft.world.inventory.HopperMenu;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.ShulkerBoxMenu;
-import net.minecraft.world.inventory.Slot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +33,7 @@ final class FabricContainerView implements ContainerView {
 
     @Override public List<ContainerView.Slot> slots() {
         List<ContainerView.Slot> out = new ArrayList<>(menu.slots.size());
-        for (Slot s : menu.slots) {
+        for (net.minecraft.world.inventory.Slot s : menu.slots) {
             boolean player = s.container instanceof Inventory;
             if (!player && !storage) continue;
             out.add(new ContainerView.Slot(s.index, FabricItemRef.of(s.getItem()), player, s.getContainerSlot()));
