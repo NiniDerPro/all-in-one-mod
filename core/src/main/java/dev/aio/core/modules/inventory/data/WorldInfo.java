@@ -50,8 +50,8 @@ public final class WorldInfo {
                 for (TradeData.Trade t : tradeData.set(lvl.getValue()).trades()) trades.add(new TradeEntry(prof, lvl.getKey(), "", t));
             }
         }
-        String[][] wandering = {{"minecraft:wandering_trader/buying", "kauft"}, {"minecraft:wandering_trader/common", "häufig"},
-                {"minecraft:wandering_trader/uncommon", "selten"}};
+        String[][] wandering = {{"minecraft:wandering_trader/buying", "buys"}, {"minecraft:wandering_trader/common", "common"},
+                {"minecraft:wandering_trader/uncommon", "rare"}};
         for (String[] w : wandering) {
             for (TradeData.Trade t : tradeData.set(w[0]).trades()) trades.add(new TradeEntry(null, 0, w[1], t));
         }

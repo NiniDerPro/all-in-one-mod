@@ -19,15 +19,15 @@ public final class BlockOutlineModule extends Module {
     private final ColorSetting fillColor;
 
     public BlockOutlineModule() {
-        super("blockoutline", "Block-Outline", "Umrandung des angesehenen Blocks anpassen", Category.RENDER, false);
-        colorMode = add(new EnumSetting<>("colorMode", "Farbmodus", ColorMode.STATIC));
-        lineColor = add(new ColorSetting("color", "Linienfarbe", 0xFFFFFFFF));
+        super("blockoutline", "Block Outline", "Customize the outline of the block you look at", Category.RENDER, false);
+        colorMode = add(new EnumSetting<>("colorMode", "Color mode", ColorMode.STATIC));
+        lineColor = add(new ColorSetting("color", "Line color", 0xFFFFFFFF));
         lineColor.visibleWhen(() -> colorMode.get() != ColorMode.CHROMA);
-        secondColor = add(new ColorSetting("secondColor", "Zweite Farbe", 0xFF4FC3FF));
+        secondColor = add(new ColorSetting("secondColor", "Second color", 0xFF4FC3FF));
         secondColor.visibleWhen(() -> colorMode.get() == ColorMode.GRADIENT);
-        thickness = add(new NumberSetting("thickness", "Dicke", 2, 1, 8, 0.5, " px"));
-        fill = add(new BooleanSetting("fill", "Füllung", false));
-        fillColor = add(new ColorSetting("fillColor", "Füllfarbe", 0x30FFFFFF));
+        thickness = add(new NumberSetting("thickness", "Thickness", 2, 1, 8, 0.5, " px"));
+        fill = add(new BooleanSetting("fill", "Fill", false));
+        fillColor = add(new ColorSetting("fillColor", "Fill color", 0x30FFFFFF));
         fillColor.visibleWhen(fill::on);
     }
 

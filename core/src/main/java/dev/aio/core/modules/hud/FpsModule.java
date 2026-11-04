@@ -15,10 +15,10 @@ public final class FpsModule extends TextHudElement {
     private int tickCounter;
 
     public FpsModule() {
-        super("fps", "FPS", "Bilder pro Sekunde, optional mit Durchschnitt und Min/Max", 0.0, 0.0);
-        showAverage = add(new BooleanSetting("showAverage", "Durchschnitt", false));
+        super("fps", "FPS", "Frames per second, optionally with average and min/max", 0.0, 0.0);
+        showAverage = add(new BooleanSetting("showAverage", "Average", false));
         showMinMax = add(new BooleanSetting("showMinMax", "Min/Max", false));
-        window = add(new NumberSetting("window", "Zeitfenster", 10, 3, 60, 1, " s"));
+        window = add(new NumberSetting("window", "Time window", 10, 3, 60, 1, " s"));
         window.visibleWhen(() -> showAverage.on() || showMinMax.on());
         window.onChange(v -> stats.resize(window.intValue()));
         on(Events.Tick.class, e -> sample());

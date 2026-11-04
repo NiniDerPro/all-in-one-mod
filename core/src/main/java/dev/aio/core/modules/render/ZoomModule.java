@@ -26,11 +26,11 @@ public final class ZoomModule extends KeyActivatedModule {
     private long lastNanos = -1;
 
     public ZoomModule() {
-        super("zoom", "Zoom", "Taste halten zum Zoomen, Mausrad ändert die Stufe", Category.RENDER, Keys.C);
-        level = add(new NumberSetting("level", "Zoomstufe", 3, 1.5, 50, 0.5, "x"));
-        smooth = add(new BooleanSetting("smoothZoom", "Sanfter Übergang", false));
-        scrollAdjust = add(new BooleanSetting("scroll", "Mausrad ändert Stufe", true));
-        reduceSensitivity = add(new BooleanSetting("sensitivity", "Maus verlangsamen", true));
+        super("zoom", "Zoom", "Hold the key to zoom, scroll to change the level", Category.RENDER, Keys.C);
+        level = add(new NumberSetting("level", "Zoom level", 3, 1.5, 50, 0.5, "x"));
+        smooth = add(new BooleanSetting("smoothZoom", "Smooth transition", false));
+        scrollAdjust = add(new BooleanSetting("scroll", "Scroll changes level", true));
+        reduceSensitivity = add(new BooleanSetting("sensitivity", "Slow down mouse", true));
         on(Events.MouseScroll.class, this::onScroll, EventBus.PRIORITY_HIGH);
     }
 

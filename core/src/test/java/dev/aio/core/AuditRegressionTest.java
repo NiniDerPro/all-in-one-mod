@@ -66,7 +66,7 @@ class AuditRegressionTest {
         assertTrue(core.module(ChatModule.class).isEnabled(), "Wunsch bleibt gespeichert");
     }
 
-    /** A2: "Zurücksetzen" im Menü lässt Wegpunkte in Ruhe. */
+    /** A2: "Reset" im Menü lässt Wegpunkte in Ruhe. */
     @Test void resetKeepsWaypoints() {
         AioCore core = start(new FakePlatform());
         WaypointsModule wp = core.module(WaypointsModule.class);

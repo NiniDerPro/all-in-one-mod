@@ -89,6 +89,12 @@ public final class ConfigManager {
 
     // ---- Laden / Speichern ----
 
+    /**
+     * Version der Standard-Module. Steigt sie, werden beim nächsten Start einmalig alle Module auf
+     * ihren (neuen) Standard gesetzt; danach gelten wieder die eigenen Einstellungen.
+     */
+    public static final int DEFAULTS_VERSION = 2;
+
     public void load() {
         JsonObject client = readObject(root.resolve("client.json"));
         if (client != null && client.has("activeProfile")) {
@@ -96,6 +102,14 @@ public final class ConfigManager {
             if (isValidProfileName(p)) activeProfile = p;
         }
         loadProfile(activeProfile);
+        int version = client != null && client.has("defaultsVersion") ? client.get("defaultsVersion").getAsInt() : 0;
+        if (client != null && version < DEFAULTS_VERSION) {
+            for (Module m : modules.all()) {
+                m.setEnabled(m.enabledByDefault());
+                m.applyNewDefaults();
+            }
+            save();
+        }
     }
 
     private void loadProfile(String profile) {
@@ -133,6 +147,7 @@ public final class ConfigManager {
             for (Module m : modules.all()) writeAtomic(dir.resolve(m.id() + ".json"), GSON.toJson(serializeModule(m)));
             JsonObject client = new JsonObject();
             client.addProperty("activeProfile", activeProfile);
+            client.addProperty("defaultsVersion", DEFAULTS_VERSION);
             writeAtomic(root.resolve("client.json"), GSON.toJson(client));
         } catch (IOException e) {
             Log.error("Config konnte nicht gespeichert werden", e);
@@ -219,13 +234,13 @@ public final class ConfigManager {
         JsonObject doc;
         try {
             JsonElement el = JsonParser.parseString(json == null ? "" : json.trim());
-            if (!el.isJsonObject()) throw new IllegalArgumentException("Kein Profil (kein JSON-Objekt)");
+            if (!el.isJsonObject()) throw new IllegalArgumentException("Not a profile (no JSON object)");
             doc = el.getAsJsonObject();
         } catch (JsonParseException | IllegalStateException e) {
-            throw new IllegalArgumentException("Kein gültiges JSON");
+            throw new IllegalArgumentException("Not valid JSON");
         }
         if (!doc.has("aioProfile") || !doc.has("modules") || !doc.get("modules").isJsonObject()) {
-            throw new IllegalArgumentException("Kein AIO-Profil");
+            throw new IllegalArgumentException("Not an AIO profile");
         }
         String base = doc.has("name") && doc.get("name").isJsonPrimitive() ? doc.get("name").getAsString() : "import";
         base = base.replaceAll("[^A-Za-z0-9_\\-]", "");
@@ -310,7 +325,7 @@ public final class ConfigManager {
     }
 
     private static void requireValid(String name) {
-        if (!isValidProfileName(name)) throw new IllegalArgumentException("Ungültiger Profilname: " + name);
+        if (!isValidProfileName(name)) throw new IllegalArgumentException("Invalid profile name: " + name);
     }
 
     private static JsonObject readObject(Path file) {

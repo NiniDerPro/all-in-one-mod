@@ -22,14 +22,13 @@ public final class InventoryTweaksModule extends Module {
     private final Set<Integer> dragged = new HashSet<>();
 
     public InventoryTweaksModule() {
-        super("invtweaks", "Maus-Tweaks & Sortieren", "Mausrad verschiebt Items, Shift-Ziehen, Mittelklick sortiert", Category.INVENTORY, false);
-        wheel = add(new BooleanSetting("wheel", "Mausrad verschiebt Items", true));
-        invertWheel = add(new BooleanSetting("invertWheel", "Mausrad umkehren", false));
-        shiftDrag = add(new BooleanSetting("shiftDrag", "Shift + Ziehen verschiebt", true));
-        middleSort = add(new BooleanSetting("middleSort", "Mittelklick sortiert", true));
+        super("invtweaks", "Mouse Tweaks", "Scroll to move items, Shift-drag, middle-click to sort", Category.INVENTORY, false);
+        wheel = add(new BooleanSetting("wheel", "Scroll moves items", true));
+        invertWheel = add(new BooleanSetting("invertWheel", "Invert scroll", false));
+        shiftDrag = add(new BooleanSetting("shiftDrag", "Shift + drag moves", true));
+        middleSort = add(new BooleanSetting("middleSort", "Middle-click sorts", true));
     }
 
-    @Override public boolean enabledByDefault() { return true; }
 
     /** Mods mit denselben Inventar-Gesten: dann hier nichts tun, sonst passiert alles doppelt. */
     private static final String[] CONFLICTS = {"mousetweaks", "mousewheelie", "inventoryprofilesnext"};

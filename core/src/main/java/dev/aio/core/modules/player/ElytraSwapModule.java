@@ -23,15 +23,14 @@ public final class ElytraSwapModule extends Module {
     private final KeybindSetting key;
 
     public ElytraSwapModule() {
-        super("elytraswap", "Elytra-Tausch", "Wechselt per Taste zwischen Elytra und Brustplatte", Category.COMBAT, false);
-        key = add(new KeybindSetting("key", "Taste", "key.keyboard.grave.accent"));
+        super("elytraswap", "Elytra Swapper", "Swap between elytra and chestplate with a key", Category.COMBAT, false);
+        key = add(new KeybindSetting("key", "Key", "key.keyboard.grave.accent"));
         on(Events.Key.class, e -> {
             // auch im offenen Spielerinventar (dort prüft swap(), dass nur das eigene Inventar offen ist)
             if (e.isPress() && key.matches(e.key()) && (!e.screenOpen() || platform().containerScreenOpen())) swap();
         });
     }
 
-    @Override public boolean enabledByDefault() { return true; }
 
     /** Führt den Tausch aus. @return Meldung für den Spieler oder null bei Erfolg */
     public String swap() {
@@ -39,8 +38,8 @@ public final class ElytraSwapModule extends Module {
         if (c == null || !c.isPlayerOnly() || !c.cursor().isEmpty()) return null;
         int[] plan = plan(c.slots());
         if (plan == null) {
-            platform().notify("Keine Elytra bzw. Brustplatte im Inventar");
-            return "nichts zum Tauschen";
+            platform().notify("No elytra or chestplate in your inventory");
+            return "nothing to swap";
         }
         // Aufnehmen, auf den Brust-Slot legen (tauscht), alten Gegenstand zurücklegen
         c.click(plan[0], 0, ContainerView.Click.PICKUP);

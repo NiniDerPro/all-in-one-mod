@@ -9,14 +9,14 @@ public final class BiomeModule extends TextHudElement {
     private final BooleanSetting label;
 
     public BiomeModule() {
-        super("biome", "Biom", "Zeigt das aktuelle Biom", Category.INFO, false, 0.0, 0.24);
-        label = add(new BooleanSetting("label", "Bezeichnung zeigen", true));
+        super("biome", "Biome", "Shows the current biome", Category.INFO, false, 0.0, 0.24);
+        label = add(new BooleanSetting("label", "Show label", true));
     }
 
     @Override protected String getText() {
         if (!platform().inWorld()) return "";
-        return (label.on() ? "Biom: " : "") + platform().biome();
+        return (label.on() ? "Biome: " : "") + platform().biome();
     }
 
-    @Override protected String previewText() { return "Biom: Ebene"; }
+    @Override protected String previewText() { return "Biome: Plains"; }
 }

@@ -6,7 +6,7 @@ import dev.aio.core.module.Module;
 /** Kein Kamerawackeln, wenn man Schaden bekommt. */
 public final class NoHurtcamModule extends Module {
     public NoHurtcamModule() {
-        super("nohurtcam", "No Hurtcam", "Kein Kamerawackeln bei Schaden", Category.RENDER, false);
+        super("nohurtcam", "No Hurtcam", "No camera shake when taking damage", Category.RENDER, false);
     }
 
     public boolean suppress() { return isActive(); }

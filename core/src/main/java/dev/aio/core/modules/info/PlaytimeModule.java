@@ -18,8 +18,8 @@ public final class PlaytimeModule extends TextHudElement {
     private int requestTimer;
 
     public PlaytimeModule() {
-        super("playtime", "Spielzeit", "Spielzeit in dieser Welt (aus den Statistiken)", Category.INFO, false, 0.0, 0.42);
-        label = add(new BooleanSetting("label", "Bezeichnung zeigen", true));
+        super("playtime", "Playtime", "Time played in this world (from statistics)", Category.INFO, false, 0.0, 0.42);
+        label = add(new BooleanSetting("label", "Show label", true));
         on(Events.Tick.class, e -> tick());
         on(Events.ServerJoin.class, e -> reset());
     }
@@ -52,7 +52,7 @@ public final class PlaytimeModule extends TextHudElement {
 
     @Override protected String getText() {
         if (!platform().inWorld() || statTicks < 0) return "";
-        return (label.on() ? "Spielzeit: " : "") + format(statTicks + ticksSinceStat);
+        return (label.on() ? "Playtime: " : "") + format(statTicks + ticksSinceStat);
     }
 
     /** "2 T 3 Std 14 Min", "3 Std 5 Min" oder "12 Min". */
@@ -61,10 +61,10 @@ public final class PlaytimeModule extends TextHudElement {
         long days = minutesTotal / (60 * 24);
         long hours = minutesTotal / 60 % 24;
         long minutes = minutesTotal % 60;
-        if (days > 0) return days + " T " + hours + " Std " + minutes + " Min";
-        if (hours > 0) return hours + " Std " + minutes + " Min";
-        return minutes + " Min";
+        if (days > 0) return days + " d " + hours + " h " + minutes + " min";
+        if (hours > 0) return hours + " h " + minutes + " min";
+        return minutes + " min";
     }
 
-    @Override protected String previewText() { return "Spielzeit: 3 Std 14 Min"; }
+    @Override protected String previewText() { return "Playtime: 3 h 14 min"; }
 }

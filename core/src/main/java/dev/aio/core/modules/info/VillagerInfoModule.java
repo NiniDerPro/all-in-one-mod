@@ -24,14 +24,13 @@ public final class VillagerInfoModule extends HudElement {
     private final NumberSetting distance;
 
     public VillagerInfoModule() {
-        super("villagerinfo", "Dorfbewohner-Info", "Verzauberte Bücher und Preise über Dorfbewohnern", Category.INFO, false, 0, 0);
-        booksOnly = add(new BooleanSetting("booksOnly", "Nur verzauberte Bücher", true));
-        firstOnly = add(new BooleanSetting("firstOnly", "Nur das erste Buch", false));
-        hideSoldOut = add(new BooleanSetting("hideSoldOut", "Ausverkaufte ausblenden", false));
-        distance = add(new NumberSetting("distance", "Reichweite", 24, 4, 64, 1, " Blöcke"));
+        super("villagerinfo", "Villager Info", "Enchanted books and prices above villagers", Category.INFO, false, 0, 0);
+        booksOnly = add(new BooleanSetting("booksOnly", "Only enchanted books", true));
+        firstOnly = add(new BooleanSetting("firstOnly", "Only the first book", false));
+        hideSoldOut = add(new BooleanSetting("hideSoldOut", "Hide sold out", false));
+        distance = add(new NumberSetting("distance", "Range", 24, 4, 64, 1, " blocks"));
     }
 
-    @Override public boolean enabledByDefault() { return true; }
 
     @Override public boolean editable() { return false; }
 

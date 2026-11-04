@@ -4,11 +4,11 @@ import dev.aio.core.setting.EnumSetting;
 
 public enum ColorMode implements EnumSetting.Named {
     /** Eine feste Farbe. */
-    STATIC("Fest"),
+    STATIC("Static"),
     /** Regenbogen, der als Welle über den Text läuft. */
-    CHROMA("Regenbogen"),
+    CHROMA("Rainbow"),
     /** Verlauf zwischen zwei Farben, der hin und her wandert. */
-    GRADIENT("Verlauf");
+    GRADIENT("Gradient");
 
     private final String displayName;
 

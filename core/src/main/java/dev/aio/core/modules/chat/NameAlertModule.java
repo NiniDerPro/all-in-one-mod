@@ -20,16 +20,19 @@ public final class NameAlertModule extends Module {
     private final BooleanSetting ignoreOwn;
 
     public NameAlertModule() {
-        super("namealert", "Namens-Alarm", "Ton und Hinweis, wenn dein Name im Chat fällt", Category.CHAT, false);
-        requireAt = add(new BooleanSetting("requireAt", "Nur mit @", false));
-        keywords = add(new StringSetting("keywords", "Weitere Wörter (Komma)", "", 256));
-        sound = add(new BooleanSetting("sound", "Ton", true));
-        popup = add(new BooleanSetting("popup", "Hinweis einblenden", true));
-        ignoreOwn = add(new BooleanSetting("ignoreOwn", "Eigene Nachrichten ignorieren", true));
+        super("namealert", "Name Alert", "Sound and notice when someone mentions your name", Category.CHAT, false);
+        requireAt = add(new BooleanSetting("requireAt", "Only with @", false));
+        keywords = add(new StringSetting("keywords", "Extra words (comma separated)", "", 256));
+        sound = add(new BooleanSetting("sound", "Sound", true));
+        popup = add(new BooleanSetting("popup", "Show notice", true));
+        ignoreOwn = add(new BooleanSetting("ignoreOwn", "Ignore your own messages", true));
+        add(new dev.aio.core.setting.ActionSetting("test", "Test alert", () -> {
+            if (sound.on()) platform().playAlertSound();
+            platform().notify("Mentioned: <Steve> hey " + platform().playerName() + "!");
+        }));
         on(Events.ChatReceived.class, this::onChat);
     }
 
-    @Override public boolean enabledByDefault() { return true; }
 
     private void onChat(Events.ChatReceived e) {
         String name = platform().playerName();
@@ -37,7 +40,7 @@ public final class NameAlertModule extends Module {
         String hit = match(e.text(), words(name), requireAt.on());
         if (hit == null) return;
         if (sound.on()) platform().playAlertSound();
-        if (popup.on()) platform().notify("Erwähnt: " + shorten(e.text()));
+        if (popup.on()) platform().notify("Mentioned: " + shorten(e.text()));
     }
 
     private List<String> words(String name) {
@@ -64,7 +67,9 @@ public final class NameAlertModule extends Module {
     static String match(String text, List<String> words, boolean requireAt) {
         for (String w : words) {
             String q = Pattern.quote(w.toLowerCase(Locale.ROOT));
-            String regex = requireAt ? "@" + q + "(?![\\w])" : "(?<![\\w])@?" + q + "(?![\\w])";
+            // ganzes Wort, auch mit Endung "s" oder "'s" ("Steves", "Steve's")
+            String end = "(?:'?s)?(?![\\w])";
+            String regex = requireAt ? "@" + q + end : "(?<![\\w])@?" + q + end;
             if (Pattern.compile(regex, Pattern.CASE_INSENSITIVE).matcher(text).find()) return w;
         }
         return null;

@@ -33,21 +33,21 @@ public final class ChatModule extends Module {
     private boolean synced;
 
     public ChatModule() {
-        super("chat", "Chat", "Zeitstempel und längerer Chatverlauf", Category.CHAT, false);
-        timestamps = add(new BooleanSetting("timestamps", "Zeitstempel", true));
-        seconds = add(new BooleanSetting("seconds", "Mit Sekunden", false));
+        super("chat", "Chat", "Timestamps, longer history, size and copying", Category.CHAT, false);
+        timestamps = add(new BooleanSetting("timestamps", "Timestamps", true));
+        seconds = add(new BooleanSetting("seconds", "With seconds", false));
         seconds.visibleWhen(timestamps::on);
-        history = add(new NumberSetting("history", "Verlaufslänge", 500, 100, 2000, 50, " Zeilen"));
-        copyKey = add(new KeybindSetting("copyKey", "Chat-kopieren-Taste", dev.aio.core.platform.Keys.NONE));
-        add(new ActionSetting("copy", "Chat kopieren", this::openCopy));
-        width = vanilla("width", "Breite", VanillaOption.CHAT_WIDTH, 1.0);
-        heightFocused = vanilla("heightFocused", "Höhe (offen)", VanillaOption.CHAT_HEIGHT_FOCUSED, 1.0);
-        heightUnfocused = vanilla("heightUnfocused", "Höhe (zu)", VanillaOption.CHAT_HEIGHT_UNFOCUSED, 0.4375);
-        scale = vanilla("scale", "Schriftgröße", VanillaOption.CHAT_SCALE, 1.0);
-        lineSpacing = vanilla("lineSpacing", "Zeilenabstand", VanillaOption.CHAT_LINE_SPACING, 0.0);
-        textOpacity = vanilla("textOpacity", "Textdeckkraft", VanillaOption.CHAT_OPACITY, 1.0);
-        backgroundOpacity = vanilla("bgOpacity", "Hintergrund", VanillaOption.TEXT_BACKGROUND_OPACITY, 0.5);
-        unicodeFont = add(new BooleanSetting("unicodeFont", "Unicode-Schrift", false));
+        history = add(new NumberSetting("history", "History length", 500, 100, 2000, 50, " lines"));
+        copyKey = add(new KeybindSetting("copyKey", "Copy chat key", dev.aio.core.platform.Keys.NONE));
+        add(new ActionSetting("copy", "Copy chat", this::openCopy));
+        width = vanilla("width", "Width", VanillaOption.CHAT_WIDTH, 1.0);
+        heightFocused = vanilla("heightFocused", "Height (open)", VanillaOption.CHAT_HEIGHT_FOCUSED, 1.0);
+        heightUnfocused = vanilla("heightUnfocused", "Height (closed)", VanillaOption.CHAT_HEIGHT_UNFOCUSED, 0.4375);
+        scale = vanilla("scale", "Text size", VanillaOption.CHAT_SCALE, 1.0);
+        lineSpacing = vanilla("lineSpacing", "Line spacing", VanillaOption.CHAT_LINE_SPACING, 0.0);
+        textOpacity = vanilla("textOpacity", "Text opacity", VanillaOption.CHAT_OPACITY, 1.0);
+        backgroundOpacity = vanilla("bgOpacity", "Background", VanillaOption.TEXT_BACKGROUND_OPACITY, 0.5);
+        unicodeFont = add(new BooleanSetting("unicodeFont", "Unicode font", false));
         unicodeFont.onChange(v -> apply(VanillaOption.FORCE_UNICODE_FONT, v ? 1 : 0));
         on(Events.ChatReceived.class, e -> chatHistory.add(e.text()));
         on(Events.Tick.class, e -> { if (!synced) readFromVanilla(); });
@@ -94,7 +94,6 @@ public final class ChatModule extends Module {
         readFromVanilla();
     }
 
-    @Override public boolean enabledByDefault() { return true; }
 
     public void openCopy() {
         if (core != null) platform().openScreen(new ChatCopyScreen(core, chatHistory, timestamps.on()));
@@ -131,14 +130,14 @@ public final class ChatModule extends Module {
     }
 
     private static final String[] SAMPLE = {
-            "<Steve> Hi! Wer kommt mit in den Nether?",
-            "<Alex> Ich, warte kurz, ich hole noch Feuerresistenz-Tränke",
-            "[Server] Willkommen zurück auf dem Server!",
-            "<Steve> Treffen wir uns am Portal bei 120 / 64 / -340?",
-            "<Alex> Passt, bin gleich da",
-            "Steve hat die Errungenschaft [Heiße Angelegenheit] erzielt",
-            "<Notch> Viel Spaß euch beiden :)",
-            "<Steve> Danke!",
+            "<Steve> Hi! Who wants to come to the Nether?",
+            "<Alex> Me, wait, let me grab some fire resistance potions",
+            "[Server] Welcome back to the server!",
+            "<Steve> Meet at the portal at 120 / 64 / -340?",
+            "<Alex> Sure, on my way",
+            "Steve has made the advancement [Hot Stuff]",
+            "<Notch> Have fun you two :)",
+            "<Steve> Thanks!",
     };
 
     /**

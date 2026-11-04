@@ -65,8 +65,8 @@ final class TrimPreview {
             }
         }
         List<List<ItemRef>> slots = List.of(List.of(FabricItemRef.of(template.copyWithCount(1))), armorRefs, materialItems);
-        List<String> notes = List.of("Muster: " + pattern.value().description().getString());
-        return List.of(new RecipeView("Rüstungsverzierung", 3, 1, slots, ItemRef.EMPTY,
+        List<String> notes = List.of("Pattern: " + pattern.value().description().getString());
+        return List.of(new RecipeView("Armor Trim", 3, 1, slots, ItemRef.EMPTY,
                 FabricItemRef.of(new ItemStack(Items.SMITHING_TABLE)), RecipeKind.OTHER, notes, List.of(), results, true));
     }
 

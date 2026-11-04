@@ -147,7 +147,7 @@ public final class AioCore {
         clientSettings.compatMode.onChange(v -> applyCompat(true));
         clientSettings.allowList.onChange(v -> applyCompat(false));
         applyCompat(false);
-        Log.info(NAME + " gestartet mit " + modules.all().size() + " Modulen (Profil: " + config.activeProfile() + ")");
+        Log.info(NAME + " started with " + modules.all().size() + " modules (profile: " + config.activeProfile() + ")");
     }
 
     public void shutdown() {
@@ -181,12 +181,12 @@ public final class AioCore {
     public void toggleWithFeedback(Module m) {
         if (m.isBlocked() && !m.isEnabled()) {
             m.setEnabled(true);
-            platform.notify(m.name() + ": auf diesem Server gesperrt (Kompatibilitätsmodus)");
+            platform.notify(m.name() + ": blocked on this server (compatibility mode)");
             return;
         }
         m.toggle();
         if (clientSettings.toggleMessages.on()) {
-            platform.notify(m.name() + ": " + (m.isEnabled() ? (m.isBlocked() ? "an (gesperrt)" : "an") : "aus"));
+            platform.notify(m.name() + ": " + (m.isEnabled() ? (m.isBlocked() ? "on (blocked)" : "on") : "off"));
         }
     }
 
@@ -206,7 +206,7 @@ public final class AioCore {
     private void applyCompat(boolean announce) {
         int blocked = compat.apply(clientSettings.compatMode.get(), clientSettings.allowList.get());
         if (announce && blocked > 0) {
-            platform.notify(blocked + (blocked == 1 ? " Modul" : " Module") + " auf diesem Server gesperrt (Kompatibilitätsmodus)");
+            platform.notify(blocked + (blocked == 1 ? " module" : " modules") + " blocked on this server (compatibility mode)");
         }
     }
 

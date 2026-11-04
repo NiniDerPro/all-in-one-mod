@@ -47,20 +47,20 @@ public abstract class HudElement extends Module {
         posY.hidden();
         // Breite und Höhe getrennt, damit man im HUD-Editor an jeder Kante/Ecke frei ziehen kann.
         // Die ID "scale" bleibt für alte Configs (dort war es die gemeinsame Größe).
-        scale = add(new NumberSetting("scale", "Breite", 1.0, MIN_SCALE, MAX_SCALE, 0.01, "x"));
-        scaleY = add(new NumberSetting("scaleY", "Höhe", 1.0, MIN_SCALE, MAX_SCALE, 0.01, "x"));
-        colorMode = add(new EnumSetting<>("colorMode", "Farbmodus", defaultColorMode()));
-        textColor = add(new ColorSetting("textColor", "Textfarbe", defaultTextColor()));
+        scale = add(new NumberSetting("scale", "Width", 1.0, MIN_SCALE, MAX_SCALE, 0.01, "x"));
+        scaleY = add(new NumberSetting("scaleY", "Height", 1.0, MIN_SCALE, MAX_SCALE, 0.01, "x"));
+        colorMode = add(new EnumSetting<>("colorMode", "Color mode", defaultColorMode()));
+        textColor = add(new ColorSetting("textColor", "Text color", defaultTextColor()));
         textColor.visibleWhen(() -> colorMode.get() != ColorMode.CHROMA);
-        secondColor = add(new ColorSetting("secondColor", "Zweite Farbe", 0xFF4FC3FF));
+        secondColor = add(new ColorSetting("secondColor", "Second color", 0xFF4FC3FF));
         secondColor.visibleWhen(() -> colorMode.get() == ColorMode.GRADIENT);
-        colorSpeed = add(new NumberSetting("colorSpeed", "Farbtempo", 0.4, 0.05, 2, 0.05, "x"));
+        colorSpeed = add(new NumberSetting("colorSpeed", "Color speed", 0.4, 0.05, 2, 0.05, "x"));
         colorSpeed.visibleWhen(() -> colorMode.get() != ColorMode.STATIC);
-        background = add(new BooleanSetting("background", "Hintergrund", defaultBackground()));
-        backgroundColor = add(new ColorSetting("backgroundColor", "Hintergrundfarbe", defaultBackgroundColor()));
+        background = add(new BooleanSetting("background", "Background", defaultBackground()));
+        backgroundColor = add(new ColorSetting("backgroundColor", "Background color", defaultBackgroundColor()));
         backgroundColor.visibleWhen(background::on);
-        shadow = add(new BooleanSetting("shadow", "Textschatten", true));
-        placed = add(new BooleanSetting("placed", "Platziert", false));
+        shadow = add(new BooleanSetting("shadow", "Text shadow", true));
+        placed = add(new BooleanSetting("placed", "Placed", false));
         placed.hidden();
     }
 

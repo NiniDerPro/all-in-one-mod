@@ -18,13 +18,13 @@ public final class ServerInfoModule extends HudElement {
     private int cachedW = -1;
 
     public ServerInfoModule() {
-        super("serverinfo", "Server-Info", "IP, Ping, Spieler und Version des Servers", Category.INFO, false, 1.0, 0.3);
-        showName = add(new BooleanSetting("name", "Servername", true));
+        super("serverinfo", "Server Info", "Server IP, ping, players and version", Category.INFO, false, 1.0, 0.3);
+        showName = add(new BooleanSetting("name", "Server name", true));
         showIp = add(new BooleanSetting("ip", "IP", true));
         showPing = add(new BooleanSetting("ping", "Ping", true));
-        showPlayers = add(new BooleanSetting("players", "Spieler online", true));
+        showPlayers = add(new BooleanSetting("players", "Players online", true));
         showVersion = add(new BooleanSetting("version", "Version", false));
-        showBrand = add(new BooleanSetting("brand", "Server-Software", false));
+        showBrand = add(new BooleanSetting("brand", "Server software", false));
     }
 
     @Override protected void onActivate() { update(); }
@@ -37,7 +37,7 @@ public final class ServerInfoModule extends HudElement {
                 if (showName.on() && !s.name().isEmpty()) next.add(s.name());
                 if (showIp.on() && !s.address().isEmpty()) next.add("IP: " + s.address());
                 if (showPing.on()) next.add("Ping: " + s.ping() + " ms");
-                if (showPlayers.on()) next.add("Spieler: " + s.players());
+                if (showPlayers.on()) next.add("Players: " + s.players());
                 if (showVersion.on() && !s.version().isEmpty()) next.add("Version: " + s.version());
                 if (showBrand.on() && !s.brand().isEmpty()) next.add("Software: " + s.brand());
             }
@@ -51,7 +51,7 @@ public final class ServerInfoModule extends HudElement {
     @Override public boolean hasContent() { return !lines.isEmpty(); }
 
     private List<String> shown(boolean preview) {
-        return lines.isEmpty() && preview ? List.of("Mein Server", "IP: play.example.net", "Ping: 42 ms", "Spieler: 17") : lines;
+        return lines.isEmpty() && preview ? List.of("My Server", "IP: play.example.net", "Ping: 42 ms", "Players: 17") : lines;
     }
 
     @Override public int width(Renderer r) {

@@ -55,10 +55,10 @@ class FeaturesTest {
     }
 
     @Test void playtimeFormat() {
-        assertEquals("0 Min", PlaytimeModule.format(0));
-        assertEquals("12 Min", PlaytimeModule.format(20 * 60 * 12));
-        assertEquals("3 Std 5 Min", PlaytimeModule.format(20L * 60 * (3 * 60 + 5)));
-        assertEquals("2 T 1 Std 0 Min", PlaytimeModule.format(20L * 60 * (2 * 24 * 60 + 60)));
+        assertEquals("0 min", PlaytimeModule.format(0));
+        assertEquals("12 min", PlaytimeModule.format(20 * 60 * 12));
+        assertEquals("3 h 5 min", PlaytimeModule.format(20L * 60 * (3 * 60 + 5)));
+        assertEquals("2 d 1 h 0 min", PlaytimeModule.format(20L * 60 * (2 * 24 * 60 + 60)));
     }
 
     @Test void playtimeRequestsStatsAndCountsUp() {
@@ -82,7 +82,7 @@ class FeaturesTest {
         assertEquals(0, Compass.bearing(0, -10), 1e-4);
         assertEquals(90, Compass.bearing(10, 0), 1e-4);
         assertEquals(-10, Compass.delta(5, 355), 1e-4);
-        assertEquals("NO", Compass.label(45));
+        assertEquals("NE", Compass.label(45));
         assertNull(Compass.label(30));
     }
 
@@ -121,6 +121,7 @@ class FeaturesTest {
     @Test void waypointKeyAddsWaypoint() {
         FakePlatform p = new FakePlatform();
         AioCore core = newCore(p);
+        core.module(WaypointsModule.class).setEnabled(true);
         core.bus().post(new Events.Key("key.keyboard.b", 1, false));
         assertEquals(1, core.module(WaypointsModule.class).inThisWorld().size());
     }
@@ -129,6 +130,8 @@ class FeaturesTest {
         FakePlatform p = new FakePlatform();
         AioCore core = newCore(p);
         WaypointsModule wp = core.module(WaypointsModule.class);
+        wp.setEnabled(true);
+        core.module(DeathPointModule.class).setEnabled(true);
         assertTrue(core.module(DeathPointModule.class).isActive());
         p.x = 100; p.z = 200;
         p.dead = true;
@@ -196,7 +199,7 @@ class FeaturesTest {
         core.bus().post(Events.Tick.INSTANCE);
         assertEquals(5, p.selected, "Standard: bleibt beim Werkzeug");
 
-        // Mit "Danach zurückwechseln" geht es zum alten Slot
+        // Mit "Switch back afterwards" geht es zum alten Slot
         ((dev.aio.core.setting.BooleanSetting) m.setting("restore")).set(true);
         p.selected = 2;
         p.heldGameKeys.add(GameKey.ATTACK);
@@ -322,7 +325,7 @@ class FeaturesTest {
     @Test void newHudElementsRender() {
         FakePlatform p = new FakePlatform();
         p.singleplayer = false;
-        p.heldDetails = List.of("Schärfe V");
+        p.heldDetails = List.of("Sharpness V");
         p.mainHand = item("minecraft:diamond_sword", "Schwert", "Minecraft");
         p.effects.add(new dev.aio.core.platform.EffectInfo("Tempo", 0, 200, false, true, "minecraft:mob_effect/speed"));
         AioCore core = newCore(p);

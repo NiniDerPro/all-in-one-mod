@@ -14,13 +14,12 @@ public final class DeathPointModule extends Module {
     private boolean wasDead;
 
     public DeathPointModule() {
-        super("deathpoint", "Todespunkt", "Wegpunkt beim Tod, verschwindet bei Ankunft", Category.NAVIGATION, false);
-        arriveDistance = add(new NumberSetting("arrive", "Entfernen ab", 4, 1, 20, 1, " Blöcke"));
-        chatMessage = add(new BooleanSetting("message", "Koordinaten melden", true));
+        super("deathpoint", "Death Waypoint", "Waypoint where you died, removed when you get there", Category.NAVIGATION, false);
+        arriveDistance = add(new NumberSetting("arrive", "Remove within", 4, 1, 20, 1, " blocks"));
+        chatMessage = add(new BooleanSetting("message", "Announce coordinates", true));
         on(Events.Tick.class, e -> tick());
     }
 
-    @Override public boolean enabledByDefault() { return true; }
 
     private WaypointsModule waypoints() { return core.module(WaypointsModule.class); }
 
@@ -39,8 +38,8 @@ public final class DeathPointModule extends Module {
         for (Waypoint w : wp.inThisWorld()) if (w.death()) wp.remove(w);
         Vec3 p = platform().playerPos();
         int x = (int) Math.floor(p.x()), y = (int) Math.floor(p.y()), z = (int) Math.floor(p.z());
-        wp.add(new Waypoint("Tod", x, y, z, platform().worldKey(), platform().dimension(), 0xFF5555, true, true));
-        if (chatMessage.on()) platform().notify("Gestorben bei " + x + " " + y + " " + z);
+        wp.add(new Waypoint("Death", x, y, z, platform().worldKey(), platform().dimension(), 0xFF5555, true, true));
+        if (chatMessage.on()) platform().notify("Died at " + x + " " + y + " " + z);
     }
 
     private void checkArrival() {
@@ -51,7 +50,7 @@ public final class DeathPointModule extends Module {
         for (Waypoint w : wp.inThisWorld()) {
             if (w.death() && w.dimension().equals(dim) && w.distanceTo(p.x(), p.y(), p.z()) <= arriveDistance.get()) {
                 wp.remove(w);
-                platform().notify("Todespunkt erreicht");
+                platform().notify("Death waypoint reached");
             }
         }
     }

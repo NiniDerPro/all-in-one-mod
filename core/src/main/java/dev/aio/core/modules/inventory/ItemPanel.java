@@ -110,7 +110,7 @@ public final class ItemPanel {
         // Suchfeld und Einstellungen
         float fx2 = x2 - BAR - 2;
         McGui.textField(r, x1, searchY, fx2, searchY + BAR, focused);
-        String shown = query.isEmpty() && !focused ? "Suchen… (@mod)" : query;
+        String shown = query.isEmpty() && !focused ? "Search… (@mod)" : query;
         float maxW = fx2 - x1 - 10;
         while (r.textWidth(shown) > maxW && shown.length() > 1) shown = shown.substring(1);
         float tx = x1 + 4, ty = searchY + 6;
