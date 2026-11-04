@@ -1,6 +1,7 @@
 package dev.aio.core.modules.hud;
 
 import dev.aio.core.hud.HudElement;
+import dev.aio.core.hud.HudPart;
 import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.setting.BooleanSetting;
@@ -45,6 +46,13 @@ public final class ArmorHudModule extends HudElement {
     private final BooleanSetting colorByDurability;
 
     private List<Entry> entries = List.of();
+    /** Pro Platz (Zweithand, Kopf, Brust, Beine, Füße, Haupthand) der Eintrag oder null. */
+    private Entry[] slots = new Entry[6];
+    private final HudPart[] parts = new HudPart[6];
+    private static final String[][] PARTS = {{"offhand", "Offhand"}, {"head", "Helmet"}, {"chest", "Chestplate"},
+            {"legs", "Leggings"}, {"feet", "Boots"}, {"mainhand", "Main hand"}};
+    /** Innenabstand eines einzelnen Teils: so passen die Teile lückenlos untereinander. */
+    private static final int PART_PAD = 1;
     private int cachedW = -1;
     private int cachedH = -1;
 
@@ -55,6 +63,7 @@ public final class ArmorHudModule extends HudElement {
         showMainHand = add(new BooleanSetting("mainHand", "Main hand", true));
         showOffHand = add(new BooleanSetting("offHand", "Offhand", false));
         colorByDurability = add(new BooleanSetting("colorByDurability", "Color by durability", true));
+        for (int i = 0; i < PARTS.length; i++) parts[i] = addPart(PARTS[i][0], PARTS[i][1]);
         durability.onChange(v -> invalidate());
         orientation.onChange(v -> invalidate());
     }
@@ -77,12 +86,19 @@ public final class ArmorHudModule extends HudElement {
 
     @Override public void update() {
         List<Entry> next = new ArrayList<>(6);
+        Entry[] nextSlots = new Entry[6];
         if (platform().inWorld()) {
             // Zweithand über der Rüstung, Haupthand darunter
-            if (showOffHand.on()) addEntry(next, platform().offHand());
-            for (ItemRef item : platform().armor()) addEntry(next, item);
-            if (showMainHand.on()) addEntry(next, platform().mainHand());
+            List<ItemRef> armor = platform().armor();
+            for (int i = 0; i < 6; i++) {
+                if (i == 0 && !showOffHand.on() || i == 5 && !showMainHand.on()) continue;
+                ItemRef item = i == 0 ? platform().offHand() : i == 5 ? platform().mainHand() : (i - 1 < armor.size() ? armor.get(i - 1) : null);
+                int before = next.size();
+                addEntry(next, item);
+                if (next.size() > before) nextSlots[i] = next.get(before);
+            }
         }
+        slots = nextSlots;
         if (!sameKeys(next, entries)) invalidate();
         entries = next; // Item-Handles immer aktualisieren, gemessen wird nur bei Änderung
     }
@@ -164,6 +180,61 @@ public final class ArmorHudModule extends HudElement {
     private void drawLabel(Renderer r, String text, float x, float y, int cell, boolean vertical, int color) {
         float tx = vertical ? x + ICON + 2 : x + (cell - 2) / 2f - r.textWidth(text) / 2f;
         float ty = vertical ? y + (ICON - r.fontHeight()) / 2f + 1 : y + ICON + 1;
+        if (color == -1) drawText(r, text, tx, ty);
+        else r.text(text, tx, ty, color, shadow());
+    }
+
+    // ---- Einzelne Teile ----
+
+    private int indexOf(HudPart part) {
+        for (int i = 0; i < parts.length; i++) if (parts[i] == part) return i;
+        return 0;
+    }
+
+    @Override protected boolean partEnabled(HudPart part) {
+        int i = indexOf(part);
+        return i == 0 ? showOffHand.on() : i != 5 || showMainHand.on();
+    }
+
+    @Override protected boolean partHasContent(HudPart part) { return slots[indexOf(part)] != null; }
+
+    private String partText(Renderer r, HudPart part) {
+        Entry e = slots[indexOf(part)];
+        if (e != null) return e.text;
+        return durability.get() == DurabilityMode.NUMBER || durability.get() == DurabilityMode.PERCENT ? "100" : "";
+    }
+
+    @Override protected int partWidth(Renderer r, HudPart part) {
+        int tw = r.textWidth(partText(r, part));
+        if (orientation.get() == Orientation.VERTICAL) return PART_PAD * 2 + ICON + (tw > 0 ? 2 + tw : 0);
+        return PART_PAD * 2 + Math.max(ICON, tw);
+    }
+
+    @Override protected int partHeight(Renderer r, HudPart part) {
+        if (orientation.get() == Orientation.VERTICAL) return PART_PAD * 2 + ICON;
+        return PART_PAD * 2 + ICON + (partText(r, part).isEmpty() ? 0 : r.fontHeight());
+    }
+
+    @Override protected float[] partOffset(Renderer r, HudPart part) {
+        // Reihenfolge wie im Block, gezählt über die eingeschalteten Plätze
+        int n = 0;
+        for (int i = 0; i < indexOf(part); i++) if (partEnabled(parts[i])) n++;
+        if (orientation.get() == Orientation.VERTICAL) return new float[]{PADDING - PART_PAD, PADDING - PART_PAD + n * ROW};
+        return new float[]{PADDING - PART_PAD + n * (ICON + 4), PADDING - PART_PAD};
+    }
+
+    @Override protected void renderPart(Renderer r, HudPart part, boolean preview) {
+        Entry e = slots[indexOf(part)];
+        boolean vertical = orientation.get() == Orientation.VERTICAL;
+        int w = partWidth(r, part);
+        float iconX = vertical ? PART_PAD : (w - ICON) / 2f;
+        String text = partText(r, part);
+        if (e == null) r.fill(iconX, PART_PAD, iconX + ICON, PART_PAD + ICON, 0x40FFFFFF);
+        else r.item(e.item, iconX, PART_PAD, durability.get() == DurabilityMode.BAR);
+        if (text.isEmpty()) return;
+        int color = e != null ? e.color : colorByDurability.on() ? 0xFF55FF55 : -1;
+        float tx = vertical ? PART_PAD + ICON + 2 : w / 2f - r.textWidth(text) / 2f;
+        float ty = vertical ? PART_PAD + (ICON - r.fontHeight()) / 2f + 1 : PART_PAD + ICON + 1;
         if (color == -1) drawText(r, text, tx, ty);
         else r.text(text, tx, ty, color, shadow());
     }
