@@ -27,7 +27,14 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.level.block.CocoaBlock;
 import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.NetherWartBlock;
+import net.minecraft.world.level.block.SaplingBlock;
+import net.minecraft.world.level.block.StemBlock;
+import net.minecraft.world.level.block.SweetBerryBushBlock;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -170,14 +177,27 @@ public final class FabricPlatform implements Platform {
                 correct = Boolean.TRUE; // passendes Werkzeug in der Hand (abbaubar ist es auch ohne)
             }
 
-            float growth = Float.NaN;
-            if (state.getBlock() instanceof CropBlock crop && crop.getMaxAge() > 0) {
-                growth = crop.getAge(state) / (float) crop.getMaxAge();
-            }
-            return LookTarget.block(state.getBlock().getName().getString(), source, icon, correct, tool, growth,
-                    pos.getX(), pos.getY(), pos.getZ());
+            return LookTarget.block(state.getBlock().getName().getString(), source, icon, correct, tool, growth(state),
+                    pos.getX(), pos.getY(), pos.getZ(), BlockDetails.of(client, state, pos));
         }
         return null;
+    }
+
+    /** Wachstum 0..1, nur für Pflanzen, die wirklich wachsen (nicht Zuckerrohr, Kaktus, Feuer, ...). */
+    private static float growth(BlockState state) {
+        var block = state.getBlock();
+        if (block instanceof CropBlock crop) {
+            return crop.getMaxAge() > 0 ? crop.getAge(state) / (float) crop.getMaxAge() : Float.NaN;
+        }
+        if (block instanceof NetherWartBlock || block instanceof SweetBerryBushBlock) return age(state, BlockStateProperties.AGE_3, 3);
+        if (block instanceof CocoaBlock) return age(state, BlockStateProperties.AGE_2, 2);
+        if (block instanceof StemBlock) return age(state, BlockStateProperties.AGE_7, 7);
+        if (block instanceof SaplingBlock) return age(state, BlockStateProperties.STAGE, 1);
+        return Float.NaN;
+    }
+
+    private static float age(BlockState state, IntegerProperty property, int max) {
+        return state.hasProperty(property) ? state.getValue(property) / (float) max : Float.NaN;
     }
 
     private static String toolType(BlockState state) {
