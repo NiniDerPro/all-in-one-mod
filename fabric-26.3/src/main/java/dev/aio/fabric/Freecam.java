@@ -21,6 +21,18 @@ public final class Freecam {
     public static boolean active() { return camera != null; }
 
     public static void set(boolean on) {
+        try {
+            apply(on);
+            AioFabricClient.LOGGER.info("[aio] Freecam {}", active() ? "on" : "off");
+        } catch (RuntimeException e) {
+            AioFabricClient.LOGGER.error("[aio] Freecam konnte nicht umgeschaltet werden", e);
+            camera = null;
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player != null) mc.setCameraEntity(mc.player);
+        }
+    }
+
+    private static void apply(boolean on) {
         Minecraft mc = Minecraft.getInstance();
         if (on == active()) return;
         if (on) {
@@ -57,7 +69,7 @@ public final class Freecam {
         AioCore core = AioCore.get();
         FreecamModule m = core == null ? null : core.module(FreecamModule.class);
         if (mc.player == null || mc.level == null || camera.level() != mc.level || !mc.player.isAlive()
-                || m == null || !m.isActive() || m.disableOnDamage() && mc.player.hurtTime > 0) {
+                || m == null || !m.isEngaged() || m.disableOnDamage() && mc.player.hurtTime > 0) {
             set(false);
             return;
         }
