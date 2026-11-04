@@ -229,9 +229,38 @@ public final class FabricPlatform implements Platform {
             }
 
             return LookTarget.block(state.getBlock().getName().getString(), source, icon, correct, tool, growth(state),
-                    pos.getX(), pos.getY(), pos.getZ(), BlockDetails.of(client, state, pos));
+                    pos.getX(), pos.getY(), pos.getZ(), BlockDetails.of(client, state, pos)).withToolIcon(toolIcon(state));
         }
         return null;
+    }
+
+    private static final String[] TOOL_TIERS = {"wooden", "stone", "copper", "iron", "golden", "diamond", "netherite"};
+    private final java.util.Map<BlockState, ItemRef> toolIconCache = new java.util.HashMap<>();
+
+    /**
+     * Werkzeug-Symbol für die Blick-Info: das schwächste Werkzeug der passenden Art, mit dem der Block
+     * droppt (Stein → Holzspitzhacke, Diamanterz → Eisenspitzhacke). Ohne Werkzeugart: kein Symbol.
+     */
+    private ItemRef toolIcon(BlockState state) {
+        ItemRef cached = toolIconCache.get(state);
+        if (cached != null) return cached;
+        String kind = state.is(BlockTags.MINEABLE_WITH_PICKAXE) ? "pickaxe" : state.is(BlockTags.MINEABLE_WITH_AXE) ? "axe"
+                : state.is(BlockTags.MINEABLE_WITH_SHOVEL) ? "shovel" : state.is(BlockTags.MINEABLE_WITH_HOE) ? "hoe" : null;
+        ItemRef result = ItemRef.EMPTY;
+        if (kind != null) {
+            for (String tier : TOOL_TIERS) {
+                var item = BuiltInRegistries.ITEM.getOptional(Identifier.withDefaultNamespace(tier + "_" + kind));
+                if (item.isEmpty()) continue;
+                ItemStack stack = new ItemStack(item.get());
+                if (!state.requiresCorrectToolForDrops() || stack.isCorrectToolForDrops(state)) {
+                    result = FabricItemRef.of(stack);
+                    break;
+                }
+            }
+        }
+        if (toolIconCache.size() > 512) toolIconCache.clear();
+        toolIconCache.put(state, result);
+        return result;
     }
 
     /** Wachstum 0..1, nur für Pflanzen, die wirklich wachsen (nicht Zuckerrohr, Kaktus, Feuer, ...). */
