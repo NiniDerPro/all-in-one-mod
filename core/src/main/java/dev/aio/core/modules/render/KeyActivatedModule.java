@@ -17,9 +17,14 @@ public abstract class KeyActivatedModule extends Module {
     private boolean engaged;
 
     protected KeyActivatedModule(String id, String name, String description, Category category, String defaultKey) {
+        this(id, name, description, category, defaultKey, ActivationMode.HOLD);
+    }
+
+    protected KeyActivatedModule(String id, String name, String description, Category category, String defaultKey,
+                                 ActivationMode defaultMode) {
         super(id, name, description, category, true);
         activationKey = add(new KeybindSetting("key", "Key", defaultKey));
-        mode = add(new EnumSetting<>("mode", "Mode", ActivationMode.HOLD));
+        mode = add(new EnumSetting<>("mode", "Mode", defaultMode));
         on(Events.Key.class, e -> onInput(e.key(), e.isPress(), e.isRelease(), e.screenOpen()));
         on(Events.MouseButton.class, e -> onInput(Keys.mouse(e.button()), e.isPress(), e.action() == 0, e.screenOpen()));
         on(Events.Tick.class, e -> tickEngaged());
