@@ -2,94 +2,136 @@ package dev.aio.fabric;
 
 import dev.aio.core.AioCore;
 import dev.aio.core.modules.render.FreecamModule;
+import dev.aio.fabric.freecam.FreeCamera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.Options;
-import net.minecraft.world.entity.Marker;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.client.player.ClientInput;
+import net.minecraft.world.entity.player.Input;
 
 /**
- * Freecam: ein unsichtbarer Kamera-Körper (Marker, nicht in der Welt angemeldet) wird zur Kamera.
- * Er fliegt ohne Kollision mit den Bewegungstasten; der Spieler bekommt solange keine Bewegung.
+ * Freecam nach dem Vorbild der Freecam-Mod (MIT, siehe freecam/NOTICE.md): Ein eigener
+ * Kamera-Spieler ({@link FreeCamera}) wird in der Welt angemeldet und zur Kamera gemacht. Der echte
+ * Spieler bekommt solange eine leere Eingabe (nur Schleichen bleibt erhalten) und bleibt stehen.
  */
 public final class Freecam {
     private Freecam() {}
 
-    private static Marker camera;
-    private static CameraType previousView;
+    private static final Minecraft MC = Minecraft.getInstance();
 
-    public static boolean active() { return camera != null; }
+    private static boolean enabled;
+    private static boolean disableNextTick;
+    private static FreeCamera freeCamera;
+    private static CameraType rememberedF5;
+    private static ClientInput playerInput;
+    private static ClientInput dummyPlayerInput;
+
+    // ---- Einstellungen aus dem AIO-Modul ----
+
+    private static FreecamModule module() {
+        AioCore core = AioCore.get();
+        return core == null ? null : core.module(FreecamModule.class);
+    }
+
+    public static double horizontalSpeed() { FreecamModule m = module(); return m == null ? 1 : m.horizontalSpeed(); }
+
+    public static double verticalSpeed() { FreecamModule m = module(); return m == null ? 1 : m.verticalSpeed(); }
+
+    public static boolean noClip() { FreecamModule m = module(); return m == null || m.noClip(); }
+
+    public static boolean showPlayer() { FreecamModule m = module(); return m == null || m.showPlayer(); }
+
+    public static boolean hideHand() { FreecamModule m = module(); return m == null || !m.showHand(); }
+
+    public static boolean preventInteractions() { FreecamModule m = module(); return m == null || !m.allowInteract(); }
+
+    public static boolean disableOnDamage() { FreecamModule m = module(); return m == null || m.disableOnDamage(); }
+
+    // ---- Zustand ----
+
+    public static boolean active() { return enabled; }
+
+    public static FreeCamera camera() { return freeCamera; }
 
     public static void set(boolean on) {
+        if (on == enabled) return;
         try {
-            apply(on);
-            AioFabricClient.LOGGER.info("[aio] Freecam {}", active() ? "on" : "off");
+            if (on) {
+                if (MC.player == null || MC.level == null) return;
+                onEnable();
+                enabled = true;
+            } else {
+                onDisable();
+                enabled = false;
+            }
+            AioFabricClient.LOGGER.info("[aio] Freecam {}", enabled ? "on" : "off");
         } catch (RuntimeException e) {
             AioFabricClient.LOGGER.error("[aio] Freecam konnte nicht umgeschaltet werden", e);
-            camera = null;
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.player != null) mc.setCameraEntity(mc.player);
+            enabled = false;
+            freeCamera = null;
+            if (MC.player != null) {
+                if (playerInput != null) MC.player.input = playerInput;
+                MC.setCameraEntity(MC.player);
+            }
         }
     }
 
-    private static void apply(boolean on) {
-        Minecraft mc = Minecraft.getInstance();
-        if (on == active()) return;
-        if (on) {
-            if (mc.player == null || mc.level == null) return;
-            Marker cam = new Marker(net.minecraft.world.entity.EntityTypes.MARKER, mc.level);
-            Vec3 eye = mc.player.getEyePosition();
-            cam.setPos(eye.x, eye.y, eye.z);
-            cam.setYRot(mc.player.getYRot());
-            cam.setXRot(mc.player.getXRot());
-            cam.setOldPosAndRot();
-            camera = cam;
-            previousView = mc.options.getCameraType();
-            mc.options.setCameraType(CameraType.FIRST_PERSON);
-            mc.setCameraEntity(cam);
-        } else {
-            camera = null;
-            if (mc.player != null) mc.setCameraEntity(mc.player);
-            if (previousView != null) mc.options.setCameraType(previousView);
-            previousView = null;
-        }
+    private static void onEnable() {
+        MC.smartCull = false;
+        rememberedF5 = MC.options.getCameraType();
+
+        playerInput = MC.player.input;
+        MC.player.input = updateDummyInput();
+
+        if (MC.gameRenderer.mainCamera().isDetached()) MC.options.setCameraType(CameraType.FIRST_PERSON);
+
+        freeCamera = new FreeCamera(-420);
+        freeCamera.copyPosition(MC.player); // Perspektive "Inside": genau am Kopf des Spielers
+        freeCamera.spawn();
+        MC.setCameraEntity(freeCamera);
     }
 
-    /** Mausbewegung dreht die Kamera statt des Spielers. */
-    public static boolean turn(double dx, double dy) {
-        if (camera == null) return false;
-        camera.turn(dx, dy);
-        return true;
+    private static void onDisable() {
+        MC.smartCull = true;
+        if (MC.player != null) MC.setCameraEntity(MC.player);
+        if (freeCamera != null) freeCamera.despawn();
+        freeCamera = null;
+        if (MC.player != null && playerInput != null) MC.player.input = playerInput;
+        playerInput = null;
+        dummyPlayerInput = null;
+        if (rememberedF5 != null) MC.options.setCameraType(rememberedF5);
+        rememberedF5 = null;
     }
 
-    /** Jeden Client-Tick: Kamera bewegen, bei Schaden/Weltwechsel/Tod beenden. */
+    /** Leere Eingabe für den Spieler; Schleichen bleibt, damit man nicht von Kanten fällt. */
+    private static ClientInput updateDummyInput() {
+        ClientInput input = new ClientInput();
+        input.keyPresses = new Input(false, false, false, false, false, playerInput.keyPresses.shift(), false);
+        return dummyPlayerInput = input;
+    }
+
+    /** Vor jedem Client-Tick (wie in der Freecam-Mod). */
+    public static void preTick() {
+        if (disableNextTick && enabled) set(false);
+        disableNextTick = false;
+        if (enabled && MC.player != null) MC.player.input = dummyPlayerInput;
+    }
+
+    /** Nach jedem Client-Tick: aufräumen, falls Welt/Spieler weg sind. */
     public static void tick() {
-        if (camera == null) return;
-        Minecraft mc = Minecraft.getInstance();
-        AioCore core = AioCore.get();
-        FreecamModule m = core == null ? null : core.module(FreecamModule.class);
-        if (mc.player == null || mc.level == null || camera.level() != mc.level || !mc.player.isAlive()
-                || m == null || !m.isEngaged() || m.disableOnDamage() && mc.player.hurtTime > 0) {
+        if (!enabled) return;
+        if (MC.player == null || MC.level == null || freeCamera == null || freeCamera.level() != MC.level || !MC.player.isAlive()) {
             set(false);
             return;
         }
-        if (mc.getCameraEntity() != camera) mc.setCameraEntity(camera); // z. B. nach F5 o. Ä.
-        Options o = mc.options;
-        double forward = (o.keyUp.isDown() ? 1 : 0) - (o.keyDown.isDown() ? 1 : 0);
-        double strafe = (o.keyLeft.isDown() ? 1 : 0) - (o.keyRight.isDown() ? 1 : 0);
-        double up = (o.keyJump.isDown() ? 1 : 0) - (o.keyShift.isDown() ? 1 : 0);
-        if (mc.gui.screen() != null) forward = strafe = up = 0;
-        double speed = 0.5 * m.horizontalSpeed() * (o.keySprint.isDown() ? 2 : 1);
-        double len = Math.sqrt(forward * forward + strafe * strafe);
-        if (len > 1) {
-            forward /= len;
-            strafe /= len;
-        }
-        double yaw = Math.toRadians(camera.getYRot());
-        double dx = (-Math.sin(yaw) * forward + Math.cos(yaw) * strafe) * speed;
-        double dz = (Math.cos(yaw) * forward + Math.sin(yaw) * strafe) * speed;
-        double dy = up * 0.5 * m.verticalSpeed() * (o.keySprint.isDown() ? 2 : 1);
-        camera.setOldPosAndRot();
-        camera.setPos(camera.getX() + dx, camera.getY() + dy, camera.getZ() + dz);
+        if (MC.getCameraEntity() != freeCamera) MC.setCameraEntity(freeCamera);
+    }
+
+    public static void disableNextTick() { disableNextTick = true; }
+
+    /** Mausbewegung dreht die Kamera statt des Spielers. */
+    public static boolean turn(double dx, double dy) {
+        if (!enabled || freeCamera == null) return false;
+        freeCamera.turn(dx, dy);
+        return true;
     }
 }

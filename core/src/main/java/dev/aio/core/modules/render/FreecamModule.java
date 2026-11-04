@@ -15,6 +15,7 @@ public final class FreecamModule extends KeyActivatedModule {
     private final NumberSetting verticalSpeed;
     private final BooleanSetting disableOnDamage;
     private final BooleanSetting notify;
+    private final BooleanSetting noClip, showPlayer, showHand, allowInteract;
 
     public FreecamModule() {
         super("freecam", "Freecam", "Detach the camera and fly through blocks while your player stays put", Category.VISUALS,
@@ -23,6 +24,10 @@ public final class FreecamModule extends KeyActivatedModule {
         verticalSpeed = add(new NumberSetting("vSpeed", "Vertical speed", 1.0, 0.1, 5.0, 0.1, "x"));
         disableOnDamage = add(new BooleanSetting("disableOnDamage", "Turn off when taking damage", true));
         notify = add(new BooleanSetting("notify", "Show on/off message", true));
+        noClip = add(new BooleanSetting("noClip", "Fly through blocks", true));
+        showPlayer = add(new BooleanSetting("showPlayer", "Show your player", true));
+        showHand = add(new BooleanSetting("showHand", "Show hand", false));
+        allowInteract = add(new BooleanSetting("allowInteract", "Allow interacting (break/use)", false));
         // Von außen beendet (Schaden, Tod, Weltwechsel): Zustand angleichen, damit F4 wieder einschaltet
         on(Events.Tick.class, e -> { if (isEngaged() && !platform().freecamActive()) setEngaged(false); });
     }
@@ -43,4 +48,12 @@ public final class FreecamModule extends KeyActivatedModule {
     public double verticalSpeed() { return verticalSpeed.get(); }
 
     public boolean disableOnDamage() { return disableOnDamage.on(); }
+
+    public boolean noClip() { return noClip.on(); }
+
+    public boolean showPlayer() { return showPlayer.on(); }
+
+    public boolean showHand() { return showHand.on(); }
+
+    public boolean allowInteract() { return allowInteract.on(); }
 }

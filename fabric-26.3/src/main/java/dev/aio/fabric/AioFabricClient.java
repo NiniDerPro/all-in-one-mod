@@ -84,6 +84,7 @@ public final class AioFabricClient implements ClientModInitializer {
             if (!overlay) core.bus().post(new Events.ChatReceived(message.getString(), true));
         });
 
+        ClientTickEvents.START_CLIENT_TICK.register(c -> Freecam.preTick());
         ClientTickEvents.END_CLIENT_TICK.register(c -> {
             // Fenster ohne Fokus (Alt+Tab): Loslassen kommt nicht mehr an, darum alles als losgelassen werten
             if (!c.isWindowActive()) InputState.clear();
