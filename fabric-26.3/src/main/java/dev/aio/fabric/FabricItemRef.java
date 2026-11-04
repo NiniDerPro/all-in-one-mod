@@ -1,7 +1,7 @@
 package dev.aio.fabric;
 
 import dev.aio.core.platform.ItemRef;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 /** {@link ItemRef} über einem ItemStack. */
 public record FabricItemRef(ItemStack stack) implements ItemRef {
@@ -13,9 +13,9 @@ public record FabricItemRef(ItemStack stack) implements ItemRef {
 
     @Override public int count() { return stack.getCount(); }
 
-    @Override public int damage() { return stack.isDamageable() ? stack.getDamage() : 0; }
+    @Override public int damage() { return stack.isDamageableItem() ? stack.getDamageValue() : 0; }
 
-    @Override public int maxDamage() { return stack.isDamageable() ? stack.getMaxDamage() : 0; }
+    @Override public int maxDamage() { return stack.isDamageableItem() ? stack.getMaxDamage() : 0; }
 
-    @Override public String name() { return stack.getName().getString(); }
+    @Override public String name() { return stack.getHoverName().getString(); }
 }

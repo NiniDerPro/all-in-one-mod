@@ -22,7 +22,7 @@ public class FakePlatform implements Platform {
     public int fps = 120;
     public Perspective perspective = Perspective.FIRST_PERSON;
     public float yaw, pitch;
-    public final Set<Integer> heldKeys = new HashSet<>();
+    public final Set<String> heldKeys = new HashSet<>();
     public final Set<GameKey> heldGameKeys = EnumSet.noneOf(GameKey.class);
     public final Set<GameKey> forcedGameKeys = EnumSet.noneOf(GameKey.class);
     public final List<String> messages = new ArrayList<>();
@@ -46,12 +46,12 @@ public class FakePlatform implements Platform {
     @Override public List<EffectInfo> effects() { return effects; }
     @Override public boolean isGameKeyDown(GameKey key) { return heldGameKeys.contains(key); }
     @Override public String gameKeyName(GameKey key) { return key.name().substring(0, 1); }
-    @Override public boolean isKeyDown(int code) { return heldKeys.contains(code); }
-    @Override public boolean matchesGameKey(GameKey key, int code) { return key == GameKey.SPRINT && code == 341; }
+    @Override public boolean isKeyDown(String key) { return heldKeys.contains(key); }
+    @Override public boolean matchesGameKey(GameKey key, String code) { return key == GameKey.SPRINT && "key.keyboard.left.control".equals(code); }
     @Override public void setGameKeyPressed(GameKey key, boolean pressed) {
         if (pressed) forcedGameKeys.add(key); else forcedGameKeys.remove(key);
     }
-    @Override public String keyName(int code) { return "K" + code; }
+    @Override public String keyName(String key) { return key.isEmpty() ? "Keine" : key.substring(key.lastIndexOf('.') + 1).toUpperCase(); }
     @Override public Perspective perspective() { return perspective; }
     @Override public void setPerspective(Perspective p) { perspective = p; }
     @Override public void openScreen(UiScreen s) { if (screen != null) screen.onClose(); screen = s; }

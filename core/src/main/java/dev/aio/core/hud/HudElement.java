@@ -5,6 +5,7 @@ import dev.aio.core.module.Module;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.ColorSetting;
+import dev.aio.core.setting.EnumSetting;
 import dev.aio.core.setting.NumberSetting;
 
 /**
@@ -20,7 +21,10 @@ public abstract class HudElement extends Module {
     protected final NumberSetting posX;
     protected final NumberSetting posY;
     protected final NumberSetting scale;
+    protected final EnumSetting<ColorMode> colorMode;
     protected final ColorSetting textColor;
+    protected final ColorSetting secondColor;
+    protected final NumberSetting colorSpeed;
     protected final BooleanSetting background;
     protected final ColorSetting backgroundColor;
     protected final BooleanSetting shadow;
@@ -37,7 +41,13 @@ public abstract class HudElement extends Module {
         posY = add(new NumberSetting("y", "Y", defaultY, 0, 1, 0));
         posY.hidden();
         scale = add(new NumberSetting("scale", "Größe", 1.0, 0.5, 3.0, 0.05, "x"));
+        colorMode = add(new EnumSetting<>("colorMode", "Farbmodus", ColorMode.CHROMA));
         textColor = add(new ColorSetting("textColor", "Textfarbe", 0xFFFFFFFF));
+        textColor.visibleWhen(() -> colorMode.get() != ColorMode.CHROMA);
+        secondColor = add(new ColorSetting("secondColor", "Zweite Farbe", 0xFF4FC3FF));
+        secondColor.visibleWhen(() -> colorMode.get() == ColorMode.GRADIENT);
+        colorSpeed = add(new NumberSetting("colorSpeed", "Farbtempo", 0.4, 0.05, 2, 0.05, "x"));
+        colorSpeed.visibleWhen(() -> colorMode.get() != ColorMode.STATIC);
         background = add(new BooleanSetting("background", "Hintergrund", true));
         backgroundColor = add(new ColorSetting("backgroundColor", "Hintergrundfarbe", 0x6F000000));
         backgroundColor.visibleWhen(background::on);
@@ -107,6 +117,20 @@ public abstract class HudElement extends Module {
     public NumberSetting scaleSetting() { return scale; }
 
     protected int textColor() { return textColor.argb(); }
+
+    /** Zeichnet Text im eingestellten Farbmodus (fest, Regenbogen, Verlauf). */
+    protected void drawText(Renderer r, String text, float x, float y) {
+        ColoredText.draw(r, text, x, y, colorMode.get(), textColor.argb(), secondColor.argb(),
+                colorSpeed.floatValue(), shadow.on(), (float) (posX.get() * 300 + posY.get() * 120));
+    }
+
+    /** Dynamische Farbe für Flächen im eingestellten Farbmodus. */
+    protected int dynamicColor(float offset) {
+        return ColoredText.color(colorMode.get(), textColor.argb(), secondColor.argb(), colorSpeed.floatValue(),
+                (float) (posX.get() * 300 + posY.get() * 120) + offset);
+    }
+
+    public ColorMode colorMode() { return colorMode.get(); }
 
     protected boolean shadow() { return shadow.on(); }
 

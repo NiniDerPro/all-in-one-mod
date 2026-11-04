@@ -168,8 +168,8 @@ public final class HudEditorScreen implements UiScreen {
         return true;
     }
 
-    @Override public boolean keyPressed(int key, int scancode, int modifiers) {
-        if (key == 82 /* R */) {
+    @Override public boolean keyPressed(String key) {
+        if (Keys.R.equals(key)) {
             HudElement el = elementAt(lastRenderer, lastMouseX, lastMouseY);
             if (el != null) {
                 el.scaleSetting().reset();

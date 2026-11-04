@@ -86,7 +86,7 @@ public final class ArmorHudModule extends HudElement {
     private void addEntry(List<Entry> list, ItemRef item) {
         if (item == null || item.isEmpty()) return;
         String text;
-        int color = textColor();
+        int color = -1;
         if (item.isDamageable()) {
             text = switch (durability.get()) {
                 case NUMBER -> String.valueOf(item.durability());
@@ -139,7 +139,7 @@ public final class ArmorHudModule extends HudElement {
             if (placeholder) {
                 r.fill(x, y, x + ICON, y + ICON, 0x40FFFFFF);
                 if (durability.get() == DurabilityMode.NUMBER || durability.get() == DurabilityMode.PERCENT) {
-                    drawLabel(r, "100", x, y, cell, vertical, textColor());
+                    drawLabel(r, "100", x, y, cell, vertical, colorByDurability.on() ? 0xFF55FF55 : -1);
                 }
                 continue;
             }
@@ -150,8 +150,11 @@ public final class ArmorHudModule extends HudElement {
         }
     }
 
+    /** {@code color} -1 = Farbmodus des Elements nutzen. */
     private void drawLabel(Renderer r, String text, float x, float y, int cell, boolean vertical, int color) {
-        if (vertical) r.text(text, x + ICON + 2, y + (ICON - r.fontHeight()) / 2f + 1, color, shadow());
-        else r.centeredText(text, x + (cell - 2) / 2f, y + ICON + 1, color, shadow());
+        float tx = vertical ? x + ICON + 2 : x + (cell - 2) / 2f - r.textWidth(text) / 2f;
+        float ty = vertical ? y + (ICON - r.fontHeight()) / 2f + 1 : y + ICON + 1;
+        if (color == -1) drawText(r, text, tx, ty);
+        else r.text(text, tx, ty, color, shadow());
     }
 }

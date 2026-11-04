@@ -1,0 +1,46 @@
+plugins {
+    id 'net.fabricmc.fabric-loom'
+}
+
+// Adapter für Minecraft 26.3 (offizielle Mojang-Namen, keine Mappings mehr nötig).
+// Für eine weitere Version diesen Ordner kopieren, Versionen ergänzen und nur die
+// Adapter-Klassen/Mixins anpassen. Der Kern bleibt unverändert.
+evaluationDependsOn(':core')
+
+version = "${project.mod_version}+mc${project.minecraft_version}"
+group = project.maven_group
+
+base {
+    archivesName = 'aio-client'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    implementation project(':core')
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 25
+}
+
+processResources {
+    def version = project.version
+    inputs.property 'version', version
+    filesMatching('fabric.mod.json') {
+        expand 'version': version
+    }
+}
+
+// Der Kern wird direkt ins Mod-Jar gepackt.
+jar {
+    from(project(':core').sourceSets.main.output)
+}

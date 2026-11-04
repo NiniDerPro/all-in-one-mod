@@ -4,19 +4,21 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import dev.aio.core.platform.Keys;
 
-/** Tastenbelegung als GLFW-Code; Maustasten siehe {@link Keys#mouse(int)}; {@link Keys#NONE} = keine. */
-public class KeybindSetting extends Setting<Integer> {
-    public KeybindSetting(String id, String name, int defaultKey) {
+/** Tastenbelegung als Minecraft-Tastenname (siehe {@link Keys}); leer = keine. */
+public class KeybindSetting extends Setting<String> {
+    public KeybindSetting(String id, String name, String defaultKey) {
         super(id, name, defaultKey);
     }
 
-    public int key() { return value; }
+    public String key() { return value; }
 
-    public boolean isBound() { return value != Keys.NONE; }
+    public boolean isBound() { return !Keys.isNone(value); }
+
+    public boolean matches(String key) { return isBound() && value.equals(key); }
 
     @Override public JsonElement toJson() { return new JsonPrimitive(value); }
 
     @Override public void fromJson(JsonElement json) {
-        if (json != null && json.isJsonPrimitive() && json.getAsJsonPrimitive().isNumber()) set(json.getAsInt());
+        if (json != null && json.isJsonPrimitive() && json.getAsJsonPrimitive().isString()) set(json.getAsString());
     }
 }
