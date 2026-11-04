@@ -16,9 +16,28 @@ public final class ColoredText {
         @Override protected boolean removeEldestEntry(java.util.Map.Entry<String, Glyphs> eldest) { return size() > CACHE_LIMIT; }
     };
 
+    /** Breite je Zeichen: MC-Schrift hat kein Kerning, also Text = Summe der Zeichen. */
+    private static final java.util.Map<Integer, Integer> CHAR_WIDTH = new java.util.HashMap<>();
+    private static int probeWidth = -1;
+
+    private static int charWidth(Renderer r, int cp, String ch) {
+        Integer w = CHAR_WIDTH.get(cp);
+        if (w == null) {
+            w = r.textWidth(ch);
+            CHAR_WIDTH.put(cp, w);
+        }
+        return w;
+    }
+
     private static Glyphs glyphs(Renderer r, String text) {
         Glyphs g = CACHE.get(text);
         if (g != null) return g;
+        // Schriftwechsel (z. B. Unicode-Schrift) erkennen: dann alle Breiten neu messen
+        int probe = CHAR_WIDTH.isEmpty() ? -1 : r.textWidth("W");
+        if (probe != probeWidth) {
+            if (probeWidth != -1) clearCache();
+            probeWidth = r.textWidth("W");
+        }
         int n = text.codePointCount(0, text.length());
         String[] chars = new String[n];
         float[] offsets = new float[n];
@@ -27,7 +46,7 @@ public final class ColoredText {
             int cp = text.codePointAt(i);
             chars[idx] = new String(Character.toChars(cp));
             offsets[idx] = x;
-            x += r.textWidth(chars[idx]);
+            x += charWidth(r, cp, chars[idx]);
             i += Character.charCount(cp);
         }
         g = new Glyphs(chars, offsets);
@@ -36,7 +55,10 @@ public final class ColoredText {
     }
 
     /** Leert den Glyphen-Cache, z. B. nach einem Wechsel der Schriftart. */
-    public static void clearCache() { CACHE.clear(); }
+    public static void clearCache() {
+        CACHE.clear();
+        CHAR_WIDTH.clear();
+    }
 
     /**
      * @param screenOffset Versatz für die Welle, damit Elemente nebeneinander nicht gleichfarbig pulsieren
