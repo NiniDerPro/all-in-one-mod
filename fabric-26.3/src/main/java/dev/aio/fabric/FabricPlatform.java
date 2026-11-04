@@ -615,6 +615,12 @@ public final class FabricPlatform implements Platform {
         return VillagerOffers.labels(client, maxDistance, partialTick);
     }
 
+    @Override public List<String> particleTypes() {
+        List<String> out = new ArrayList<>();
+        for (Identifier id : BuiltInRegistries.PARTICLE_TYPE.keySet()) out.add(id.toString());
+        return out;
+    }
+
     @Override public boolean containerScreenOpen() { return client.gui.screen() instanceof AbstractContainerScreen<?>; }
 
     @Override public dev.aio.core.platform.FoodState foodState() {
