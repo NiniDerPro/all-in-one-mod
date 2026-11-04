@@ -8,6 +8,7 @@
     "CameraMixin",
     "ChatComponentMixin",
     "EntityMixin",
+    "FoodDataAccessor",
     "GameRendererMixin",
     "HudMixin",
     "ItemContainerContentsMixin",

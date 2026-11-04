@@ -90,6 +90,15 @@ public final class FabricRenderer implements Renderer {
         pose.popMatrix();
     }
 
+    @Override public void sprite(String id, float x, float y, int width, int height, int argb) {
+        Identifier sprite = sprites.computeIfAbsent(id, Identifier::parse);
+        Matrix3x2fStack pose = g.pose();
+        pose.pushMatrix();
+        pose.translate(x, y);
+        g.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, 0, 0, width, height, argb);
+        pose.popMatrix();
+    }
+
     @Override public void push() { g.pose().pushMatrix(); }
 
     @Override public void pop() { g.pose().popMatrix(); }

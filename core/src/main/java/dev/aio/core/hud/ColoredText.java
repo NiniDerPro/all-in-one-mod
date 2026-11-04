@@ -21,11 +21,12 @@ public final class ColoredText {
     }
 
     /** Schriftwechsel (z. B. Unicode-Schrift) erkennen: dann alle Breiten neu messen. */
-    private static int drawsSinceProbe = Integer.MAX_VALUE;
+    private static long lastProbe;
 
     private static void checkFont(Renderer r) {
-        if (++drawsSinceProbe < 512 && probeWidth != -1) return; // selten prüfen reicht
-        drawsSinceProbe = 0;
+        long now = System.nanoTime();
+        if (probeWidth != -1 && now - lastProbe < 2_000_000_000L) return; // alle 2 s prüfen reicht
+        lastProbe = now;
         int probe = r.textWidth("W");
         if (probe != probeWidth) {
             CHAR_WIDTH.clear();
