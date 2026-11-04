@@ -38,6 +38,9 @@ public interface Renderer {
     /** Zeichnet ein Sprite aus dem GUI-Atlas, z. B. {@code minecraft:mob_effect/speed}. */
     void sprite(String id, float x, float y, int width, int height);
 
+    /** Sprite mit Farbe/Transparenz (ARGB-Multiplikator). */
+    default void sprite(String id, float x, float y, int width, int height, int argb) { sprite(id, x, y, width, height); }
+
     void push();
 
     void pop();

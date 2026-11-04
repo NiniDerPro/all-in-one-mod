@@ -3,6 +3,8 @@ package dev.aio.fabric;
 import dev.aio.core.AioCore;
 import dev.aio.core.modules.chat.ChatModule;
 import dev.aio.core.modules.chat.ChatResizer;
+import dev.aio.core.modules.client.KeyBindsModule;
+import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import dev.aio.core.modules.inventory.InventoryTweaksModule;
 import dev.aio.core.modules.inventory.ItemListModule;
 import dev.aio.core.modules.inventory.ItemPanel;
@@ -33,6 +35,11 @@ final class ScreenHooks {
         FabricRenderer renderer = new FabricRenderer(client);
         ScreenEvents.AFTER_INIT.register((mc, screen, w, h) -> {
             if (screen instanceof ChatScreen) hookChat(core, renderer, screen);
+            // Tastenbelegung mit Suche statt der Vanilla-Liste (zurück geht es zur Steuerung)
+            if (screen instanceof KeyBindsScreen) {
+                KeyBindsModule keys = core.module(KeyBindsModule.class);
+                if (keys != null && keys.replacesVanilla()) keys.open();
+            }
             // Auch im Kreativ-Inventar (dort nur die Item-Liste, die Maus-Tweaks bleiben Vanilla)
             if (screen instanceof AbstractContainerScreen<?> acs) {
                 hookContainer(core, client, renderer, acs, screen instanceof CreativeModeInventoryScreen);

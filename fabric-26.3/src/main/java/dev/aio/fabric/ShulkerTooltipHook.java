@@ -21,12 +21,29 @@ public final class ShulkerTooltipHook {
 
     static void register(AioCore core) {
         ClientTooltipComponentCallback.EVENT.register(data -> data instanceof ShulkerTooltip.Data d ? new ShulkerTooltip.Client(d) : null);
+        ClientTooltipComponentCallback.EVENT.register(data -> data instanceof FoodTooltip.Data d ? new FoodTooltip.Client(d) : null);
         ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> {
             ShulkerPreviewModule m = core.module(ShulkerPreviewModule.class);
-            if (m != null && m.showHint() && isShulker(stack) && stack.has(DataComponents.CONTAINER)) {
-                lines.add(Component.literal("Shift: Inhalt anzeigen").withStyle(ChatFormatting.DARK_GRAY));
+            if (m == null || !m.isActive() || !isShulker(stack)) return;
+            int stacks = stackCount(stack.get(DataComponents.CONTAINER));
+            if (stacks == 0) return;
+            // Ersetzt die Vanilla-Liste: kurze Zusammenfassung, darunter der Hinweis auf die Taste
+            lines.add(Component.literal("Enthält " + stacks + (stacks == 1 ? " Stack" : " Stacks")).withStyle(ChatFormatting.GRAY));
+            if (m.showHint()) {
+                lines.add(Component.literal("[Shift]").withStyle(ChatFormatting.GOLD)
+                        .append(Component.literal(" Gesamten Inhalt anzeigen").withStyle(ChatFormatting.GRAY)));
             }
         });
+    }
+
+    /** Belegte Slots einer Kiste. */
+    static int stackCount(ItemContainerContents contents) {
+        if (contents == null) return 0;
+        NonNullList<ItemStack> items = NonNullList.withSize(27, ItemStack.EMPTY);
+        contents.copyInto(items);
+        int n = 0;
+        for (ItemStack s : items) if (!s.isEmpty()) n++;
+        return n;
     }
 
     static boolean isShulker(ItemStack stack) {
