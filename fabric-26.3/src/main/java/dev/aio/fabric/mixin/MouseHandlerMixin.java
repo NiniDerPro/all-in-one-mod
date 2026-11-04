@@ -20,14 +20,14 @@ public abstract class MouseHandlerMixin {
         if (window != client.getWindow().handle()) return;
         InputState.update(Keys.mouse(info.button()), action);
         AioCore core = AioCore.get();
-        if (core != null) core.bus().post(new Events.MouseButton(info.button(), action, client.screen != null));
+        if (core != null) core.bus().post(new Events.MouseButton(info.button(), action, client.gui.screen() != null));
     }
 
     @Inject(method = "onScroll", at = @At("HEAD"), cancellable = true)
     private void aio$onScroll(long window, double horizontal, double vertical, CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
         AioCore core = AioCore.get();
-        if (core == null || window != client.getWindow().handle() || client.screen != null) return;
+        if (core == null || window != client.getWindow().handle() || client.gui.screen() != null) return;
         if (core.bus().post(new Events.MouseScroll(vertical)).isCancelled()) ci.cancel();
     }
 }

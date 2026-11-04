@@ -21,6 +21,6 @@ public abstract class KeyboardHandlerMixin {
         String key = FabricPlatform.keyName(event);
         InputState.update(key, action);
         AioCore core = AioCore.get();
-        if (core != null) core.bus().post(new Events.Key(key, action, client.screen != null));
+        if (core != null) core.bus().post(new Events.Key(key, action, client.gui.screen() != null));
     }
 }
