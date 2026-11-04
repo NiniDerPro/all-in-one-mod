@@ -19,6 +19,7 @@ public final class ClientSettingsModule extends Module {
     public final BooleanSetting toggleMessages;
     public final ColorSetting accent;
     public final BooleanSetting rainbowAccent;
+    public final EnumSetting<dev.aio.core.ui.SortMode> sortMode;
 
     public ClientSettingsModule() {
         super("client", "Client", "Menütaste, Server-Kompatibilität und Design", Category.CLIENT, false);
@@ -29,6 +30,7 @@ public final class ClientSettingsModule extends Module {
         allowList.visibleWhen(() -> compatMode.get() == CompatMode.AUTO);
         toggleMessages = add(new BooleanSetting("toggleMessages", "Meldung beim Umschalten", true));
         rainbowAccent = add(new BooleanSetting("rainbowAccent", "Regenbogen-Akzent", true));
+        sortMode = add(new EnumSetting<>("sortMode", "Sortierung im Menü", dev.aio.core.ui.SortMode.DEFAULT));
         accent = add(new ColorSetting("accent", "Akzentfarbe", 0xFF7C5CFF));
         accent.visibleWhen(() -> !rainbowAccent.on());
     }
