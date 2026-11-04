@@ -17,7 +17,7 @@ class ItemSearchIndexTest {
     }
 
     private final List<ItemRef> items = List.of(new It("minecraft:diamond", "Diamant", "Minecraft"),
-            new It("minecraft:diamond_sword", "Diamantschwert", "Minecraft"), new It("create:cog", "Zahnrad", "Create"));
+            new It("minecraft:diamond_sword", "Diamond Sword", "Minecraft"), new It("create:cog", "Zahnrad", "Create"));
 
     @Test void indexMatchesLikeFilterWhileTypingAndDeleting() {
         ItemSearch.Index idx = new ItemSearch.Index(items);

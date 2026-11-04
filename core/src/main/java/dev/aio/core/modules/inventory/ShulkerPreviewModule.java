@@ -11,12 +11,11 @@ public final class ShulkerPreviewModule extends Module {
     private final BooleanSetting tint;
 
     public ShulkerPreviewModule() {
-        super("shulkerpreview", "Shulker-Vorschau", "Inhalt von Shulkerkisten im Tooltip (Shift halten)", Category.INVENTORY, false);
-        requireShift = add(new BooleanSetting("requireShift", "Nur mit Shift", true));
-        tint = add(new BooleanSetting("tint", "In Kistenfarbe", true));
+        super("shulkerpreview", "Shulker Preview", "Shulker box contents in the tooltip (hold Shift)", Category.INVENTORY, false);
+        requireShift = add(new BooleanSetting("requireShift", "Only with Shift", true));
+        tint = add(new BooleanSetting("tint", "Box color", true));
     }
 
-    @Override public boolean enabledByDefault() { return true; }
 
     public boolean shouldPreview() {
         if (!isActive()) return false;

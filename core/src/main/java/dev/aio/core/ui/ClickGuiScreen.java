@@ -137,11 +137,11 @@ public final class ClickGuiScreen implements UiScreen {
                 core.clientSettings().rainbowAccent.on() ? dev.aio.core.hud.ColorMode.CHROMA : dev.aio.core.hud.ColorMode.STATIC,
                 accent, accent, 0.25f, true, 0);
         float y = py + 28;
-        int used = 1; // "Alle"
+        int used = 1; // "All"
         for (Category c : Category.values()) if (!core.modules().byCategory(c).isEmpty()) used++;
         // Zeilenhöhe an den Platz bis zum Profilbereich anpassen (kleine Bildschirme)
         float rowH = Math.max(11, Math.min(17, (ph - 62 - 28 - 26) / (float) Math.max(1, used)));
-        y = sidebarRow(r, mx, my, px, y, rowH, null, "Alle", 0xFFFFFFFF);
+        y = sidebarRow(r, mx, my, px, y, rowH, null, "All", 0xFFFFFFFF);
         for (Category c : Category.values()) {
             if (core.modules().byCategory(c).isEmpty()) continue;
             y = sidebarRow(r, mx, my, px, y, rowH, c, c.displayName(), c.color());
@@ -149,14 +149,14 @@ public final class ClickGuiScreen implements UiScreen {
 
         y += 6;
         if (core.platform().inWorld()) {
-            button(r, mx, my, px + 6, y, px + SIDEBAR_W - 6, y + 16, "HUD bearbeiten", accent, true,
+            button(r, mx, my, px + 6, y, px + SIDEBAR_W - 6, y + 16, "Edit HUD", accent, true,
                     b -> core.openHudEditor());
         }
 
         // Profile unten
         ConfigManager cfg = core.config();
         float by = py + ph - 62;
-        r.text("Profil", px + 8, by, Theme.TEXT_MUTED, false);
+        r.text("Profile", px + 8, by, Theme.TEXT_MUTED, false);
         by += 11;
         List<String> profiles = cfg.profiles();
         String active = cfg.activeProfile();
@@ -169,23 +169,23 @@ public final class ClickGuiScreen implements UiScreen {
         }
         by += 17;
         float half = (SIDEBAR_W - 12 - 3) / 2f;
-        button(r, mx, my, px + 6, by, px + 6 + half, by + 14, "Neu", accent, false, b -> {
+        button(r, mx, my, px + 6, by, px + 6 + half, by + 14, "New", accent, false, b -> {
             String name = cfg.createProfile("profil");
-            showStatus("Profil \"" + name + "\" erstellt", accent);
+            showStatus("Profile \"" + name + "\" created", accent);
         });
-        button(r, mx, my, px + 9 + half, by, px + SIDEBAR_W - 6, by + 14, confirmDelete ? "Sicher?" : "Löschen",
+        button(r, mx, my, px + 9 + half, by, px + SIDEBAR_W - 6, by + 14, confirmDelete ? "Sure?" : "Delete",
                 confirmDelete ? Theme.DANGER : accent, false, b -> deleteActiveProfile());
         by += 17;
         button(r, mx, my, px + 6, by, px + 6 + half, by + 14, "Export", accent, false, b -> {
             core.platform().setClipboard(cfg.exportProfile());
-            showStatus("Profil in Zwischenablage und exports/ gespeichert", accent);
+            showStatus("Profile copied to clipboard and saved to exports/", accent);
         });
         button(r, mx, my, px + 9 + half, by, px + SIDEBAR_W - 6, by + 14, "Import", accent, false, b -> {
             try {
                 String name = cfg.importProfile(core.platform().clipboard());
-                showStatus("Profil \"" + name + "\" importiert", accent);
+                showStatus("Profile \"" + name + "\" imported", accent);
             } catch (IllegalArgumentException e) {
-                showStatus("Import fehlgeschlagen: " + e.getMessage(), Theme.DANGER);
+                showStatus("Import failed: " + e.getMessage(), Theme.DANGER);
             }
         });
     }
@@ -219,7 +219,7 @@ public final class ClickGuiScreen implements UiScreen {
     }
 
     private void renderListHeader(Renderer r, int mx, int my, float x, float y, float w, int accent) {
-        String title = !search.isEmpty() ? "Suche" : category == null ? "Alle Module" : category.displayName();
+        String title = !search.isEmpty() ? "Search" : category == null ? "All modules" : category.displayName();
         int color = category == null || !search.isEmpty() ? Theme.TEXT : category.color();
         r.text(title, x, y + 3, color, true);
         r.fill(x, y + 14, x + r.textWidth(title), y + 15, color);
@@ -229,7 +229,7 @@ public final class ClickGuiScreen implements UiScreen {
         float sx2 = x + w, sx1 = sx2 - sw;
         r.fill(sx1, y, sx2, y + 14, searchFocused ? 0xFF2A2A34 : Theme.TRACK);
         if (searchFocused) r.fill(sx1, y + 13, sx2, y + 14, accent);
-        String shown = search.isEmpty() && !searchFocused ? "Suchen…" : search;
+        String shown = search.isEmpty() && !searchFocused ? "Search…" : search;
         while (r.textWidth(shown) > sw - 10 && shown.length() > 1) shown = shown.substring(1);
         boolean caret = searchFocused && (System.currentTimeMillis() / 500) % 2 == 0;
         r.text(shown + (caret ? "_" : ""), sx1 + 4, y + 3, search.isEmpty() && !searchFocused ? Theme.TEXT_MUTED : Theme.TEXT, false);
@@ -251,11 +251,11 @@ public final class ClickGuiScreen implements UiScreen {
             bx1 = sx1;
         }
         // Alle an / Alle aus: gilt für die gerade gezeigten Module (Kategorie bzw. Suchtreffer)
-        float offW = r.textWidth("Alle aus") + 10, onW = r.textWidth("Alle an") + 10;
+        float offW = r.textWidth("All off") + 10, onW = r.textWidth("All on") + 10;
         float ox2 = bx1 - 4, ox1 = ox2 - offW, nx2 = ox1 - 3, nx1 = nx2 - onW;
         if (nx1 > titleEnd) {
-            button(r, mx, my, nx1, y, nx2, y + 14, "Alle an", accent, false, b -> setAll(true));
-            button(r, mx, my, ox1, y, ox2, y + 14, "Alle aus", accent, false, b -> setAll(false));
+            button(r, mx, my, nx1, y, nx2, y + 14, "All on", accent, false, b -> setAll(true));
+            button(r, mx, my, ox1, y, ox2, y + 14, "All off", accent, false, b -> setAll(false));
         }
     }
 
@@ -284,8 +284,8 @@ public final class ClickGuiScreen implements UiScreen {
 
             r.text(r.trim(m.name(), cardW - 40), x1 + 8, y1 + 7, Theme.TEXT, false);
             r.text(r.trim(m.description(), cardW - 16), x1 + 8, y1 + 19, Theme.TEXT_DIM, false);
-            String footer = m.isBlocked() ? "Gesperrt (Server)" :
-                    m.toggleKey().isBound() ? "Taste: " + core.platform().keyName(m.toggleKey().key()) :
+            String footer = m.isBlocked() ? "Blocked (server)" :
+                    m.toggleKey().isBound() ? "Key: " + core.platform().keyName(m.toggleKey().key()) :
                     category == null || !search.isEmpty() ? m.category().displayName() : "";
             r.text(r.trim(footer, cardW - 30), x1 + 8, y1 + 31, m.isBlocked() ? Theme.WARNING : Theme.TEXT_MUTED, false);
             r.text("›", x2 - 10, y1 + 31, hover ? Theme.TEXT : Theme.TEXT_MUTED, false);
@@ -303,7 +303,7 @@ public final class ClickGuiScreen implements UiScreen {
     }
 
     private void renderSettingsHeader(Renderer r, int mx, int my, float x, float y, float w, int accent) {
-        button(r, mx, my, x, y, x + 54, y + 14, "‹ Zurück", accent, false, b -> closeSettings());
+        button(r, mx, my, x, y, x + 54, y + 14, "‹ Back", accent, false, b -> closeSettings());
         r.text(r.trim(selected.name(), w - 120), x + 62, y + 3, Theme.TEXT, false);
         if (selected.canToggle()) {
             float sx = x + w - 22, sy = y + 2;
@@ -311,7 +311,7 @@ public final class ClickGuiScreen implements UiScreen {
             Module m = selected;
             hit(sx - 2, sy - 2, sx + 22, sy + 12, b -> m.toggle());
             if (m.isBlocked()) {
-                String t = "Gesperrt";
+                String t = "Blocked";
                 r.text(t, sx - 6 - r.textWidth(t), y + 3, Theme.WARNING, false);
             }
         }
@@ -322,7 +322,7 @@ public final class ClickGuiScreen implements UiScreen {
         r.text(r.trim(selected.description(), w), x, y, Theme.TEXT_DIM, false);
         y += 14;
         if (selected.isGameplayAffecting()) {
-            r.text(r.trim("Kann auf Servern als Vorteil gelten und wird vom Kompatibilitätsmodus gesperrt.", w), x, y, Theme.WARNING, false);
+            r.text(r.trim("May count as an advantage on servers and is blocked by compatibility mode.", w), x, y, Theme.WARNING, false);
             y += 14;
         }
         y += 2;
@@ -332,12 +332,12 @@ public final class ClickGuiScreen implements UiScreen {
         }
         y += 6;
         Module m = selected;
-        button(r, mx, my, x, y, x + 90, y + 14, "Zurücksetzen", Theme.DANGER, false, b -> {
+        button(r, mx, my, x, y, x + 90, y + 14, "Reset", Theme.DANGER, false, b -> {
             // Versteckte Einstellungen (Position, gespeicherte Daten) bleiben unangetastet
             for (Setting<?> s : m.settings()) {
                 if (!s.isHidden()) s.reset();
             }
-            showStatus(m.name() + " zurückgesetzt", accent);
+            showStatus(m.name() + " reset", accent);
         });
         y += 14;
         return y - startY;
@@ -351,7 +351,7 @@ public final class ClickGuiScreen implements UiScreen {
 
         if (s instanceof dev.aio.core.setting.ActionSetting a) {
             float bw = Math.max(70, r.textWidth(a.name()) + 16);
-            button(r, mx, my, right - 4 - bw, y + 3, right - 4, y + ROW_H - 3, "Öffnen", accent, true, btn -> a.run());
+            button(r, mx, my, right - 4 - bw, y + 3, right - 4, y + ROW_H - 3, "Open", accent, true, btn -> a.run());
             return y + ROW_H + 2;
         }
         if (s instanceof BooleanSetting b) {
@@ -376,7 +376,7 @@ public final class ClickGuiScreen implements UiScreen {
             return y + ROW_H + 2;
         }
         if (s instanceof KeybindSetting k) {
-            String v = listening == k ? "> Taste drücken <" : (k.isBound() ? core.platform().keyName(k.key()) : "Keine");
+            String v = listening == k ? "> Press a key <" : (k.isBound() ? core.platform().keyName(k.key()) : "None");
             float bw = Math.max(50, r.textWidth(v) + 12);
             float bx = right - 4 - bw;
             boolean hover = inside(mx, my, bx, y + 3, right - 4, y + ROW_H - 3);
@@ -428,7 +428,7 @@ public final class ClickGuiScreen implements UiScreen {
             hit(x, y, right, y + ROW_H, btn -> expandedColor = expandedColor == c ? null : c);
             y += ROW_H;
             if (expandedColor == c) {
-                String[] labels = {"Rot", "Grün", "Blau", "Deckkraft"};
+                String[] labels = {"Red", "Green", "Blue", "Opacity"};
                 int[] shifts = {16, 8, 0, 24};
                 for (int i = 0; i < 4; i++) {
                     int shift = shifts[i];
@@ -533,7 +533,7 @@ public final class ClickGuiScreen implements UiScreen {
         int idx = profiles.indexOf(core.config().activeProfile());
         String next = profiles.get(Math.floorMod(idx + dir, profiles.size()));
         core.config().switchProfile(next);
-        showStatus("Profil: " + next, Theme.accent(core));
+        showStatus("Profile: " + next, Theme.accent(core));
     }
 
     private void deleteActiveProfile() {
@@ -542,7 +542,7 @@ public final class ClickGuiScreen implements UiScreen {
         String active = cfg.activeProfile();
         List<String> profiles = cfg.profiles();
         if (profiles.size() < 2) {
-            showStatus("Das letzte Profil kann nicht gelöscht werden", Theme.DANGER);
+            showStatus("The last profile cannot be deleted", Theme.DANGER);
             return;
         }
         if (!confirmDelete) {
@@ -554,7 +554,7 @@ public final class ClickGuiScreen implements UiScreen {
                 ? ConfigManager.DEFAULT_PROFILE
                 : profiles.get(profiles.indexOf(active) == 0 ? 1 : 0);
         cfg.switchProfile(fallback);
-        if (cfg.deleteProfile(active)) showStatus("Profil \"" + active + "\" gelöscht", Theme.accent(core));
+        if (cfg.deleteProfile(active)) showStatus("Profile \"" + active + "\" deleted", Theme.accent(core));
     }
 
     private void showStatus(String message, int color) {

@@ -16,9 +16,9 @@ public final class ItemListModule extends Module {
     private volatile boolean loading;
 
     public ItemListModule() {
-        super("itemlist", "Item-Browser", "Alle Items rechts im Inventar (auch Kreativ), Suche mit @mod, Rezepte (R/U)", Category.INVENTORY, false);
-        maxColumns = add(new NumberSetting("columns", "Max. Spalten", 8, 3, 16, 1));
-        worldInfo = add(new dev.aio.core.setting.BooleanSetting("worldInfo", "Handel, Beute, Spawns & Erze", true));
+        super("itemlist", "Item Browser", "All items next to your inventory (also creative), search with @mod, recipes (R/U)", Category.INVENTORY, false);
+        maxColumns = add(new NumberSetting("columns", "Max columns", 8, 3, 16, 1));
+        worldInfo = add(new dev.aio.core.setting.BooleanSetting("worldInfo", "Trades, loot, spawns and ores", true));
         // Neue Welt oder neuer Server: Daten (Datenpakete, Mods) können anders sein
         on(dev.aio.core.event.Events.ServerJoin.class, e -> info = null);
         on(dev.aio.core.event.Events.ServerLeave.class, e -> info = null);
@@ -40,13 +40,13 @@ public final class ItemListModule extends Module {
             try {
                 dev.aio.core.modules.inventory.data.WorldInfo loaded = dev.aio.core.modules.inventory.data.WorldInfo.load(platform());
                 info = loaded;
-                dev.aio.core.util.Log.info("Item-Browser: Welt-Infos in " + loaded.loadMillis() + " ms geladen");
+                dev.aio.core.util.Log.info("Item Browser: world info loaded in " + loaded.loadMillis() + " ms");
             } catch (Throwable e) {
-                dev.aio.core.util.Log.error("Item-Browser: Welt-Infos konnten nicht geladen werden", e);
+                dev.aio.core.util.Log.error("Item Browser: could not load world info", e);
             } finally {
                 loading = false;
             }
-        }, "AIO Welt-Infos");
+        }, "AIO World Info");
         t.setDaemon(true);
         t.start();
     }
@@ -67,7 +67,6 @@ public final class ItemListModule extends Module {
     /** Ob gerade nachgeladen wird und die Ansicht später mehr zeigen kann. */
     public boolean worldInfoPending() { return worldInfo.on() && info == null; }
 
-    @Override public boolean enabledByDefault() { return true; }
 
     int maxColumns() { return maxColumns.intValue(); }
 

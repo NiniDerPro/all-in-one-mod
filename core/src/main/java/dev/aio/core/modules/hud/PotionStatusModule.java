@@ -22,9 +22,9 @@ public final class PotionStatusModule extends HudElement {
     private int cachedW = -1;
 
     public PotionStatusModule() {
-        super("potions", "Trank-Effekte", "Aktive Effekte mit Stufe und Restzeit", 1.0, 0.0);
-        colorByType = add(new BooleanSetting("colorByType", "Farbe nach Effektart", false));
-        icons = add(new BooleanSetting("icons", "Effekt-Icons", true));
+        super("potions", "Potion Effects", "Active effects with level and time left", 1.0, 0.0);
+        colorByType = add(new BooleanSetting("colorByType", "Color by effect type", false));
+        icons = add(new BooleanSetting("icons", "Effect icons", true));
         icons.onChange(v -> cachedW = -1);
     }
 
@@ -71,7 +71,7 @@ public final class PotionStatusModule extends HudElement {
     @Override public boolean hasContent() { return !lines.isEmpty(); }
 
     private List<String> shown(boolean preview) {
-        return lines.isEmpty() && preview ? List.of("Stärke II  1:30", "Tempo I  3:00") : lines;
+        return lines.isEmpty() && preview ? List.of("Strength II  1:30", "Speed I  3:00") : lines;
     }
 
     @Override public int width(Renderer r) {

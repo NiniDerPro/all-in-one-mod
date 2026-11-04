@@ -122,10 +122,10 @@ final class RecipeSource {
 
     private static String furnaceName(RecipeKind kind) {
         return switch (kind) {
-            case BLAST_FURNACE -> "Schmelzofen";
-            case SMOKER -> "Räucherofen";
-            case CAMPFIRE -> "Lagerfeuer";
-            default -> "Ofen";
+            case BLAST_FURNACE -> "Blast Furnace";
+            case SMOKER -> "Smoker";
+            case CAMPFIRE -> "Campfire";
+            default -> "Furnace";
         };
     }
 
@@ -134,19 +134,19 @@ final class RecipeSource {
         if (result.isEmpty()) return null;
         ItemRef station = first(display.craftingStation(), ctx);
         if (display instanceof ShapedCraftingRecipeDisplay shaped) {
-            return new RecipeView("Werkbank", shaped.width(), shaped.height(), resolveAll(shaped.ingredients(), ctx), result, station, RecipeKind.CRAFTING);
+            return new RecipeView("Crafting", shaped.width(), shaped.height(), resolveAll(shaped.ingredients(), ctx), result, station, RecipeKind.CRAFTING);
         }
         if (display instanceof ShapelessCraftingRecipeDisplay shapeless) {
             List<List<ItemRef>> slots = resolveAll(shapeless.ingredients(), ctx);
             int n = slots.size();
             int w = n <= 1 ? 1 : n <= 4 ? 2 : 3;
-            return new RecipeView("Werkbank (formlos)", w, (n + w - 1) / w, slots, result, station, RecipeKind.CRAFTING);
+            return new RecipeView("Crafting (shapeless)", w, (n + w - 1) / w, slots, result, station, RecipeKind.CRAFTING);
         }
         if (display instanceof FurnaceRecipeDisplay furnace) {
             return new RecipeView(furnaceName(kind), 1, 1, List.of(resolve(furnace.ingredient(), ctx)), result, station, kind);
         }
         if (display instanceof StonecutterRecipeDisplay cutter) {
-            return new RecipeView("Steinsäge", 1, 1, List.of(resolve(cutter.input(), ctx)), result, station, RecipeKind.STONECUTTER);
+            return new RecipeView("Stonecutter", 1, 1, List.of(resolve(cutter.input(), ctx)), result, station, RecipeKind.STONECUTTER);
         }
         return null;
     }

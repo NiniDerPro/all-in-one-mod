@@ -9,10 +9,9 @@ import dev.aio.core.module.Module;
  */
 public final class KeyBindsModule extends Module {
     public KeyBindsModule() {
-        super("keybinds", "Tastensuche", "Tastenbelegung mit Suche, Konflikten und freien Tasten", Category.CLIENT, false);
+        super("keybinds", "Keybind Search", "Controls with search, conflicts and free keys", Category.CLIENT, false);
     }
 
-    @Override public boolean enabledByDefault() { return true; }
 
     /** Für den Adapter: soll die Vanilla-Tastenbelegung ersetzt werden? */
     public boolean replacesVanilla() { return isActive(); }

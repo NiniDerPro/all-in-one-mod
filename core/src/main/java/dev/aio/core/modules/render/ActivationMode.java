@@ -3,7 +3,7 @@ package dev.aio.core.modules.render;
 import dev.aio.core.setting.EnumSetting;
 
 public enum ActivationMode implements EnumSetting.Named {
-    HOLD("Halten"), TOGGLE("Umschalten");
+    HOLD("Hold"), TOGGLE("Toggle");
 
     private final String displayName;
 

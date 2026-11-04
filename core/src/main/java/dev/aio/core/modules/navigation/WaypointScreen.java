@@ -30,7 +30,7 @@ public final class WaypointScreen implements UiScreen {
         this.module = module;
     }
 
-    @Override public String title() { return "Wegpunkte"; }
+    @Override public String title() { return "Waypoints"; }
 
     @Override public void render(Renderer r, int mx, int my, float delta) {
         hits.clear();
@@ -40,9 +40,9 @@ public final class WaypointScreen implements UiScreen {
         int px = (w - pw) / 2, py = (h - ph) / 2;
         r.fill(px, py, px + pw, py + ph, Theme.PANEL);
         Theme.accentBar(r, core, px, py, px + pw, py + 2);
-        r.text("Wegpunkte", px + 10, py + 9, Theme.TEXT, true);
-        button(r, mx, my, px + pw - 110, py + 6, px + pw - 8, py + 20, "+ Hier setzen", true,
-                b -> module.addHere("Wegpunkt " + (module.inThisWorld().size() + 1)));
+        r.text("Waypoints", px + 10, py + 9, Theme.TEXT, true);
+        button(r, mx, my, px + pw - 110, py + 6, px + pw - 8, py + 20, "+ Add here", true,
+                b -> module.addHere("Waypoint " + (module.inThisWorld().size() + 1)));
 
         List<Waypoint> list = module.inThisWorld();
         Vec3 pos = core.platform().playerPos();
@@ -50,7 +50,7 @@ public final class WaypointScreen implements UiScreen {
         int top = py + 28, bottom = py + ph - 8;
         r.enableScissor(px, top, px + pw, bottom);
         float y = top - scroll;
-        if (list.isEmpty()) r.text("Noch keine Wegpunkte. Taste B oder \"+ Hier setzen\".", px + 10, top + 6, Theme.TEXT_DIM, false);
+        if (list.isEmpty()) r.text("No waypoints yet. Press B or \"+ Add here\".", px + 10, top + 6, Theme.TEXT_DIM, false);
         for (Waypoint wp : list) {
             if (y + ROW >= top && y <= bottom) drawRow(r, mx, my, wp, px + 8, y, pw - 16, pos, dim, top, bottom);
             y += ROW + 2;
@@ -84,10 +84,10 @@ public final class WaypointScreen implements UiScreen {
             String d = WaypointsModule.formatDistance(wp.distanceTo(pos.x(), pos.y(), pos.z()));
             r.text(d, x + w - 92 - r.textWidth(d), y + 7, Theme.TEXT_MUTED, false);
         }
-        button(r, mx, my, x + w - 86, y + 4, x + w - 46, y + 18, wp.visible() ? "Aus" : "An", false,
+        button(r, mx, my, x + w - 86, y + 4, x + w - 46, y + 18, wp.visible() ? "Off" : "On", false,
                 b -> module.replace(wp, wp.withVisible(!wp.visible())), top, bottom);
         boolean confirm = confirmDelete == wp;
-        button(r, mx, my, x + w - 42, y + 4, x + w - 4, y + 18, confirm ? "Sicher?" : "✖", false, b -> {
+        button(r, mx, my, x + w - 42, y + 4, x + w - 4, y + 18, confirm ? "Sure?" : "✖", false, b -> {
             if (confirmDelete == wp) {
                 module.remove(wp);
                 confirmDelete = null;
@@ -99,7 +99,7 @@ public final class WaypointScreen implements UiScreen {
 
     private static String dimName(String dim) {
         return switch (dim) {
-            case "overworld" -> "Oberwelt";
+            case "overworld" -> "Overworld";
             case "the_nether" -> "Nether";
             case "the_end" -> "End";
             default -> dim;

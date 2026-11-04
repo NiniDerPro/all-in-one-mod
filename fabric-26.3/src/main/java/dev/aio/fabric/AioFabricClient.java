@@ -141,8 +141,8 @@ public final class AioFabricClient implements ClientModInitializer {
         if (boost != null && boost.diagnose()) {
             double hud = hudFrames == 0 ? 0 : hudNanos / 1e6 / hudFrames;
             LOGGER.info(String.format(java.util.Locale.ROOT,
-                    "[aio] Leistung: HUD %.3f ms/Frame (%d Frames), Ticks %.3f ms/Tick, Sichtprüfungen %.3f ms/Tick (eigener Thread), "
-                            + "zuletzt verdeckt: %d Entities, %d Block-Entities, FPS %d",
+                    "[aio] Performance: HUD %.3f ms/frame (%d frames), ticks %.3f ms/tick, visibility checks %.3f ms/tick (own thread), "
+                            + "last hidden: %d entities, %d block entities, FPS %d",
                     hud, hudFrames, tickNanos / 1e6 / diagTicks, Culler.nanos / 1e6 / diagTicks,
                     Culler.culledEntities, Culler.culledBlockEntities, Minecraft.getInstance().getFps()));
         }

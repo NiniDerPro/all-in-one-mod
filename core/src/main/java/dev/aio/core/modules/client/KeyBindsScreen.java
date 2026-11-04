@@ -43,7 +43,7 @@ public final class KeyBindsScreen implements UiScreen {
         index.refresh();
     }
 
-    @Override public String title() { return "Tastenbelegung"; }
+    @Override public String title() { return "Key Binds"; }
 
     @Override public boolean returnsToPrevious() { return true; }
 
@@ -58,14 +58,14 @@ public final class KeyBindsScreen implements UiScreen {
         float pw = Math.min(w - 16, 380), px = (w - pw) / 2f, py = 8, ph = h - 16;
         r.fill(px, py, px + pw, py + ph, Theme.PANEL);
         Theme.accentBar(r, core, px, py, px + pw, py + 2);
-        r.text("Tastenbelegung", px + 8, py + 8, Theme.TEXT, true);
+        r.text("Key Binds", px + 8, py + 8, Theme.TEXT, true);
 
         // Suchfeld
         float sx = px + 8, sy = py + 22, sw = pw - 16;
         r.fill(sx, sy, sx + sw, sy + 14, 0xF0202028);
         r.outline(sx, sy, sx + sw, sy + 14, 1, Theme.accent(core));
         boolean caret = (System.currentTimeMillis() / 500) % 2 == 0;
-        String shown = query.isEmpty() ? "Suchen: Name, Kategorie oder Taste…" : query + (caret ? "_" : "");
+        String shown = query.isEmpty() ? "Search: name, category or key…" : query + (caret ? "_" : "");
         r.text(r.trim(shown, sw - 8), sx + 4, sy + 3, query.isEmpty() ? Theme.TEXT_MUTED : Theme.TEXT, false);
 
         // Filter, Sortierung, Zurücksetzen
@@ -73,9 +73,9 @@ public final class KeyBindsScreen implements UiScreen {
         for (KeyBindIndex.Filter f : KeyBindIndex.Filter.values()) {
             bx += button(r, bx, by, f.label, f == filter, mx, my, () -> { filter = f; scroll = 0; }) + 3;
         }
-        String sortLabel = "Sortierung: " + sort.label;
+        String sortLabel = "Sort: " + sort.label;
         float sortW = r.textWidth(sortLabel) + 10;
-        String resetLabel = confirmReset ? "Wirklich?" : "Alle zurücksetzen";
+        String resetLabel = confirmReset ? "Really?" : "Reset all";
         float resetW = r.textWidth(resetLabel) + 10;
         float rx = px + pw - 8 - resetW;
         button(r, rx, by, resetLabel, confirmReset, mx, my, () -> {
@@ -93,7 +93,7 @@ public final class KeyBindsScreen implements UiScreen {
         else renderList(r, px + 8, pw - 16, mx, my);
         r.disableScissor();
 
-        String hint = listening != null ? "Neue Taste drücken · Escape: entfernen" : "Klick auf eine Taste zum Ändern · Mausrad: blättern";
+        String hint = listening != null ? "Press a new key · Escape: unbind" : "Click a key to change it · Scroll: browse";
         r.text(hint, px + 8, py + ph - 12, listening != null ? Theme.WARNING : Theme.TEXT_MUTED, false);
     }
 
@@ -136,7 +136,7 @@ public final class KeyBindsScreen implements UiScreen {
             }
             y += ROW;
         }
-        if (entries.isEmpty()) r.text("Nichts gefunden.", x, listTop + 4, Theme.TEXT_DIM, false);
+        if (entries.isEmpty()) r.text("Nothing found.", x, listTop + 4, Theme.TEXT_DIM, false);
         contentHeight = (int) (y + scroll - listTop);
     }
 
@@ -182,7 +182,7 @@ public final class KeyBindsScreen implements UiScreen {
         for (Hit h : hits) {
             if (h.in(mx, my) && button == 0) {
                 armed = confirmReset;
-                confirmReset = false; // nur ein zweiter Klick auf "Zurücksetzen" bestätigt
+                confirmReset = false; // nur ein zweiter Klick auf "Reset" bestätigt
                 h.action.run();
                 return true;
             }

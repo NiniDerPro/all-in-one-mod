@@ -21,9 +21,9 @@ public final class FreelookModule extends KeyActivatedModule {
     private boolean changedPerspective;
 
     public FreelookModule() {
-        super("freelook", "Freelook", "Kamera frei drehen, ohne dass sich der Spieler mitdreht", Category.RENDER, Keys.LEFT_ALT);
-        thirdPerson = add(new BooleanSetting("thirdPerson", "In 3. Person wechseln", true));
-        invertPitch = add(new BooleanSetting("invertPitch", "Vertikal invertieren", false));
+        super("freelook", "Freelook", "Look around freely without turning your player", Category.RENDER, Keys.LEFT_ALT);
+        thirdPerson = add(new BooleanSetting("thirdPerson", "Switch to third person", true));
+        invertPitch = add(new BooleanSetting("invertPitch", "Invert vertical", false));
     }
 
     private boolean warned;
@@ -31,7 +31,7 @@ public final class FreelookModule extends KeyActivatedModule {
     @Override protected void onEngage() {
         if (!platform().freelookSupported() && !warned) {
             warned = true;
-            platform().notify("Freelook: Kamera-Hook greift in dieser Version nicht, Funktion ist aus");
+            platform().notify("Freelook: camera hook not available in this version, disabled");
         }
         yaw = platform().playerYaw();
         pitch = platform().playerPitch();

@@ -6,13 +6,13 @@ import dev.aio.core.module.Category;
 /** Aktueller Tag der Welt. */
 public final class DayCounterModule extends TextHudElement {
     public DayCounterModule() {
-        super("daycounter", "Tagzähler", "Wie viele Tage die Welt schon läuft", Category.INFO, false, 0.0, 0.30);
+        super("daycounter", "Day Counter", "How many days the world has been running", Category.INFO, false, 0.0, 0.30);
     }
 
     @Override protected String getText() {
         if (!platform().inWorld()) return "";
-        return "Tag " + WorldTime.day(platform().dayTime());
+        return "Day " + WorldTime.day(platform().dayTime());
     }
 
-    @Override protected String previewText() { return "Tag 42"; }
+    @Override protected String previewText() { return "Day 42"; }
 }

@@ -20,9 +20,9 @@ public final class AutoWeaponModule extends Module {
     private int idleTicks;
 
     public AutoWeaponModule() {
-        super("autoweapon", "Auto Sword", "Nimmt die beste Waffe, sobald man ein Lebewesen anvisiert", Category.COMBAT, true);
-        preferAxe = add(new BooleanSetting("preferAxe", "Axt bevorzugen", false));
-        restore = add(new BooleanSetting("restore", "Danach zurückwechseln", false));
+        super("autoweapon", "Auto Weapon", "Picks your best weapon when you aim at a mob", Category.COMBAT, true);
+        preferAxe = add(new BooleanSetting("preferAxe", "Prefer axe", false));
+        restore = add(new BooleanSetting("restore", "Switch back afterwards", false));
         on(Events.Tick.class, e -> tick());
     }
 

@@ -10,7 +10,7 @@ import java.util.Locale;
 
 /** Sortierung der Modulkarten im Menü. */
 public enum SortMode implements EnumSetting.Named {
-    DEFAULT("Standard"), ALPHABETICAL("A–Z"), ACTIVE_FIRST("Aktive zuerst");
+    DEFAULT("Default"), ALPHABETICAL("A–Z"), ACTIVE_FIRST("Active first");
 
     private final String displayName;
 

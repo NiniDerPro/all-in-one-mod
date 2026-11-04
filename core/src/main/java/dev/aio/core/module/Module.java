@@ -54,7 +54,7 @@ public abstract class Module {
         this.description = description;
         this.category = category;
         this.gameplayAffecting = gameplayAffecting;
-        this.toggleKey = add(new KeybindSetting("toggleKey", "Ein/Aus-Taste", Keys.NONE));
+        this.toggleKey = add(new KeybindSetting("toggleKey", "Toggle key", Keys.NONE));
         if (!canToggle()) toggleKey.hidden();
     }
 
@@ -169,6 +169,9 @@ public abstract class Module {
     /** Module wie die Client-Einstellungen lassen sich nicht ausschalten. */
     public boolean canToggle() { return true; }
 
+    /** Bei der einmaligen Umstellung auf neue Standards (siehe ConfigManager.DEFAULTS_VERSION). */
+    public void applyNewDefaults() {}
+
     /** Nach dem Laden der Config aufgerufen, z. B. um alte Standardwerte umzustellen. */
     public void afterLoad() {}
 
@@ -182,7 +185,13 @@ public abstract class Module {
     }
 
     /** Ob das Modul standardmäßig eingeschaltet ist, wenn noch keine Config existiert. */
-    public boolean enabledByDefault() { return !canToggle(); }
+    public boolean enabledByDefault() { return !canToggle() || DEFAULT_ON.contains(id); }
+
+    /** Module, die bei einer neuen Installation an sind (alles andere ist aus). */
+    public static final java.util.Set<String> DEFAULT_ON = java.util.Set.of(
+            "armorhud", "lookat", "chat", "helditeminfo", "dynamicfps", "elytraswap", "entityculling", "foodinfo",
+            "freelook", "fullbright", "itemlist", "invtweaks", "coordinates", "namealert", "shulkerpreview",
+            "keybinds", "xpclumps", "zoom", "potions");
 
     /** Setzt alles auf Standard (ohne Speichern auszulösen, das übernimmt der Aufrufer). */
     public void resetToDefaults() {

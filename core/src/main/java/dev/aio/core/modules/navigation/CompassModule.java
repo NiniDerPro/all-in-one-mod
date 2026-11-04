@@ -13,7 +13,7 @@ import dev.aio.core.setting.NumberSetting;
 /** Kompass als Leiste oben (wie in Battle-Royale-Spielen) oder als runde Kompassrose. */
 public final class CompassModule extends HudElement {
     public enum Style implements EnumSetting.Named {
-        BAR("Leiste"), ROUND("Rund");
+        BAR("Bar"), ROUND("Round");
 
         private final String displayName;
 
@@ -30,16 +30,16 @@ public final class CompassModule extends HudElement {
     private final BooleanSetting showWaypoints;
 
     public CompassModule() {
-        super("compass", "Kompass", "Himmelsrichtungen als Leiste oder rund, mit Wegpunkten", Category.NAVIGATION, false, 0.5, 0.0);
-        style = add(new EnumSetting<>("style", "Stil", Style.BAR));
-        barWidth = add(new NumberSetting("barWidth", "Breite", 220, 100, 400, 10, " px"));
+        super("compass", "Compass", "Cardinal directions as a bar or circle, with waypoints", Category.NAVIGATION, false, 0.5, 0.0);
+        style = add(new EnumSetting<>("style", "Style", Style.BAR));
+        barWidth = add(new NumberSetting("barWidth", "Width", 220, 100, 400, 10, " px"));
         barWidth.visibleWhen(() -> style.get() == Style.BAR);
-        fieldOfView = add(new NumberSetting("fov", "Sichtbereich", 180, 90, 360, 15, "°"));
+        fieldOfView = add(new NumberSetting("fov", "Field of view", 180, 90, 360, 15, "°"));
         fieldOfView.visibleWhen(() -> style.get() == Style.BAR);
         radius = add(new NumberSetting("radius", "Radius", 30, 18, 60, 1, " px"));
         radius.visibleWhen(() -> style.get() == Style.ROUND);
-        showDegrees = add(new BooleanSetting("degrees", "Grad anzeigen", true));
-        showWaypoints = add(new BooleanSetting("waypoints", "Wegpunkte zeigen", true));
+        showDegrees = add(new BooleanSetting("degrees", "Show degrees", true));
+        showWaypoints = add(new BooleanSetting("waypoints", "Show waypoints", true));
     }
 
     @Override protected ColorMode defaultColorMode() { return ColorMode.STATIC; }

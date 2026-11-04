@@ -16,7 +16,7 @@ import java.util.List;
 /** WASD, Leertaste und Maustasten mit sanftem Farbwechsel beim Drücken. */
 public final class KeystrokesModule extends HudElement {
     public enum Layout implements EnumSetting.Named {
-        WASD("WASD"), WASD_MOUSE("WASD + Maus"), FULL("WASD + Maus + Leertaste");
+        WASD("WASD"), WASD_MOUSE("WASD + Mouse"), FULL("WASD + Mouse + Space");
 
         private final String displayName;
 
@@ -55,15 +55,15 @@ public final class KeystrokesModule extends HudElement {
     private boolean layoutDirty = true;
 
     public KeystrokesModule() {
-        super("keystrokes", "Keystrokes", "Zeigt gedrückte Bewegungs- und Maustasten", 0.0, 0.3);
+        super("keystrokes", "Keystrokes", "Shows pressed movement keys and mouse buttons", 0.0, 0.3);
         layout = add(new EnumSetting<>("layout", "Layout", Layout.FULL));
-        keySize = add(new NumberSetting("keySize", "Tastengröße", 22, 14, 40, 1, " px"));
-        gap = add(new NumberSetting("gap", "Abstand", 2, 0, 6, 1, " px"));
-        fadeMs = add(new NumberSetting("fade", "Übergang", 120, 0, 500, 10, " ms"));
-        pressedColor = add(new ColorSetting("pressedColor", "Farbe gedrückt", 0xC0FFFFFF));
-        pressedTextColor = add(new ColorSetting("pressedTextColor", "Textfarbe gedrückt", 0xFF000000));
-        showCps = add(new BooleanSetting("showCps", "CPS in Maustasten", true));
-        rainbowPressed = add(new BooleanSetting("rainbowPressed", "Farbmodus beim Drücken", true));
+        keySize = add(new NumberSetting("keySize", "Key size", 22, 14, 40, 1, " px"));
+        gap = add(new NumberSetting("gap", "Spacing", 2, 0, 6, 1, " px"));
+        fadeMs = add(new NumberSetting("fade", "Fade", 120, 0, 500, 10, " ms"));
+        pressedColor = add(new ColorSetting("pressedColor", "Pressed color", 0xC0FFFFFF));
+        pressedTextColor = add(new ColorSetting("pressedTextColor", "Pressed text color", 0xFF000000));
+        showCps = add(new BooleanSetting("showCps", "CPS in mouse buttons", true));
+        rainbowPressed = add(new BooleanSetting("rainbowPressed", "Color mode when pressed", true));
         showCps.visibleWhen(() -> layout.get() != Layout.WASD);
         layout.onChange(v -> layoutDirty = true);
         keySize.onChange(v -> layoutDirty = true);

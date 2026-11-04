@@ -31,22 +31,22 @@ public final class FpsBoostModule extends Module {
     private final StringSetting saved;
 
     public FpsBoostModule() {
-        super("fpsboost", "FPS-Boost", "Teure Grafik-Einstellungen auf schnell: deutlich mehr FPS, vor allem beim Fliegen", Category.PERFORMANCE, false);
-        biomeBlend = add(new BooleanSetting(BIOME_BLEND, "Biom-Blending aus (größter Gewinn)", true));
-        chunkUpdates = add(new BooleanSetting(CHUNK_UPDATES, "Chunks im Hintergrund bauen", true));
-        shadows = add(new BooleanSetting(SHADOWS, "Entity-Schatten aus", true));
-        clouds = add(new BooleanSetting(CLOUDS, "Wolken aus", true));
-        transparency = add(new BooleanSetting(TRANSPARENCY, "Verbesserte Transparenz aus", true));
-        fadeIn = add(new BooleanSetting(FADE_IN, "Chunk-Einblenden aus", true));
-        smoothLight = add(new BooleanSetting(SMOOTH_LIGHT, "Weiche Beleuchtung aus (mehr FPS, kantiger)", false));
-        weather = add(new BooleanSetting(WEATHER, "Kleinerer Regen-/Schnee-Radius", true));
-        vignette = add(new BooleanSetting(VIGNETTE, "Vignette (dunkler Rand) aus", true));
-        menuBlur = add(new BooleanSetting(MENU_BLUR, "Menü-Unschärfe aus", true));
-        solidLeaves = add(new BooleanSetting(SOLID_LEAVES, "Laub undurchsichtig (viel FPS in Wäldern)", false));
-        mipmaps = add(new BooleanSetting(MIPMAPS, "Mipmaps aus (lädt Texturen neu)", false));
-        entityDistance = add(new BooleanSetting(ENTITY_DISTANCE, "Entity-Sichtweite 75 %", false));
-        diagnose = add(new BooleanSetting("diagnose", "Leistungs-Diagnose ins Log", true));
-        saved = add(new StringSetting("saved", "Gespeicherte Werte", "", 4000));
+        super("fpsboost", "FPS Boost", "Sets expensive graphics options to fast: much higher FPS, especially while flying", Category.PERFORMANCE, false);
+        biomeBlend = add(new BooleanSetting(BIOME_BLEND, "Biome blend off (biggest gain)", true));
+        chunkUpdates = add(new BooleanSetting(CHUNK_UPDATES, "Build chunks in the background", true));
+        shadows = add(new BooleanSetting(SHADOWS, "Entity shadows off", true));
+        clouds = add(new BooleanSetting(CLOUDS, "Clouds off", true));
+        transparency = add(new BooleanSetting(TRANSPARENCY, "Improved transparency off", true));
+        fadeIn = add(new BooleanSetting(FADE_IN, "Chunk fade-in off", true));
+        smoothLight = add(new BooleanSetting(SMOOTH_LIGHT, "Smooth lighting off (more FPS, blockier)", false));
+        weather = add(new BooleanSetting(WEATHER, "Smaller rain/snow radius", true));
+        vignette = add(new BooleanSetting(VIGNETTE, "Vignette (dark edges) off", true));
+        menuBlur = add(new BooleanSetting(MENU_BLUR, "Menu blur off", true));
+        solidLeaves = add(new BooleanSetting(SOLID_LEAVES, "Opaque leaves (lots of FPS in forests)", false));
+        mipmaps = add(new BooleanSetting(MIPMAPS, "Mipmaps off (reloads textures)", false));
+        entityDistance = add(new BooleanSetting(ENTITY_DISTANCE, "Entity view distance 75 %", false));
+        diagnose = add(new BooleanSetting("diagnose", "Performance report in the log", true));
+        saved = add(new StringSetting("saved", "Saved values", "", 4000));
         saved.hidden();
         for (Setting<?> s : new Setting<?>[]{biomeBlend, shadows, clouds, chunkUpdates, transparency, fadeIn, smoothLight,
                 weather, vignette, menuBlur, solidLeaves, mipmaps, entityDistance}) {
@@ -56,7 +56,6 @@ public final class FpsBoostModule extends Module {
         on(Events.ServerJoin.class, e -> apply());
     }
 
-    @Override public boolean enabledByDefault() { return true; }
 
     @Override protected void onActivate() { apply(); }
 

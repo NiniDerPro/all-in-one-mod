@@ -28,60 +28,60 @@ final class BlockDetails {
 
         // Bienenstock / Bienennest
         if (state.hasProperty(BeehiveBlock.HONEY_LEVEL)) {
-            out.add(Detail.of("Honig", state.getValue(BeehiveBlock.HONEY_LEVEL), 5));
+            out.add(Detail.of("Honey", state.getValue(BeehiveBlock.HONEY_LEVEL), 5));
             int bees = beeCount(client, pos);
-            if (bees >= 0) out.add(new Detail("Bienen", bees + "/3", false));
+            if (bees >= 0) out.add(new Detail("Bees", bees + "/3", false));
         }
         // Komposter: 0..7 füllen, 8 = Knochenmehl fertig
         if (state.hasProperty(BlockStateProperties.LEVEL_COMPOSTER)) {
             int level = state.getValue(BlockStateProperties.LEVEL_COMPOSTER);
-            out.add(level >= 8 ? new Detail("Füllstand", "fertig", true) : Detail.of("Füllstand", level, 7));
+            out.add(level >= 8 ? new Detail("Level", "fertig", true) : Detail.of("Level", level, 7));
         }
         // Kessel mit Wasser oder Pulverschnee
         if (state.hasProperty(BlockStateProperties.LEVEL_CAULDRON)) {
-            out.add(Detail.of("Füllstand", state.getValue(BlockStateProperties.LEVEL_CAULDRON), 3));
+            out.add(Detail.of("Level", state.getValue(BlockStateProperties.LEVEL_CAULDRON), 3));
         }
         // Seelenanker
         if (state.hasProperty(BlockStateProperties.RESPAWN_ANCHOR_CHARGES)) {
-            out.add(Detail.of("Ladungen", state.getValue(BlockStateProperties.RESPAWN_ANCHOR_CHARGES), 4));
+            out.add(Detail.of("Charges", state.getValue(BlockStateProperties.RESPAWN_ANCHOR_CHARGES), 4));
         }
         // Ackerboden
         if (state.hasProperty(BlockStateProperties.MOISTURE)) {
             int m = state.getValue(BlockStateProperties.MOISTURE);
-            out.add(new Detail("Feuchtigkeit", m >= 7 ? "nass" : m + "/7", m >= 7));
+            out.add(new Detail("Moisture", m >= 7 ? "nass" : m + "/7", m >= 7));
         }
         // Redstone
         if (state.hasProperty(BlockStateProperties.POWER)) {
-            out.add(Detail.of("Redstone-Stärke", String.valueOf(state.getValue(BlockStateProperties.POWER))));
+            out.add(Detail.of("Redstone power", String.valueOf(state.getValue(BlockStateProperties.POWER))));
         }
         if (state.hasProperty(BlockStateProperties.DELAY)) {
             int delay = state.getValue(BlockStateProperties.DELAY);
-            out.add(Detail.of("Verzögerung", delay + (delay == 1 ? " Tick" : " Ticks")));
+            out.add(Detail.of("Delay", delay + (delay == 1 ? " tick" : " ticks")));
         }
         if (state.hasProperty(BlockStateProperties.MODE_COMPARATOR)) {
             boolean compare = state.getValue(BlockStateProperties.MODE_COMPARATOR) == ComparatorMode.COMPARE;
-            out.add(Detail.of("Modus", compare ? "Vergleichen" : "Subtrahieren"));
+            out.add(Detail.of("Mode", compare ? "Compare" : "Subtract"));
         }
         // Notenblock
         if (state.hasProperty(NoteBlock.NOTE)) {
             int note = state.getValue(NoteBlock.NOTE);
-            out.add(Detail.of("Ton", NOTES[note % 12] + " (" + note + ")"));
+            out.add(Detail.of("Sound", NOTES[note % 12] + " (" + note + ")"));
         }
         // Stapelbare Kleinblöcke
         if (state.hasProperty(BlockStateProperties.PICKLES)) {
-            out.add(Detail.of("Seegurken", state.getValue(BlockStateProperties.PICKLES), 4));
+            out.add(Detail.of("Sea pickles", state.getValue(BlockStateProperties.PICKLES), 4));
         }
         if (state.hasProperty(BlockStateProperties.CANDLES)) {
-            out.add(Detail.of("Kerzen", state.getValue(BlockStateProperties.CANDLES), 4));
+            out.add(Detail.of("Candles", state.getValue(BlockStateProperties.CANDLES), 4));
         }
         if (state.hasProperty(BlockStateProperties.EGGS)) {
-            out.add(Detail.of("Eier", state.getValue(BlockStateProperties.EGGS), 4));
+            out.add(Detail.of("Eggs", state.getValue(BlockStateProperties.EGGS), 4));
         }
         if (state.hasProperty(BlockStateProperties.HATCH)) {
-            out.add(Detail.of("Schlüpfen", state.getValue(BlockStateProperties.HATCH), 2));
+            out.add(Detail.of("Hatching", state.getValue(BlockStateProperties.HATCH), 2));
         }
         if (state.hasProperty(BlockStateProperties.LAYERS)) {
-            out.add(Detail.of("Schichten", state.getValue(BlockStateProperties.LAYERS), 8));
+            out.add(Detail.of("Layers", state.getValue(BlockStateProperties.LAYERS), 8));
         }
         return out;
     }

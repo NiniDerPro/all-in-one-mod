@@ -9,8 +9,7 @@ import dev.aio.core.module.Module;
  */
 public final class XpClumpsModule extends Module {
     public XpClumpsModule() {
-        super("xpclumps", "XP bündeln", "Erfahrungskugeln zusammenfassen und sofort aufsammeln (nur Einzelspieler)", Category.PERFORMANCE, false);
+        super("xpclumps", "XP Clumps", "Merge XP orbs and pick them up instantly (singleplayer only)", Category.PERFORMANCE, false);
     }
 
-    @Override public boolean enabledByDefault() { return true; }
 }
