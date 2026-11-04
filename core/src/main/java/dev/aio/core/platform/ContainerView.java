@@ -26,4 +26,15 @@ public interface ContainerView {
 
     /** Ob nur das Spielerinventar offen ist (keine Truhe o. Ä.). */
     boolean isPlayerOnly();
+
+    /**
+     * Eingabe-Raster dieses Menüs (2×2 im Inventar, 3×3 Werkbank, Ofen-Eingang, ...).
+     *
+     * @param kinds  Rezeptarten, die hier hergestellt werden können
+     * @param slots  Menü-Indizes der Eingabeslots, zeilenweise (width × height)
+     */
+    record Grid(java.util.Set<RecipeKind> kinds, int width, int height, int[] slots) {}
+
+    /** Raster oder null, wenn in diesem Menü nichts hergestellt werden kann. */
+    default Grid grid() { return null; }
 }

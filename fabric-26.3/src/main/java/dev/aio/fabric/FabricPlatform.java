@@ -388,11 +388,14 @@ public final class FabricPlatform implements Platform {
 
     // ---- Inventar / Item-Liste ----
 
+    /**
+     * Offenes Menü. Auch wenn gerade die Rezeptansicht über dem Inventar liegt, ist das Menü des
+     * Inventars noch offen ({@code player.containerMenu}); ohne Screen ist es das Spielerinventar.
+     */
     @Override public ContainerView container() {
-        if (client.gui.screen() instanceof AbstractContainerScreen<?> screen && player() != null && client.gameMode != null) {
-            return new FabricContainerView(client, screen.getMenu());
-        }
-        return null;
+        if (player() == null || client.gameMode == null) return null;
+        if (client.gui.screen() instanceof AbstractContainerScreen<?> screen) return new FabricContainerView(client, screen.getMenu());
+        return player().containerMenu == null ? null : new FabricContainerView(client, player().containerMenu);
     }
 
     private List<ItemRef> allItemsCache;
@@ -552,7 +555,8 @@ public final class FabricPlatform implements Platform {
             client.gui.setScreen(new AioScreen(s, client.gui.screen()));
         } else if (pendingClose) {
             pendingClose = false;
-            if (client.gui.screen() instanceof AioScreen) client.gui.setScreen(null);
+            // onClose kehrt bei Rezeptansicht & Co. zum vorherigen Screen (Inventar) zurück
+            if (client.gui.screen() instanceof AioScreen screen) screen.onClose();
         }
     }
 
