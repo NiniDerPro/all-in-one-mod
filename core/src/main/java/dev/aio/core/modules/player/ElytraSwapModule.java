@@ -23,7 +23,7 @@ public final class ElytraSwapModule extends Module {
     private final KeybindSetting key;
 
     public ElytraSwapModule() {
-        super("elytraswap", "Elytra Swapper", "Swap between elytra and chestplate with a key", Category.COMBAT, false);
+        super("elytraswap", "Elytra Swapper", "Swap between elytra and chestplate with a key", Category.PVP, false);
         key = add(new KeybindSetting("key", "Key", "key.keyboard.grave.accent"));
         on(Events.Key.class, e -> {
             // auch im offenen Spielerinventar (dort prüft swap(), dass nur das eigene Inventar offen ist)

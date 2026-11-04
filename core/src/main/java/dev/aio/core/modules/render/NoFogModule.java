@@ -11,7 +11,7 @@ public final class NoFogModule extends Module {
     private final BooleanSetting distance;
 
     public NoFogModule() {
-        super("nofog", "No Fog", "Clear water and lava, optionally no distance fog", Category.RENDER, true);
+        super("nofog", "No Fog", "Clear water and lava, optionally no distance fog", Category.VISUALS, true);
         water = add(new BooleanSetting("water", "Clear water", true));
         lava = add(new BooleanSetting("lava", "Clear lava", true));
         distance = add(new BooleanSetting("distance", "No distance fog", false));

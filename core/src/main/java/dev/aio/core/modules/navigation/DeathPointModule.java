@@ -14,7 +14,7 @@ public final class DeathPointModule extends Module {
     private boolean wasDead;
 
     public DeathPointModule() {
-        super("deathpoint", "Death Waypoint", "Waypoint where you died, removed when you get there", Category.NAVIGATION, false);
+        super("deathpoint", "Death Waypoint", "Waypoint where you died, removed when you get there", Category.QOL, false);
         arriveDistance = add(new NumberSetting("arrive", "Remove within", 4, 1, 20, 1, " blocks"));
         chatMessage = add(new BooleanSetting("message", "Announce coordinates", true));
         on(Events.Tick.class, e -> tick());

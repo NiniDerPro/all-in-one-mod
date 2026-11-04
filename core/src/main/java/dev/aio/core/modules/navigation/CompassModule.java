@@ -30,7 +30,7 @@ public final class CompassModule extends HudElement {
     private final BooleanSetting showWaypoints;
 
     public CompassModule() {
-        super("compass", "Compass", "Cardinal directions as a bar or circle, with waypoints", Category.NAVIGATION, false, 0.5, 0.0);
+        super("compass", "Compass", "Cardinal directions as a bar or circle, with waypoints", Category.QOL, false, 0.5, 0.0);
         style = add(new EnumSetting<>("style", "Style", Style.BAR));
         barWidth = add(new NumberSetting("barWidth", "Width", 220, 100, 400, 10, " px"));
         barWidth.visibleWhen(() -> style.get() == Style.BAR);

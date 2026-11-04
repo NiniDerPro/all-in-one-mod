@@ -18,7 +18,7 @@ public final class PlaytimeModule extends TextHudElement {
     private int requestTimer;
 
     public PlaytimeModule() {
-        super("playtime", "Playtime", "Time played in this world (from statistics)", Category.INFO, false, 0.0, 0.42);
+        super("playtime", "Playtime", "Time played in this world (from statistics)", Category.QOL, false, 0.0, 0.42);
         label = add(new BooleanSetting("label", "Show label", true));
         on(Events.Tick.class, e -> tick());
         on(Events.ServerJoin.class, e -> reset());

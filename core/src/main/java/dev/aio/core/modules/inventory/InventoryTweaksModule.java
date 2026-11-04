@@ -22,7 +22,7 @@ public final class InventoryTweaksModule extends Module {
     private final Set<Integer> dragged = new HashSet<>();
 
     public InventoryTweaksModule() {
-        super("invtweaks", "Mouse Tweaks", "Scroll to move items, Shift-drag, middle-click to sort", Category.INVENTORY, false);
+        super("invtweaks", "Mouse Tweaks", "Scroll to move items, Shift-drag, middle-click to sort", Category.QOL, false);
         wheel = add(new BooleanSetting("wheel", "Scroll moves items", true));
         invertWheel = add(new BooleanSetting("invertWheel", "Invert scroll", false));
         shiftDrag = add(new BooleanSetting("shiftDrag", "Shift + drag moves", true));

@@ -25,7 +25,7 @@ public final class FoodInfoModule extends Module {
 
     public FoodInfoModule() {
         super("foodinfo", "Food Info", "Food values in tooltips, saturation and exhaustion on the hunger bar, preview when holding food",
-                Category.COMBAT, false);
+                Category.PVP, false);
         tooltip = add(new BooleanSetting("tooltip", "Food values in tooltip", true));
         saturation = add(new BooleanSetting("saturation", "Show saturation", true));
         exhaustion = add(new BooleanSetting("exhaustion", "Show exhaustion (singleplayer only)", true));

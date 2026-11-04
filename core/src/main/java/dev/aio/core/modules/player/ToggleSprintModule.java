@@ -16,7 +16,7 @@ public final class ToggleSprintModule extends TextHudElement {
     private boolean holding;
 
     public ToggleSprintModule() {
-        super("togglesprint", "Toggle Sprint", "Sprint key toggles permanent sprinting", Category.COMBAT, true, 0.0, 1.0);
+        super("togglesprint", "Toggle Sprint", "Sprint key toggles permanent sprinting", Category.PVP, true, 0.0, 1.0);
         showStatus = add(new BooleanSetting("showStatus", "Show status", true));
         on(Events.Key.class, e -> {
             if (e.isPress() && !e.screenOpen() && platform().matchesGameKey(GameKey.SPRINT, e.key())) toggled = !toggled;

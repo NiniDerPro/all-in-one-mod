@@ -18,7 +18,7 @@ public final class ServerInfoModule extends HudElement {
     private int cachedW = -1;
 
     public ServerInfoModule() {
-        super("serverinfo", "Server Info", "Server IP, ping, players and version", Category.INFO, false, 1.0, 0.3);
+        super("serverinfo", "Server Info", "Server IP, ping, players and version", Category.QOL, false, 1.0, 0.3);
         showName = add(new BooleanSetting("name", "Server name", true));
         showIp = add(new BooleanSetting("ip", "IP", true));
         showPing = add(new BooleanSetting("ping", "Ping", true));

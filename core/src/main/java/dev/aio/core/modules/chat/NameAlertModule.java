@@ -20,7 +20,7 @@ public final class NameAlertModule extends Module {
     private final BooleanSetting ignoreOwn;
 
     public NameAlertModule() {
-        super("namealert", "Name Alert", "Sound and notice when someone mentions your name", Category.CHAT, false);
+        super("namealert", "Name Alert", "Sound and notice when someone mentions your name", Category.QOL, false);
         requireAt = add(new BooleanSetting("requireAt", "Only with @", false));
         keywords = add(new StringSetting("keywords", "Extra words (comma separated)", "", 256));
         sound = add(new BooleanSetting("sound", "Sound", true));
