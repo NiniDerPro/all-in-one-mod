@@ -168,6 +168,9 @@ public interface Platform {
     /** Vorschau von Rüstungsverzierungen für eine Schmiedevorlage (leer, wenn keine). */
     default java.util.List<RecipeView> trimViews(ItemRef template) { return java.util.List.of(); }
 
+    /** Ob gerade ein Inventar-/Container-Screen offen ist (nicht Chat, Menü, ...). */
+    default boolean containerScreenOpen() { return false; }
+
     /** Hunger, Sättigung, Leben und das Essen in der Hand (Essens-Info). */
     default FoodState foodState() { return FoodState.NONE; }
 

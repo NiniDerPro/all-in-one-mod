@@ -608,6 +608,8 @@ public final class FabricPlatform implements Platform {
         return TrimPreview.views(client, ref.stack());
     }
 
+    @Override public boolean containerScreenOpen() { return client.gui.screen() instanceof AbstractContainerScreen<?>; }
+
     @Override public dev.aio.core.platform.FoodState foodState() {
         LocalPlayer p = player();
         if (p == null || client.gameMode == null) return dev.aio.core.platform.FoodState.NONE;
