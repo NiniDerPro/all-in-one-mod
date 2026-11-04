@@ -19,7 +19,9 @@ final class FpsBoost {
     private FpsBoost() {}
 
     private static final String[] KEYS = {FpsBoostModule.BIOME_BLEND, FpsBoostModule.SHADOWS, FpsBoostModule.CLOUDS,
-            FpsBoostModule.CHUNK_UPDATES, FpsBoostModule.TRANSPARENCY, FpsBoostModule.FADE_IN, FpsBoostModule.SMOOTH_LIGHT};
+            FpsBoostModule.CHUNK_UPDATES, FpsBoostModule.TRANSPARENCY, FpsBoostModule.FADE_IN, FpsBoostModule.SMOOTH_LIGHT,
+            FpsBoostModule.WEATHER, FpsBoostModule.VIGNETTE, FpsBoostModule.MENU_BLUR, FpsBoostModule.SOLID_LEAVES,
+            FpsBoostModule.MIPMAPS, FpsBoostModule.ENTITY_DISTANCE};
 
     @SuppressWarnings("unchecked")
     private static OptionInstance<Object> option(Options o, String key) {
@@ -31,6 +33,12 @@ final class FpsBoost {
             case FpsBoostModule.TRANSPARENCY -> o.improvedTransparency();
             case FpsBoostModule.FADE_IN -> o.chunkSectionFadeInTime();
             case FpsBoostModule.SMOOTH_LIGHT -> o.ambientOcclusion();
+            case FpsBoostModule.WEATHER -> o.weatherRadius();
+            case FpsBoostModule.VIGNETTE -> o.vignette();
+            case FpsBoostModule.MENU_BLUR -> o.menuBackgroundBlurriness();
+            case FpsBoostModule.SOLID_LEAVES -> o.cutoutLeaves();
+            case FpsBoostModule.MIPMAPS -> o.mipmapLevels();
+            case FpsBoostModule.ENTITY_DISTANCE -> o.entityDistanceScaling();
             default -> throw new IllegalArgumentException(key);
         };
     }
@@ -42,7 +50,10 @@ final class FpsBoost {
             case FpsBoostModule.CLOUDS -> CloudStatus.OFF;
             case FpsBoostModule.CHUNK_UPDATES -> PrioritizeChunkUpdates.NONE;
             case FpsBoostModule.FADE_IN -> 0.0;
-            default -> Boolean.FALSE; // Schatten, Transparenz, weiche Beleuchtung
+            case FpsBoostModule.WEATHER -> 5;
+            case FpsBoostModule.MENU_BLUR, FpsBoostModule.MIPMAPS -> 0;
+            case FpsBoostModule.ENTITY_DISTANCE -> 0.75;
+            default -> Boolean.FALSE; // Schatten, Transparenz, weiche Beleuchtung, Vignette, Laub-Ausschnitte
         };
     }
 
