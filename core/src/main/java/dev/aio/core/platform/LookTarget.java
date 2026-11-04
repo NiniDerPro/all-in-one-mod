@@ -19,7 +19,7 @@ import java.util.List;
  */
 public record LookTarget(Kind kind, String name, String source, ItemRef icon, Boolean correctTool, String toolType,
                          float growth, float health, float maxHealth, int armor, int x, int y, int z,
-                         List<Detail> details) {
+                         List<Detail> details, String typeName) {
     public enum Kind { BLOCK, ENTITY }
 
     /**
@@ -37,12 +37,13 @@ public record LookTarget(Kind kind, String name, String source, ItemRef icon, Bo
 
     public LookTarget {
         details = details == null ? List.of() : List.copyOf(details);
+        typeName = typeName == null ? "" : typeName;
     }
 
     public static LookTarget block(String name, String source, ItemRef icon, Boolean correctTool, String toolType,
                                    float growth, int x, int y, int z, List<Detail> details) {
         return new LookTarget(Kind.BLOCK, name, source, icon, correctTool, toolType, growth, Float.NaN, Float.NaN, -1,
-                x, y, z, details);
+                x, y, z, details, "");
     }
 
     public static LookTarget block(String name, String source, ItemRef icon, Boolean correctTool, String toolType,
@@ -52,6 +53,13 @@ public record LookTarget(Kind kind, String name, String source, ItemRef icon, Bo
 
     public static LookTarget entity(String name, String source, ItemRef icon, float health, float maxHealth, int armor,
                                     int x, int y, int z) {
-        return new LookTarget(Kind.ENTITY, name, source, icon, null, null, Float.NaN, health, maxHealth, armor, x, y, z, List.of());
+        return entity(name, "", source, icon, health, maxHealth, armor, x, y, z);
+    }
+
+    /** @param typeName Art des Wesens ("Zombie"), wichtig wenn {@code name} ein Namensschild ist */
+    public static LookTarget entity(String name, String typeName, String source, ItemRef icon, float health, float maxHealth,
+                                    int armor, int x, int y, int z) {
+        return new LookTarget(Kind.ENTITY, name, source, icon, null, null, Float.NaN, health, maxHealth, armor, x, y, z,
+                List.of(), typeName);
     }
 }

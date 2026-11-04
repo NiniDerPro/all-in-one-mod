@@ -90,12 +90,16 @@ class LookAtModuleTest {
         LookAtModule m = core.module(LookAtModule.class);
         p.lookTarget = LookTarget.entity("Zombie", "Minecraft", ItemRef.EMPTY, 15, 20, 2, 0, 0, 0);
         m.update();
-        assertEquals(List.of("<hearts>", "Rüstung: 2", "§oMinecraft"), m.lineTexts());
+        assertEquals(List.of("<hearts> 15 / 20 HP", "Rüstung: 2", "§oMinecraft"), m.lineTexts());
         assertFalse(m.iconShown(), "kein Icon bei Wesen ohne Item");
 
         p.lookTarget = LookTarget.entity("Wither", "Minecraft", ItemRef.EMPTY, 250, 300, 4, 0, 0, 0);
         m.update();
-        assertEquals("❤ 250 / 300", m.lineTexts().get(0), "viel Leben als Zahl statt Herzen");
+        assertEquals("❤ 250 / 300 HP", m.lineTexts().get(0), "viel Leben als Zahl statt Herzen");
+
+        p.lookTarget = LookTarget.entity("Bernd", "Zombie", "Minecraft", ItemRef.EMPTY, 20, 20, 0, 0, 0, 0);
+        m.update();
+        assertEquals("Typ: Zombie", m.lineTexts().get(0), "Typ bei Namensschild");
     }
 
     @Test void hiddenWithoutTargetAndInMenus() {

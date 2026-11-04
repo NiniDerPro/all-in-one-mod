@@ -41,6 +41,15 @@ public final class Events {
         public MouseScroll(double amount) { this.amount = amount; }
     }
 
+    /** Kurz bevor der Spieler anfängt, einen Block abzubauen (vor dem Senden an den Server). */
+    public record StartBreak(int x, int y, int z) {}
+
+    /** Kurz bevor der Spieler ein Wesen schlägt (vor dem Senden an den Server). */
+    public record AttackEntity(boolean living) {}
+
+    /** Eine empfangene Chat- oder Systemnachricht als reiner Text. */
+    public record ChatReceived(String text, boolean system) {}
+
     /** Beim Betreten einer Welt bzw. eines Servers. {@code address} ist bei Singleplayer null. */
     public record ServerJoin(String address) {}
 

@@ -60,6 +60,9 @@ public final class ZoomModule extends KeyActivatedModule {
         return 1 / current;
     }
 
+    /** Aktueller FOV-Faktor ohne die Animation weiterzuschalten (1 = kein Zoom). */
+    public double currentMultiplier() { return isActive() ? 1 / current : 1; }
+
     /** Faktor für die Mausempfindlichkeit, damit Zielen beim Zoomen nicht zu schnell ist. */
     public double sensitivityMultiplier() {
         if (!isActive() || !reduceSensitivity.on() || current <= 1) return 1;

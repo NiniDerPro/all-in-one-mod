@@ -73,7 +73,7 @@ public final class LookAtModule extends HudElement {
     private int heartsW;
 
     public LookAtModule() {
-        super("lookat", "Blick-Info", "Zeigt Block oder Wesen unter dem Fadenkreuz (wie Jade)", 0.5, 0.0);
+        super("lookat", "Blick-Info", "Zeigt Block oder Wesen unter dem Fadenkreuz", dev.aio.core.module.Category.INFO, false, 0.5, 0.0);
         style = add(new EnumSetting<>("style", "Stil", Style.CLASSIC));
         showIcon = add(new BooleanSetting("showIcon", "Icon", true));
         showModName = add(new BooleanSetting("showModName", "Mod-Name", true));
@@ -132,10 +132,14 @@ public final class LookAtModule extends HudElement {
                 }
             }
         } else {
+            if (!t.typeName().isEmpty() && !t.typeName().equals(t.name())) {
+                next.add(new Line("Typ: ", INFO, false, t.typeName(), 0xFFFFFFFF));
+            }
             if (showHealth.on() && !Float.isNaN(t.health()) && t.maxHealth() > 0) {
                 boolean asHearts = t.maxHealth() <= MAX_HEARTS * 2;
-                String text = asHearts ? "" : HEART + " " + fmt(t.health()) + " / " + fmt(t.maxHealth());
-                next.add(new Line(text, BAD, asHearts));
+                String hp = fmt(t.health()) + " / " + fmt(t.maxHealth()) + " HP";
+                next.add(asHearts ? new Line("", BAD, true, " " + hp, 0xFFFFFFFF)
+                        : new Line(HEART + " ", BAD, false, hp, 0xFFFFFFFF));
             }
             if (showArmor.on() && t.armor() > 0) next.add(new Line("Rüstung: " + t.armor(), INFO, false));
         }
@@ -190,7 +194,7 @@ public final class LookAtModule extends HudElement {
     private int heartsWidth(Renderer r) {
         if (target == null || Float.isNaN(target.maxHealth())) return 0;
         int n = (int) Math.ceil(target.maxHealth() / 2f);
-        return n * (r.textWidth(HEART) + 1);
+        return n * HEART_STEP + 1;
     }
 
     @Override public int width(Renderer r) {
@@ -199,7 +203,7 @@ public final class LookAtModule extends HudElement {
         if (!preview && cachedW >= 0) return cachedW;
         int w = r.textWidth(shownName(preview));
         heartsW = heartsWidth(r);
-        for (Line l : shownLines(preview)) w = Math.max(w, l.hearts ? heartsW : r.textWidth(l.full()));
+        for (Line l : shownLines(preview)) w = Math.max(w, l.hearts ? heartsW + r.textWidth(l.value) : r.textWidth(l.full()));
         int total = textLeft(preview) + w + PAD;
         if (!preview) cachedW = total;
         return total;
@@ -236,6 +240,7 @@ public final class LookAtModule extends HudElement {
         for (Line l : ls) {
             if (l.hearts) {
                 drawHearts(r, left, y);
+                r.text(l.value, left + heartsWidth(r), y, l.valueColor, shadow());
             } else {
                 r.text(l.text, left, y, l.color, shadow());
                 if (!l.value.isEmpty()) r.text(l.value, left + r.textWidth(l.text), y, l.valueColor, shadow());
@@ -266,23 +271,27 @@ public final class LookAtModule extends HudElement {
         r.fillGradient(w - 2, 2, w - 1, h - 2, top, bottom);
     }
 
+    /** Herzen mit den Original-Sprites aus dem Vanilla-HUD. */
     private void drawHearts(Renderer r, float x, float y) {
         float hp = Math.max(0, target.health());
         int n = (int) Math.ceil(target.maxHealth() / 2f);
-        int step = r.textWidth(HEART) + 1;
         for (int i = 0; i < n; i++) {
             float filled = hp - i * 2;
-            int color = filled >= 2 ? BAD : filled > 0 ? 0xFFB03030 : 0xFF3A3A3A;
-            r.text(HEART, x + i * step, y, color, shadow());
+            float hx = x + i * HEART_STEP;
+            r.sprite("minecraft:hud/heart/container", hx, y - 1, 9, 9);
+            if (filled >= 2) r.sprite("minecraft:hud/heart/full", hx, y - 1, 9, 9);
+            else if (filled > 0) r.sprite("minecraft:hud/heart/half", hx, y - 1, 9, 9);
         }
     }
+
+    private static final int HEART_STEP = 8;
 
     // Für Tests
     String targetName() { return name; }
 
     List<String> lineTexts() {
         List<String> out = new ArrayList<>();
-        for (Line l : lines) out.add(l.hearts ? "<hearts>" : l.full());
+        for (Line l : lines) out.add(l.hearts ? "<hearts>" + l.value : l.full());
         return out;
     }
 

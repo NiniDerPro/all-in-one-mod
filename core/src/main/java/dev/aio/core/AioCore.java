@@ -84,6 +84,34 @@ public final class AioCore {
         modules.register(new FullbrightModule());
         modules.register(new ToggleSprintModule());
         modules.register(new ChatModule());
+        modules.register(new dev.aio.core.modules.chat.NameAlertModule());
+        // Info
+        modules.register(new dev.aio.core.modules.info.BiomeModule());
+        modules.register(new dev.aio.core.modules.info.DayCounterModule());
+        modules.register(new dev.aio.core.modules.info.WorldTimeModule());
+        modules.register(new dev.aio.core.modules.info.PlaytimeModule());
+        modules.register(new dev.aio.core.modules.info.ServerInfoModule());
+        // HUD
+        modules.register(new dev.aio.core.modules.hud.TotemCounterModule());
+        modules.register(new dev.aio.core.modules.hud.ArrowCounterModule());
+        modules.register(new dev.aio.core.modules.hud.HeldItemInfoModule());
+        // Navigation
+        modules.register(new dev.aio.core.modules.navigation.CompassModule());
+        modules.register(new dev.aio.core.modules.navigation.WaypointsModule());
+        modules.register(new dev.aio.core.modules.navigation.DeathPointModule());
+        modules.register(new dev.aio.core.modules.navigation.PortalCalculatorModule());
+        // Grafik
+        modules.register(new dev.aio.core.modules.render.NoFogModule());
+        modules.register(new dev.aio.core.modules.render.NoHurtcamModule());
+        modules.register(new dev.aio.core.modules.render.NoPumpkinModule());
+        modules.register(new dev.aio.core.modules.render.BlockOutlineModule());
+        // Inventar
+        modules.register(new dev.aio.core.modules.inventory.ShulkerPreviewModule());
+        modules.register(new dev.aio.core.modules.inventory.InventoryTweaksModule());
+        modules.register(new dev.aio.core.modules.inventory.ItemListModule());
+        // Spieler & Kampf
+        modules.register(new dev.aio.core.modules.combat.AutoToolModule());
+        modules.register(new dev.aio.core.modules.combat.AutoWeaponModule());
     }
 
     /** Hängt alle Module an, lädt die Config und registriert die Kern-Listener. */

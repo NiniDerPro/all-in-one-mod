@@ -5,7 +5,13 @@ import dev.aio.core.platform.Renderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
 import org.joml.Matrix3x2fStack;
+import org.joml.Vector2f;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /** {@link Renderer} über dem {@link GuiGraphicsExtractor} von 26.3. Pro Frame per {@link #begin} gesetzt. */
 public final class FabricRenderer implements Renderer {
@@ -53,6 +59,26 @@ public final class FabricRenderer implements Renderer {
         if (overlay) g.itemDecorations(font(), ref.stack(), 0, 0);
         pose.popMatrix();
     }
+
+    private final Map<String, Identifier> sprites = new HashMap<>();
+
+    @Override public void sprite(String id, float x, float y, int width, int height) {
+        Identifier sprite = sprites.computeIfAbsent(id, Identifier::parse);
+        Matrix3x2fStack pose = g.pose();
+        pose.pushMatrix();
+        pose.translate(x, y);
+        g.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, 0, 0, width, height);
+        pose.popMatrix();
+    }
+
+    @Override public void enableScissorLocal(float x1, float y1, float x2, float y2) {
+        Vector2f a = g.pose().transformPosition(new Vector2f(x1, y1));
+        Vector2f b = g.pose().transformPosition(new Vector2f(x2, y2));
+        g.enableScissor(Math.round(Math.min(a.x, b.x)), Math.round(Math.min(a.y, b.y)),
+                Math.round(Math.max(a.x, b.x)), Math.round(Math.max(a.y, b.y)));
+    }
+
+    @Override public void disableScissorLocal() { g.disableScissor(); }
 
     @Override public void push() { g.pose().pushMatrix(); }
 

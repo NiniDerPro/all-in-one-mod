@@ -137,27 +137,32 @@ public final class ClickGuiScreen implements UiScreen {
                 core.clientSettings().rainbowAccent.on() ? dev.aio.core.hud.ColorMode.CHROMA : dev.aio.core.hud.ColorMode.STATIC,
                 accent, accent, 0.25f, true, 0);
         float y = py + 28;
+        int used = 0;
+        for (Category c : Category.values()) if (!core.modules().byCategory(c).isEmpty()) used++;
+        // Zeilenhöhe an den Platz bis zum Profilbereich anpassen (kleine Bildschirme)
+        float rowH = Math.max(11, Math.min(17, (ph - 62 - 28 - 26) / (float) Math.max(1, used)));
         for (Category c : Category.values()) {
             if (core.modules().byCategory(c).isEmpty()) continue;
             boolean sel = c == category;
-            boolean hover = inside(mx, my, px, y, px + SIDEBAR_W, y + 16);
+            boolean hover = inside(mx, my, px, y, px + SIDEBAR_W, y + rowH - 1);
             int cc = c.color();
+            float rh = rowH - 1, ty = y + (rh - 8) / 2f;
             if (sel) {
-                r.fill(px, y, px + SIDEBAR_W, y + 16, dev.aio.core.util.Colors.withAlpha(cc, 0x38));
-                r.fill(px, y, px + 2, y + 16, cc);
+                r.fill(px, y, px + SIDEBAR_W, y + rh, dev.aio.core.util.Colors.withAlpha(cc, 0x38));
+                r.fill(px, y, px + 2, y + rh, cc);
             } else if (hover) {
-                r.fill(px, y, px + SIDEBAR_W, y + 16, dev.aio.core.util.Colors.withAlpha(cc, 0x18));
+                r.fill(px, y, px + SIDEBAR_W, y + rh, dev.aio.core.util.Colors.withAlpha(cc, 0x18));
             }
-            r.fill(px + 10, y + 6, px + 14, y + 10, cc);
-            r.text(c.displayName(), px + 19, y + 4, sel ? Theme.TEXT : Theme.TEXT_DIM, false);
+            r.fill(px + 10, ty + 2, px + 14, ty + 6, cc);
+            r.text(r.trim(c.displayName(), SIDEBAR_W - 24), px + 19, ty, sel ? Theme.TEXT : Theme.TEXT_DIM, false);
             Category target = c;
-            hit(px, y, px + SIDEBAR_W, y + 16, b -> {
+            hit(px, y, px + SIDEBAR_W, y + rh, b -> {
                 category = target;
                 selected = null;
                 scroll = 0;
                 resetFocus();
             });
-            y += 17;
+            y += rowH;
         }
 
         y += 6;
@@ -287,6 +292,11 @@ public final class ClickGuiScreen implements UiScreen {
         r.fill(x, y, right, y + ROW_H, 0x10FFFFFF);
         r.text(r.trim(s.name(), w * 0.5f), x + 6, textY, Theme.TEXT, false);
 
+        if (s instanceof dev.aio.core.setting.ActionSetting a) {
+            float bw = Math.max(70, r.textWidth(a.name()) + 16);
+            button(r, mx, my, right - 4 - bw, y + 3, right - 4, y + ROW_H - 3, "Öffnen", accent, true, btn -> a.run());
+            return y + ROW_H + 2;
+        }
         if (s instanceof BooleanSetting b) {
             float sx = right - 26, sy = y + 5;
             toggleSwitch(r, sx, sy, b.on(), false, accent);

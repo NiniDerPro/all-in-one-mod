@@ -9,6 +9,29 @@ import dev.aio.core.platform.LookTarget;
 import dev.aio.core.platform.Perspective;
 import dev.aio.core.platform.Platform;
 import dev.aio.core.platform.Vec3;
+import dev.aio.core.platform.ContainerView;
+import dev.aio.core.platform.RecipeView;
+import dev.aio.core.platform.ServerInfo;
+import dev.aio.core.platform.VanillaOption;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.minecraft.client.OptionInstance;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.stats.Stats;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.level.Level;
 import dev.aio.core.ui.UiScreen;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.CameraType;
@@ -46,6 +69,8 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -101,9 +126,8 @@ public final class FabricPlatform implements Platform {
     @Override public String biome() {
         LocalPlayer p = player();
         if (p == null || client.level == null) return "";
-        String name = client.level.getBiome(p.blockPosition()).getRegisteredName();
-        int colon = name.indexOf(':');
-        return colon >= 0 ? name.substring(colon + 1) : name;
+        String id = client.level.getBiome(p.blockPosition()).getRegisteredName();
+        return Component.translatable("biome." + id.replace(':', '.')).getString();
     }
 
     @Override public List<ItemRef> armor() {
@@ -128,9 +152,16 @@ public final class FabricPlatform implements Platform {
                     inst.getAmplifier(),
                     inst.getDuration(),
                     inst.isInfiniteDuration(),
-                    effect.getCategory() == MobEffectCategory.BENEFICIAL));
+                    effect.getCategory() == MobEffectCategory.BENEFICIAL,
+                    effectSprite(inst.getEffect().getRegisteredName())));
         }
         return list;
+    }
+
+    /** "minecraft:speed" -> "minecraft:mob_effect/speed" (Sprite im GUI-Atlas). */
+    private static String effectSprite(String id) {
+        int colon = id.indexOf(':');
+        return colon < 0 ? "minecraft:mob_effect/" + id : id.substring(0, colon) + ":mob_effect/" + id.substring(colon + 1);
     }
 
     // ---- Blick-Info ----
@@ -154,11 +185,12 @@ public final class FabricPlatform implements Platform {
             String source = modName(BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()).getNamespace());
             ItemRef icon = e instanceof ItemEntity item ? FabricItemRef.of(item.getItem()) : ItemRef.EMPTY;
             BlockPos pos = e.blockPosition();
+            String type = e.getType().getDescription().getString();
             if (e instanceof LivingEntity living) {
-                return LookTarget.entity(e.getDisplayName().getString(), source, icon,
+                return LookTarget.entity(e.getDisplayName().getString(), type, source, icon,
                         living.getHealth(), living.getMaxHealth(), living.getArmorValue(), pos.getX(), pos.getY(), pos.getZ());
             }
-            return LookTarget.entity(e.getDisplayName().getString(), source, icon, Float.NaN, Float.NaN, -1,
+            return LookTarget.entity(e.getDisplayName().getString(), type, source, icon, Float.NaN, Float.NaN, -1,
                     pos.getX(), pos.getY(), pos.getZ());
         }
 
@@ -206,6 +238,229 @@ public final class FabricPlatform implements Platform {
         if (state.is(BlockTags.MINEABLE_WITH_SHOVEL)) return "Schaufel";
         if (state.is(BlockTags.MINEABLE_WITH_HOE)) return "Hacke";
         return null;
+    }
+
+    // ---- Welt ----
+
+    @Override public String worldKey() {
+        var server = client.getSingleplayerServer();
+        if (server != null) return "sp:" + server.getWorldData().getLevelName();
+        ServerData info = client.getCurrentServer();
+        return info == null ? "unbekannt" : "server:" + info.ip.toLowerCase(java.util.Locale.ROOT);
+    }
+
+    @Override public String playerName() { return player() == null ? "" : player().getName().getString(); }
+
+    @Override public long dayTime() { return client.level == null ? 0 : client.level.getOverworldClockTime(); }
+
+    @Override public String dimension() {
+        if (client.level == null) return "";
+        var dim = client.level.dimension();
+        if (dim == Level.OVERWORLD) return "overworld";
+        if (dim == Level.NETHER) return "the_nether";
+        if (dim == Level.END) return "the_end";
+        return dim.toString();
+    }
+
+    @Override public Vec3 eyePos() {
+        LocalPlayer p = player();
+        if (p == null) return Vec3.ZERO;
+        var eye = p.getEyePosition();
+        return new Vec3(eye.x, eye.y, eye.z);
+    }
+
+    @Override public double fov() { return client.options.fov().get(); }
+
+    @Override public boolean isDead() { return player() != null && player().isDeadOrDying(); }
+
+    @Override public long playTimeTicks() {
+        LocalPlayer p = player();
+        if (p == null) return -1;
+        int v = p.getStats().getValue(Stats.CUSTOM.get(Stats.PLAY_TIME));
+        return v > 0 ? v : -1;
+    }
+
+    @Override public void requestStats() {
+        if (client.getConnection() != null) {
+            client.getConnection().send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.REQUEST_STATS));
+        }
+    }
+
+    @Override public ServerInfo serverInfo() {
+        ServerData info = client.getCurrentServer();
+        var conn = client.getConnection();
+        if (info == null || conn == null) return null;
+        String brand = conn.serverBrand();
+        return new ServerInfo(info.name == null ? "" : info.name, info.ip, ping(), conn.getOnlinePlayers().size(),
+                info.version == null ? "" : info.version.getString(), info.motd == null ? "" : info.motd.getString(),
+                brand == null ? "" : brand);
+    }
+
+    private final java.util.Map<String, TagKey<Item>> tagCache = new HashMap<>();
+
+    @Override public int countItems(String idOrTag) {
+        LocalPlayer p = player();
+        if (p == null) return 0;
+        Inventory inv = p.getInventory();
+        boolean tag = idOrTag.startsWith("#");
+        TagKey<Item> key = tag ? tagCache.computeIfAbsent(idOrTag, t -> TagKey.create(Registries.ITEM, Identifier.parse(t.substring(1)))) : null;
+        int n = 0;
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (s.isEmpty()) continue;
+            if (tag ? s.is(key) : BuiltInRegistries.ITEM.getKey(s.getItem()).toString().equals(idOrTag)) n += s.getCount();
+        }
+        return n;
+    }
+
+    @Override public ItemRef item(String id) {
+        return BuiltInRegistries.ITEM.get(Identifier.parse(id))
+                .map(h -> FabricItemRef.of(new ItemStack(h.value())))
+                .orElse(ItemRef.EMPTY);
+    }
+
+    @Override public List<String> heldItemDetails() {
+        LocalPlayer p = player();
+        if (p == null) return List.of();
+        ItemStack s = p.getMainHandItem();
+        ItemEnchantments ench = s.getEnchantments();
+        if (ench.isEmpty()) ench = s.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY);
+        List<String> out = new ArrayList<>();
+        for (Object2IntMap.Entry<Holder<Enchantment>> e : ench.entrySet()) {
+            out.add(Enchantment.getFullname(e.getKey(), e.getIntValue()).getString());
+        }
+        return out;
+    }
+
+    // ---- Hotbar ----
+
+    @Override public int selectedSlot() { return player() == null ? 0 : player().getInventory().getSelectedSlot(); }
+
+    /** Der Wechsel geht mit der nächsten Aktion (Abbauen, Schlagen) bzw. im nächsten Tick an den Server. */
+    @Override public void selectSlot(int slot) {
+        if (player() != null && slot >= 0 && slot < 9) player().getInventory().setSelectedSlot(slot);
+    }
+
+    @Override public int bestToolSlot() {
+        LocalPlayer p = player();
+        if (p == null || client.level == null || !(client.hitResult instanceof BlockHitResult bh)) return -1;
+        BlockState state = client.level.getBlockState(bh.getBlockPos());
+        if (state.isAir()) return -1;
+        int current = p.getInventory().getSelectedSlot();
+        int best = -1;
+        float bestScore = toolScore(p.getInventory().getItem(current), state);
+        for (int i = 0; i < 9; i++) {
+            float score = toolScore(p.getInventory().getItem(i), state);
+            if (score > bestScore + 0.01f) {
+                bestScore = score;
+                best = i;
+            }
+        }
+        return best;
+    }
+
+    private static float toolScore(ItemStack stack, BlockState state) {
+        float speed = stack.getDestroySpeed(state);
+        if (state.requiresCorrectToolForDrops() && stack.isCorrectToolForDrops(state)) speed += 1000;
+        // fast kaputte Werkzeuge schonen
+        if (stack.isDamageableItem() && stack.getMaxDamage() - stack.getDamageValue() <= 2) speed -= 2000;
+        return speed;
+    }
+
+    @Override public int bestWeaponSlot(boolean preferAxe) {
+        LocalPlayer p = player();
+        if (p == null) return -1;
+        int best = -1;
+        int bestScore = 0;
+        for (int i = 0; i < 9; i++) {
+            ItemStack s = p.getInventory().getItem(i);
+            int type = s.is(ItemTags.SWORDS) ? (preferAxe ? 1 : 2) : s.is(ItemTags.AXES) ? (preferAxe ? 2 : 1) : 0;
+            if (type == 0) continue;
+            // höhere Stufe = mehr Haltbarkeit (Holz < Stein < Eisen < Diamant < Netherit)
+            int score = type * 100_000 + s.getMaxDamage();
+            if (score > bestScore) {
+                bestScore = score;
+                best = i;
+            }
+        }
+        return best;
+    }
+
+    // ---- Inventar / Item-Liste ----
+
+    @Override public ContainerView container() {
+        if (client.gui.screen() instanceof AbstractContainerScreen<?> screen && player() != null && client.gameMode != null) {
+            return new FabricContainerView(client, screen.getMenu());
+        }
+        return null;
+    }
+
+    private List<ItemRef> allItemsCache;
+
+    @Override public List<ItemRef> allItems() {
+        if (allItemsCache == null) {
+            List<ItemRef> list = new ArrayList<>();
+            for (Item item : BuiltInRegistries.ITEM) {
+                ItemStack stack = new ItemStack(item);
+                if (!stack.isEmpty()) list.add(FabricItemRef.of(stack));
+            }
+            list.sort(java.util.Comparator.comparing(ItemRef::id));
+            allItemsCache = List.copyOf(list);
+        }
+        return allItemsCache;
+    }
+
+    @Override public List<RecipeView> recipes(ItemRef item, boolean usages) { return RecipeSource.find(client, item, usages); }
+
+    @Override public boolean recipesAvailable() { return RecipeSource.available(client); }
+
+    // ---- Optionen ----
+
+    private long optionsDirtyAt = -1;
+
+    @SuppressWarnings("unchecked")
+    private OptionInstance<?> optionInstance(VanillaOption o) {
+        Options op = client.options;
+        return switch (o) {
+            case CHAT_WIDTH -> op.chatWidth();
+            case CHAT_HEIGHT_FOCUSED -> op.chatHeightFocused();
+            case CHAT_HEIGHT_UNFOCUSED -> op.chatHeightUnfocused();
+            case CHAT_SCALE -> op.chatScale();
+            case CHAT_LINE_SPACING -> op.chatLineSpacing();
+            case CHAT_OPACITY -> op.chatOpacity();
+            case TEXT_BACKGROUND_OPACITY -> op.textBackgroundOpacity();
+            case FORCE_UNICODE_FONT -> op.forceUnicodeFont();
+        };
+    }
+
+    @Override public double option(VanillaOption o) {
+        Object v = optionInstance(o).get();
+        if (v instanceof Boolean b) return b ? 1 : 0;
+        return v instanceof Number n ? n.doubleValue() : 0;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override public void setOption(VanillaOption o, double value) {
+        if (o == VanillaOption.FORCE_UNICODE_FONT) {
+            OptionInstance<Boolean> opt = (OptionInstance<Boolean>) optionInstance(o);
+            boolean b = value > 0.5;
+            if (opt.get() != b) opt.set(b);
+        } else {
+            ((OptionInstance<Double>) optionInstance(o)).set(Math.max(0, Math.min(1, value)));
+        }
+        optionsDirtyAt = System.currentTimeMillis();
+    }
+
+    /** Vom Tick aufgerufen: Optionen gesammelt speichern (nicht bei jedem Zieh-Schritt). */
+    void saveOptionsIfDirty() {
+        if (optionsDirtyAt > 0 && System.currentTimeMillis() - optionsDirtyAt > 1000) {
+            optionsDirtyAt = -1;
+            client.options.save();
+        }
+    }
+
+    @Override public void playAlertSound() {
+        client.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_PLING, 2.0F));
     }
 
     // ---- Eingabe ----
@@ -279,6 +534,7 @@ public final class FabricPlatform implements Platform {
      * Tastatur- oder Mausverarbeitung, die sonst denselben Tastendruck an den neuen Screen weitergibt.
      */
     @Override public void openScreen(UiScreen screen) {
+        // wenn schon ein Tick-Wechsel aussteht, gewinnt der neueste
         pendingScreen = screen;
         pendingClose = false;
     }
@@ -293,7 +549,7 @@ public final class FabricPlatform implements Platform {
         if (pendingScreen != null) {
             UiScreen s = pendingScreen;
             pendingScreen = null;
-            client.gui.setScreen(new AioScreen(s));
+            client.gui.setScreen(new AioScreen(s, client.gui.screen()));
         } else if (pendingClose) {
             pendingClose = false;
             if (client.gui.screen() instanceof AioScreen) client.gui.setScreen(null);
