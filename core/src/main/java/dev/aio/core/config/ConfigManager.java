@@ -291,6 +291,7 @@ public final class ConfigManager {
                 enabled = m.enabledByDefault();
             }
         }
+        m.afterLoad();
         m.setEnabled(enabled);
     }
 

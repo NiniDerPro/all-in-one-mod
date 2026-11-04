@@ -97,6 +97,7 @@ public final class AioFabricClient implements ClientModInitializer {
             // Fenster ohne Fokus (Alt+Tab): Loslassen kommt nicht mehr an, darum alles als losgelassen werten
             if (!c.isWindowActive()) InputState.clear();
             platform.applyPendingScreen();
+            Culler.tick();
             platform.saveOptionsIfDirty();
             core.bus().post(Events.Tick.INSTANCE);
         });
@@ -108,6 +109,7 @@ public final class AioFabricClient implements ClientModInitializer {
         });
         ClientPlayConnectionEvents.DISCONNECT.register((handler, c) -> c.execute(() -> {
             RecipeSource.clear();
+            VillagerOffers.clear();
             core.bus().post(Events.ServerLeave.INSTANCE);
         }));
 

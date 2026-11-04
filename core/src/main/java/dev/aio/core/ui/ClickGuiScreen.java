@@ -243,10 +243,24 @@ public final class ClickGuiScreen implements UiScreen {
         String label = "↕ " + core.clientSettings().sortMode.get().displayName();
         float bw = r.textWidth(label) + 10;
         float bx2 = sx1 - 4, bx1 = bx2 - bw;
-        if (bx1 > x + r.textWidth(title) + 6) {
+        float titleEnd = x + r.textWidth(title) + 6;
+        if (bx1 > titleEnd) {
             button(r, mx, my, bx1, y, bx2, y + 14, label, accent, false,
                     b -> core.clientSettings().sortMode.cycle(b == 1 ? -1 : 1));
+        } else {
+            bx1 = sx1;
         }
+        // Alle an / Alle aus: gilt für die gerade gezeigten Module (Kategorie bzw. Suchtreffer)
+        float offW = r.textWidth("Alle aus") + 10, onW = r.textWidth("Alle an") + 10;
+        float ox2 = bx1 - 4, ox1 = ox2 - offW, nx2 = ox1 - 3, nx1 = nx2 - onW;
+        if (nx1 > titleEnd) {
+            button(r, mx, my, nx1, y, nx2, y + 14, "Alle an", accent, false, b -> setAll(true));
+            button(r, mx, my, ox1, y, ox2, y + 14, "Alle aus", accent, false, b -> setAll(false));
+        }
+    }
+
+    private void setAll(boolean on) {
+        for (Module m : visibleModules()) if (m.canToggle()) m.setEnabled(on);
     }
 
     private float renderCards(Renderer r, int mx, int my, float x, float y, float w, int accent) {
@@ -647,6 +661,11 @@ public final class ClickGuiScreen implements UiScreen {
     }
 
     @Override public boolean charTyped(String text) {
+        // Einfach lostippen: ohne anderes aktives Feld landet der Text in der Suche oben rechts
+        if (!searchFocused && editing == null && listening == null && selected == null
+                && text != null && !text.isEmpty() && text.codePointAt(0) > 32) {
+            searchFocused = true;
+        }
         if (searchFocused && text != null && !text.isEmpty() && text.codePointAt(0) >= 32) {
             setSearch(search + text);
             return true;

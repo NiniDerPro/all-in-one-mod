@@ -169,6 +169,9 @@ public abstract class Module {
     /** Module wie die Client-Einstellungen lassen sich nicht ausschalten. */
     public boolean canToggle() { return true; }
 
+    /** Nach dem Laden der Config aufgerufen, z. B. um alte Standardwerte umzustellen. */
+    public void afterLoad() {}
+
     public KeybindSetting toggleKey() { return toggleKey; }
 
     public List<Setting<?>> settings() { return Collections.unmodifiableList(settings); }

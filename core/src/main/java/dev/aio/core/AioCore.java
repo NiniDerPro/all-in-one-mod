@@ -91,6 +91,7 @@ public final class AioCore {
         modules.register(new dev.aio.core.modules.info.WorldTimeModule());
         modules.register(new dev.aio.core.modules.info.PlaytimeModule());
         modules.register(new dev.aio.core.modules.info.ServerInfoModule());
+        modules.register(new dev.aio.core.modules.info.VillagerInfoModule());
         // HUD
         modules.register(new dev.aio.core.modules.hud.TotemCounterModule());
         modules.register(new dev.aio.core.modules.hud.ArrowCounterModule());
@@ -115,6 +116,11 @@ public final class AioCore {
         modules.register(new dev.aio.core.modules.player.ElytraSwapModule());
         modules.register(new dev.aio.core.modules.client.KeyBindsModule());
         modules.register(new dev.aio.core.modules.player.FoodInfoModule());
+        modules.register(new dev.aio.core.modules.performance.EntityCullingModule());
+        modules.register(new dev.aio.core.modules.performance.RenderDistanceModule());
+        modules.register(new dev.aio.core.modules.performance.DynamicFpsModule());
+        modules.register(new dev.aio.core.modules.performance.ParticleLimitModule());
+        modules.register(new dev.aio.core.modules.performance.XpClumpsModule());
     }
 
     /** Hängt alle Module an, lädt die Config und registriert die Kern-Listener. */
