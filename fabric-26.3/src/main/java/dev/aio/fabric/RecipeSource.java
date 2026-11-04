@@ -2,6 +2,7 @@ package dev.aio.fabric;
 
 import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.RecipeView;
+import net.fabricmc.fabric.api.recipe.v1.FabricRecipeManager;
 import net.fabricmc.fabric.api.recipe.v1.sync.SynchronizedRecipes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.context.ContextMap;
@@ -40,17 +41,19 @@ final class RecipeSource {
 
     private static Collection<RecipeHolder<?>> all(Minecraft client) {
         var server = client.getSingleplayerServer();
-        if (server != null) return server.getRecipeManager().recipeMap().values();
+        if (server != null) {
+            FabricRecipeManager rm = (FabricRecipeManager) server.getRecipeManager();
+            List<RecipeHolder<?>> out = new ArrayList<>();
+            out.addAll(rm.getAllOfType(RecipeType.CRAFTING));
+            out.addAll(rm.getAllOfType(RecipeType.SMELTING));
+            out.addAll(rm.getAllOfType(RecipeType.BLASTING));
+            out.addAll(rm.getAllOfType(RecipeType.SMOKING));
+            out.addAll(rm.getAllOfType(RecipeType.CAMPFIRE_COOKING));
+            out.addAll(rm.getAllOfType(RecipeType.STONECUTTING));
+            return out;
+        }
         SynchronizedRecipes s = synced;
-        if (s == null) return List.of();
-        List<RecipeHolder<?>> out = new ArrayList<>();
-        out.addAll(s.getAllOfType(RecipeType.CRAFTING));
-        out.addAll(s.getAllOfType(RecipeType.SMELTING));
-        out.addAll(s.getAllOfType(RecipeType.BLASTING));
-        out.addAll(s.getAllOfType(RecipeType.SMOKING));
-        out.addAll(s.getAllOfType(RecipeType.CAMPFIRE_COOKING));
-        out.addAll(s.getAllOfType(RecipeType.STONECUTTING));
-        return out;
+        return s == null ? List.of() : s.recipes();
     }
 
     static List<RecipeView> find(Minecraft client, ItemRef item, boolean usages) {
