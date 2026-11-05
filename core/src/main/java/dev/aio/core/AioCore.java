@@ -1,5 +1,7 @@
 package dev.aio.core;
 
+import dev.aio.core.i18n.Lang;
+
 import dev.aio.core.compat.ServerCompat;
 import dev.aio.core.config.ConfigManager;
 import dev.aio.core.event.EventBus;
@@ -242,7 +244,7 @@ public final class AioCore {
         }
         if (m.isBlocked() && !m.isEnabled()) {
             m.setEnabled(true);
-            platform.notify(m.name() + ": blocked on this server (compatibility mode)");
+            platform.notify(Lang.tr("aio.ui.aio_core.blocked_on_this_server_compatibility", "%s: blocked on this server (compatibility mode)", m.name()));
             return;
         }
         m.toggle();
@@ -305,15 +307,14 @@ public final class AioCore {
             Log.warn("[aio] Module " + name + " turned off: " + now.get(id));
         }
         if (!names.isEmpty()) {
-            platform.notify(String.join(", ", names) + (names.size() == 1 ? " is" : " are")
-                    + " turned off because another mod changes the same part of the game");
+            platform.notify(Lang.tr("aio.ui.aio_core.turned_off_because_another_mod", "%s%s turned off because another mod changes the same part of the game", String.join(", ", names), (names.size() == 1 ? " is" : " are")));
         }
     }
 
     private void applyCompat(boolean announce) {
         int blocked = compat.apply(clientSettings.compatMode.get(), clientSettings.allowList.get());
         if (announce && blocked > 0) {
-            platform.notify(blocked + (blocked == 1 ? " module" : " modules") + " blocked on this server (compatibility mode)");
+            platform.notify(Lang.tr("aio.ui.aio_core.blocked_on_this_server_compatibility_2", "%s%s blocked on this server (compatibility mode)", blocked, (blocked == 1 ? " module" : " modules")));
         }
     }
 

@@ -32,4 +32,6 @@ tasks.withType(JavaCompile).configureEach {
 
 test {
     useJUnitPlatform()
+    // ./gradlew :core:test -Paio.coreOnly=true -Daio.writeLang=true  schreibt en_us.json neu
+    systemProperty 'aio.writeLang', System.getProperty('aio.writeLang', 'false')
 }

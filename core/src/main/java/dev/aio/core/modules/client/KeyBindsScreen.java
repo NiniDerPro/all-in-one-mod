@@ -1,5 +1,7 @@
 package dev.aio.core.modules.client;
 
+import dev.aio.core.i18n.Lang;
+
 import dev.aio.core.AioCore;
 import dev.aio.core.platform.KeyBinding;
 import dev.aio.core.platform.Keys;
@@ -44,7 +46,7 @@ public final class KeyBindsScreen implements UiScreen {
         index.refresh();
     }
 
-    @Override public String title() { return "Key Binds"; }
+    @Override public String title() { return Lang.tr("aio.ui.key_binds.title", "Key Binds"); }
 
     @Override public boolean returnsToPrevious() { return true; }
 
@@ -59,7 +61,7 @@ public final class KeyBindsScreen implements UiScreen {
         float pw = Math.min(w - 16, 380), px = (w - pw) / 2f, py = 8, ph = h - 16;
         r.fill(px, py, px + pw, py + ph, Theme.PANEL);
         Theme.accentBar(r, core, px, py, px + pw, py + 2);
-        r.text("Key Binds", px + 8, py + 8, Theme.TEXT, true);
+        r.text(Lang.tr("aio.ui.key_binds.key_binds", "Key Binds"), px + 8, py + 8, Theme.TEXT, true);
 
         // Suchfeld
         float sx = px + 8, sy = py + 22, sw = pw - 16;
@@ -67,7 +69,7 @@ public final class KeyBindsScreen implements UiScreen {
         r.outline(sx, sy, sx + sw, sy + 14, 1, Theme.accent(core));
         boolean caret = !queryAll && (System.currentTimeMillis() / 500) % 2 == 0;
         if (queryAll) dev.aio.core.ui.TextEdit.drawSelection(r, sx + 4, sy + 3, r.trim(query, sw - 8));
-        String shown = query.isEmpty() ? "Search: name, category or key…" : query + (caret ? "_" : "");
+        String shown = query.isEmpty() ? Lang.tr("aio.ui.key_binds.search_name_category_or_key", "Search: name, category or key…") : query + (caret ? "_" : "");
         r.text(r.trim(shown, sw - 8), sx + 4, sy + 3, query.isEmpty() ? Theme.TEXT_MUTED : Theme.TEXT, false);
 
         // Filter, Sortierung, Zurücksetzen
@@ -75,9 +77,9 @@ public final class KeyBindsScreen implements UiScreen {
         for (KeyBindIndex.Filter f : KeyBindIndex.Filter.values()) {
             bx += button(r, bx, by, f.label, f == filter, mx, my, () -> { filter = f; scroll = 0; }) + 3;
         }
-        String sortLabel = "Sort: " + sort.label;
+        String sortLabel = Lang.tr("aio.ui.key_binds.sort", "Sort: %s", sort.label);
         float sortW = r.textWidth(sortLabel) + 10;
-        String resetLabel = confirmReset ? "Really?" : "Reset all";
+        String resetLabel = confirmReset ? Lang.tr("aio.ui.key_binds.really", "Really?") : Lang.tr("aio.ui.key_binds.reset_all", "Reset all");
         float resetW = r.textWidth(resetLabel) + 10;
         float rx = px + pw - 8 - resetW;
         button(r, rx, by, resetLabel, confirmReset, mx, my, () -> {
@@ -95,7 +97,7 @@ public final class KeyBindsScreen implements UiScreen {
         else renderList(r, px + 8, pw - 16, mx, my);
         r.disableScissor();
 
-        String hint = listening != null ? "Press a new key · Escape: unbind" : "Click a key to change it · Scroll: browse";
+        String hint = listening != null ? Lang.tr("aio.ui.key_binds.press_a_new_key_escape", "Press a new key · Escape: unbind") : Lang.tr("aio.ui.key_binds.click_a_key_to_change", "Click a key to change it · Scroll: browse");
         r.text(hint, px + 8, py + ph - 12, listening != null ? Theme.WARNING : Theme.TEXT_MUTED, false);
     }
 
@@ -138,7 +140,7 @@ public final class KeyBindsScreen implements UiScreen {
             }
             y += ROW;
         }
-        if (entries.isEmpty()) r.text("Nothing found.", x, listTop + 4, Theme.TEXT_DIM, false);
+        if (entries.isEmpty()) r.text(Lang.tr("aio.ui.key_binds.nothing_found", "Nothing found."), x, listTop + 4, Theme.TEXT_DIM, false);
         contentHeight = (int) (y + scroll - listTop);
     }
 

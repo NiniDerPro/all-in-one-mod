@@ -1,5 +1,7 @@
 package dev.aio.core.modules.navigation;
 
+import dev.aio.core.i18n.Lang;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -168,7 +170,7 @@ public final class WaypointsModule extends HudElement {
         Waypoint w = new Waypoint(name, (int) Math.floor(p.x()), (int) Math.floor(p.y()), (int) Math.floor(p.z()),
                 platform().worldKey(), platform().dimension(), color, true, false);
         add(w);
-        platform().notify("Waypoint \"" + name + "\" added");
+        platform().notify(Lang.tr("aio.ui.waypoints.waypoint_added", "Waypoint \"%s\" added", name));
         return w;
     }
 

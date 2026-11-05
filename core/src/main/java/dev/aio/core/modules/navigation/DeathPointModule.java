@@ -1,5 +1,7 @@
 package dev.aio.core.modules.navigation;
 
+import dev.aio.core.i18n.Lang;
+
 import dev.aio.core.event.Events;
 import dev.aio.core.module.Category;
 import dev.aio.core.module.Module;
@@ -44,7 +46,7 @@ public final class DeathPointModule extends Module {
         Vec3 p = platform().playerPos();
         int x = (int) Math.floor(p.x()), y = (int) Math.floor(p.y()), z = (int) Math.floor(p.z());
         wp.add(new Waypoint("Death", x, y, z, platform().worldKey(), platform().dimension(), 0xFF5555, true, true));
-        if (chatMessage.on()) platform().notify("Died at " + x + " " + y + " " + z);
+        if (chatMessage.on()) platform().notify(Lang.tr("aio.ui.death_point.died_at", "Died at %s %s %s", x, y, z));
     }
 
     private void checkArrival() {
@@ -55,7 +57,7 @@ public final class DeathPointModule extends Module {
         for (Waypoint w : wp.inThisWorld()) {
             if (w.death() && w.dimension().equals(dim) && w.distanceTo(p.x(), p.y(), p.z()) <= arriveDistance.get()) {
                 wp.remove(w);
-                platform().notify("Death waypoint reached");
+                platform().notify(Lang.tr("aio.ui.death_point.death_waypoint_reached", "Death waypoint reached"));
             }
         }
     }

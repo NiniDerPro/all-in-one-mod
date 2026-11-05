@@ -2,6 +2,8 @@ package dev.aio.fabric;
 
 import dev.aio.core.AioCore;
 import dev.aio.core.event.Events;
+import dev.aio.core.i18n.Lang;
+import net.minecraft.locale.Language;
 import dev.aio.core.util.Log;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -36,6 +38,12 @@ public final class AioFabricClient implements ClientModInitializer {
                 default -> LOGGER.info(message);
             }
         };
+
+        // Texte aus assets/aio/lang/*.json; folgt der Spracheinstellung von Minecraft
+        Lang.setLookup(key -> {
+            Language language = Language.getInstance();
+            return language.has(key) ? language.getOrDefault(key) : null;
+        });
 
         Minecraft client = Minecraft.getInstance();
         FabricPlatform platform = new FabricPlatform(client);

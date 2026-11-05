@@ -1,5 +1,7 @@
 package dev.aio.core.modules.hud;
 
+import dev.aio.core.i18n.Lang;
+
 import dev.aio.core.hud.HudElement;
 import dev.aio.core.platform.GameKey;
 import dev.aio.core.platform.Renderer;
@@ -159,7 +161,7 @@ public final class KeystrokesModule extends HudElement {
                 r.push();
                 r.translate(b.x + b.w / 2f, top + fontH);
                 r.scale(0.75f);
-                r.centeredText(cps + " CPS", 0, 0, fg, shadow() && t < 0.5f);
+                r.centeredText(Lang.tr("aio.ui.keystrokes.cps", "%s CPS", cps), 0, 0, fg, shadow() && t < 0.5f);
                 r.pop();
             } else if (b.key == GameKey.JUMP) {
                 float lineW = b.w * 0.45f;

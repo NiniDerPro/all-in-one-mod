@@ -1,5 +1,7 @@
 package dev.aio.core.modules.navigation;
 
+import dev.aio.core.i18n.Lang;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -32,7 +34,7 @@ public final class WaypointEditScreen implements UiScreen {
             new Template("Mine", 0xFFAA00), new Template("Portal", 0xAA55FF), new Template("Spawner", 0xFF5555),
             new Template("Village", 0x55FFFF), new Template("Shop", 0xFF55FF));
 
-    private static final String[] LABELS = {"Name", "X", "Y", "Z"};
+    private static final String[] LABELS = {Lang.tr("aio.ui.waypoint_edit.name", "Name"), "X", "Y", "Z"};
 
     private final AioCore core;
     private final WaypointsModule module;
@@ -61,7 +63,7 @@ public final class WaypointEditScreen implements UiScreen {
             color = original.color();
         } else {
             var p = core.platform().playerPos();
-            fields[0] = "Waypoint " + (module.inThisWorld().size() + 1);
+            fields[0] = Lang.tr("aio.ui.waypoint_edit.default_name", "Waypoint %s", module.inThisWorld().size() + 1);
             fields[1] = String.valueOf((int) Math.floor(p.x()));
             fields[2] = String.valueOf((int) Math.floor(p.y()));
             fields[3] = String.valueOf((int) Math.floor(p.z()));
@@ -69,7 +71,8 @@ public final class WaypointEditScreen implements UiScreen {
         }
     }
 
-    @Override public String title() { return original == null ? "New waypoint" : "Edit waypoint"; }
+    @Override public String title() { return original == null ? Lang.tr("aio.ui.waypoint_edit.title_new", "New waypoint")
+            : Lang.tr("aio.ui.waypoint_edit.title_edit", "Edit waypoint"); }
 
     @Override public boolean returnsToPrevious() { return true; }
 
@@ -118,7 +121,7 @@ public final class WaypointEditScreen implements UiScreen {
         r.fill(px, py, px + pw, py + ph, Theme.PANEL);
         Theme.accentBar(r, core, px, py, px + pw, py + 2);
         r.text(title(), px + 10, py + 9, Theme.TEXT, true);
-        button(r, mx, my, px + pw - 74, py + 6, px + pw - 8, py + 20, "Templates", showTemplates, b -> showTemplates = !showTemplates);
+        button(r, mx, my, px + pw - 74, py + 6, px + pw - 8, py + 20, Lang.tr("aio.ui.waypoint_edit.templates", "Templates"), showTemplates, b -> showTemplates = !showTemplates);
 
         // Name
         float fy = py + 28;
@@ -127,7 +130,7 @@ public final class WaypointEditScreen implements UiScreen {
         float cy = fy + 30;
         float cw = (pw - 20 - 12) / 3f;
         for (int i = 1; i <= 3; i++) field(r, i, px + 10 + (i - 1) * (cw + 6), cy, cw);
-        button(r, mx, my, px + 10, cy + 28, px + 110, cy + 42, "Current position", false, b -> {
+        button(r, mx, my, px + 10, cy + 28, px + 110, cy + 42, Lang.tr("aio.ui.waypoint_edit.current_position", "Current position"), false, b -> {
             var p = core.platform().playerPos();
             fields[1] = String.valueOf((int) Math.floor(p.x()));
             fields[2] = String.valueOf((int) Math.floor(p.y()));
@@ -136,7 +139,7 @@ public final class WaypointEditScreen implements UiScreen {
 
         // Farben
         float sy = cy + 52;
-        r.text("Color", px + 10, sy, Theme.TEXT_DIM, false);
+        r.text(Lang.tr("aio.ui.waypoint_edit.color", "Color"), px + 10, sy, Theme.TEXT_DIM, false);
         int[] pal = WaypointsModule.PALETTE;
         float sw = 14, gap = 4;
         for (int i = 0; i < pal.length; i++) {
@@ -149,8 +152,8 @@ public final class WaypointEditScreen implements UiScreen {
         }
 
         if (error != null) r.text(error, px + 10, py + ph - 34, Theme.DANGER, false);
-        button(r, mx, my, px + pw - 128, py + ph - 22, px + pw - 70, py + ph - 8, "Cancel", false, b -> core.platform().closeScreen());
-        button(r, mx, my, px + pw - 64, py + ph - 22, px + pw - 8, py + ph - 8, "Save", true, b -> save());
+        button(r, mx, my, px + pw - 128, py + ph - 22, px + pw - 70, py + ph - 8, Lang.tr("aio.ui.waypoint_edit.cancel", "Cancel"), false, b -> core.platform().closeScreen());
+        button(r, mx, my, px + pw - 64, py + ph - 22, px + pw - 8, py + ph - 8, Lang.tr("aio.ui.waypoint_edit.save", "Save"), true, b -> save());
 
         if (tw > 0) renderTemplates(r, mx, my, px + pw + 6, py, tw, ph);
     }
@@ -174,7 +177,7 @@ public final class WaypointEditScreen implements UiScreen {
     private void renderTemplates(Renderer r, int mx, int my, int x, int y, int w, int h) {
         r.fill(x, y, x + w, y + h, Theme.PANEL);
         Theme.accentBar(r, core, x, y, x + w, y + 2);
-        r.text("Templates", x + 8, y + 9, Theme.TEXT, true);
+        r.text(Lang.tr("aio.ui.waypoint_edit.templates", "Templates"), x + 8, y + 9, Theme.TEXT, true);
         List<Template> list = templates();
         float ry = y + 24;
         int maxRows = (h - 50) / 15;
@@ -199,14 +202,14 @@ public final class WaypointEditScreen implements UiScreen {
             }));
             ry += 15;
         }
-        button(r, mx, my, x + 4, y + h - 38, x + w - 4, y + h - 24, "+ Save current", false, b -> {
+        button(r, mx, my, x + 4, y + h - 38, x + w - 4, y + h - 24, Lang.tr("aio.ui.waypoint_edit.save_current", "+ Save current"), false, b -> {
             String name = fields[0].trim();
             if (name.isEmpty()) return;
             templates().removeIf(t -> t.name().equalsIgnoreCase(name));
             templates().add(new Template(name, color & 0xFFFFFF));
             saveTemplates();
         });
-        button(r, mx, my, x + 4, y + h - 20, x + w - 4, y + h - 6, "Restore defaults", false, b -> {
+        button(r, mx, my, x + 4, y + h - 20, x + w - 4, y + h - 6, Lang.tr("aio.ui.waypoint_edit.restore_defaults", "Restore defaults"), false, b -> {
             templates = new ArrayList<>(DEFAULT_TEMPLATES);
             saveTemplates();
         });
@@ -224,7 +227,7 @@ public final class WaypointEditScreen implements UiScreen {
     private void save() {
         String name = fields[0].trim();
         if (name.isEmpty()) {
-            error = "Please enter a name";
+            error = Lang.tr("aio.ui.waypoint_edit.please_enter_a_name", "Please enter a name");
             focus = 0;
             return;
         }
@@ -242,7 +245,7 @@ public final class WaypointEditScreen implements UiScreen {
         if (original == null) {
             module.add(new Waypoint(name, c[0], c[1], c[2], core.platform().worldKey(), core.platform().dimension(),
                     color & 0xFFFFFF, true, false));
-            core.platform().notify("Waypoint \"" + name + "\" added");
+            core.platform().notify(Lang.tr("aio.ui.waypoint_edit.waypoint_added", "Waypoint \"%s\" added", name));
         } else {
             module.replace(original, new Waypoint(name, c[0], c[1], c[2], original.world(), original.dimension(),
                     color & 0xFFFFFF, original.visible(), original.death()));
