@@ -42,7 +42,9 @@
     "SmallItemsMixin",
     "ShieldIndicatorOwnerMixin",
     "ShieldIndicatorRenderMixin",
-    "ToolSaverMixin"
+    "ToolSaverMixin",
+    "DynamicLightsMixin",
+    "DynamicLightsEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 0
