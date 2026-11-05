@@ -4,35 +4,46 @@ import dev.aio.core.AioCore;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.util.Colors;
 
-/** Farben der Oberfläche. Die Akzentfarbe ist in den Client-Einstellungen wählbar. */
+/**
+ * Farben der Oberfläche: dunkles Graphit mit leicht bläulichem Stich, Text in drei Abstufungen,
+ * eine Akzentfarbe (in den Client-Einstellungen wählbar) nur für Aktives und Fokus.
+ */
 public final class Theme {
     private Theme() {}
 
-    public static final int OVERLAY = 0x90000000;
-    public static final int PANEL = 0xF0121218;
-    public static final int SIDEBAR = 0xF00C0C10;
-    public static final int CARD = 0xFF1C1C24;
-    public static final int CARD_HOVER = 0xFF262630;
-    public static final int CARD_DISABLED = 0xFF15151B;
-    public static final int TEXT = 0xFFFFFFFF;
-    public static final int TEXT_DIM = 0xFF9A9AA8;
-    public static final int TEXT_MUTED = 0xFF5E5E6A;
-    public static final int TRACK = 0xFF34343F;
-    public static final int WARNING = 0xFFFFB02E;
-    public static final int DANGER = 0xFFE5484D;
+    public static final int OVERLAY = 0xA0050608;
+    /** Flächen von hinten nach vorne. */
+    public static final int PANEL = 0xF20E1015;
+    public static final int SIDEBAR = 0xF2090A0E;
+    public static final int SURFACE = 0xFF151820;
+    public static final int CARD = 0xFF181B24;
+    public static final int CARD_HOVER = 0xFF20242F;
+    public static final int CARD_DISABLED = 0xFF12141A;
+    /** Feine Linien und Ränder. */
+    public static final int LINE = 0x14FFFFFF;
+    public static final int LINE_STRONG = 0x26FFFFFF;
+    public static final int TEXT = 0xFFECEEF3;
+    public static final int TEXT_DIM = 0xFF959BAD;
+    public static final int TEXT_MUTED = 0xFF5D6375;
+    public static final int TRACK = 0xFF2A2F3B;
+    public static final int WARNING = 0xFFFFB547;
+    public static final int DANGER = 0xFFFF5C5C;
+    public static final int SUCCESS = 0xFF4ADE80;
 
-    /** Akzentfarbe: fest oder (Standard) ein langsam wandernder Regenbogen. */
+    /** Standard-Akzent: warmes Orange. */
+    public static final int DEFAULT_ACCENT = 0xFFFF7A3D;
+
     public static int accent(AioCore core) {
         return accent(core, 0);
     }
 
-    /** Akzentfarbe mit Versatz, damit z. B. Leisten als Verlauf erscheinen. */
+    /** Akzentfarbe; mit "Rainbow accent" ein langsam wandernder Regenbogen (Versatz für Verläufe). */
     public static int accent(AioCore core, float offset) {
         if (core.clientSettings().rainbowAccent.on()) return Colors.chroma(offset, 0.15f, 255);
         return core.clientSettings().accent.argb() | 0xFF000000;
     }
 
-    /** Leiste als Farbverlauf (Regenbogen oder Akzent). */
+    /** Dünne Leiste in der Akzentfarbe (bei Regenbogen als Verlauf). */
     public static void accentBar(Renderer r, AioCore core, float x1, float y1, float x2, float y2) {
         if (!core.clientSettings().rainbowAccent.on()) {
             r.fill(x1, y1, x2, y2, accent(core));

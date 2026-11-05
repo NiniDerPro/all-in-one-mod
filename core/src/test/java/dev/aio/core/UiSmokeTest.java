@@ -226,7 +226,11 @@ class UiSmokeTest {
         fps.setEnabled(true);
         fps.update();
         FakeRenderer r = new FakeRenderer();
-        assertEquals(ColorMode.CHROMA, fps.colorMode(), "Regenbogen ist Standard");
+        assertEquals(ColorMode.CLEAN, fps.colorMode(), "Clean ist Standard");
+        fps.render(r, false);
+        assertEquals(2, r.textCalls, "Clean: Wert und Beschriftung getrennt (\"120\", \" FPS\")");
+        ((EnumSetting<ColorMode>) fps.setting("colorMode")).set(ColorMode.CHROMA);
+        r.textCalls = 0;
         fps.render(r, false);
         assertEquals("120 FPS".length(), r.textCalls, "Regenbogen zeichnet pro Zeichen");
         ((EnumSetting<ColorMode>) fps.setting("colorMode")).set(ColorMode.STATIC);

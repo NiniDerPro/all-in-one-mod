@@ -5,6 +5,9 @@ import dev.aio.core.i18n.Lang;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.ui.TextEdit;
 import dev.aio.core.ui.Theme;
+import dev.aio.core.util.Colors;
+import dev.aio.core.ui.Draw;
+import dev.aio.core.ui.Window;
 import dev.aio.core.ui.UiScreen;
 
 import java.util.ArrayList;
@@ -65,15 +68,14 @@ public final class ParticleScreen implements UiScreen {
         int w = r.screenWidth(), h = r.screenHeight();
         r.fill(0, 0, w, h, Theme.OVERLAY);
         float pw = Math.min(w - 16, 320), px = (w - pw) / 2f, py = 8, ph = h - 16;
-        r.fill(px, py, px + pw, py + ph, Theme.PANEL);
-        Theme.accentBar(r, core, px, py, px + pw, py + 2);
-        r.text(Lang.tr("aio.ui.particle.particles", "Particles"), px + 8, py + 8, Theme.TEXT, true);
+        Window.frame(r, px, py, px + pw, py + ph);
+        Window.title(r, Lang.tr("aio.ui.particle.particles", "Particles"), px + 8, py + 8);
         String count = module.isActive() ? "" : Lang.tr("aio.ui.particle.module_is_off", "  (module is off)");
         r.text(count, px + 8 + r.textWidth(Lang.tr("aio.ui.particle.particles", "Particles")), py + 8, Theme.WARNING, false);
 
         float sx = px + 8, sy = py + 22, sw = pw - 16;
-        r.fill(sx, sy, sx + sw, sy + 14, 0xF0202028);
-        r.outline(sx, sy, sx + sw, sy + 14, 1, Theme.accent(core));
+        Draw.round(r, sx, sy, sx + sw, sy + 14, 2, 0xFF1E2230);
+        Draw.roundOutline(r, sx, sy, sx + sw, sy + 14, Colors.withAlpha(Theme.accent(core), 0xC0));
         boolean caret = !queryAll && (System.currentTimeMillis() / 500) % 2 == 0;
         if (queryAll) TextEdit.drawSelection(r, sx + 4, sy + 3, r.trim(query, sw - 8));
         String shown = query.isEmpty() ? Lang.tr("aio.ui.particle.search_just_type", "Search… (just type)") : query + (caret ? "_" : "");
@@ -120,14 +122,11 @@ public final class ParticleScreen implements UiScreen {
         if (y + ROW > listTop && y < listBottom) {
             boolean on = !module.isDisabled(id);
             boolean hover = mx >= x && mx <= x + w && my >= y && my < y + ROW && my >= listTop && my <= listBottom;
-            if (hover) r.fill(x - 2, y, x + w + 2, y + ROW, 0x20FFFFFF);
+            if (hover) Draw.round(r, x - 2, y, x + w + 2, y + ROW, 2, 0x14FFFFFF);
             r.text(r.trim(name(id), w - 60), x, y + 3, on ? Theme.TEXT : Theme.TEXT_MUTED, false);
             r.text(id.startsWith("aio:") ? "" : id, x + w - 40 - r.textWidth(id), y + 3, 0xFF505060, false);
             // Schalter
-            float tx = x + w - 26, ty = y + 3;
-            r.fill(tx, ty, tx + 22, ty + 8, on ? Theme.accent(core) : Theme.TRACK);
-            float knob = on ? tx + 14 : tx;
-            r.fill(knob, ty, knob + 8, ty + 8, 0xFFFFFFFF);
+            Draw.toggle(r, x + w - 20, y + 2, on ? 1 : 0, Theme.accent(core), false);
             if (my >= listTop && my <= listBottom) hits.add(new Hit(x, y, x + w, y + ROW, () -> module.setDisabled(id, on)));
         }
         return y + ROW;
@@ -136,7 +135,7 @@ public final class ParticleScreen implements UiScreen {
     private float button(Renderer r, float x, float y, String label, int mx, int my, Runnable action) {
         float bw = r.textWidth(label) + 10;
         boolean hover = mx >= x && mx <= x + bw && my >= y && my <= y + 13;
-        r.fill(x, y, x + bw, y + 13, hover ? Theme.CARD_HOVER : Theme.CARD);
+        Draw.round(r, x, y, x + bw, y + 13, 2, hover ? Theme.CARD_HOVER : Theme.CARD);
         r.text(label, x + 5, y + 3, Theme.TEXT, false);
         hits.add(new Hit(x, y, x + bw, y + 13, action));
         return bw;

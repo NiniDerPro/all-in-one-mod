@@ -4,6 +4,7 @@ import dev.aio.core.module.Category;
 import dev.aio.core.module.Module;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.setting.BooleanSetting;
+import dev.aio.core.ui.Draw;
 import dev.aio.core.setting.ColorSetting;
 import dev.aio.core.setting.EnumSetting;
 import dev.aio.core.setting.NumberSetting;
@@ -131,7 +132,7 @@ public abstract class HudElement extends Module implements HudTarget {
     }
 
     /** Standard-Farbmodus. Wird im Konstruktor abgefragt, darf also nur eine Konstante liefern. */
-    protected ColorMode defaultColorMode() { return ColorMode.CHROMA; }
+    protected ColorMode defaultColorMode() { return ColorMode.CLEAN; }
 
     /** Standard-Textfarbe (ARGB). Wie oben: nur eine Konstante liefern. */
     protected int defaultTextColor() { return 0xFFFFFFFF; }
@@ -140,7 +141,16 @@ public abstract class HudElement extends Module implements HudTarget {
     protected boolean defaultBackground() { return true; }
 
     /** Standard-Hintergrundfarbe (ARGB). Wie oben: nur eine Konstante liefern. */
-    protected int defaultBackgroundColor() { return 0x6F000000; }
+    protected int defaultBackgroundColor() { return DEFAULT_BACKGROUND; }
+
+    /** Neuer Standard-Hintergrund: dunkles Graphit, leicht durchsichtig. */
+    public static final int DEFAULT_BACKGROUND = 0x8C0E1015;
+
+    /** Einmalig beim Wechsel aufs neue Design: alte Standardwerte (Regenbogen, Grau) übernehmen den neuen Stil. */
+    public void migrateStyle() {
+        if (colorMode.get() == ColorMode.CHROMA && defaultColorMode() != ColorMode.CHROMA) colorMode.reset();
+        if (backgroundColor.argb() == 0x6F000000) backgroundColor.reset();
+    }
 
     // ---- Inhalt (von Unterklassen) ----
 
@@ -180,7 +190,7 @@ public abstract class HudElement extends Module implements HudTarget {
                 r.push();
                 r.translate(part.screenX(r), part.screenY(r));
                 r.scale(part.scaleX(), part.scaleY());
-                if (background.on() && drawsDefaultBackground()) r.fill(0, 0, part.width(r), part.height(r), backgroundColor.argb());
+                if (background.on() && drawsDefaultBackground()) Draw.round(r, 0, 0, part.width(r), part.height(r), 2, backgroundColor.argb());
                 renderPart(r, part, preview);
                 r.pop();
             }
@@ -192,7 +202,7 @@ public abstract class HudElement extends Module implements HudTarget {
         r.push();
         r.translate(x, y);
         r.scale(scaleX(), scaleY());
-        if (background.on() && drawsDefaultBackground()) r.fill(0, 0, width(r), height(r), backgroundColor.argb());
+        if (background.on() && drawsDefaultBackground()) Draw.round(r, 0, 0, width(r), height(r), 2, backgroundColor.argb());
         renderContent(r, preview);
         r.pop();
     }

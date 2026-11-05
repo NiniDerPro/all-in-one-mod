@@ -6,6 +6,7 @@ import dev.aio.core.AioCore;
 import dev.aio.core.modules.chat.ChatModule;
 import dev.aio.core.platform.Keys;
 import dev.aio.core.platform.Renderer;
+import dev.aio.core.ui.Draw;
 import dev.aio.core.ui.Theme;
 import dev.aio.core.ui.UiScreen;
 
@@ -211,22 +212,61 @@ public final class HudEditorScreen implements UiScreen {
         Object info = mode == Mode.MARQUEE || mode == Mode.GROUP_MOVE ? null : mode != Mode.NONE ? selected : hovered;
         if (info != null) tooltip(r, info, mouseX, mouseY);
         if (!group.isEmpty() && mode != Mode.MARQUEE) {
-            String sel = group.size() + " selected";
-            r.centeredText(sel, w / 2f, 26, accent, true);
         }
 
-        String hint = Lang.tr("aio.ui.hud_editor.drag_move_edges_resize_drag", "Drag: move · Edges: resize · Drag on empty space: select several · Ctrl+click: add · Double click: all parts · Right click: settings · R: reset");
-        if (r.textWidth(hint) > w - 8) hint = Lang.tr("aio.ui.hud_editor.drag_edges_resize_drag_empty", "Drag · Edges: resize · Drag empty: select · Ctrl+click · Double click · R");
-        if (r.textWidth(hint) > w - 8) hint = Lang.tr("aio.ui.hud_editor.drag_edges_select_right_click", "Drag · Edges · Select · Right click · R");
-        r.centeredText(hint, w / 2f, h - 14, 0xB0FFFFFF, true);
+        // Werkzeugleiste unten in der Mitte: Auswahl, Menü, Zurücksetzen; darüber ein Tipp
+        float[] tb = toolbar(r);
+        Draw.round(r, tb[0], tb[1], tb[2], tb[3], 3, 0xE80E1015);
+        Draw.roundOutline(r, tb[0], tb[1], tb[2], tb[3], Theme.LINE_STRONG);
+        String status = !group.isEmpty() ? Lang.tr("aio.ui.hud_editor.selected_count", "%s selected", group.size())
+                : selected != null ? nameOf(selected) : Lang.tr("aio.ui.hud_editor.nothing_selected", "Click an element");
+        r.text(r.trim(status, TOOLBAR_TEXT), tb[0] + 8, tb[1] + 6, !group.isEmpty() || selected != null ? accent : Theme.TEXT_DIM, false);
+        drawButton(r, settingsButton(r), Draw.GEAR, Lang.tr("aio.ui.hud_editor.settings", "Settings"), true, mouseX, mouseY);
+        drawButton(r, resetButton(r), Draw.RESET, Lang.tr("aio.ui.hud_editor.reset", "Reset"), selected != null || !group.isEmpty(), mouseX, mouseY);
 
-        drawButton(r, settingsButton(r), Lang.tr("aio.ui.hud_editor.settings", "Settings"), true, mouseX, mouseY);
-        drawButton(r, resetButton(r), Lang.tr("aio.ui.hud_editor.reset", "Reset"), selected != null || !group.isEmpty(), mouseX, mouseY);
+        // Bedienhilfe nur, solange nichts ausgewählt ist, klein unter der Leiste
+        if (selected == null && group.isEmpty() && mode == Mode.NONE) {
+            String hint = Lang.tr("aio.ui.hud_editor.hint", "Drag to move · Edges resize · Drag empty space to select · Right click: settings · R: reset");
+            if (r.textWidth(hint) * 0.75f > w - 8) hint = Lang.tr("aio.ui.hud_editor.hint_short", "Drag · Edges · Select · Right click · R");
+            r.push();
+            r.translate(w / 2f - r.textWidth(hint) * 0.375f, tb[3] + 3);
+            r.scale(0.75f);
+            r.text(hint, 0, 0, 0xB0FFFFFF, true);
+            r.pop();
+        }
     }
+
+    private static final int TOOLBAR_TEXT = 110;
+
+    /**
+     * Werkzeugleiste (x1, y1, x2, y2) an einem freien Platz: über der Hotbar, sonst oben, sonst in
+     * der Mitte – damit sie keine HUD-Elemente verdeckt.
+     */
+    private float[] toolbar(Renderer r) {
+        float w = TOOLBAR_TEXT + 16 + buttonWidth(r, Lang.tr("aio.ui.hud_editor.settings", "Settings"))
+                + buttonWidth(r, Lang.tr("aio.ui.hud_editor.reset", "Reset")) + 6;
+        float x1 = r.screenWidth() / 2f - w / 2f;
+        float[] candidates = {r.screenHeight() - 64, 30, r.screenHeight() / 2f + 30};
+        for (float y : candidates) {
+            float[] box = {x1, y, x1 + w, y + 20};
+            boolean free = true;
+            for (HudTarget t : targets()) {
+                float[] b = bounds(r, t);
+                if (b[0] < box[2] + 4 && b[0] + b[2] > box[0] - 4 && b[1] < box[3] + 12 && b[1] + b[3] > box[1] - 4) {
+                    free = false;
+                    break;
+                }
+            }
+            if (free) return box;
+        }
+        return new float[]{x1, candidates[0], x1 + w, candidates[0] + 20};
+    }
+
+    private static float buttonWidth(Renderer r, String label) { return r.textWidth(label) + 22; }
 
     private static void frame(Renderer r, float[] b, int color) {
         if (b == null) return;
-        r.outline(b[0] - 1, b[1] - 1, b[0] + b[2] + 1, b[1] + b[3] + 1, 1, color);
+        Draw.roundOutline(r, b[0] - 1, b[1] - 1, b[0] + b[2] + 1, b[1] + b[3] + 1, color);
     }
 
     private static void drawHandles(Renderer r, float[] b, int allowed, int hot, int accent) {
@@ -236,10 +276,10 @@ public final class HudEditorScreen implements UiScreen {
         float[][] p = {{x1, y1}, {mx, y1}, {x2, y1}, {x2, my}, {x2, y2}, {mx, y2}, {x1, y2}, {x1, my}};
         for (int i = 0; i < e.length; i++) {
             if ((e[i] & allowed) != e[i]) continue;
-            float s = 2.5f;
+            float s = 2;
             int fill = e[i] == hot ? accent : 0xFFFFFFFF;
-            r.fill(p[i][0] - s - 0.5f, p[i][1] - s - 0.5f, p[i][0] + s + 0.5f, p[i][1] + s + 0.5f, 0xFF000000);
-            r.fill(p[i][0] - s, p[i][1] - s, p[i][0] + s, p[i][1] + s, fill);
+            Draw.round(r, p[i][0] - s - 1, p[i][1] - s - 1, p[i][0] + s + 1, p[i][1] + s + 1, 1, 0xC0000000);
+            Draw.round(r, p[i][0] - s, p[i][1] - s, p[i][0] + s, p[i][1] + s, 1, fill);
         }
     }
 
@@ -255,26 +295,28 @@ public final class HudEditorScreen implements UiScreen {
         int w = r.screenWidth(), h = r.screenHeight();
         float lx = Math.min(mx + 10, w - r.textWidth(label) - 4);
         float ly = Math.min(my + 10, h - 12);
-        r.fill(lx - 3, ly - 3, lx + r.textWidth(label) + 3, ly + r.fontHeight() + 1, 0xC0101014);
-        r.text(label, lx, ly, 0xFFFFFFFF, false);
-    }
-
-    private float[] settingsButton(Renderer r) {
-        float bw = r.textWidth(Lang.tr("aio.ui.hud_editor.settings", "Settings")) + 16;
-        float x = r.screenWidth() / 2f - bw - 3;
-        return new float[]{x, 6, x + bw, 22};
+        Draw.round(r, lx - 4, ly - 3, lx + r.textWidth(label) + 4, ly + r.fontHeight() + 1, 2, 0xE80E1015);
+        r.text(label, lx, ly, Theme.TEXT, false);
     }
 
     private float[] resetButton(Renderer r) {
-        float bw = r.textWidth(Lang.tr("aio.ui.hud_editor.reset", "Reset")) + 16;
-        float x = r.screenWidth() / 2f + 3;
-        return new float[]{x, 6, x + bw, 22};
+        float[] tb = toolbar(r);
+        float bw = buttonWidth(r, Lang.tr("aio.ui.hud_editor.reset", "Reset"));
+        return new float[]{tb[2] - 3 - bw, tb[1] + 3, tb[2] - 3, tb[3] - 3};
     }
 
-    private void drawButton(Renderer r, float[] b, String label, boolean enabled, int mx, int my) {
+    private float[] settingsButton(Renderer r) {
+        float[] reset = resetButton(r);
+        float bw = buttonWidth(r, Lang.tr("aio.ui.hud_editor.settings", "Settings"));
+        return new float[]{reset[0] - 3 - bw, reset[1], reset[0] - 3, reset[3]};
+    }
+
+    private void drawButton(Renderer r, float[] b, String[] icon, String label, boolean enabled, int mx, int my) {
         boolean hover = enabled && mx >= b[0] && mx <= b[2] && my >= b[1] && my <= b[3];
-        r.fill(b[0], b[1], b[2], b[3], hover ? Theme.accent(core) : 0xD0181820);
-        r.centeredText(label, (b[0] + b[2]) / 2f, b[1] + 4, enabled ? 0xFFFFFFFF : 0x70FFFFFF, false);
+        Draw.round(r, b[0], b[1], b[2], b[3], 2, hover ? Theme.CARD_HOVER : Theme.CARD);
+        int c = !enabled ? Theme.TEXT_MUTED : hover ? Theme.TEXT : Theme.TEXT_DIM;
+        Draw.icon(r, icon, b[0] + 5, b[1] + 3, c);
+        r.text(label, b[0] + 16, b[1] + 4, c, false);
     }
 
     private static boolean on(float[] b, double mx, double my) {

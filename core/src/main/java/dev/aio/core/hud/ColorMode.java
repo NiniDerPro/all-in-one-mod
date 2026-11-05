@@ -3,6 +3,8 @@ package dev.aio.core.hud;
 import dev.aio.core.setting.EnumSetting;
 
 public enum ColorMode implements EnumSetting.Named {
+    /** Werte in der Textfarbe, Beschriftungen (Buchstaben, Trenner) gedimmt: "120 FPS". */
+    CLEAN("Clean"),
     /** Eine feste Farbe. */
     STATIC("Static"),
     /** Regenbogen, der als Welle über den Text läuft. */
