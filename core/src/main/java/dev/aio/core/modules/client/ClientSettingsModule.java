@@ -36,8 +36,8 @@ public final class ClientSettingsModule extends Module {
         compatMode = add(new EnumSetting<>("compatMode", "Server compatibility", CompatMode.OFF));
         allowList = add(new StringSetting("allowList", "Allowed servers (comma separated)", "", 256));
         allowList.visibleWhen(() -> compatMode.get() == CompatMode.AUTO);
-        menuButton = add(new BooleanSetting("menuButton", "AIO button in pause and title menu", true));
-        preferOtherMods = add(new BooleanSetting("preferOtherMods", "Prefer other mods with the same feature", true));
+        menuButton = add(new BooleanSetting("menuButton", "AIO button in menus", true));
+        preferOtherMods = add(new BooleanSetting("preferOtherMods", "Defer to other mods", true));
         toggleMessages = add(new BooleanSetting("toggleMessages", "Message when toggling", true));
         rainbowAccent = add(new BooleanSetting("rainbowAccent", "Rainbow accent", false));
         sortMode = add(new EnumSetting<>("sortMode", "Menu sorting", SortMode.DEFAULT));
