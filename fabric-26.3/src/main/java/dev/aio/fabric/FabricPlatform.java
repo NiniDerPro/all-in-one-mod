@@ -440,6 +440,22 @@ public final class FabricPlatform implements Platform {
         return true;
     }
 
+    @Override public String profilerChartPath() {
+        // Ohne den Accessor (z. B. von einem anderen Mod verdrängt) bleibt es einfach bei "root"
+        return client.getDebugOverlay().getProfilerPieChart() instanceof dev.aio.fabric.mixin.ProfilerPieChartAccessor a
+                ? a.aio$getPath() : "root";
+    }
+
+    @Override public int profilerChartEntries() {
+        if (!(client.getDebugOverlay().getProfilerPieChart() instanceof dev.aio.fabric.mixin.ProfilerPieChartAccessor a)) return 7;
+        var results = a.aio$getResults();
+        return results == null ? 7 : Math.max(1, results.getTimes(a.aio$getPath()).size() - 1);
+    }
+
+    @Override public void setProfilerChartPath(String path) {
+        if (client.getDebugOverlay().getProfilerPieChart() instanceof dev.aio.fabric.mixin.ProfilerPieChartAccessor a) a.aio$setPath(path);
+    }
+
     @Override public Map<String, String> conflictingMods() {
         Map<String, String> found = ModConflicts.installed();
         if (!found.isEmpty() && !conflictsLogged) {

@@ -152,11 +152,17 @@ public final class ClickGuiScreen implements UiScreen {
             tabsEnd += tabW[i] + 12;
         }
         float searchW = Math.max(54, Math.min(120, rx - tabsEnd - 6));
-        renderSearch(r, mx, my, rx - searchW, py + 5, rx, accent);
+        // Beim Suchen wächst das Feld über die Reiter (die dann ohnehin nicht gelten)
+        boolean typing = searchFocused || !search.isEmpty();
+        float wanted = typing ? Math.min(rx - x - 4, Math.max(searchW, Math.max(160, r.textWidth(search) + 30))) : searchW;
+        searchW = anim.to("searchW", wanted, 14);
+        float searchX = rx - searchW;
+        renderSearch(r, mx, my, searchX, py + 5, rx, accent);
 
         int selIndex = category == null ? 0 : tabs.indexOf(category) + 1;
         boolean searching = !search.isEmpty();
         for (int i = 0; i <= tabs.size(); i++) {
+            if (tabX[i] + tabW[i] + 4 > searchX) break; // vom Suchfeld überdeckt
             Category c = i == 0 ? null : tabs.get(i - 1);
             String label = i == 0 ? Lang.tr("aio.ui.menu.all", "All") : c.displayName();
             boolean sel = i == selIndex && !searching;
@@ -166,7 +172,7 @@ public final class ClickGuiScreen implements UiScreen {
             hit(tabX[i] - 4, py + 4, tabX[i] + tabW[i] + 4, py + TOP - 2, b -> selectCategory(c));
         }
         // Markierung unter dem gewählten Reiter gleitet mit
-        if (!searching) {
+        if (!searching && tabX[selIndex] + tabW[selIndex] + 4 <= searchX) {
             float ux = anim.to("tabX", tabX[selIndex], 16), uw = anim.to("tabW", tabW[selIndex], 16);
             Draw.round(r, ux, py + TOP - 3, ux + uw, py + TOP - 1, 1, accent);
         }
