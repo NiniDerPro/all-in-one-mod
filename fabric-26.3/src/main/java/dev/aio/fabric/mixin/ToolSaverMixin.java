@@ -21,21 +21,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Tool Saver: fast kaputte Werkzeuge/Waffen nicht mehr benutzen. Läuft nach den Auto-Tool-
- * Injektionen (eigene Mixin-Klasse mit späterer Priorität), sieht also schon das eingewechselte Item.
+ * Tool Saver: fast kaputte Werkzeuge/Waffen nicht mehr benutzen (Weiterabbauen und Benutzen).
+ * Abbau-Start und Schlag prüft {@link MultiPlayerGameModeMixin} direkt nach Auto Tool / Auto Weapon.
  */
 @Mixin(value = MultiPlayerGameMode.class, priority = 1100)
 public abstract class ToolSaverMixin {
     @Unique
-    private static boolean aio$block(ItemStack stack) {
-        AioCore core = AioCore.get();
-        ToolSaverModule m = core == null ? null : core.module(ToolSaverModule.class);
-        if (m == null || stack == null || stack.isEmpty()) return false;
-        dev.aio.core.platform.ItemRef ref = FabricItemRef.of(stack);
-        if (!m.shouldBlock(ref)) return false;
-        m.onBlocked(ref);
-        return true;
-    }
+    private static boolean aio$block(ItemStack stack) { return dev.aio.fabric.ToolSaverHook.block(stack); }
 
     @Unique
     private static ItemStack aio$main() {
@@ -43,19 +35,9 @@ public abstract class ToolSaverMixin {
         return p == null ? ItemStack.EMPTY : p.getMainHandItem();
     }
 
-    @Inject(method = "startDestroyBlock", at = @At("HEAD"), cancellable = true)
-    private void aio$toolSaverStart(BlockPos pos, Direction face, CallbackInfoReturnable<Boolean> cir) {
-        if (aio$block(aio$main())) cir.setReturnValue(false);
-    }
-
     @Inject(method = "continueDestroyBlock", at = @At("HEAD"), cancellable = true)
     private void aio$toolSaverContinue(BlockPos pos, Direction face, CallbackInfoReturnable<Boolean> cir) {
         if (aio$block(aio$main())) cir.setReturnValue(false);
-    }
-
-    @Inject(method = "attack", at = @At("HEAD"), cancellable = true)
-    private void aio$toolSaverAttack(Player player, Entity target, CallbackInfo ci) {
-        if (aio$block(player.getMainHandItem())) ci.cancel();
     }
 
     @Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true)
