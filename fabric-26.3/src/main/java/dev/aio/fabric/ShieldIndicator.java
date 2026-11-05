@@ -12,10 +12,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -28,8 +26,23 @@ public final class ShieldIndicator {
 
     /** Besitzer des Items, das gerade erfasst wird (verschachtelt möglich). */
     private static final java.util.ArrayList<LivingEntity> OWNERS = new java.util.ArrayList<>();
-    /** Item-Daten-Kopie → Farbe (schwach, damit nichts hängen bleibt). */
-    private static final Map<DataComponentMap, Integer> TINTS = Collections.synchronizedMap(new WeakHashMap<>());
+    /**
+     * Item-Daten mit angehängter Farbe. Eigene Klasse statt Zuordnungstabelle: Minecrafts
+     * Item-Daten vergleichen nach Inhalt, zwei gleiche Schilde wären sonst nicht zu unterscheiden.
+     */
+    public static final class Tinted implements DataComponentMap {
+        private final DataComponentMap base;
+        final int tint;
+
+        Tinted(DataComponentMap base, int tint) {
+            this.base = base;
+            this.tint = tint;
+        }
+
+        @Override public java.util.Set<net.minecraft.core.component.DataComponentType<?>> keySet() { return base.keySet(); }
+
+        @Override public <T> T get(net.minecraft.core.component.DataComponentType<? extends T> type) { return base.get(type); }
+    }
     /** Vorhersage: Spieler → Zeitpunkt (ms), bis zu dem das Schild als deaktiviert gilt. */
     private static final Map<UUID, Long> PREDICTED = new ConcurrentHashMap<>();
     private static final long DISABLE_MS = 5000;
@@ -51,15 +64,11 @@ public final class ShieldIndicator {
         if (map == null || OWNERS.isEmpty()) return map;
         int tint = tintFor(OWNERS.getLast());
         if (tint == -1) return map;
-        DataComponentMap copy = DataComponentMap.builder().addAll(map).build();
-        TINTS.put(copy, tint);
-        return copy;
+        return new Tinted(map instanceof Tinted t ? t.base : map, tint);
     }
 
     public static int tintOf(DataComponentMap map) {
-        if (map == null) return -1;
-        Integer t = TINTS.get(map);
-        return t == null ? -1 : t;
+        return map instanceof Tinted t ? t.tint : -1;
     }
 
     private static int tintFor(LivingEntity owner) {
