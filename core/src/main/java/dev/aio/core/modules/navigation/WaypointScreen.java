@@ -1,11 +1,11 @@
 package dev.aio.core.modules.navigation;
 
-import dev.aio.core.i18n.Lang;
-
 import dev.aio.core.AioCore;
+import dev.aio.core.i18n.Lang;
 import dev.aio.core.platform.Keys;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.platform.Vec3;
+import dev.aio.core.ui.TextEdit;
 import dev.aio.core.ui.Theme;
 import dev.aio.core.ui.UiScreen;
 
@@ -72,7 +72,7 @@ public final class WaypointScreen implements UiScreen {
         float nameX = x + 22;
         if (editing == wp) {
             r.fill(nameX - 2, y + 4, nameX + 120, y + 18, 0xFF2A2A34);
-            if (bufferAll) dev.aio.core.ui.TextEdit.drawSelection(r, nameX, y + 7, buffer);
+            if (bufferAll) TextEdit.drawSelection(r, nameX, y + 7, buffer);
             boolean caret = !bufferAll && (System.currentTimeMillis() / 500) % 2 == 0;
             r.text(buffer + (caret ? "_" : ""), nameX, y + 7, Theme.TEXT, false);
         } else {
@@ -170,7 +170,7 @@ public final class WaypointScreen implements UiScreen {
         if (Keys.ENTER.equals(key)) commit();
         else if (Keys.ESCAPE.equals(key)) editing = null;
         else {
-            var res = dev.aio.core.ui.TextEdit.key(core.platform(), buffer, bufferAll, key);
+            var res = TextEdit.key(core.platform(), buffer, bufferAll, key);
             buffer = res.text().length() > 32 ? res.text().substring(0, 32) : res.text();
             bufferAll = res.allSelected();
         }
@@ -179,7 +179,7 @@ public final class WaypointScreen implements UiScreen {
 
     @Override public boolean charTyped(String text) {
         if (editing == null || text.isEmpty() || text.codePointAt(0) < 32) return false;
-        buffer = dev.aio.core.ui.TextEdit.type(buffer, bufferAll, text);
+        buffer = TextEdit.type(buffer, bufferAll, text);
         if (buffer.length() > 32) buffer = buffer.substring(0, 32);
         bufferAll = false;
         return true;

@@ -1,5 +1,7 @@
 package dev.aio.core.setting;
 
+import dev.aio.core.i18n.Lang;
+
 import com.google.gson.JsonElement;
 
 import java.util.ArrayList;
@@ -28,7 +30,7 @@ public abstract class Setting<T> {
     public String id() { return id; }
 
     /** Label in the menu, translated if the language file has it. */
-    public String name() { return key == null ? name : dev.aio.core.i18n.Lang.tr(key, name); }
+    public String name() { return key == null ? name : Lang.tr(key, name); }
 
     /** English label as written in code (source for the language file). */
     public String defaultName() { return name; }

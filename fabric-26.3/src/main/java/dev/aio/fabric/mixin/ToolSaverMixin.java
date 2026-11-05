@@ -1,15 +1,14 @@
 package dev.aio.fabric.mixin;
 
-import dev.aio.core.AioCore;
-import dev.aio.core.modules.player.ToolSaverModule;
-import dev.aio.fabric.FabricItemRef;
+import dev.aio.fabric.ToolSaverHook;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
@@ -17,7 +16,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
@@ -27,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(value = MultiPlayerGameMode.class, priority = 1100)
 public abstract class ToolSaverMixin {
     @Unique
-    private static boolean aio$block(ItemStack stack) { return dev.aio.fabric.ToolSaverHook.block(stack); }
+    private static boolean aio$block(ItemStack stack) { return ToolSaverHook.block(stack); }
 
     @Unique
     private static ItemStack aio$main() {
@@ -41,7 +39,7 @@ public abstract class ToolSaverMixin {
     }
 
     @Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true)
-    private void aio$toolSaverUseOn(net.minecraft.client.player.LocalPlayer player, InteractionHand hand, BlockHitResult hit,
+    private void aio$toolSaverUseOn(LocalPlayer player, InteractionHand hand, BlockHitResult hit,
                                     CallbackInfoReturnable<InteractionResult> cir) {
         if (aio$block(player.getItemInHand(hand))) cir.setReturnValue(InteractionResult.FAIL);
     }

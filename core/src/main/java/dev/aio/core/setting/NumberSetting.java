@@ -3,6 +3,8 @@ package dev.aio.core.setting;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 
+import java.util.Locale;
+
 public class NumberSetting extends Setting<Double> {
     private final double min;
     private final double max;
@@ -40,7 +42,7 @@ public class NumberSetting extends Setting<Double> {
 
     public String display() {
         double v = value;
-        String s = step >= 1 ? String.valueOf((long) Math.round(v)) : String.format(java.util.Locale.ROOT, step >= 0.1 ? "%.1f" : "%.2f", v);
+        String s = step >= 1 ? String.valueOf((long) Math.round(v)) : String.format(Locale.ROOT, step >= 0.1 ? "%.1f" : "%.2f", v);
         return s + suffix;
     }
 

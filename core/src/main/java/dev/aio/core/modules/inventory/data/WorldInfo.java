@@ -1,13 +1,15 @@
 package dev.aio.core.modules.inventory.data;
 
-import com.google.gson.JsonElement;
 import dev.aio.core.platform.Platform;
 import dev.aio.core.platform.Profession;
+
+import com.google.gson.JsonElement;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Alles, was der Item-Browser über die Welt weiß: Beute (Truhen, Mobs, Angeln, Piglin-Tausch, …),
@@ -46,7 +48,7 @@ public final class WorldInfo {
         TradeData tradeData = new TradeData(p.dataFiles("trade_set"), p.dataFiles("villager_trade"), p.dataFiles("tags/villager_trade"));
         professions = List.copyOf(p.professions());
         for (Profession prof : professions) {
-            for (Map.Entry<Integer, String> lvl : new java.util.TreeMap<>(prof.tradeSets()).entrySet()) {
+            for (Map.Entry<Integer, String> lvl : new TreeMap<>(prof.tradeSets()).entrySet()) {
                 for (TradeData.Trade t : tradeData.set(lvl.getValue()).trades()) trades.add(new TradeEntry(prof, lvl.getKey(), "", t));
             }
         }

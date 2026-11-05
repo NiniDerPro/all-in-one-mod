@@ -1,5 +1,7 @@
 package dev.aio.core.modules.navigation;
 
+import dev.aio.core.platform.CameraView;
+
 /**
  * Projiziert Weltpunkte auf den Bildschirm (Perspektive wie die MC-Kamera).
  * MC-Konvention: Yaw 0 = Blick nach +Z, positiver Pitch = Blick nach unten, FOV ist vertikal.
@@ -11,7 +13,7 @@ public final class Projection {
     private Projection() {}
 
     /** Mit der Kamera inklusive Laufwackeln (wie Minecraft das Bild beim Gehen verschiebt und kippt). */
-    public static Point project(double px, double py, double pz, dev.aio.core.platform.CameraView cam, float screenW, float screenH) {
+    public static Point project(double px, double py, double pz, CameraView cam, float screenW, float screenH) {
         float[] m = cam.viewProj();
         if (m == null) return project(px, py, pz, cam.x(), cam.y(), cam.z(), cam.yaw(), cam.pitch(), cam.fov(), screenW, screenH);
         // Exakt wie das Spiel: clip = M · (p − Kamera); spaltenweise Matrix

@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /** Kleine Helfer für die Minecraft-Datenformate (Zahlen-Provider, IDs, Listen). */
 final class Json {
@@ -21,7 +22,7 @@ final class Json {
             return isSingle() ? fmt(min) : fmt(min) + "–" + fmt(max);
         }
 
-        private static String fmt(double v) { return v == Math.rint(v) ? String.valueOf((long) v) : String.format(java.util.Locale.ROOT, "%.1f", v); }
+        private static String fmt(double v) { return v == Math.rint(v) ? String.valueOf((long) v) : String.format(Locale.ROOT, "%.1f", v); }
     }
 
     /**

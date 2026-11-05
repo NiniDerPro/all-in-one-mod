@@ -1,6 +1,7 @@
 package dev.aio.core.platform;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Das gerade offene Inventar (Truhe, Spielerinventar, ...) für Maus-Tweaks und Sortieren.
@@ -39,7 +40,7 @@ public interface ContainerView {
      * @param kinds  Rezeptarten, die hier hergestellt werden können
      * @param slots  Menü-Indizes der Eingabeslots, zeilenweise (width × height)
      */
-    record Grid(java.util.Set<RecipeKind> kinds, int width, int height, int[] slots) {}
+    record Grid(Set<RecipeKind> kinds, int width, int height, int[] slots) {}
 
     /** Raster oder null, wenn in diesem Menü nichts hergestellt werden kann. */
     default Grid grid() { return null; }

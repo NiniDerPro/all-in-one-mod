@@ -1,27 +1,32 @@
 package dev.aio.core.modules.navigation;
 
-import dev.aio.core.i18n.Lang;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import dev.aio.core.event.Events;
 import dev.aio.core.hud.HudElement;
+import dev.aio.core.i18n.Lang;
 import dev.aio.core.module.Category;
 import dev.aio.core.platform.CameraView;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.platform.Vec3;
 import dev.aio.core.setting.ActionSetting;
 import dev.aio.core.setting.BooleanSetting;
+import dev.aio.core.setting.EnumSetting;
 import dev.aio.core.setting.KeybindSetting;
 import dev.aio.core.setting.NumberSetting;
 import dev.aio.core.setting.StringSetting;
 import dev.aio.core.util.Log;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Wegpunkte pro Welt und Dimension: Marker mit Name und Entfernung im Bild, am Bildrand,
@@ -37,9 +42,9 @@ public final class WaypointsModule extends HudElement {
     private final BooleanSetting edgeMarkers;
     private final NumberSetting maxDistance;
     private final BooleanSetting alwaysNames;
-    private final dev.aio.core.setting.EnumSetting<MarkerStyle> markerStyle;
+    private final EnumSetting<MarkerStyle> markerStyle;
 
-    public enum MarkerStyle implements dev.aio.core.setting.EnumSetting.Named {
+    public enum MarkerStyle implements EnumSetting.Named {
         DOT("Dot"), ICON("Icon with letter");
 
         private final String displayName;
@@ -64,7 +69,7 @@ public final class WaypointsModule extends HudElement {
         showDistance = add(new BooleanSetting("distance", "Show distance", true));
         edgeMarkers = add(new BooleanSetting("edge", "Show at screen edge", true));
         maxDistance = add(new NumberSetting("maxDistance", "Max distance", 0, 0, 10000, 100, " m (0 = ∞)"));
-        markerStyle = add(new dev.aio.core.setting.EnumSetting<>("markerStyle", "Marker", MarkerStyle.DOT));
+        markerStyle = add(new EnumSetting<>("markerStyle", "Marker", MarkerStyle.DOT));
         alwaysNames = add(new BooleanSetting("alwaysNames", "Always show names", false));
         on(Events.Key.class, e -> {
             if (!e.isPress() || e.screenOpen()) return;
@@ -231,7 +236,7 @@ public final class WaypointsModule extends HudElement {
     static final float HOVER_RADIUS = 10;
 
     /** Einblend-Zustand der Beschriftung je Wegpunkt (0..1), für weiches Ein-/Ausblenden. */
-    private final java.util.Map<String, Float> labelFade = new java.util.HashMap<>();
+    private final Map<String, Float> labelFade = new HashMap<>();
     private long lastFrame;
 
     private static String key(Waypoint w) { return w.name() + '|' + w.x() + '|' + w.y() + '|' + w.z() + '|' + w.dimension(); }
@@ -292,7 +297,7 @@ public final class WaypointsModule extends HudElement {
 
         // 2. Weiter entfernte zuerst zeichnen, damit nahe darüber liegen
         ms.sort((a, b2) -> Double.compare(b2.dist, a.dist));
-        java.util.Set<String> alive = new java.util.HashSet<>();
+        Set<String> alive = new HashSet<>();
         for (M m : ms) {
             String k = key(m.wp);
             alive.add(k);

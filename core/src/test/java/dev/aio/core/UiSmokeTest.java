@@ -1,13 +1,19 @@
 package dev.aio.core;
 
+import dev.aio.core.event.Events;
+import dev.aio.core.hud.ColorMode;
+import dev.aio.core.hud.ColoredText;
 import dev.aio.core.hud.HudEditorScreen;
 import dev.aio.core.hud.HudElement;
-import dev.aio.core.event.Events;
 import dev.aio.core.module.Category;
 import dev.aio.core.module.Module;
+import dev.aio.core.modules.chat.ChatModule;
 import dev.aio.core.modules.hud.FpsModule;
 import dev.aio.core.platform.EffectInfo;
+import dev.aio.core.platform.Keys;
+import dev.aio.core.setting.EnumSetting;
 import dev.aio.core.ui.ClickGuiScreen;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -49,7 +55,7 @@ class UiSmokeTest {
         FpsModule fps = core.module(FpsModule.class);
         fps.setEnabled(true);
         FakeRenderer r = new FakeRenderer();
-        dev.aio.core.hud.ColoredText.clearCache(); // Schriftprüfung jetzt, nicht zufällig mitten in der Messung
+        ColoredText.clearCache(); // Schriftprüfung jetzt, nicht zufällig mitten in der Messung
         fps.update();
         fps.render(r, false);
         int calls = r.widthCalls;
@@ -82,7 +88,7 @@ class UiSmokeTest {
                     }
                     g.mouseScrolled(200, 100, -1);
                 }
-                g.keyPressed(dev.aio.core.platform.Keys.ESCAPE);
+                g.keyPressed(Keys.ESCAPE);
                 g.onClose();
             }
         }
@@ -155,7 +161,7 @@ class UiSmokeTest {
         assertEquals(y + h, fps.screenY(r) + fps.scaledHeight(r), 0.6, "untere Kante bleibt");
 
         // Shift an der Ecke behält das Seitenverhältnis
-        p.heldKeys.add(dev.aio.core.platform.Keys.LEFT_SHIFT);
+        p.heldKeys.add(Keys.LEFT_SHIFT);
         x = fps.screenX(r); y = fps.screenY(r); w = fps.scaledWidth(r); h = fps.scaledHeight(r);
         assertTrue(editor.mouseClicked(x + w, y + h, 0));
         editor.mouseDragged(x + w + 40, y + h, 0, 0, 0);
@@ -164,7 +170,7 @@ class UiSmokeTest {
         p.heldKeys.clear();
 
         // Zurücksetzen über R
-        assertTrue(editor.keyPressed(dev.aio.core.platform.Keys.R));
+        assertTrue(editor.keyPressed(Keys.R));
         assertEquals(1.0, fps.scaleX(), 1e-6);
         assertEquals(1.0, fps.scaleY(), 1e-6);
     }
@@ -190,7 +196,7 @@ class UiSmokeTest {
     @Test void chatCanBeSelectedResizedAndReset() {
         FakePlatform p = new FakePlatform();
         AioCore core = newCore(p);
-        dev.aio.core.modules.chat.ChatModule chat = core.module(dev.aio.core.modules.chat.ChatModule.class);
+        ChatModule chat = core.module(ChatModule.class);
         chat.setEnabled(true);
         core.bus().post(Events.Tick.INSTANCE);
         FakeRenderer r = new FakeRenderer();
@@ -209,7 +215,7 @@ class UiSmokeTest {
         assertEquals(w - 50, chat.boxWidth(), 1.0);
         assertEquals(h, chat.boxHeight(), 0.01);
         // Zurücksetzen
-        assertTrue(editor.keyPressed(dev.aio.core.platform.Keys.R));
+        assertTrue(editor.keyPressed(Keys.R));
         assertEquals(1.0, chat.setting("width").get());
     }
 
@@ -220,10 +226,10 @@ class UiSmokeTest {
         fps.setEnabled(true);
         fps.update();
         FakeRenderer r = new FakeRenderer();
-        assertEquals(dev.aio.core.hud.ColorMode.CHROMA, fps.colorMode(), "Regenbogen ist Standard");
+        assertEquals(ColorMode.CHROMA, fps.colorMode(), "Regenbogen ist Standard");
         fps.render(r, false);
         assertEquals("120 FPS".length(), r.textCalls, "Regenbogen zeichnet pro Zeichen");
-        ((dev.aio.core.setting.EnumSetting<dev.aio.core.hud.ColorMode>) fps.setting("colorMode")).set(dev.aio.core.hud.ColorMode.STATIC);
+        ((EnumSetting<ColorMode>) fps.setting("colorMode")).set(ColorMode.STATIC);
         r.textCalls = 0;
         fps.render(r, false);
         assertEquals(1, r.textCalls);

@@ -11,7 +11,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Partikel: jede Partikelart einzeln abschaltbar (mit Suche und den wichtigsten oben), dazu ein
@@ -47,7 +49,7 @@ public final class ParticleLimitModule extends Module {
 
     private final NumberSetting percent;
     private final StringSetting disabled;
-    private final java.util.Random random = new java.util.Random();
+    private final Random random = new Random();
     private volatile Set<String> disabledSet = Set.of();
 
     public ParticleLimitModule() {
@@ -70,7 +72,7 @@ public final class ParticleLimitModule extends Module {
     public boolean isDisabled(String id) { return disabledSet.contains(id); }
 
     public void setDisabled(String id, boolean off) {
-        Set<String> next = new java.util.TreeSet<>(disabledSet);
+        Set<String> next = new TreeSet<>(disabledSet);
         if (off) next.add(id);
         else next.remove(id);
         disabled.set(String.join(",", next));

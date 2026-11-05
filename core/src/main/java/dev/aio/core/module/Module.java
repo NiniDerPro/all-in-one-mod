@@ -1,10 +1,9 @@
 package dev.aio.core.module;
 
-import dev.aio.core.i18n.Lang;
-
 import dev.aio.core.AioCore;
 import dev.aio.core.event.EventBus;
 import dev.aio.core.event.Subscription;
+import dev.aio.core.i18n.Lang;
 import dev.aio.core.platform.Keys;
 import dev.aio.core.platform.Platform;
 import dev.aio.core.setting.KeybindSetting;
@@ -14,6 +13,8 @@ import dev.aio.core.util.Log;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -119,7 +120,7 @@ public abstract class Module {
      * {@code null} hebt das wieder auf. Der gespeicherte Ein/Aus-Zustand bleibt unberührt.
      */
     public void setUnavailable(String reason) {
-        if (java.util.Objects.equals(unavailable, reason)) return;
+        if (Objects.equals(unavailable, reason)) return;
         unavailable = reason;
         updateActive();
     }
@@ -212,7 +213,7 @@ public abstract class Module {
     public boolean enabledByDefault() { return !canToggle() || DEFAULT_ON.contains(id); }
 
     /** Module, die bei einer neuen Installation an sind (alles andere ist aus). */
-    public static final java.util.Set<String> DEFAULT_ON = java.util.Set.of(
+    public static final Set<String> DEFAULT_ON = Set.of(
             "armorhud", "lookat", "chat", "helditeminfo", "dynamicfps", "elytraswap", "entityculling", "foodinfo",
             "freelook", "fullbright", "itemlist", "invtweaks", "coordinates", "namealert", "shulkerpreview",
             "keybinds", "xpclumps", "zoom", "potions");

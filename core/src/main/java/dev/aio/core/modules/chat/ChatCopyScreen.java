@@ -1,12 +1,12 @@
 package dev.aio.core.modules.chat;
 
-import dev.aio.core.i18n.Lang;
-
 import dev.aio.core.AioCore;
+import dev.aio.core.i18n.Lang;
 import dev.aio.core.platform.Keys;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.ui.Theme;
 import dev.aio.core.ui.UiScreen;
+import dev.aio.core.util.Colors;
 
 import java.util.List;
 
@@ -70,7 +70,7 @@ public final class ChatCopyScreen implements UiScreen {
         for (int i = first; i < entries.size() && i < first + visible + 1; i++) {
             float y = listTop + (i - first) * LINE;
             boolean sel = anchor >= 0 && i >= lo && i <= hi;
-            if (sel) r.fill(listX, y, listX + listW, y + LINE, dev.aio.core.util.Colors.withAlpha(Theme.accent(core), 0x60));
+            if (sel) r.fill(listX, y, listX + listW, y + LINE, Colors.withAlpha(Theme.accent(core), 0x60));
             r.text(r.trim(line(i), listW - 6), listX + 3, y + 1, sel ? Theme.TEXT : 0xFFDDDDDD, false);
         }
         r.disableScissor();
