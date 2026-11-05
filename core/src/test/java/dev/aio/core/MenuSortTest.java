@@ -68,10 +68,13 @@ class MenuSortTest {
         assertFalse(gui.keyPressed("key.keyboard.escape"), "zweites Escape schließt das Menü");
         // Sortierknopf durchklicken über die ganze Kopfzeile
         SortMode before = core.clientSettings().sortMode.get();
-        for (int x = 130; x < r.width; x += 3) {
-            gui.render(r, x, 20, 0);
-            gui.mouseClicked(x, 20, 0);
-            if (core.clientSettings().sortMode.get() != before) break;
+        outer:
+        for (int y = 30; y < 60; y += 3) {
+            for (int x = 130; x < r.width; x += 3) {
+                gui.render(r, x, y, 0);
+                gui.mouseClicked(x, y, 0);
+                if (core.clientSettings().sortMode.get() != before) break outer;
+            }
         }
         assertNotEquals(before, core.clientSettings().sortMode.get(), "Sortierknopf schaltet um");
     }

@@ -7,6 +7,7 @@ import dev.aio.core.platform.GameKey;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.ColorSetting;
+import dev.aio.core.ui.Draw;
 import dev.aio.core.setting.EnumSetting;
 import dev.aio.core.setting.NumberSetting;
 import dev.aio.core.util.Animation;
@@ -65,7 +66,7 @@ public final class KeystrokesModule extends HudElement {
         pressedColor = add(new ColorSetting("pressedColor", "Pressed color", 0xC0FFFFFF));
         pressedTextColor = add(new ColorSetting("pressedTextColor", "Pressed text color", 0xFF000000));
         showCps = add(new BooleanSetting("showCps", "CPS in mouse buttons", true));
-        rainbowPressed = add(new BooleanSetting("rainbowPressed", "Color mode when pressed", true));
+        rainbowPressed = add(new BooleanSetting("rainbowPressed", "Color mode when pressed", false));
         showCps.visibleWhen(() -> layout.get() != Layout.WASD);
         layout.onChange(v -> layoutDirty = true);
         keySize.onChange(v -> layoutDirty = true);
@@ -149,8 +150,8 @@ public final class KeystrokesModule extends HudElement {
                     ? Colors.withAlpha(dynamicColor(b.x + b.y), Colors.alpha(pressedColor.argb()))
                     : pressedColor.argb();
             int bg = Colors.lerp(idle, pressed, t);
-            if (Colors.alpha(bg) > 0) r.fill(b.x, b.y, b.x + b.w, b.y + b.h, bg);
-            int baseText = colorMode() == ColorMode.STATIC ? textColor() : dynamicColor(b.x + b.y + 40);
+            if (Colors.alpha(bg) > 0) Draw.round(r, b.x, b.y, b.x + b.w, b.y + b.h, 2, bg);
+            int baseText = colorMode() == ColorMode.STATIC || colorMode() == ColorMode.CLEAN ? textColor() : dynamicColor(b.x + b.y + 40);
             int fg = Colors.lerp(baseText, pressedTextColor.argb(), t);
 
             if ((b.key == GameKey.ATTACK || b.key == GameKey.USE) && showCps.on()) {

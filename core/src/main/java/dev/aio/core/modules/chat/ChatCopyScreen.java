@@ -5,6 +5,8 @@ import dev.aio.core.i18n.Lang;
 import dev.aio.core.platform.Keys;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.ui.Theme;
+import dev.aio.core.ui.Draw;
+import dev.aio.core.ui.Window;
 import dev.aio.core.ui.UiScreen;
 import dev.aio.core.util.Colors;
 
@@ -48,9 +50,8 @@ public final class ChatCopyScreen implements UiScreen {
         r.fill(0, 0, w, h, Theme.OVERLAY);
         int pw = Math.min(w - 20, 520), ph = Math.min(h - 20, 300);
         int px = (w - pw) / 2, py = (h - ph) / 2;
-        r.fill(px, py, px + pw, py + ph, Theme.PANEL);
-        Theme.accentBar(r, core, px, py, px + pw, py + 2);
-        r.text(Lang.tr("aio.ui.chat_copy.copy_chat", "Copy chat"), px + 10, py + 9, Theme.TEXT, true);
+        Window.frame(r, px, py, px + pw, py + ph);
+        Window.title(r, Lang.tr("aio.ui.chat_copy.copy_chat", "Copy chat"), px + 10, py + 9);
         r.text(Lang.tr("aio.ui.chat_copy.click_drag_selects_shift_extends", "Click/drag selects, Shift extends, Ctrl+C copies"), px + 10, py + 21, Theme.TEXT_MUTED, false);
         copyBtn = new float[]{px + pw - 150, py + 8, px + pw - 82, py + 22};
         allBtn = new float[]{px + pw - 78, py + 8, px + pw - 8, py + 22};
@@ -82,7 +83,7 @@ public final class ChatCopyScreen implements UiScreen {
 
     private void drawButton(Renderer r, float[] b, String label, int mx, int my, boolean accent) {
         boolean hover = mx >= b[0] && mx <= b[2] && my >= b[1] && my <= b[3];
-        r.fill(b[0], b[1], b[2], b[3], accent ? Theme.accent(core) : hover ? 0xFF33333E : 0xFF24242C);
+        Draw.round(r, b[0], b[1], b[2], b[3], 2, accent ? Theme.accent(core) : hover ? 0xFF33333E : 0xFF24242C);
         r.centeredText(label, (b[0] + b[2]) / 2, b[1] + 3, Theme.TEXT, false);
     }
 

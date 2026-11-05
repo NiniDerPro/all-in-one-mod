@@ -1,32 +1,39 @@
 package dev.aio.fabric;
 
 import dev.aio.core.AioCore;
+import dev.aio.core.i18n.Lang;
 import dev.aio.core.modules.chat.ChatModule;
 import dev.aio.core.modules.chat.ChatResizer;
 import dev.aio.core.modules.client.KeyBindsModule;
-import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import dev.aio.core.modules.inventory.InventoryTweaksModule;
 import dev.aio.core.modules.inventory.ItemListModule;
 import dev.aio.core.modules.inventory.ItemPanel;
 import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.Keys;
 import dev.aio.fabric.mixin.AbstractContainerScreenAccessor;
+
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
+import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.ChatScreen;
-import net.minecraft.client.gui.screens.inventory.MerchantScreen;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.npc.villager.AbstractVillager;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.MerchantScreen;
+import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.phys.EntityHitResult;
 
 /**
  * Hängt Item-Liste und Maus-Tweaks in Inventar-Screens ein und öffnet "Chat kopieren"
@@ -39,6 +46,14 @@ final class ScreenHooks {
         FabricRenderer renderer = new FabricRenderer(client);
         ScreenEvents.AFTER_INIT.register((mc, screen, w, h) -> {
             if (screen instanceof ChatScreen) hookChat(core, renderer, screen);
+            // Knopf "AIO" oben links im Pause- und Titelmenü öffnet das AIO-Menü
+            if ((screen instanceof PauseScreen || screen instanceof TitleScreen) && core.clientSettings().menuButton.on()) {
+                Button open = Button.builder(Component.literal("AIO"), b -> core.openClickGui(null))
+                        .bounds(6, 6, 44, 20)
+                        .tooltip(Tooltip.create(Component.literal(Lang.tr("aio.ui.menu.open_aio", "Open AIO Client settings"))))
+                        .build();
+                Screens.getWidgets(screen).add(open);
+            }
             // Handelsfenster: Angebote des angeschauten Dorfbewohners merken (Dorfbewohner-Info)
             if (screen instanceof MerchantScreen merchant) {
                 Entity target = client.hitResult instanceof EntityHitResult ehr ? ehr.getEntity() : null;
