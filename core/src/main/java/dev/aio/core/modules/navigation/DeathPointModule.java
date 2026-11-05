@@ -9,7 +9,11 @@ import dev.aio.core.platform.Vec3;
 import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.NumberSetting;
 
-/** Setzt beim Tod automatisch einen Wegpunkt und entfernt ihn, sobald man wieder dort ist. */
+/**
+ * Setzt beim Tod automatisch einen Wegpunkt und entfernt ihn, sobald man wieder dort ist.
+ * Der Punkt wird immer gespeichert, auch wenn das Modul aus ist; angezeigt wird er nur, solange es an
+ * ist. So erscheint nach dem Einschalten auch ein Tod von vorher.
+ */
 public final class DeathPointModule extends Module {
     private final NumberSetting arriveDistance;
     private final BooleanSetting chatMessage;
@@ -19,7 +23,6 @@ public final class DeathPointModule extends Module {
         super("deathpoint", "Death Waypoint", "Marks where you died (works without Waypoints), removed when you get there", Category.QOL, false);
         arriveDistance = add(new NumberSetting("arrive", "Remove within", 4, 1, 20, 1, " blocks"));
         chatMessage = add(new BooleanSetting("message", "Announce coordinates", true));
-        on(Events.Tick.class, e -> tick());
         // Funktioniert auch ohne das Waypoints-Modul: dann zeichnet dieses Modul den Todespunkt selbst
         on(Events.RenderHud.class, e -> {
             WaypointsModule wp = waypoints();
@@ -28,6 +31,11 @@ public final class DeathPointModule extends Module {
     }
 
 
+    /** Den Tod immer mitbekommen, nicht nur bei eingeschaltetem Modul. */
+    @Override protected void onAttach() {
+        core.bus().subscribe(Events.Tick.class, e -> tick(), 0);
+    }
+
     private WaypointsModule waypoints() { return core.module(WaypointsModule.class); }
 
     private void tick() {
@@ -35,7 +43,7 @@ public final class DeathPointModule extends Module {
         boolean dead = platform().isDead();
         if (dead && !wasDead) onDeath();
         wasDead = dead;
-        if (!dead) checkArrival();
+        if (!dead && isActive()) checkArrival();
     }
 
     private void onDeath() {
@@ -46,7 +54,7 @@ public final class DeathPointModule extends Module {
         Vec3 p = platform().playerPos();
         int x = (int) Math.floor(p.x()), y = (int) Math.floor(p.y()), z = (int) Math.floor(p.z());
         wp.add(new Waypoint("Death", x, y, z, platform().worldKey(), platform().dimension(), 0xFF5555, true, true));
-        if (chatMessage.on()) platform().notify(Lang.tr("aio.ui.death_point.died_at", "Died at %s %s %s", x, y, z));
+        if (isActive() && chatMessage.on()) platform().notify(Lang.tr("aio.ui.death_point.died_at", "Died at %s %s %s", x, y, z));
     }
 
     private void checkArrival() {
