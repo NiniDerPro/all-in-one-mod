@@ -169,4 +169,21 @@ class MenuInteractionTest {
         fresh.render(r, 0, 0, 0);
         assertFalse(fresh.keyPressed("key.keyboard.escape"), "ohne die Option startet das Menü leer");
     }
+
+    @Test void typingReplacesARememberedSearch() throws Exception {
+        ClickGuiScreen gui = open();
+        FakeRenderer r = new FakeRenderer();
+        gui.render(r, 0, 0, 0);
+        gui.keyPressed("key.keyboard.z");
+        gui.charTyped("z");
+        gui.charTyped("o");
+        gui.onClose();
+        ClickGuiScreen again = new ClickGuiScreen(core, null);
+        again.render(r, 0, 0, 0);
+        again.keyPressed("key.keyboard.f");
+        again.charTyped("f");
+        var search = ClickGuiScreen.class.getDeclaredField("search");
+        search.setAccessible(true);
+        assertEquals("f", search.get(again), "die gemerkte Suche wird beim Lostippen ersetzt");
+    }
 }

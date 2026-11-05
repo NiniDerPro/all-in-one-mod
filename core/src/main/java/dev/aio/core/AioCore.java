@@ -9,6 +9,7 @@ import dev.aio.core.hud.HudManager;
 import dev.aio.core.i18n.Lang;
 import dev.aio.core.module.Module;
 import dev.aio.core.module.ModuleRegistry;
+import dev.aio.core.modules.chat.ChatHeadsModule;
 import dev.aio.core.modules.chat.ChatModule;
 import dev.aio.core.modules.chat.NameAlertModule;
 import dev.aio.core.modules.client.ClientSettingsModule;
@@ -134,6 +135,7 @@ public final class AioCore {
         modules.register(new FullbrightModule());
         modules.register(new ToggleSprintModule());
         modules.register(new ChatModule());
+        modules.register(new ChatHeadsModule());
         modules.register(new NameAlertModule());
         // Info
         modules.register(new BiomeModule());

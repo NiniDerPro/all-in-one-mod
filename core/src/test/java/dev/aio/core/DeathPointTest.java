@@ -39,4 +39,27 @@ class DeathPointTest {
         death.setEnabled(true);
         assertTrue(waypoints.shownHere().stream().anyMatch(Waypoint::death), "nach dem Einschalten erscheint der frühere Todespunkt");
     }
+
+    @Test void keepsTheLastThreeDeaths() {
+        FakePlatform platform = new FakePlatform();
+        AioCore core = new AioCore(platform, dir);
+        core.registerDefaultModules();
+        core.start();
+        core.module(DeathPointModule.class).setEnabled(true);
+        WaypointsModule waypoints = core.module(WaypointsModule.class);
+        for (int i = 0; i < 4; i++) {
+            platform.x = 100 * i;
+            platform.dead = true;
+            core.bus().post(Events.Tick.INSTANCE);
+            platform.dead = false;
+            platform.x = 5000; // weit weg, damit nichts als "erreicht" gilt
+            core.bus().post(Events.Tick.INSTANCE);
+        }
+        var deaths = waypoints.inThisWorld().stream().filter(Waypoint::death).toList();
+        assertEquals(3, deaths.size(), "der neueste und zwei alte");
+        assertEquals("Death", deaths.get(2).name());
+        assertEquals(300, deaths.get(2).x());
+        assertEquals("Old death", deaths.get(0).name());
+        assertEquals(100, deaths.get(0).x(), "der älteste (x = 0) ist weggefallen");
+    }
 }

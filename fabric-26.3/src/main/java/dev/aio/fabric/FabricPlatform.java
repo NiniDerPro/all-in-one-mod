@@ -446,6 +446,8 @@ public final class FabricPlatform implements Platform {
                 ? a.aio$getPath() : "root";
     }
 
+    @Override public void refreshChat() { ChatHeads.refresh(); }
+
     @Override public int profilerChartEntries() {
         if (!(client.getDebugOverlay().getProfilerPieChart() instanceof dev.aio.fabric.mixin.ProfilerPieChartAccessor a)) return 7;
         var results = a.aio$getResults();
@@ -480,9 +482,18 @@ public final class FabricPlatform implements Platform {
     @Override public void setGameKeyPressed(GameKey key, boolean pressed) {
         if (client.options == null) return;
         KeyMapping m = mapping(key);
-        // Bei aktivierter Vanilla-Option "Umschalten" würde setDown jedes Mal umschalten.
-        if (m instanceof ToggleKeyMapping) return;
+        // Sprint/Schleichen sind immer ToggleKeyMappings; nur wenn die Vanilla-Option "Umschalten" an
+        // ist, würde setDown jedes Mal umschalten (dann schaltet Vanilla ohnehin selbst um).
+        if (m instanceof ToggleKeyMapping && vanillaToggle(key)) return;
         m.setDown(pressed);
+    }
+
+    private boolean vanillaToggle(GameKey key) {
+        return switch (key) {
+            case SPRINT -> client.options.toggleSprint().get();
+            case SNEAK -> client.options.toggleCrouch().get();
+            default -> false;
+        };
     }
 
     // ---- Daten für den Item-Browser ----
