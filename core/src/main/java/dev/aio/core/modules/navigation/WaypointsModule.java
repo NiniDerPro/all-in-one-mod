@@ -224,11 +224,12 @@ public final class WaypointsModule extends HudElement {
      */
     public List<Waypoint> shownHere() {
         if (core == null) return List.of();
-        if (isActive()) return visibleHere();
         DeathPointModule death = core.module(DeathPointModule.class);
-        if (death == null || !death.isActive()) return List.of();
+        boolean showDeath = death != null && death.isActive();
+        if (!isActive() && !showDeath) return List.of();
+        // Todespunkte werden immer gespeichert, aber nur gezeigt, wenn "Death Waypoint" an ist
         List<Waypoint> out = new ArrayList<>();
-        for (Waypoint w : visibleHere()) if (w.death()) out.add(w);
+        for (Waypoint w : visibleHere()) if (w.death() ? showDeath : isActive()) out.add(w);
         return out;
     }
 
