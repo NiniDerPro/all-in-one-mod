@@ -107,6 +107,7 @@ public final class AioFabricClient implements ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register((handler, c) -> c.execute(() -> {
             RecipeSource.clear();
             VillagerOffers.clear();
+            ShieldIndicator.clear();
             core.bus().post(Events.ServerLeave.INSTANCE);
         }));
 
