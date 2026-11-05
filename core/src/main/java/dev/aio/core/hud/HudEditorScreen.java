@@ -9,6 +9,7 @@ import dev.aio.core.platform.Renderer;
 import dev.aio.core.ui.Draw;
 import dev.aio.core.ui.Theme;
 import dev.aio.core.ui.UiScreen;
+import dev.aio.core.util.Colors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -172,7 +173,10 @@ public final class HudEditorScreen implements UiScreen {
         // Chat-Fläche
         float[] cb = bounds(r, CHAT);
         if (cb != null) {
-            chat().renderPreview(r, cb[0], cb[1] + cb[3]);
+            // Leichte Fläche, damit der Chat auch ohne Vanilla-Hintergrund als Block erkennbar ist
+            boolean focus = hovered == CHAT || selected == CHAT;
+            Draw.round(r, cb[0], cb[1], cb[0] + cb[2], cb[1] + cb[3], 2, focus ? 0x50000000 : 0x28000000);
+            chat().renderPreview(r, cb[0], cb[1] + cb[3], focus ? 1f : 0.4f);
             if (selected != CHAT) frame(r, cb, hovered == CHAT ? accent : 0x60FFFFFF);
         }
 
@@ -211,55 +215,78 @@ public final class HudEditorScreen implements UiScreen {
 
         Object info = mode == Mode.MARQUEE || mode == Mode.GROUP_MOVE ? null : mode != Mode.NONE ? selected : hovered;
         if (info != null) tooltip(r, info, mouseX, mouseY);
-        if (!group.isEmpty() && mode != Mode.MARQUEE) {
-        }
 
-        // Werkzeugleiste unten in der Mitte: Auswahl, Menü, Zurücksetzen; darüber ein Tipp
+        // Werkzeugleiste: Auswahl, Menü, Zurücksetzen. Liegt sie über Elementen, wird sie durchsichtig,
+        // bis die Maus in die Nähe kommt.
         float[] tb = toolbar(r);
-        Draw.round(r, tb[0], tb[1], tb[2], tb[3], 3, 0xE80E1015);
-        Draw.roundOutline(r, tb[0], tb[1], tb[2], tb[3], Theme.LINE_STRONG);
+        boolean covering = overlap(r, tb, 0) > 0;
+        boolean near = mouseX >= tb[0] - 16 && mouseX <= tb[2] + 16 && mouseY >= tb[1] - 16 && mouseY <= tb[3] + 16;
+        float fade = covering && !near && mode == Mode.NONE ? 0.35f : 1f;
+        Draw.round(r, tb[0], tb[1], tb[2], tb[3], 3, Colors.withAlpha(0xFF0E1015, (int) (0xE8 * fade)));
+        Draw.roundOutline(r, tb[0], tb[1], tb[2], tb[3], Colors.withAlpha(Theme.LINE_STRONG, (int) (0x26 * fade)));
         String status = !group.isEmpty() ? Lang.tr("aio.ui.hud_editor.selected_count", "%s selected", group.size())
                 : selected != null ? nameOf(selected) : Lang.tr("aio.ui.hud_editor.nothing_selected", "Click an element");
-        r.text(r.trim(status, TOOLBAR_TEXT), tb[0] + 8, tb[1] + 6, !group.isEmpty() || selected != null ? accent : Theme.TEXT_DIM, false);
-        drawButton(r, settingsButton(r), Draw.GEAR, Lang.tr("aio.ui.hud_editor.settings", "Settings"), true, mouseX, mouseY);
-        drawButton(r, resetButton(r), Draw.RESET, Lang.tr("aio.ui.hud_editor.reset", "Reset"), selected != null || !group.isEmpty(), mouseX, mouseY);
+        int statusColor = !group.isEmpty() || selected != null ? accent : Theme.TEXT_DIM;
+        r.text(r.trim(status, TOOLBAR_TEXT), tb[0] + 8, tb[1] + 6, Colors.withAlpha(statusColor, (int) (255 * fade)), false);
+        if (fade == 1f) {
+            drawButton(r, settingsButton(r), Draw.GEAR, Lang.tr("aio.ui.hud_editor.settings", "Settings"), true, mouseX, mouseY);
+            drawButton(r, resetButton(r), Draw.RESET, Lang.tr("aio.ui.hud_editor.reset", "Reset"), selected != null || !group.isEmpty(), mouseX, mouseY);
+        }
 
-        // Bedienhilfe nur, solange nichts ausgewählt ist, klein unter der Leiste
+        // Bedienhilfe nur, solange nichts ausgewählt ist und unter der Leiste Platz ist
         if (selected == null && group.isEmpty() && mode == Mode.NONE) {
             String hint = Lang.tr("aio.ui.hud_editor.hint", "Drag to move · Edges resize · Drag empty space to select · Right click: settings · R: reset");
             if (r.textWidth(hint) * 0.75f > w - 8) hint = Lang.tr("aio.ui.hud_editor.hint_short", "Drag · Edges · Select · Right click · R");
-            r.push();
-            r.translate(w / 2f - r.textWidth(hint) * 0.375f, tb[3] + 3);
-            r.scale(0.75f);
-            r.text(hint, 0, 0, 0xB0FFFFFF, true);
-            r.pop();
+            float hw = r.textWidth(hint) * 0.75f;
+            float[] hb = {w / 2f - hw / 2f, tb[3] + 3, w / 2f + hw / 2f, tb[3] + 10};
+            if (hb[3] < h - 44 && overlap(r, hb, 2) == 0) {
+                r.push();
+                r.translate(hb[0], hb[1]);
+                r.scale(0.75f);
+                r.text(hint, 0, 0, 0xB0FFFFFF, true);
+                r.pop();
+            }
         }
     }
 
     private static final int TOOLBAR_TEXT = 110;
 
     /**
-     * Werkzeugleiste (x1, y1, x2, y2) an einem freien Platz: über der Hotbar, sonst oben, sonst in
-     * der Mitte – damit sie keine HUD-Elemente verdeckt.
+     * Werkzeugleiste (x1, y1, x2, y2) an der Stelle, die am wenigsten HUD-Elemente verdeckt: über der
+     * Hotbar, ganz oben, oben oder in der Mitte.
      */
     private float[] toolbar(Renderer r) {
         float w = TOOLBAR_TEXT + 16 + buttonWidth(r, Lang.tr("aio.ui.hud_editor.settings", "Settings"))
                 + buttonWidth(r, Lang.tr("aio.ui.hud_editor.reset", "Reset")) + 6;
         float x1 = r.screenWidth() / 2f - w / 2f;
-        float[] candidates = {r.screenHeight() - 64, 30, r.screenHeight() / 2f + 30};
+        float[] candidates = {r.screenHeight() - 64, 4, 30, r.screenHeight() / 2f + 30};
+        float[] best = null;
+        float bestArea = Float.MAX_VALUE;
         for (float y : candidates) {
             float[] box = {x1, y, x1 + w, y + 20};
-            boolean free = true;
-            for (HudTarget t : targets()) {
-                float[] b = bounds(r, t);
-                if (b[0] < box[2] + 4 && b[0] + b[2] > box[0] - 4 && b[1] < box[3] + 12 && b[1] + b[3] > box[1] - 4) {
-                    free = false;
-                    break;
-                }
+            float area = overlap(r, box, 4);
+            if (area < bestArea) {
+                bestArea = area;
+                best = box;
             }
-            if (free) return box;
+            if (area == 0) break;
         }
-        return new float[]{x1, candidates[0], x1 + w, candidates[0] + 20};
+        return best;
+    }
+
+    /** Fläche, mit der ein Rechteck (plus Rand) HUD-Elemente oder den Chat überdeckt. */
+    private float overlap(Renderer r, float[] box, float margin) {
+        float sum = 0;
+        List<Object> all = new ArrayList<>(targets());
+        all.add(CHAT);
+        for (Object t : all) {
+            float[] b = bounds(r, t);
+            if (b == null) continue;
+            float ox = Math.min(box[2] + margin, b[0] + b[2]) - Math.max(box[0] - margin, b[0]);
+            float oy = Math.min(box[3] + margin, b[1] + b[3]) - Math.max(box[1] - margin, b[1]);
+            if (ox > 0 && oy > 0) sum += ox * oy;
+        }
+        return sum;
     }
 
     private static float buttonWidth(Renderer r, String label) { return r.textWidth(label) + 22; }

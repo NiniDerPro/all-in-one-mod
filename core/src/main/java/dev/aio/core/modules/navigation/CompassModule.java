@@ -9,6 +9,7 @@ import dev.aio.core.platform.Vec3;
 import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.EnumSetting;
 import dev.aio.core.setting.NumberSetting;
+import dev.aio.core.ui.Draw;
 
 /** Kompass als Leiste oben (wie in Battle-Royale-Spielen) oder als runde Kompassrose. */
 public final class CompassModule extends HudElement {
@@ -75,7 +76,7 @@ public final class CompassModule extends HudElement {
         // Schrift bleibt immer gleich groß; nur der Platz für die Striche darunter wächst mit der Höhe
         int textY = barH >= 20 ? 3 : 2;
         int tickSpace = Math.max(2, barH - textY - 10);
-        if (background.on()) r.fill(0, 0, w, barH, backgroundColor.argb());
+        if (background.on()) Draw.round(r, 0, 0, w, barH, 2, backgroundColor.argb());
         float h = heading();
         float fov = fieldOfView.floatValue();
         float pxPerDeg = w / fov;

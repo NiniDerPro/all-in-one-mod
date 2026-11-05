@@ -58,19 +58,17 @@ public final class HudPart implements HudTarget {
 
     @Override public float screenX(Renderer r) {
         ensurePlaced(r);
-        return (float) Math.max(0, posX.get() * Math.max(0, r.screenWidth() - scaledWidth(r)));
+        return HudElement.toScreen(posX.get(), r.screenWidth(), scaledWidth(r));
     }
 
     @Override public float screenY(Renderer r) {
         ensurePlaced(r);
-        return (float) Math.max(0, posY.get() * Math.max(0, r.screenHeight() - scaledHeight(r)));
+        return HudElement.toScreen(posY.get(), r.screenHeight(), scaledHeight(r));
     }
 
     @Override public void setScreenPos(Renderer r, float x, float y) {
-        float freeW = r.screenWidth() - scaledWidth(r);
-        float freeH = r.screenHeight() - scaledHeight(r);
-        posX.set(freeW <= 0 ? 0.0 : Math.max(0.0, Math.min(1.0, (double) x / freeW)));
-        posY.set(freeH <= 0 ? 0.0 : Math.max(0.0, Math.min(1.0, (double) y / freeH)));
+        posX.set(HudElement.toFraction(x, r.screenWidth(), scaledWidth(r)));
+        posY.set(HudElement.toFraction(y, r.screenHeight(), scaledHeight(r)));
     }
 
     @Override public void setScreenBounds(Renderer r, float x, float y, float w, float h) {
