@@ -79,6 +79,7 @@ final class DevSelfTest {
                 new Step(any, 5, () -> {
                     if (!INTERACTIVE) return;
                     logChanges(core, mc);
+                    runCommands(mc);
                     AioFabricClient.LOGGER.info("[aio] Selftest ready for input");
                     index = Integer.MAX_VALUE; // Rest überspringen, Eingaben kommen von außen
                 }),
@@ -103,6 +104,20 @@ final class DevSelfTest {
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    /** {@code -Daio.selftest.cmds=a;b;c}: Befehle als Server-Operator ausführen (z. B. Mobs für Nametags). */
+    private static void runCommands(Minecraft mc) {
+        String cmds = System.getProperty("aio.selftest.cmds", "");
+        var server = mc.getSingleplayerServer();
+        if (cmds.isBlank() || server == null) return;
+        server.executeIfPossible(() -> {
+            for (String c : cmds.split(";")) {
+                if (c.isBlank()) continue;
+                server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), c.strip());
+                AioFabricClient.LOGGER.info("[aio] Selftest command: {}", c.strip());
+            }
+        });
     }
 
     /** Schreibt jede Änderung an Modulen, Einstellungen, Profil und offenem Screen ins Log. */

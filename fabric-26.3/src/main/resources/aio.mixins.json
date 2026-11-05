@@ -27,6 +27,7 @@
     "MultiPlayerGameModeMixin",
     "WaterFogMixin",
     "ToastManagerMixin",
+    "ProfilerPieChartAccessor",
     "FreecamBlockStateMixin",
     "FreecamCameraMixin",
     "FreecamEntityMixin",

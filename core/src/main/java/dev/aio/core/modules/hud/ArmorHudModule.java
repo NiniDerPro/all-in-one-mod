@@ -55,11 +55,14 @@ public final class ArmorHudModule extends HudElement {
             {"legs", Lang.tr("aio.ui.armor_hud.leggings", "Leggings")}, {"feet", Lang.tr("aio.ui.armor_hud.boots", "Boots")}, {"mainhand", Lang.tr("aio.ui.armor_hud.main_hand", "Main hand")}};
     /** Innenabstand eines einzelnen Teils: so passen die Teile lückenlos untereinander. */
     private static final int PART_PAD = 1;
+    private final BooleanSetting edgeMigrated;
     private int cachedW = -1;
     private int cachedH = -1;
 
     public ArmorHudModule() {
         super("armorhud", "Armor HUD", "Armor, durability and held items", 0.0, 0.5);
+        edgeMigrated = add(new BooleanSetting("edgeMigrated", "Edge migrated", false));
+        edgeMigrated.hidden();
         durability = add(new EnumSetting<>("durability", "Durability", DurabilityMode.PERCENT));
         orientation = add(new EnumSetting<>("orientation", "Orientation", Orientation.VERTICAL));
         showMainHand = add(new BooleanSetting("mainHand", "Main hand", true));
@@ -71,6 +74,20 @@ public final class ArmorHudModule extends HudElement {
     }
 
     @Override protected boolean defaultBackground() { return false; }
+
+    /** Ganz an den Rand: ohne Hintergrund liegen die Icons direkt an, mit Hintergrund der Kasten. */
+    @Override protected float edgeMargin() { return background.on() ? 0 : -(PADDING - 1) * scale.get().floatValue(); }
+
+    @Override protected float partEdgeMargin() { return background.on() ? 0 : -PART_PAD; }
+
+    /** Früher hielt alles 3 px Abstand zum Rand; was dort stand, kommt einmalig ganz an den Rand. */
+    @Override public void afterLoad() {
+        super.afterLoad();
+        if (edgeMigrated.on()) return;
+        if (posX.get() <= 0.03) posX.set(0.0);
+        for (HudPart p : parts) if (p != null) p.snapLeft(0.03);
+        edgeMigrated.set(true);
+    }
 
     /** Neue Standards (links, ohne Zweithand) einmalig auch für bestehende Configs. */
     @Override public void applyNewDefaults() {

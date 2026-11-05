@@ -472,7 +472,7 @@
   "aio.piechart.backgroundColor": "Background color",
   "aio.piechart.colorMode": "Color mode",
   "aio.piechart.colorSpeed": "Color speed",
-  "aio.piechart.desc": "The F3 + 1 pie chart (what costs frame time) without opening F3",
+  "aio.piechart.desc": "The F3 + 1 pie chart (what costs frame time) without opening F3. Pick the section in F3 + 1 with the number keys, the overlay keeps it",
   "aio.piechart.scale": "Width",
   "aio.piechart.scaleY": "Height",
   "aio.piechart.secondColor": "Second color",
