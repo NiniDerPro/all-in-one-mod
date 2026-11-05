@@ -11,6 +11,9 @@ import dev.aio.core.platform.Keys;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.ui.TextEdit;
 import dev.aio.core.ui.Theme;
+import dev.aio.core.util.Colors;
+import dev.aio.core.ui.Draw;
+import dev.aio.core.ui.Window;
 import dev.aio.core.ui.UiScreen;
 
 import java.util.ArrayList;
@@ -118,9 +121,8 @@ public final class WaypointEditScreen implements UiScreen {
         int pw = Math.min(w - 20, 240), ph = 176;
         int tw = showTemplates ? Math.min(150, w - pw - 30) : 0;
         int px = (w - pw - (tw > 0 ? tw + 6 : 0)) / 2, py = (h - ph) / 2;
-        r.fill(px, py, px + pw, py + ph, Theme.PANEL);
-        Theme.accentBar(r, core, px, py, px + pw, py + 2);
-        r.text(title(), px + 10, py + 9, Theme.TEXT, true);
+        Window.frame(r, px, py, px + pw, py + ph);
+        Window.title(r, title(), px + 10, py + 9);
         button(r, mx, my, px + pw - 74, py + 6, px + pw - 8, py + 20, Lang.tr("aio.ui.waypoint_edit.templates", "Templates"), showTemplates, b -> showTemplates = !showTemplates);
 
         // Name
@@ -175,16 +177,15 @@ public final class WaypointEditScreen implements UiScreen {
     }
 
     private void renderTemplates(Renderer r, int mx, int my, int x, int y, int w, int h) {
-        r.fill(x, y, x + w, y + h, Theme.PANEL);
-        Theme.accentBar(r, core, x, y, x + w, y + 2);
-        r.text(Lang.tr("aio.ui.waypoint_edit.templates", "Templates"), x + 8, y + 9, Theme.TEXT, true);
+        Window.frame(r, x, y, x + w, y + h);
+        Window.title(r, Lang.tr("aio.ui.waypoint_edit.templates", "Templates"), x + 8, y + 9);
         List<Template> list = templates();
         float ry = y + 24;
         int maxRows = (h - 50) / 15;
         for (int i = 0; i < Math.min(list.size(), maxRows); i++) {
             Template t = list.get(i);
             boolean hover = mx >= x + 4 && mx <= x + w - 4 && my >= ry && my <= ry + 13;
-            r.fill(x + 4, ry, x + w - 4, ry + 13, hover ? Theme.CARD_HOVER : Theme.CARD);
+            Draw.round(r, x + 4, ry, x + w - 4, ry + 13, 2, hover ? Theme.CARD_HOVER : Theme.CARD);
             r.fill(x + 7, ry + 3, x + 14, ry + 10, 0xFF000000 | t.color());
             r.text(r.trim(t.name(), w - 40), x + 18, ry + 3, Theme.TEXT, false);
             // ✖ zuerst registrieren (Treffer werden von hinten geprüft, also hier nach der Zeile)
@@ -217,7 +218,7 @@ public final class WaypointEditScreen implements UiScreen {
 
     private void button(Renderer r, int mx, int my, float x1, float y1, float x2, float y2, String label, boolean accent, IntConsumer action) {
         boolean hover = mx >= x1 && mx <= x2 && my >= y1 && my <= y2;
-        r.fill(x1, y1, x2, y2, accent ? Theme.accent(core) : hover ? 0xFF33333E : 0xFF24242C);
+        Draw.round(r, x1, y1, x2, y2, 2, accent ? Theme.accent(core) : hover ? 0xFF33333E : 0xFF24242C);
         r.centeredText(label, (x1 + x2) / 2, y1 + (y2 - y1 - 8) / 2, Theme.TEXT, false);
         hits.add(new Hit(x1, y1, x2, y2, action));
     }

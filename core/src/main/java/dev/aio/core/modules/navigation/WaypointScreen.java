@@ -7,6 +7,9 @@ import dev.aio.core.platform.Renderer;
 import dev.aio.core.platform.Vec3;
 import dev.aio.core.ui.TextEdit;
 import dev.aio.core.ui.Theme;
+import dev.aio.core.util.Colors;
+import dev.aio.core.ui.Draw;
+import dev.aio.core.ui.Window;
 import dev.aio.core.ui.UiScreen;
 
 import java.util.ArrayList;
@@ -41,9 +44,8 @@ public final class WaypointScreen implements UiScreen {
         r.fill(0, 0, w, h, Theme.OVERLAY);
         int pw = Math.min(w - 20, 420), ph = Math.min(h - 20, 260);
         int px = (w - pw) / 2, py = (h - ph) / 2;
-        r.fill(px, py, px + pw, py + ph, Theme.PANEL);
-        Theme.accentBar(r, core, px, py, px + pw, py + 2);
-        r.text(Lang.tr("aio.ui.waypoint.waypoints", "Waypoints"), px + 10, py + 9, Theme.TEXT, true);
+        Window.frame(r, px, py, px + pw, py + ph);
+        Window.title(r, Lang.tr("aio.ui.waypoint.waypoints", "Waypoints"), px + 10, py + 9);
         button(r, mx, my, px + pw - 110, py + 6, px + pw - 8, py + 20, Lang.tr("aio.ui.waypoint.add_here", "+ Add here"), true,
                 b -> core.platform().openScreen(new WaypointEditScreen(core, module, null)));
 
@@ -64,7 +66,7 @@ public final class WaypointScreen implements UiScreen {
     }
 
     private void drawRow(Renderer r, int mx, int my, Waypoint wp, float x, float y, float w, Vec3 pos, String dim, int top, int bottom) {
-        r.fill(x, y, x + w, y + ROW, Theme.CARD);
+        Draw.round(r, x, y, x + w, y + ROW, 2, Theme.CARD);
         int c = wp.color() | 0xFF000000;
         r.fill(x + 4, y + 5, x + 16, y + 17, c);
         hitClipped(x + 4, y + 5, x + 16, y + 17, top, bottom, b -> module.replace(wp, wp.withColor(nextColor(wp.color()))));
@@ -127,7 +129,7 @@ public final class WaypointScreen implements UiScreen {
     private void button(Renderer r, int mx, int my, float x1, float y1, float x2, float y2, String label, boolean accent,
                         IntConsumer action, int top, int bottom) {
         boolean hover = mx >= x1 && mx <= x2 && my >= y1 && my <= y2;
-        r.fill(x1, y1, x2, y2, accent ? Theme.accent(core) : hover ? 0xFF33333E : 0xFF24242C);
+        Draw.round(r, x1, y1, x2, y2, 2, accent ? Theme.accent(core) : hover ? 0xFF33333E : 0xFF24242C);
         r.centeredText(label, (x1 + x2) / 2, y1 + (y2 - y1 - 8) / 2, Theme.TEXT, false);
         hitClipped(x1, y1, x2, y2, top, bottom, action);
     }

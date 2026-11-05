@@ -47,7 +47,7 @@ public final class KeyBindIndex {
         List<KeyBinding> list = new ArrayList<>(core.platform().keyBindings());
         for (Module m : core.modules().all()) {
             for (Setting<?> s : m.settings()) {
-                if (s instanceof KeybindSetting k) {
+                if (s instanceof KeybindSetting k && !(k == m.toggleKey() && !m.canToggle()) && !k.isHidden()) {
                     list.add(new KeyBinding(AIO_PREFIX + m.id() + "." + k.id(), m.name() + ": " + k.name(),
                             "AIO Client", k.key(), k.defaultValue()));
                 }

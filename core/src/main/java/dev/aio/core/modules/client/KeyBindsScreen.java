@@ -7,6 +7,9 @@ import dev.aio.core.platform.Keys;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.ui.TextEdit;
 import dev.aio.core.ui.Theme;
+import dev.aio.core.util.Colors;
+import dev.aio.core.ui.Draw;
+import dev.aio.core.ui.Window;
 import dev.aio.core.ui.UiScreen;
 
 import java.util.ArrayList;
@@ -59,14 +62,13 @@ public final class KeyBindsScreen implements UiScreen {
         int w = r.screenWidth(), h = r.screenHeight();
         r.fill(0, 0, w, h, Theme.OVERLAY);
         float pw = Math.min(w - 16, 380), px = (w - pw) / 2f, py = 8, ph = h - 16;
-        r.fill(px, py, px + pw, py + ph, Theme.PANEL);
-        Theme.accentBar(r, core, px, py, px + pw, py + 2);
-        r.text(Lang.tr("aio.ui.key_binds.key_binds", "Key Binds"), px + 8, py + 8, Theme.TEXT, true);
+        Window.frame(r, px, py, px + pw, py + ph);
+        Window.title(r, Lang.tr("aio.ui.key_binds.key_binds", "Key Binds"), px + 8, py + 8);
 
         // Suchfeld
         float sx = px + 8, sy = py + 22, sw = pw - 16;
-        r.fill(sx, sy, sx + sw, sy + 14, 0xF0202028);
-        r.outline(sx, sy, sx + sw, sy + 14, 1, Theme.accent(core));
+        Draw.round(r, sx, sy, sx + sw, sy + 14, 2, 0xFF1E2230);
+        Draw.roundOutline(r, sx, sy, sx + sw, sy + 14, Colors.withAlpha(Theme.accent(core), 0xC0));
         boolean caret = !queryAll && (System.currentTimeMillis() / 500) % 2 == 0;
         if (queryAll) TextEdit.drawSelection(r, sx + 4, sy + 3, r.trim(query, sw - 8));
         String shown = query.isEmpty() ? Lang.tr("aio.ui.key_binds.search_name_category_or_key", "Search: name, category or key…") : query + (caret ? "_" : "");
@@ -124,7 +126,7 @@ public final class KeyBindsScreen implements UiScreen {
                 boolean isListening = listening != null && listening.id().equals(b.id());
                 String keyText = isListening ? "> ? <" : b.unbound() ? "—" : e.keyDisplay();
                 boolean keyHover = mx >= kx && mx <= kx + keyW && my >= y && my < y + ROW - 1;
-                r.fill(kx, y + 1, kx + keyW, y + ROW - 1, isListening ? Theme.accent(core) : keyHover ? Theme.CARD_HOVER : Theme.CARD);
+                Draw.round(r, kx, y + 1, kx + keyW, y + ROW - 1, 2, isListening ? Theme.accent(core) : keyHover ? Theme.CARD_HOVER : Theme.CARD);
                 if (e.conflict()) r.outline(kx, y + 1, kx + keyW, y + ROW - 1, 1, Theme.DANGER);
                 r.centeredText(r.trim(keyText, keyW - 6), kx + keyW / 2f, y + 3,
                         e.conflict() ? Theme.DANGER : b.unbound() ? Theme.TEXT_MUTED : Theme.TEXT, false);
@@ -167,7 +169,7 @@ public final class KeyBindsScreen implements UiScreen {
     private float button(Renderer r, float x, float y, String label, boolean active, int mx, int my, Runnable action) {
         float bw = r.textWidth(label) + 10;
         boolean hover = mx >= x && mx <= x + bw && my >= y && my <= y + 13;
-        r.fill(x, y, x + bw, y + 13, active ? Theme.accent(core) : hover ? Theme.CARD_HOVER : Theme.CARD);
+        Draw.round(r, x, y, x + bw, y + 13, 2, active ? Theme.accent(core) : hover ? Theme.CARD_HOVER : Theme.CARD);
         r.text(label, x + 5, y + 3, Theme.TEXT, false);
         hits.add(new Hit(x, y, x + bw, y + 13, action));
         return bw;
