@@ -21,15 +21,6 @@ public final class HookStatus {
     static final Set<String> started = ConcurrentHashMap.newKeySet();
     /** Mixins, deren Einbau fertig wurde. */
     static final Set<String> finished = ConcurrentHashMap.newKeySet();
-    /** "Mixin#handler" → greift der Eingriff? */
-    static final Map<String, Boolean> handlers = new ConcurrentHashMap<>();
-
-    /** Eingriffe, die fehlen dürfen (nur Komfort, Modul funktioniert auch ohne). */
-    private static final Set<String> OPTIONAL = Set.of(
-            "FreecamLocalPlayerMixin#aio$freecamControlled", "CameraMixin#aio$zoomHand",
-            "ChatComponentMixin#aio$timestamp", "ChatComponentMixin#aio$historySize",
-            "EntityMixin#aio$zoomSensitivityX", "EntityMixin#aio$zoomSensitivityY",
-            "ItemContainerContentsMixin#aio$hideContentLines", "ClientLevelTickMixin#aio$tickCull");
 
     /** Zu welchem Modul ein Eingriff gehört. Schlüssel: "Mixin#handler" oder nur "Mixin" für alle Eingriffe. */
     private static final Map<String, String> MODULE = Map.ofEntries(
@@ -55,10 +46,9 @@ public final class HookStatus {
             Map.entry("ShieldIndicatorOwnerMixin", "shieldindicator"), Map.entry("ShieldIndicatorRenderMixin", "shieldindicator"),
             Map.entry("MultiPlayerGameModeMixin#aio$startBreak", "autotool"),
             Map.entry("ToolSaverMixin", "toolsaver"),
+            Map.entry("LightOverlayDirtyMixin", "lightoverlay"),
             Map.entry("MultiPlayerGameModeMixin#aio$attack", "autoweapon"),
             Map.entry("MultiPlayerGameModeMixin", "freecam"));
-
-    static boolean optional(String key) { return OPTIONAL.contains(key); }
 
     /** Modul eines Eingriffs, null = Grundfunktion ohne eigenes Modul (Tastatur/Maus). */
     static String moduleOf(String mixin, String handler) {
@@ -70,31 +60,26 @@ public final class HookStatus {
         return null;
     }
 
-    /** Modul-ID → Beschreibung für alle Module, deren Eingriff nicht greift. */
+    /** Mehr gleichzeitige Ausfälle als das gelten als Messfehler: dann wird nichts abgeschaltet. */
+    private static final int PLAUSIBLE_FAILURES = 4;
+
+    /** Modul-ID → Beschreibung für alle Module, deren Mixin nicht eingebaut werden konnte. */
     public static Map<String, String> broken() {
-        Map<String, String> out = new LinkedHashMap<>();
+        Map<String, String> out = new java.util.LinkedHashMap<>();
         for (String mixin : started) {
             if (finished.contains(mixin)) continue;
-            // Einbau ganz gescheitert: alle Module dieses Mixins
             for (String key : MODULE.keySet()) {
                 if (key.equals(mixin) || key.startsWith(mixin + "#")) out.putIfAbsent(MODULE.get(key), "conflict in " + mixin);
             }
             if (mixin.startsWith("Freecam")) out.putIfAbsent("freecam", "conflict in " + mixin);
         }
-        for (Map.Entry<String, Boolean> e : handlers.entrySet()) {
-            if (e.getValue() || optional(e.getKey())) continue;
-            String[] parts = e.getKey().split("#", 2);
-            String module = moduleOf(parts[0], parts[1]);
-            if (module != null) out.putIfAbsent(module, "conflict in " + parts[0]);
-        }
-        return out;
+        return out.size() > PLAUSIBLE_FAILURES ? Map.of() : out;
     }
 
-    /** Für das Log: alle fehlenden Eingriffe, auch die ohne eigenes Modul. */
-    public static List<String> missing() {
-        List<String> out = new ArrayList<>();
-        for (String mixin : started) if (!finished.contains(mixin)) out.add(mixin + " (not applied)");
-        for (Map.Entry<String, Boolean> e : handlers.entrySet()) if (!e.getValue()) out.add(e.getKey());
+    /** Für das Log: alle Mixins, deren Einbau abgebrochen ist. */
+    public static java.util.List<String> missing() {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        for (String mixin : started) if (!finished.contains(mixin)) out.add(mixin);
         return out;
     }
 }

@@ -434,7 +434,16 @@ public final class FabricPlatform implements Platform {
         return true;
     }
 
-    @Override public Map<String, String> conflictingMods() { return ModConflicts.installed(); }
+    @Override public Map<String, String> conflictingMods() {
+        Map<String, String> found = ModConflicts.installed();
+        if (!found.isEmpty() && !conflictsLogged) {
+            conflictsLogged = true;
+            AioFabricClient.LOGGER.info("[aio] Other mods take priority: {}", found);
+        }
+        return found;
+    }
+
+    private boolean conflictsLogged;
 
     @Override public Map<String, String> brokenHooks() {
         List<String> missing = HookStatus.missing();
