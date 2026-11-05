@@ -1,5 +1,7 @@
 package dev.aio.core.modules.inventory;
 
+import dev.aio.core.i18n.Lang;
+
 import dev.aio.core.AioCore;
 import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.Keys;
@@ -91,7 +93,7 @@ public final class RecipeScreen implements UiScreen {
         }
     }
 
-    @Override public String title() { return "Recipes"; }
+    @Override public String title() { return Lang.tr("aio.ui.recipe.title", "Recipes"); }
 
     @Override public boolean returnsToPrevious() { return true; }
 
@@ -152,7 +154,7 @@ public final class RecipeScreen implements UiScreen {
 
         // Kopf: Kategorie und Seite
         float hx1 = px + 8, hx2 = px + W - 8;
-        String catName = categories.isEmpty() ? (view.usages ? "Uses" : "Recipes") : categories.get(category);
+        String catName = categories.isEmpty() ? (view.usages ? Lang.tr("aio.ui.recipe.uses", "Uses") : Lang.tr("aio.ui.recipe.recipes", "Recipes")) : categories.get(category);
         headerRow(r, hx1, py + 8, hx2, catName, categories.size() > 1, mx, my,
                 () -> { category = Math.floorMod(category - 1, Math.max(1, categories.size())); page = 0; },
                 () -> { category = (category + 1) % Math.max(1, categories.size()); page = 0; });
@@ -161,10 +163,10 @@ public final class RecipeScreen implements UiScreen {
 
         float y = py + headerH;
         if (!core.platform().recipesAvailable()) {
-            r.centeredText("Recipes are available once you are in a world.", px + W / 2f, y + 10, McGui.TEXT_DARK, false);
+            r.centeredText(Lang.tr("aio.ui.recipe.recipes_are_available_once_you", "Recipes are available once you are in a world."), px + W / 2f, y + 10, McGui.TEXT_DARK, false);
         } else if (recs.isEmpty()) {
-            r.centeredText(view.usages ? "Not used anywhere." : "No recipe found.", px + W / 2f, y + 10, McGui.TEXT_DARK, false);
-            if (pendingInfo) r.centeredText("Loading trades, loot and spawns…", px + W / 2f, y + 24, 0xFF606060, false);
+            r.centeredText(view.usages ? Lang.tr("aio.ui.recipe.not_used_anywhere", "Not used anywhere.") : Lang.tr("aio.ui.recipe.no_recipe_found", "No recipe found."), px + W / 2f, y + 10, McGui.TEXT_DARK, false);
+            if (pendingInfo) r.centeredText(Lang.tr("aio.ui.recipe.loading_trades_loot_and_spawns", "Loading trades, loot and spawns…"), px + W / 2f, y + 24, 0xFF606060, false);
         }
         for (RecipeView rec : shown) {
             float bh = boxHeight(r, rec);
@@ -173,18 +175,18 @@ public final class RecipeScreen implements UiScreen {
         }
 
         // Kopfzeile über dem Fenster: welches Item, zurück
-        String head = (view.usages ? "Uses: " : "Recipes: ") + view.item.name();
+        String head = (view.usages ? Lang.tr("aio.ui.recipe.uses_2", "Uses: ") : Lang.tr("aio.ui.recipe.recipes_2", "Recipes: ")) + view.item.name();
         r.text(r.trim(head, W - 60), px + 2, py - TAB_H - 12, 0xFFFFFFFF, true);
         {
             // Zurück: zur vorherigen Rezeptansicht, sonst zurück ins Inventar
-            String back = "◀ Back";
+            String back = Lang.tr("aio.ui.recipe.back", "◀ Back");
             float bw = r.textWidth(back) + 8, bx2 = px + W, bx1 = bx2 - bw, by1 = py - TAB_H - 15, by2 = by1 + 13;
             boolean hover = mx >= bx1 && mx <= bx2 && my >= by1 && my <= by2;
             r.fill(bx1, by1, bx2, by2, hover ? 0xE0505060 : 0xC0202028);
             r.text(back, bx1 + 4, by1 + 3, hover ? 0xFFFFFFFF : 0xFFD0D0D0, true);
             hits.add(new Hit(bx1, by1, bx2, by2, this::goBack));
         }
-        if (pendingInfo && !recs.isEmpty()) r.text("loading…", px + W - 30, py + ph + 3, 0xFFB0B0B0, true);
+        if (pendingInfo && !recs.isEmpty()) r.text(Lang.tr("aio.ui.recipe.loading", "loading…"), px + W - 30, py + ph + 3, 0xFFB0B0B0, true);
 
         // Item-Liste rechts daneben (suchen, R/U, Klick öffnet Rezepte)
         if (panel != null) panel.render(r, mx, my, px + W + 4);
@@ -322,7 +324,7 @@ public final class RecipeScreen implements UiScreen {
             r.text(r.trim(note, w - 2 * BOX_PAD), x + BOX_PAD, ny, McGui.TEXT_DARK, false);
             ny += LINE;
         }
-        if (rec.combos()) r.text(r.trim("Click: change armor/material", w - 2 * BOX_PAD), x + BOX_PAD, ny, 0xFF606060, false);
+        if (rec.combos()) r.text(r.trim(Lang.tr("aio.ui.recipe.click_change_armor_material", "Click: change armor/material"), w - 2 * BOX_PAD), x + BOX_PAD, ny, 0xFF606060, false);
 
         // "+" unten rechts (Übertragen ins offene Inventar)
         if (transferable) {
@@ -331,9 +333,9 @@ public final class RecipeScreen implements UiScreen {
             McGui.button(r, bx1, by1, bx2, by2, mx, my, ok);
             r.centeredText("+", (bx1 + bx2) / 2f + 0.5f, by1 + 2, ok ? 0xFFFFFFFF : 0xFFA0A0A0, ok);
             if (mx >= bx1 && mx < bx2 && my >= by1 && my < by2) tooltip = switch (status) {
-                case OK -> "Transfer · Shift: as many as possible";
-                case MISSING_ITEMS -> "Missing ingredients (marked red)";
-                case TOO_BIG -> "Too big for 2×2 – open a crafting table";
+                case OK -> Lang.tr("aio.ui.recipe.transfer_shift_as_many_as", "Transfer · Shift: as many as possible");
+                case MISSING_ITEMS -> Lang.tr("aio.ui.recipe.missing_ingredients_marked_red", "Missing ingredients (marked red)");
+                case TOO_BIG -> Lang.tr("aio.ui.recipe.too_big_for_2_2", "Too big for 2×2 – open a crafting table");
                 case WRONG_STATION -> stationHint(rec.kind());
             };
             if (ok) hits.add(new Hit(bx1, by1, bx2, by2, () -> {
@@ -374,12 +376,12 @@ public final class RecipeScreen implements UiScreen {
 
     private static String stationHint(RecipeKind kind) {
         return switch (kind) {
-            case CRAFTING -> "Open your inventory or a crafting table";
-            case FURNACE -> "Open a furnace";
-            case BLAST_FURNACE -> "Open a blast furnace";
-            case SMOKER -> "Open a smoker";
-            case STONECUTTER -> "Open a stonecutter";
-            default -> "Cannot be transferred";
+            case CRAFTING -> Lang.tr("aio.ui.recipe.open_your_inventory_or_a", "Open your inventory or a crafting table");
+            case FURNACE -> Lang.tr("aio.ui.recipe.open_a_furnace", "Open a furnace");
+            case BLAST_FURNACE -> Lang.tr("aio.ui.recipe.open_a_blast_furnace", "Open a blast furnace");
+            case SMOKER -> Lang.tr("aio.ui.recipe.open_a_smoker", "Open a smoker");
+            case STONECUTTER -> Lang.tr("aio.ui.recipe.open_a_stonecutter", "Open a stonecutter");
+            default -> Lang.tr("aio.ui.recipe.cannot_be_transferred", "Cannot be transferred");
         };
     }
 

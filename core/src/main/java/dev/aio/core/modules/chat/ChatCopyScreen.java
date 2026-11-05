@@ -1,5 +1,7 @@
 package dev.aio.core.modules.chat;
 
+import dev.aio.core.i18n.Lang;
+
 import dev.aio.core.AioCore;
 import dev.aio.core.platform.Keys;
 import dev.aio.core.platform.Renderer;
@@ -34,7 +36,7 @@ public final class ChatCopyScreen implements UiScreen {
         this.entries = history.entries();
     }
 
-    @Override public String title() { return "Copy chat"; }
+    @Override public String title() { return Lang.tr("aio.ui.chat_copy.title", "Copy chat"); }
 
     private String line(int i) {
         ChatHistory.Entry e = entries.get(i);
@@ -48,12 +50,12 @@ public final class ChatCopyScreen implements UiScreen {
         int px = (w - pw) / 2, py = (h - ph) / 2;
         r.fill(px, py, px + pw, py + ph, Theme.PANEL);
         Theme.accentBar(r, core, px, py, px + pw, py + 2);
-        r.text("Copy chat", px + 10, py + 9, Theme.TEXT, true);
-        r.text("Click/drag selects, Shift extends, Ctrl+C copies", px + 10, py + 21, Theme.TEXT_MUTED, false);
+        r.text(Lang.tr("aio.ui.chat_copy.copy_chat", "Copy chat"), px + 10, py + 9, Theme.TEXT, true);
+        r.text(Lang.tr("aio.ui.chat_copy.click_drag_selects_shift_extends", "Click/drag selects, Shift extends, Ctrl+C copies"), px + 10, py + 21, Theme.TEXT_MUTED, false);
         copyBtn = new float[]{px + pw - 150, py + 8, px + pw - 82, py + 22};
         allBtn = new float[]{px + pw - 78, py + 8, px + pw - 8, py + 22};
-        drawButton(r, copyBtn, "Copy", mx, my, true);
-        drawButton(r, allBtn, "All", mx, my, false);
+        drawButton(r, copyBtn, Lang.tr("aio.ui.chat_copy.copy", "Copy"), mx, my, true);
+        drawButton(r, allBtn, Lang.tr("aio.ui.chat_copy.all", "All"), mx, my, false);
 
         listX = px + 8;
         listW = pw - 16;
@@ -72,7 +74,7 @@ public final class ChatCopyScreen implements UiScreen {
             r.text(r.trim(line(i), listW - 6), listX + 3, y + 1, sel ? Theme.TEXT : 0xFFDDDDDD, false);
         }
         r.disableScissor();
-        if (entries.isEmpty()) r.text("No messages received yet.", listX + 3, listTop + 2, Theme.TEXT_DIM, false);
+        if (entries.isEmpty()) r.text(Lang.tr("aio.ui.chat_copy.no_messages_received_yet", "No messages received yet."), listX + 3, listTop + 2, Theme.TEXT_DIM, false);
         if (status != null && System.currentTimeMillis() < statusUntil) {
             r.centeredText(status, px + pw / 2f, py + ph - 18, Theme.accent(core), true);
         }
@@ -156,7 +158,7 @@ public final class ChatCopyScreen implements UiScreen {
         if (text.isEmpty()) return;
         core.platform().setClipboard(text);
         int n = Math.abs(focus - anchor) + 1;
-        status = n + (n == 1 ? " line" : " lines") + " copied";
+        status = n + (n == 1 ? Lang.tr("aio.ui.chat_copy.line", " line") : Lang.tr("aio.ui.chat_copy.lines", " lines")) + " copied";
         statusUntil = System.currentTimeMillis() + 2000;
     }
 

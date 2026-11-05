@@ -1,5 +1,7 @@
 package dev.aio.core.modules.chat;
 
+import dev.aio.core.i18n.Lang;
+
 import dev.aio.core.event.Events;
 import dev.aio.core.module.Category;
 import dev.aio.core.module.Module;
@@ -28,7 +30,7 @@ public final class NameAlertModule extends Module {
         ignoreOwn = add(new BooleanSetting("ignoreOwn", "Ignore your own messages", true));
         add(new dev.aio.core.setting.ActionSetting("test", "Test alert", () -> {
             if (sound.on()) platform().playAlertSound();
-            platform().notify("Mentioned: <Steve> hey " + platform().playerName() + "!");
+            platform().notify(Lang.tr("aio.ui.name_alert.mentioned_steve_hey", "Mentioned: <Steve> hey %s!", platform().playerName()));
         }));
         on(Events.ChatReceived.class, this::onChat);
     }
@@ -40,7 +42,7 @@ public final class NameAlertModule extends Module {
         String hit = match(e.text(), words(name), requireAt.on());
         if (hit == null) return;
         if (sound.on()) platform().playAlertSound();
-        if (popup.on()) platform().notify("Mentioned: " + shorten(e.text()));
+        if (popup.on()) platform().notify(Lang.tr("aio.ui.name_alert.mentioned", "Mentioned: %s", shorten(e.text())));
     }
 
     private List<String> words(String name) {

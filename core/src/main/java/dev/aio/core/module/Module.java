@@ -1,5 +1,7 @@
 package dev.aio.core.module;
 
+import dev.aio.core.i18n.Lang;
+
 import dev.aio.core.AioCore;
 import dev.aio.core.event.EventBus;
 import dev.aio.core.event.Subscription;
@@ -65,6 +67,7 @@ public abstract class Module {
             if (s.id().equals(setting.id())) throw new IllegalArgumentException("Doppelte Setting-ID " + setting.id() + " in " + id);
         }
         settings.add(setting);
+        setting.bindKey("aio." + id + "." + setting.id());
         setting.onChange(v -> markDirty());
         return setting;
     }
@@ -165,9 +168,14 @@ public abstract class Module {
 
     public String id() { return id; }
 
-    public String name() { return name; }
+    public String name() { return Lang.tr("aio." + id, name); }
 
-    public String description() { return description; }
+    public String description() { return Lang.tr("aio." + id + ".desc", description); }
+
+    /** English name/description as written in code (source for the language file). */
+    public String defaultName() { return name; }
+
+    public String defaultDescription() { return description; }
 
     public Category category() { return category; }
 

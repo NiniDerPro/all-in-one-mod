@@ -1,5 +1,7 @@
 package dev.aio.core.modules.performance;
 
+import dev.aio.core.i18n.Lang;
+
 import dev.aio.core.hud.HudElement;
 import dev.aio.core.module.Category;
 import dev.aio.core.platform.Renderer;
@@ -32,7 +34,7 @@ public final class ProfilerChartModule extends HudElement {
         boolean drawn = platform().drawProfilerChart(r, W, H);
         if (preview && !drawn) {
             r.fill(0, 0, W, H, 0x60000000);
-            r.centeredText("Profiler Chart", W / 2f, H / 2f - 4, 0xFFFFFFFF, true);
+            r.centeredText(Lang.tr("aio.ui.profiler_chart.profiler_chart", "Profiler Chart"), W / 2f, H / 2f - 4, 0xFFFFFFFF, true);
         }
     }
 

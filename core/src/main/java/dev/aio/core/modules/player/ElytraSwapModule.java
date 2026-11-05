@@ -1,5 +1,7 @@
 package dev.aio.core.modules.player;
 
+import dev.aio.core.i18n.Lang;
+
 import dev.aio.core.event.Events;
 import dev.aio.core.module.Category;
 import dev.aio.core.module.Module;
@@ -38,7 +40,7 @@ public final class ElytraSwapModule extends Module {
         if (c == null || !c.isPlayerOnly() || !c.cursor().isEmpty()) return null;
         int[] plan = plan(c.slots());
         if (plan == null) {
-            platform().notify("No elytra or chestplate in your inventory");
+            platform().notify(Lang.tr("aio.ui.elytra_swap.no_elytra_or_chestplate_in", "No elytra or chestplate in your inventory"));
             return "nothing to swap";
         }
         // Aufnehmen, auf den Brust-Slot legen (tauscht), alten Gegenstand zurücklegen

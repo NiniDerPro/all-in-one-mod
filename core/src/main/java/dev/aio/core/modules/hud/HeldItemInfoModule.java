@@ -1,5 +1,7 @@
 package dev.aio.core.modules.hud;
 
+import dev.aio.core.i18n.Lang;
+
 import dev.aio.core.hud.HudElement;
 import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.Renderer;
@@ -121,7 +123,7 @@ public final class HeldItemInfoModule extends HudElement {
 
     private String name(boolean preview) {
         if (!showName.on()) return "";
-        return previewing(preview) ? "Diamond Sword" : itemName;
+        return previewing(preview) ? Lang.tr("aio.ui.held_item_info.diamond_sword", "Diamond Sword") : itemName;
     }
 
     private int nameHeight(boolean preview) { return name(preview).isEmpty() ? 0 : LINE + NAME_GAP; }

@@ -1,5 +1,7 @@
 package dev.aio.core.modules.player;
 
+import dev.aio.core.i18n.Lang;
+
 import dev.aio.core.event.Events;
 import dev.aio.core.module.Category;
 import dev.aio.core.module.Module;
@@ -93,7 +95,7 @@ public final class ToolSaverModule extends Module {
         long now = System.currentTimeMillis();
         if (now - lastBlockedNotice < 2000) return;
         lastBlockedNotice = now;
-        platform().notify(item.name() + " protected: only " + item.durability() + " durability left");
+        platform().notify(Lang.tr("aio.ui.tool_saver.protected_only_durability_left", "%s protected: only %s durability left", item.name(), item.durability()));
         if (warn.on()) platform().playSound(sound.get().id, (float) (volume.get() / 100.0), 0.8f);
     }
 
@@ -113,7 +115,7 @@ public final class ToolSaverModule extends Module {
             return;
         }
         if (!warned.add(key)) return;
-        platform().notify((tool ? "" : "Armor: ") + item.name() + " is almost broken (" + item.durability() + " left)");
+        platform().notify(Lang.tr("aio.ui.tool_saver.is_almost_broken_left", "%s%s is almost broken (%s left)", (tool ? "" : "Armor: "), item.name(), item.durability()));
         if (warn.on()) platform().playSound(sound.get().id, (float) (volume.get() / 100.0), 1.0f);
     }
 }
