@@ -41,6 +41,7 @@ public final class HookStatus {
             Map.entry("LightmapMixin", "fullbright"),
             Map.entry("MinecraftFpsMixin", "dynamicfps"),
             Map.entry("MinecraftProfilerMixin", "piechart"),
+            Map.entry("ChatHeadsLineMixin", "chatheads"), Map.entry("ChatHeadsDrawMixin", "chatheads"),
             Map.entry("SmallItemsMixin", "smallitems"),
             Map.entry("DynamicLightsMixin", "dynamiclights"), Map.entry("DynamicLightsEntityMixin", "dynamiclights"),
             Map.entry("ShieldIndicatorOwnerMixin", "shieldindicator"), Map.entry("ShieldIndicatorRenderMixin", "shieldindicator"),

@@ -78,6 +78,10 @@ public final class NametagTargets {
             hp = le.getHealth();
             max = le.getMaxHealth();
             abs = le.getAbsorptionAmount();
+            // Ausrüstung bei Spielern und Mobs (gepanzerte Zombies sind die gefährlichen)
+            List<ItemRef> list = new ArrayList<>(GEAR.length);
+            for (EquipmentSlot slot : GEAR) list.add(FabricItemRef.of(le.getItemBySlot(slot)));
+            gear = list;
         }
         if (e instanceof Player p) {
             name = p.getGameProfile().name();
@@ -88,9 +92,6 @@ public final class NametagTargets {
                 ping = info.getLatency();
                 mode = shortMode(info.getGameMode());
             }
-            List<ItemRef> list = new ArrayList<>(GEAR.length);
-            for (EquipmentSlot slot : GEAR) list.add(FabricItemRef.of(p.getItemBySlot(slot)));
-            gear = list;
         } else if (e instanceof ItemEntity item) {
             name = item.getItem().getHoverName().getString();
             count = item.getItem().getCount();

@@ -1025,6 +1025,11 @@ public final class ClickGuiScreen implements UiScreen {
         category = m.category();
         search = m.search();
         listScroll = m.listScroll();
+        // Alte Suche markiert: einfach lostippen ersetzt sie
+        if (!search.isEmpty()) {
+            searchFocused = true;
+            searchAll = true;
+        }
         Module d = m.drawerId() != null ? core.modules().get(m.drawerId()) : null;
         if (m.clientDrawer()) clientDrawer = true;
         else if (d != null) drawer = d;

@@ -184,6 +184,9 @@ public interface Platform {
 
     default void setProfilerChartPath(String path) {}
 
+    /** Chatzeilen neu aufbauen (z. B. wenn Chat Heads ein- oder ausgeschaltet wird). */
+    default void refreshChat() {}
+
     /** Zahl der Einträge unter dem Kreis (für die Höhe des Diagramms). */
     default int profilerChartEntries() { return 7; }
 
