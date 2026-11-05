@@ -20,6 +20,8 @@ public final class ClientSettingsModule extends Module {
     public final ColorSetting accent;
     public final BooleanSetting rainbowAccent;
     public final EnumSetting<dev.aio.core.ui.SortMode> sortMode;
+    /** Andere installierte Mods mit gleicher Funktion haben Vorrang (das AIO-Modul bleibt dann aus). */
+    public final BooleanSetting preferOtherMods;
 
     public ClientSettingsModule() {
         super("client", "Client", "Menu key, server compatibility and look", Category.CLIENT, false);
@@ -28,6 +30,7 @@ public final class ClientSettingsModule extends Module {
         compatMode = add(new EnumSetting<>("compatMode", "Server compatibility", CompatMode.OFF));
         allowList = add(new StringSetting("allowList", "Allowed servers (comma separated)", "", 256));
         allowList.visibleWhen(() -> compatMode.get() == CompatMode.AUTO);
+        preferOtherMods = add(new BooleanSetting("preferOtherMods", "Prefer other mods with the same feature", true));
         toggleMessages = add(new BooleanSetting("toggleMessages", "Message when toggling", true));
         rainbowAccent = add(new BooleanSetting("rainbowAccent", "Rainbow accent", true));
         sortMode = add(new EnumSetting<>("sortMode", "Menu sorting", dev.aio.core.ui.SortMode.DEFAULT));
