@@ -43,7 +43,8 @@
     "ShieldIndicatorRenderMixin",
     "ToolSaverMixin",
     "DynamicLightsMixin",
-    "DynamicLightsEntityMixin"
+    "DynamicLightsEntityMixin",
+    "LightOverlayDirtyMixin"
   ],
   "injectors": {
     "defaultRequire": 0

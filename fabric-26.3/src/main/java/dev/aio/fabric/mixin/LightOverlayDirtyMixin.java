@@ -1,0 +1,18 @@
+package dev.aio.fabric.mixin;
+
+import dev.aio.fabric.LightOverlayHook;
+
+import net.minecraft.client.renderer.extract.LevelExtractor;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+/** Light Level Overlay: erfährt sofort, wenn sich Blöcke oder Licht in einem Abschnitt ändern. */
+@Mixin(LevelExtractor.class)
+public abstract class LightOverlayDirtyMixin {
+    @Inject(method = "setSectionDirty(IIIZ)V", at = @At("HEAD"))
+    private void aio$lightOverlayDirty(int sx, int sy, int sz, boolean playerChanged, CallbackInfo ci) {
+        LightOverlayHook.sectionDirty(sx, sy, sz);
+    }
+}
