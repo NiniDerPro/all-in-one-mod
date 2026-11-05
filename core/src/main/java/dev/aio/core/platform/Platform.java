@@ -154,6 +154,12 @@ public interface Platform {
      */
     default java.util.Map<String, String> brokenHooks() { return java.util.Map.of(); }
 
+    /** Lebewesen für den Health Indicator (interpoliert, ohne den eigenen Spieler). */
+    default java.util.List<HealthTarget> healthTargets(double maxDistance, float partialTick, boolean players,
+                                                       boolean hostile, boolean passive, boolean throughWalls) {
+        return java.util.List.of();
+    }
+
     /** Ob der F3-Bildschirm gerade offen ist. */
     default boolean debugScreenOpen() { return false; }
 
