@@ -603,6 +603,11 @@ public final class FabricPlatform implements Platform {
 
     @Override public boolean windowFocused() { return client.isWindowActive(); }
 
+    @Override public List<dev.aio.core.platform.HealthTarget> healthTargets(double maxDistance, float partialTick, boolean players,
+                                                                         boolean hostile, boolean passive, boolean throughWalls) {
+        return HealthTargets.collect(client, maxDistance, partialTick, players, hostile, passive, throughWalls);
+    }
+
     @Override public boolean debugScreenOpen() { return client.debugEntries.isOverlayVisible(); }
 
     @Override public boolean drawProfilerChart(dev.aio.core.platform.Renderer r, int w, int h) {
