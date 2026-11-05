@@ -583,6 +583,17 @@ public final class FabricPlatform implements Platform {
 
     @Override public boolean windowFocused() { return client.isWindowActive(); }
 
+    @Override public boolean debugScreenOpen() { return client.debugEntries.isOverlayVisible(); }
+
+    @Override public boolean drawProfilerChart(dev.aio.core.platform.Renderer r, int w, int h) {
+        if (!(r instanceof FabricRenderer fr) || fr.graphics() == null || !FabricHooks.profilerResults) return false;
+        var chart = client.getDebugOverlay().getProfilerPieChart();
+        // Vanilla richtet das Diagramm rechts unten aus: rechte Kante = Breite − 5, untere = Höhe − Offset
+        chart.setBottomOffset(0);
+        chart.extractRenderState(fr.graphics(), w + 5, h);
+        return true;
+    }
+
     @Override public java.util.Map<String, String> conflictingMods() { return dev.aio.fabric.compat.ModConflicts.installed(); }
 
     @Override public java.util.Map<String, String> brokenHooks() {

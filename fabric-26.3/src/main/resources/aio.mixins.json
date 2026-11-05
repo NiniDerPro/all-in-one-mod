@@ -37,7 +37,8 @@
     "FreecamLivingEntityMixin",
     "FreecamLocalPlayerMixin",
     "FreecamMinecraftMixin",
-    "FreecamPacketListenerMixin"
+    "FreecamPacketListenerMixin",
+    "MinecraftProfilerMixin"
   ],
   "injectors": {
     "defaultRequire": 0

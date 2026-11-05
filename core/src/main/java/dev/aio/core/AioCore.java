@@ -90,6 +90,7 @@ public final class AioCore {
         modules.register(new dev.aio.core.modules.info.DayCounterModule());
         modules.register(new dev.aio.core.modules.info.WorldTimeModule());
         modules.register(new dev.aio.core.modules.info.DateTimeModule());
+        modules.register(new dev.aio.core.modules.performance.ProfilerChartModule());
         modules.register(new dev.aio.core.modules.info.PlaytimeModule());
         modules.register(new dev.aio.core.modules.info.ServerInfoModule());
         modules.register(new dev.aio.core.modules.info.VillagerInfoModule());

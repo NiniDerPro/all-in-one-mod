@@ -151,6 +151,15 @@ public interface Platform {
      */
     default java.util.Map<String, String> brokenHooks() { return java.util.Map.of(); }
 
+    /** Ob der F3-Bildschirm gerade offen ist. */
+    default boolean debugScreenOpen() { return false; }
+
+    /**
+     * Zeichnet das Profiler-Kreisdiagramm (F3+1) ins lokale Rechteck 0..w × 0..h, unten bündig.
+     * @return false, wenn es (noch) keine Daten gibt
+     */
+    default boolean drawProfilerChart(Renderer r, int w, int h) { return false; }
+
     /** Ob das Spielfenster den Fokus hat (nach Alt+Tab nicht mehr). */
     default boolean windowFocused() { return true; }
 
