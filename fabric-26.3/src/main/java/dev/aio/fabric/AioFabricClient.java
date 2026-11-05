@@ -107,6 +107,7 @@ public final class AioFabricClient implements ClientModInitializer {
             Freecam.tick();
             LightOverlay.tick(core, c);
             DynamicLights.tick(c);
+            DevSelfTest.tick(core, c);
             long t0 = System.nanoTime();
             platform.saveOptionsIfDirty();
             core.bus().post(Events.Tick.INSTANCE);

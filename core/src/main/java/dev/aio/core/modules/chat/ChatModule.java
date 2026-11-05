@@ -151,14 +151,17 @@ public final class ChatModule extends Module {
      * @param x      linke Kante der Box
      * @param bottom untere Kante der Box
      */
-    public void renderPreview(Renderer r, float x, float bottom) {
+    public void renderPreview(Renderer r, float x, float bottom) { renderPreview(r, x, bottom, 1f); }
+
+    /** Wie oben, mit zusätzlicher Deckkraft {@code fade} (der Editor blendet den Chat zurück). */
+    public void renderPreview(Renderer r, float x, float bottom, float fade) {
         float s = (float) Math.max(0.1, scale.get());
         int lineH = lineHeight();
         int innerW = (int) Math.ceil(boxWidth() / s);
         int lines = visibleLines();
         // Vanilla: Text-Deckkraft 0.1..1, Hintergrund nach Einstellung
-        int textA = (int) (255 * (textOpacity.get() * 0.9 + 0.1));
-        int bgA = (int) (255 * backgroundOpacity.get());
+        int textA = (int) (255 * (textOpacity.get() * 0.9 + 0.1) * fade);
+        int bgA = (int) (255 * backgroundOpacity.get() * fade);
         String prefix = timestamps.on() ? "[" + LocalTime.now().format(seconds.on() ? HMS : HM) + "] " : "";
 
         // Beispiele in Zeilen umbrechen wie Vanilla (an Wortgrenzen)

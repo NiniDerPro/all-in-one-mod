@@ -165,7 +165,8 @@ public final class ArmorHudModule extends HudElement {
             float x = vertical ? PADDING : PADDING + i * cell;
             float y = vertical ? PADDING + i * ROW : PADDING;
             if (placeholder) {
-                r.fill(x, y, x + ICON, y + ICON, 0x40FFFFFF);
+                float iconX = vertical ? x : x + (cell - 2 - ICON) / 2f;
+                drawSample(r, i + 1, iconX, y);
                 if (durability.get() == DurabilityMode.NUMBER || durability.get() == DurabilityMode.PERCENT) {
                     drawLabel(r, "100", x, y, cell, vertical, colorByDurability.on() ? 0xFF55FF55 : -1);
                 }
@@ -176,6 +177,18 @@ public final class ArmorHudModule extends HudElement {
             r.item(e.item, iconX, y, durability.get() == DurabilityMode.BAR);
             if (!e.text.isEmpty()) drawLabel(r, e.text, x, y, cell, vertical, e.color);
         }
+    }
+
+    /** Beispiel-Ausrüstung für die Vorschau im Editor, solange der Spieler nichts trägt. */
+    private static final String[] SAMPLE = {"minecraft:shield", "minecraft:diamond_helmet", "minecraft:diamond_chestplate",
+            "minecraft:diamond_leggings", "minecraft:diamond_boots", "minecraft:diamond_sword"};
+    private final ItemRef[] sampleItems = new ItemRef[SAMPLE.length];
+
+    private void drawSample(Renderer r, int index, float x, float y) {
+        int i = Math.max(0, Math.min(SAMPLE.length - 1, index));
+        if (sampleItems[i] == null) sampleItems[i] = platform().item(SAMPLE[i]);
+        if (sampleItems[i].isEmpty()) r.fill(x, y, x + ICON, y + ICON, 0x40FFFFFF);
+        else r.item(sampleItems[i], x, y, false);
     }
 
     /** {@code color} -1 = Farbmodus des Elements nutzen. */
@@ -231,7 +244,7 @@ public final class ArmorHudModule extends HudElement {
         int w = partWidth(r, part);
         float iconX = vertical ? PART_PAD : (w - ICON) / 2f;
         String text = partText(r, part);
-        if (e == null) r.fill(iconX, PART_PAD, iconX + ICON, PART_PAD + ICON, 0x40FFFFFF);
+        if (e == null) drawSample(r, indexOf(part), iconX, PART_PAD);
         else r.item(e.item, iconX, PART_PAD, durability.get() == DurabilityMode.BAR);
         if (text.isEmpty()) return;
         int color = e != null ? e.color : colorByDurability.on() ? 0xFF55FF55 : -1;
