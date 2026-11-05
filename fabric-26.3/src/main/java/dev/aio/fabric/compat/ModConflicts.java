@@ -33,6 +33,8 @@ public final class ModConflicts {
             Map.entry("fullbright", List.of("gammautils", "fullbrightnesstoggle")),
             Map.entry("nofog", List.of("sodium-extra")),
             Map.entry("shieldindicator", List.of("shieldstatuses", "shield-statuses", "shieldstatus", "sentinelshield")),
+            Map.entry("lightoverlay", List.of("lightoverlay", "light-overlay")),
+            Map.entry("toolsaver", List.of("toolsaver", "durabilitywarning", "durability-warning", "damagewarning")),
             Map.entry("togglesprint", List.of("togglesprint")),
             Map.entry("elytraswap", List.of("elytraswap", "elytra-swapper")));
 
