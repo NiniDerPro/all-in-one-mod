@@ -117,12 +117,14 @@ public final class DynamicLights {
             int id = (int) s.key;
             now.put(id, new long[]{block, s.level});
             long[] prev = last.get(id);
-            if (prev == null || prev[0] != block || prev[1] != s.level) {
-                if (prev != null) {
-                    BlockPos p = BlockPos.of(prev[0]);
-                    dirty(level, p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5, (int) prev[1]);
-                }
+            if (prev == null) {
                 dirty(level, s.x, s.y, s.z, s.level);
+            } else if (prev[0] != block || prev[1] != s.level) {
+                // alte und neue Reichweite als ein gemeinsamer Bereich (meist fast deckungsgleich)
+                BlockPos p = BlockPos.of(prev[0]);
+                int r = Math.max(s.level, (int) prev[1]);
+                dirtyRange(level, Math.min(p.getX(), s.x) - r, Math.min(p.getY(), s.y) - r, Math.min(p.getZ(), s.z) - r,
+                        Math.max(p.getX() + 1, s.x) + r, Math.max(p.getY() + 1, s.y) + r, Math.max(p.getZ() + 1, s.z) + r);
             }
         }
         for (Map.Entry<Integer, long[]> e : last.entrySet()) {
@@ -150,9 +152,13 @@ public final class DynamicLights {
     /** Chunk-Abschnitte in Reichweite einer Quelle neu bauen lassen. */
     private static void dirty(ClientLevel level, double x, double y, double z, int lum) {
         int r = Math.max(1, lum);
+        dirtyRange(level, x - r, y - r, z - r, x + r, y + r, z + r);
+    }
+
+    private static void dirtyRange(ClientLevel level, double x1, double y1, double z1, double x2, double y2, double z2) {
         level.setSectionRangeDirty(
-                SectionPos.blockToSectionCoord((int) Math.floor(x - r)), SectionPos.blockToSectionCoord((int) Math.floor(y - r)),
-                SectionPos.blockToSectionCoord((int) Math.floor(z - r)), SectionPos.blockToSectionCoord((int) Math.floor(x + r)),
-                SectionPos.blockToSectionCoord((int) Math.floor(y + r)), SectionPos.blockToSectionCoord((int) Math.floor(z + r)));
+                SectionPos.blockToSectionCoord((int) Math.floor(x1)), SectionPos.blockToSectionCoord((int) Math.floor(y1)),
+                SectionPos.blockToSectionCoord((int) Math.floor(z1)), SectionPos.blockToSectionCoord((int) Math.floor(x2)),
+                SectionPos.blockToSectionCoord((int) Math.floor(y2)), SectionPos.blockToSectionCoord((int) Math.floor(z2)));
     }
 }

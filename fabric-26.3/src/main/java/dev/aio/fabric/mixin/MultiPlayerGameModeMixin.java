@@ -21,16 +21,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  */
 @Mixin(MultiPlayerGameMode.class)
 public abstract class MultiPlayerGameModeMixin {
-    @Inject(method = "startDestroyBlock", at = @At("HEAD"))
+    @Inject(method = "startDestroyBlock", at = @At("HEAD"), cancellable = true)
     private void aio$startBreak(BlockPos pos, Direction face, CallbackInfoReturnable<Boolean> cir) {
         AioCore core = AioCore.get();
         if (core != null) core.bus().post(new Events.StartBreak(pos.getX(), pos.getY(), pos.getZ()));
+        // Tool Saver erst nach Auto Tool: sieht schon das eingewechselte Werkzeug
+        var p = net.minecraft.client.Minecraft.getInstance().player;
+        if (p != null && dev.aio.fabric.ToolSaverHook.block(p.getMainHandItem())) cir.setReturnValue(false);
     }
 
-    @Inject(method = "attack", at = @At("HEAD"))
+    @Inject(method = "attack", at = @At("HEAD"), cancellable = true)
     private void aio$attack(Player player, Entity target, CallbackInfo ci) {
         AioCore core = AioCore.get();
         if (core != null) core.bus().post(new Events.AttackEntity(target instanceof LivingEntity));
+        if (dev.aio.fabric.ToolSaverHook.block(player.getMainHandItem())) {
+            ci.cancel();
+            return;
+        }
         dev.aio.fabric.ShieldIndicator.onAttack(player, target);
     }
 
