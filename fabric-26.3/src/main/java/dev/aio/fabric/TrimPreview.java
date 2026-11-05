@@ -3,12 +3,14 @@ package dev.aio.fabric;
 import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.RecipeKind;
 import dev.aio.core.platform.RecipeView;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -35,7 +37,7 @@ final class TrimPreview {
         var access = client.level.registryAccess();
         Identifier patternId = Identifier.fromNamespaceAndPath(id.getNamespace(), id.getPath().substring(0, id.getPath().length() - SUFFIX.length()));
         Holder<TrimPattern> pattern = access.lookupOrThrow(Registries.TRIM_PATTERN)
-                .get(net.minecraft.resources.ResourceKey.create(Registries.TRIM_PATTERN, patternId)).orElse(null);
+                .get(ResourceKey.create(Registries.TRIM_PATTERN, patternId)).orElse(null);
         if (pattern == null) return List.of();
 
         // Materialien mit dem passenden Item (Vanilla-Namen: eisen → iron_ingot, lapis → lapis_lazuli, …)

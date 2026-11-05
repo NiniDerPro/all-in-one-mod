@@ -3,8 +3,13 @@ package dev.aio.core.modules.hud;
 import dev.aio.core.AioCore;
 import dev.aio.core.FakePlatform;
 import dev.aio.core.FakeRenderer;
+import dev.aio.core.hud.ColorMode;
 import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.LookTarget;
+import dev.aio.core.platform.Renderer;
+import dev.aio.core.setting.BooleanSetting;
+import dev.aio.core.ui.UiScreen;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -38,7 +43,7 @@ class LookAtModuleTest {
         assertEquals(0.5, m.setting("x").get());
         assertEquals(0.0, m.setting("y").get());
         assertEquals(LookAtModule.BG, m.setting("backgroundColor").get());
-        assertEquals(dev.aio.core.hud.ColorMode.STATIC, m.colorMode());
+        assertEquals(ColorMode.STATIC, m.colorMode());
     }
 
     @Test void blockShowsToolGrowthAndMod() {
@@ -77,7 +82,7 @@ class LookAtModuleTest {
         m.update();
         assertEquals(List.of("§oMinecraft"), m.lineTexts(), "andere Blöcke ohne Details");
 
-        ((dev.aio.core.setting.BooleanSetting) m.setting("showDetails")).set(false);
+        ((BooleanSetting) m.setting("showDetails")).set(false);
         p.lookTarget = LookTarget.block("Komposter", "Minecraft", DIRT, null, null, Float.NaN, 0, 0, 0,
                 List.of(LookTarget.Detail.of("Level", 3, 7)));
         m.update();
@@ -112,8 +117,8 @@ class LookAtModuleTest {
         m.update();
         assertTrue(m.hasContent());
         assertEquals(List.of("§oMinecraft"), m.lineTexts());
-        p.screen = new dev.aio.core.ui.UiScreen() {
-            @Override public void render(dev.aio.core.platform.Renderer r, int mx, int my, float d) {}
+        p.screen = new UiScreen() {
+            @Override public void render(Renderer r, int mx, int my, float d) {}
         };
         assertFalse(m.hasContent());
     }

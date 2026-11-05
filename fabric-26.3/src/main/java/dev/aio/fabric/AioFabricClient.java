@@ -3,27 +3,31 @@ package dev.aio.fabric;
 import dev.aio.core.AioCore;
 import dev.aio.core.event.Events;
 import dev.aio.core.i18n.Lang;
-import net.minecraft.locale.Language;
+import dev.aio.core.modules.hud.HeldItemInfoModule;
+import dev.aio.core.modules.hud.PotionStatusModule;
+import dev.aio.core.modules.performance.FpsBoostModule;
+import dev.aio.core.modules.player.FoodInfoModule;
 import dev.aio.core.util.Log;
+
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
-import net.fabricmc.fabric.api.client.recipe.v1.sync.ClientRecipeSynchronizedEvent;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.recipe.v1.sync.ClientRecipeSynchronizedEvent;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
-import dev.aio.core.modules.hud.HeldItemInfoModule;
-import dev.aio.core.modules.player.FoodInfoModule;
-import dev.aio.core.modules.hud.PotionStatusModule;
-import net.minecraft.client.gui.screens.ChatScreen;
-import net.minecraft.client.gui.screens.Screen;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.locale.Language;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Locale;
 
 /** Einstiegspunkt des 26.3-Adapters: verbindet Fabric-Events mit dem Kern-Event-Bus. */
 public final class AioFabricClient implements ClientModInitializer {
@@ -140,10 +144,10 @@ public final class AioFabricClient implements ClientModInitializer {
 
     /** Alle 30 Sekunden: wie viel Zeit AIO selbst gebraucht hat (zum Vergleichen mit der Frame-Zeit aus F3). */
     private static void reportPerformance(AioCore core) {
-        dev.aio.core.modules.performance.FpsBoostModule boost = core.module(dev.aio.core.modules.performance.FpsBoostModule.class);
+        FpsBoostModule boost = core.module(FpsBoostModule.class);
         if (boost != null && boost.diagnose()) {
             double hud = hudFrames == 0 ? 0 : hudNanos / 1e6 / hudFrames;
-            LOGGER.info(String.format(java.util.Locale.ROOT,
+            LOGGER.info(String.format(Locale.ROOT,
                     "[aio] Performance: HUD %.3f ms/frame (%d frames), ticks %.3f ms/tick, visibility checks %.3f ms/tick (own thread), "
                             + "last hidden: %d entities, %d block entities, FPS %d",
                     hud, hudFrames, tickNanos / 1e6 / diagTicks, Culler.nanos / 1e6 / diagTicks,

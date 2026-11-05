@@ -1,10 +1,10 @@
 package dev.aio.core.modules.chat;
 
-import dev.aio.core.i18n.Lang;
-
 import dev.aio.core.event.Events;
+import dev.aio.core.i18n.Lang;
 import dev.aio.core.module.Category;
 import dev.aio.core.module.Module;
+import dev.aio.core.setting.ActionSetting;
 import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.StringSetting;
 
@@ -28,7 +28,7 @@ public final class NameAlertModule extends Module {
         sound = add(new BooleanSetting("sound", "Sound", true));
         popup = add(new BooleanSetting("popup", "Show notice", true));
         ignoreOwn = add(new BooleanSetting("ignoreOwn", "Ignore your own messages", true));
-        add(new dev.aio.core.setting.ActionSetting("test", "Test alert", () -> {
+        add(new ActionSetting("test", "Test alert", () -> {
             if (sound.on()) platform().playAlertSound();
             platform().notify(Lang.tr("aio.ui.name_alert.mentioned_steve_hey", "Mentioned: <Steve> hey %s!", platform().playerName()));
         }));

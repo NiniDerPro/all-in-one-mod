@@ -1,6 +1,7 @@
 package dev.aio.core.modules.hud;
 
 import dev.aio.core.hud.TextHudElement;
+import dev.aio.core.module.Category;
 import dev.aio.core.platform.Vec3;
 import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.NumberSetting;
@@ -16,7 +17,7 @@ public final class CoordinatesModule extends TextHudElement {
     private final BooleanSetting showBiome;
 
     public CoordinatesModule() {
-        super("coordinates", "Coordinates", "Position, facing and biome", dev.aio.core.module.Category.QOL, false, 0.0, 0.12);
+        super("coordinates", "Coordinates", "Position, facing and biome", Category.QOL, false, 0.0, 0.12);
         decimals = add(new NumberSetting("decimals", "Decimals", 0, 0, 2, 1));
         showDirection = add(new BooleanSetting("showDirection", "Facing", true));
         showBiome = add(new BooleanSetting("showBiome", "Biome", false));

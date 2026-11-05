@@ -1,11 +1,12 @@
 package dev.aio.core.modules.hud;
 
 import dev.aio.core.hud.TextHudElement;
+import dev.aio.core.module.Category;
 
 /** Latenz zum Server laut Spielerliste. */
 public final class PingModule extends TextHudElement {
     public PingModule() {
-        super("ping", "Ping", "Latency to the server", dev.aio.core.module.Category.QOL, false, 0.0, 0.18);
+        super("ping", "Ping", "Latency to the server", Category.QOL, false, 0.0, 0.18);
     }
 
     @Override protected String getText() {

@@ -1,5 +1,7 @@
 package dev.aio.core.platform;
 
+import dev.aio.core.util.Colors;
+
 /**
  * Zeichen-API, die der Kern benutzt. Der Adapter implementiert sie pro MC-Version
  * (z. B. über {@code DrawContext}). Farben sind immer ARGB.
@@ -85,7 +87,7 @@ public interface Renderer {
             return;
         }
         for (float y = y1; y < y2; y += 1) {
-            fill(x1, y, x2, Math.min(y2, y + 1), dev.aio.core.util.Colors.lerp(top, bottom, (y - y1) / h));
+            fill(x1, y, x2, Math.min(y2, y + 1), Colors.lerp(top, bottom, (y - y1) / h));
         }
     }
 

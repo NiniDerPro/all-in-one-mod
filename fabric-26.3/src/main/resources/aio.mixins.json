@@ -3,7 +3,6 @@
   "package": "dev.aio.fabric.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
-    "ClientInputAccessor",
     "ClientLevelParticlesMixin",
     "ParticleEngineMixin",
     "MinecraftFpsMixin",

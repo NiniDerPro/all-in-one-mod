@@ -1,5 +1,8 @@
 package dev.aio.fabric.compat;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -69,7 +72,7 @@ public final class HookStatus {
 
     /** Modul-ID → Beschreibung für alle Module, deren Eingriff nicht greift. */
     public static Map<String, String> broken() {
-        Map<String, String> out = new java.util.LinkedHashMap<>();
+        Map<String, String> out = new LinkedHashMap<>();
         for (String mixin : started) {
             if (finished.contains(mixin)) continue;
             // Einbau ganz gescheitert: alle Module dieses Mixins
@@ -88,8 +91,8 @@ public final class HookStatus {
     }
 
     /** Für das Log: alle fehlenden Eingriffe, auch die ohne eigenes Modul. */
-    public static java.util.List<String> missing() {
-        java.util.List<String> out = new java.util.ArrayList<>();
+    public static List<String> missing() {
+        List<String> out = new ArrayList<>();
         for (String mixin : started) if (!finished.contains(mixin)) out.add(mixin + " (not applied)");
         for (Map.Entry<String, Boolean> e : handlers.entrySet()) if (!e.getValue()) out.add(e.getKey());
         return out;

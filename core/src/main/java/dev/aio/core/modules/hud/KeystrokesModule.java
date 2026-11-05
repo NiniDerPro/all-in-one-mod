@@ -1,8 +1,8 @@
 package dev.aio.core.modules.hud;
 
-import dev.aio.core.i18n.Lang;
-
+import dev.aio.core.hud.ColorMode;
 import dev.aio.core.hud.HudElement;
+import dev.aio.core.i18n.Lang;
 import dev.aio.core.platform.GameKey;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.setting.BooleanSetting;
@@ -150,7 +150,7 @@ public final class KeystrokesModule extends HudElement {
                     : pressedColor.argb();
             int bg = Colors.lerp(idle, pressed, t);
             if (Colors.alpha(bg) > 0) r.fill(b.x, b.y, b.x + b.w, b.y + b.h, bg);
-            int baseText = colorMode() == dev.aio.core.hud.ColorMode.STATIC ? textColor() : dynamicColor(b.x + b.y + 40);
+            int baseText = colorMode() == ColorMode.STATIC ? textColor() : dynamicColor(b.x + b.y + 40);
             int fg = Colors.lerp(baseText, pressedTextColor.argb(), t);
 
             if ((b.key == GameKey.ATTACK || b.key == GameKey.USE) && showCps.on()) {

@@ -1,8 +1,8 @@
 package dev.aio.core.modules.inventory;
 
-import dev.aio.core.i18n.Lang;
-
 import dev.aio.core.AioCore;
+import dev.aio.core.i18n.Lang;
+import dev.aio.core.platform.ContainerView;
 import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.Keys;
 import dev.aio.core.platform.RecipeKind;
@@ -13,6 +13,7 @@ import dev.aio.core.ui.UiScreen;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +57,7 @@ public final class RecipeScreen implements UiScreen {
     private final List<ItemHit> itemHits = new ArrayList<>();
     private final List<ComboHit> comboHits = new ArrayList<>();
     /** Auswahl je Slot bei Kombinations-Ansichten (Verzierungen), pro Rezept. */
-    private final Map<RecipeView, int[]> selections = new java.util.IdentityHashMap<>();
+    private final Map<RecipeView, int[]> selections = new IdentityHashMap<>();
     private ItemRef hoveredItem;
     private String tooltip;
     private int pageCount = 1;
@@ -288,7 +289,7 @@ public final class RecipeScreen implements UiScreen {
         if (freeze) tick = 0; // Shift hält wechselnde Zutaten an
 
         // fehlende Zutaten für "+" rot markieren
-        dev.aio.core.platform.ContainerView container = core.platform().container();
+        ContainerView container = core.platform().container();
         boolean transferable = rec.kind() != RecipeKind.OTHER;
         RecipeTransfer.Status status = transferable ? RecipeTransfer.check(container, rec) : RecipeTransfer.Status.WRONG_STATION;
         List<Integer> missing = status == RecipeTransfer.Status.MISSING_ITEMS ? RecipeTransfer.missing(container, rec) : List.of();

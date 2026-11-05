@@ -2,8 +2,10 @@ package dev.aio.fabric;
 
 import dev.aio.core.AioCore;
 import dev.aio.core.modules.combat.ShieldIndicatorModule;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -12,7 +14,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -25,7 +29,7 @@ public final class ShieldIndicator {
     private ShieldIndicator() {}
 
     /** Besitzer des Items, das gerade erfasst wird (verschachtelt möglich). */
-    private static final java.util.ArrayList<LivingEntity> OWNERS = new java.util.ArrayList<>();
+    private static final ArrayList<LivingEntity> OWNERS = new ArrayList<>();
     /**
      * Item-Daten mit angehängter Farbe. Eigene Klasse statt Zuordnungstabelle: Minecrafts
      * Item-Daten vergleichen nach Inhalt, zwei gleiche Schilde wären sonst nicht zu unterscheiden.
@@ -39,9 +43,9 @@ public final class ShieldIndicator {
             this.tint = tint;
         }
 
-        @Override public java.util.Set<net.minecraft.core.component.DataComponentType<?>> keySet() { return base.keySet(); }
+        @Override public Set<DataComponentType<?>> keySet() { return base.keySet(); }
 
-        @Override public <T> T get(net.minecraft.core.component.DataComponentType<? extends T> type) { return base.get(type); }
+        @Override public <T> T get(DataComponentType<? extends T> type) { return base.get(type); }
     }
     /** Vorhersage: Spieler → Zeitpunkt (ms), bis zu dem das Schild als deaktiviert gilt. */
     private static final Map<UUID, Long> PREDICTED = new ConcurrentHashMap<>();

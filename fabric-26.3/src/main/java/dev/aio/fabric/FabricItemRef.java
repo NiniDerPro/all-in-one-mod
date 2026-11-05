@@ -1,8 +1,10 @@
 package dev.aio.fabric;
 
 import dev.aio.core.platform.ItemRef;
+
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Map;
@@ -27,7 +29,7 @@ public record FabricItemRef(ItemStack stack) implements ItemRef {
     @Override public String name() { return stack.getHoverName().getString(); }
 
     @Override public int nameColor() {
-        net.minecraft.network.chat.TextColor c = stack.getStyledHoverName().getStyle().getColor();
+        TextColor c = stack.getStyledHoverName().getStyle().getColor();
         return c == null ? 0xFFFFFFFF : 0xFF000000 | c.getValue();
     }
 

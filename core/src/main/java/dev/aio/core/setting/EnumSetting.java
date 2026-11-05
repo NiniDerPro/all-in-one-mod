@@ -1,7 +1,11 @@
 package dev.aio.core.setting;
 
+import dev.aio.core.i18n.Lang;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+
+import java.util.Locale;
 
 /** Auswahl aus einer Enum. Die Enum kann {@link Named} implementieren, um einen Anzeigenamen zu liefern. */
 public class EnumSetting<E extends Enum<E>> extends Setting<E> {
@@ -28,12 +32,12 @@ public class EnumSetting<E extends Enum<E>> extends Setting<E> {
     /** Translated name of an enum constant ({@code aio.enum.<Type>.<constant>}). */
     public static String label(Enum<?> e) {
         String fallback = e instanceof Named n ? n.displayName() : e.name();
-        return dev.aio.core.i18n.Lang.tr(key(e), fallback);
+        return Lang.tr(key(e), fallback);
     }
 
     public static String key(Enum<?> e) {
-        return "aio.enum." + e.getDeclaringClass().getSimpleName().toLowerCase(java.util.Locale.ROOT)
-                + "." + e.name().toLowerCase(java.util.Locale.ROOT);
+        return "aio.enum." + e.getDeclaringClass().getSimpleName().toLowerCase(Locale.ROOT)
+                + "." + e.name().toLowerCase(Locale.ROOT);
     }
 
     @Override public JsonElement toJson() { return new JsonPrimitive(value.name()); }

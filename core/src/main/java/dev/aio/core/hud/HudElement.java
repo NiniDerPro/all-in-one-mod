@@ -8,6 +8,9 @@ import dev.aio.core.setting.ColorSetting;
 import dev.aio.core.setting.EnumSetting;
 import dev.aio.core.setting.NumberSetting;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Gemeinsame Basis aller HUD-Elemente: Position, Skalierung, Farbe, Hintergrund, Schatten, Sichtbarkeit.
  *
@@ -66,7 +69,7 @@ public abstract class HudElement extends Module implements HudTarget {
 
     // ---- Einzeln verschiebbare Teile ----
 
-    private final java.util.List<HudPart> parts = new java.util.ArrayList<>();
+    private final List<HudPart> parts = new ArrayList<>();
     private BooleanSetting separate;
 
     /**
@@ -91,14 +94,14 @@ public abstract class HudElement extends Module implements HudTarget {
         return part;
     }
 
-    public java.util.List<HudPart> parts() { return parts; }
+    public List<HudPart> parts() { return parts; }
 
     /** Ob die Teile gerade einzeln stehen (sonst ein zusammenhängender Block). */
     public boolean separated() { return separate != null && separate.on() && !parts.isEmpty(); }
 
     /** Teile, die gerade angezeigt werden (im Editor alle). */
-    public java.util.List<HudPart> visibleParts(boolean preview) {
-        java.util.List<HudPart> out = new java.util.ArrayList<>();
+    public List<HudPart> visibleParts(boolean preview) {
+        List<HudPart> out = new ArrayList<>();
         for (HudPart p : parts) if (partEnabled(p) && (preview || partHasContent(p))) out.add(p);
         return out;
     }

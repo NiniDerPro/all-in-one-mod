@@ -8,6 +8,9 @@ import dev.aio.core.modules.render.FreelookModule;
 import dev.aio.core.modules.render.FullbrightModule;
 import dev.aio.core.modules.render.ZoomModule;
 import dev.aio.core.platform.Keys;
+import dev.aio.core.platform.Perspective;
+import dev.aio.core.ui.ClickGuiScreen;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -105,7 +108,7 @@ class ModuleLifecycleTest {
         p.heldKeys.add(Keys.LEFT_ALT);
         core.bus().post(new Events.Key(Keys.LEFT_ALT, 1, false));
         assertTrue(fl.isEngaged());
-        assertEquals(dev.aio.core.platform.Perspective.THIRD_PERSON_BACK, p.perspective);
+        assertEquals(Perspective.THIRD_PERSON_BACK, p.perspective);
         assertTrue(fl.consumeMouse(100, 1000));
         assertEquals(105, fl.cameraYaw(), 1e-4);
         assertEquals(90, fl.cameraPitch(), 1e-4, "Pitch wird auf 90 begrenzt");
@@ -113,7 +116,7 @@ class ModuleLifecycleTest {
         p.heldKeys.remove(Keys.LEFT_ALT);
         core.bus().post(new Events.Key(Keys.LEFT_ALT, 0, false));
         assertFalse(fl.isEngaged());
-        assertEquals(dev.aio.core.platform.Perspective.FIRST_PERSON, p.perspective);
+        assertEquals(Perspective.FIRST_PERSON, p.perspective);
         assertFalse(fl.consumeMouse(1, 1));
     }
 
@@ -127,7 +130,7 @@ class ModuleLifecycleTest {
         p.heldKeys.remove(Keys.LEFT_ALT); // losgelassen, aber Event nie angekommen
         core.bus().post(Events.Tick.INSTANCE);
         assertFalse(fl.isEngaged());
-        assertEquals(dev.aio.core.platform.Perspective.FIRST_PERSON, p.perspective);
+        assertEquals(Perspective.FIRST_PERSON, p.perspective);
     }
 
     @Test void freelookBlockedOnServerRestoresPerspective() {
@@ -140,7 +143,7 @@ class ModuleLifecycleTest {
         p.singleplayer = false;
         core.bus().post(new Events.ServerJoin("mc.server.net"));
         assertFalse(fl.isEngaged());
-        assertEquals(dev.aio.core.platform.Perspective.FIRST_PERSON, p.perspective);
+        assertEquals(Perspective.FIRST_PERSON, p.perspective);
     }
 
     @Test void zoomScrollIsCancelledOnlyWhileZooming() {
@@ -194,6 +197,6 @@ class ModuleLifecycleTest {
         FakePlatform p = new FakePlatform();
         AioCore core = newCore(p);
         core.bus().post(new Events.Key(Keys.RIGHT_SHIFT, 1, false));
-        assertInstanceOf(dev.aio.core.ui.ClickGuiScreen.class, p.screen);
+        assertInstanceOf(ClickGuiScreen.class, p.screen);
     }
 }

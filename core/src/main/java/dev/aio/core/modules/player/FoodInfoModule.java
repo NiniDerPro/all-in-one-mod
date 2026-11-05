@@ -6,6 +6,8 @@ import dev.aio.core.platform.FoodState;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.setting.BooleanSetting;
 
+import java.util.Locale;
+
 /**
  * Essens-Info: Nährwert und Sättigung im Tooltip, Sättigung und Erschöpfung auf der Hungerleiste
  * und beim Halten von Essen eine Vorschau, wie viel Hunger, Sättigung und Leben es bringt.
@@ -80,8 +82,8 @@ public final class FoodInfoModule extends Module {
             if (holding && newSat > sat) drawSaturation(r, right, top, sat, newSat, pulse());
         }
         if (values.on()) {
-            String text = "Hunger " + s.food() + " · Sat. " + String.format(java.util.Locale.GERMANY, "%.1f", sat)
-                    + (Float.isFinite(s.exhaustion()) ? " · Exh. " + String.format(java.util.Locale.GERMANY, "%.2f", s.exhaustion()) : "");
+            String text = "Hunger " + s.food() + " · Sat. " + String.format(Locale.GERMANY, "%.1f", sat)
+                    + (Float.isFinite(s.exhaustion()) ? " · Exh. " + String.format(Locale.GERMANY, "%.2f", s.exhaustion()) : "");
             r.text(text, right - r.textWidth(text), top - 10, 0xFFE0E0E0, true);
         }
         if (holding) {

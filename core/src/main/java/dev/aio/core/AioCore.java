@@ -1,29 +1,70 @@
 package dev.aio.core;
 
-import dev.aio.core.i18n.Lang;
-
 import dev.aio.core.compat.ServerCompat;
 import dev.aio.core.config.ConfigManager;
 import dev.aio.core.event.EventBus;
 import dev.aio.core.event.Events;
 import dev.aio.core.hud.HudEditorScreen;
 import dev.aio.core.hud.HudManager;
+import dev.aio.core.i18n.Lang;
 import dev.aio.core.module.Module;
 import dev.aio.core.module.ModuleRegistry;
 import dev.aio.core.modules.chat.ChatModule;
+import dev.aio.core.modules.chat.NameAlertModule;
 import dev.aio.core.modules.client.ClientSettingsModule;
+import dev.aio.core.modules.client.KeyBindsModule;
+import dev.aio.core.modules.combat.AutoToolModule;
+import dev.aio.core.modules.combat.AutoWeaponModule;
+import dev.aio.core.modules.combat.HealthTagsModule;
+import dev.aio.core.modules.combat.ShieldIndicatorModule;
 import dev.aio.core.modules.hud.ArmorHudModule;
+import dev.aio.core.modules.hud.ArrowCounterModule;
 import dev.aio.core.modules.hud.CoordinatesModule;
 import dev.aio.core.modules.hud.CpsModule;
 import dev.aio.core.modules.hud.FpsModule;
+import dev.aio.core.modules.hud.HeldItemInfoModule;
 import dev.aio.core.modules.hud.KeystrokesModule;
 import dev.aio.core.modules.hud.LookAtModule;
 import dev.aio.core.modules.hud.PingModule;
 import dev.aio.core.modules.hud.PotionStatusModule;
+import dev.aio.core.modules.hud.TotemCounterModule;
+import dev.aio.core.modules.info.BiomeModule;
+import dev.aio.core.modules.info.DateTimeModule;
+import dev.aio.core.modules.info.DayCounterModule;
+import dev.aio.core.modules.info.PlaytimeModule;
+import dev.aio.core.modules.info.ServerInfoModule;
+import dev.aio.core.modules.info.VillagerInfoModule;
+import dev.aio.core.modules.info.WorldTimeModule;
+import dev.aio.core.modules.inventory.InventoryTweaksModule;
+import dev.aio.core.modules.inventory.ItemListModule;
+import dev.aio.core.modules.inventory.ShulkerPreviewModule;
+import dev.aio.core.modules.navigation.CompassModule;
+import dev.aio.core.modules.navigation.DeathPointModule;
+import dev.aio.core.modules.navigation.PortalCalculatorModule;
+import dev.aio.core.modules.navigation.WaypointsModule;
+import dev.aio.core.modules.performance.DynamicFpsModule;
+import dev.aio.core.modules.performance.EntityCullingModule;
+import dev.aio.core.modules.performance.FpsBoostModule;
+import dev.aio.core.modules.performance.ParticleLimitModule;
+import dev.aio.core.modules.performance.ProfilerChartModule;
+import dev.aio.core.modules.performance.RenderDistanceModule;
+import dev.aio.core.modules.performance.XpClumpsModule;
+import dev.aio.core.modules.player.ElytraSwapModule;
+import dev.aio.core.modules.player.FoodInfoModule;
 import dev.aio.core.modules.player.ToggleSprintModule;
+import dev.aio.core.modules.player.ToolSaverModule;
+import dev.aio.core.modules.render.BlockOutlineModule;
+import dev.aio.core.modules.render.DynamicLightsModule;
+import dev.aio.core.modules.render.FreecamModule;
 import dev.aio.core.modules.render.FreelookModule;
 import dev.aio.core.modules.render.FullbrightModule;
+import dev.aio.core.modules.render.LightOverlayModule;
+import dev.aio.core.modules.render.NoFogModule;
+import dev.aio.core.modules.render.NoHurtcamModule;
+import dev.aio.core.modules.render.NoPumpkinModule;
+import dev.aio.core.modules.render.SmallItemsModule;
 import dev.aio.core.modules.render.ZoomModule;
+import dev.aio.core.platform.Hotkeys;
 import dev.aio.core.platform.Keys;
 import dev.aio.core.platform.Platform;
 import dev.aio.core.ui.ClickGuiScreen;
@@ -31,6 +72,12 @@ import dev.aio.core.util.ClickTracker;
 import dev.aio.core.util.Log;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Zentrale des Clients: verbindet Event-Bus, Module, Config, HUD und Server-Kompatibilität.
@@ -86,53 +133,53 @@ public final class AioCore {
         modules.register(new FullbrightModule());
         modules.register(new ToggleSprintModule());
         modules.register(new ChatModule());
-        modules.register(new dev.aio.core.modules.chat.NameAlertModule());
+        modules.register(new NameAlertModule());
         // Info
-        modules.register(new dev.aio.core.modules.info.BiomeModule());
-        modules.register(new dev.aio.core.modules.info.DayCounterModule());
-        modules.register(new dev.aio.core.modules.info.WorldTimeModule());
-        modules.register(new dev.aio.core.modules.info.DateTimeModule());
-        modules.register(new dev.aio.core.modules.performance.ProfilerChartModule());
-        modules.register(new dev.aio.core.modules.render.SmallItemsModule());
-        modules.register(new dev.aio.core.modules.combat.ShieldIndicatorModule());
-        modules.register(new dev.aio.core.modules.player.ToolSaverModule());
-        modules.register(new dev.aio.core.modules.render.LightOverlayModule());
-        modules.register(new dev.aio.core.modules.combat.HealthTagsModule());
-        modules.register(new dev.aio.core.modules.render.DynamicLightsModule());
-        modules.register(new dev.aio.core.modules.info.PlaytimeModule());
-        modules.register(new dev.aio.core.modules.info.ServerInfoModule());
-        modules.register(new dev.aio.core.modules.info.VillagerInfoModule());
+        modules.register(new BiomeModule());
+        modules.register(new DayCounterModule());
+        modules.register(new WorldTimeModule());
+        modules.register(new DateTimeModule());
+        modules.register(new ProfilerChartModule());
+        modules.register(new SmallItemsModule());
+        modules.register(new ShieldIndicatorModule());
+        modules.register(new ToolSaverModule());
+        modules.register(new LightOverlayModule());
+        modules.register(new HealthTagsModule());
+        modules.register(new DynamicLightsModule());
+        modules.register(new PlaytimeModule());
+        modules.register(new ServerInfoModule());
+        modules.register(new VillagerInfoModule());
         // HUD
-        modules.register(new dev.aio.core.modules.hud.TotemCounterModule());
-        modules.register(new dev.aio.core.modules.hud.ArrowCounterModule());
-        modules.register(new dev.aio.core.modules.hud.HeldItemInfoModule());
+        modules.register(new TotemCounterModule());
+        modules.register(new ArrowCounterModule());
+        modules.register(new HeldItemInfoModule());
         // Navigation
-        modules.register(new dev.aio.core.modules.navigation.CompassModule());
-        modules.register(new dev.aio.core.modules.navigation.WaypointsModule());
-        modules.register(new dev.aio.core.modules.navigation.DeathPointModule());
-        modules.register(new dev.aio.core.modules.navigation.PortalCalculatorModule());
+        modules.register(new CompassModule());
+        modules.register(new WaypointsModule());
+        modules.register(new DeathPointModule());
+        modules.register(new PortalCalculatorModule());
         // Grafik
-        modules.register(new dev.aio.core.modules.render.NoFogModule());
-        modules.register(new dev.aio.core.modules.render.FreecamModule());
-        modules.register(new dev.aio.core.modules.render.NoHurtcamModule());
-        modules.register(new dev.aio.core.modules.render.NoPumpkinModule());
-        modules.register(new dev.aio.core.modules.render.BlockOutlineModule());
+        modules.register(new NoFogModule());
+        modules.register(new FreecamModule());
+        modules.register(new NoHurtcamModule());
+        modules.register(new NoPumpkinModule());
+        modules.register(new BlockOutlineModule());
         // Inventar
-        modules.register(new dev.aio.core.modules.inventory.ShulkerPreviewModule());
-        modules.register(new dev.aio.core.modules.inventory.InventoryTweaksModule());
-        modules.register(new dev.aio.core.modules.inventory.ItemListModule());
+        modules.register(new ShulkerPreviewModule());
+        modules.register(new InventoryTweaksModule());
+        modules.register(new ItemListModule());
         // Spieler & Kampf
-        modules.register(new dev.aio.core.modules.combat.AutoToolModule());
-        modules.register(new dev.aio.core.modules.combat.AutoWeaponModule());
-        modules.register(new dev.aio.core.modules.player.ElytraSwapModule());
-        modules.register(new dev.aio.core.modules.client.KeyBindsModule());
-        modules.register(new dev.aio.core.modules.player.FoodInfoModule());
-        modules.register(new dev.aio.core.modules.performance.FpsBoostModule());
-        modules.register(new dev.aio.core.modules.performance.EntityCullingModule());
-        modules.register(new dev.aio.core.modules.performance.RenderDistanceModule());
-        modules.register(new dev.aio.core.modules.performance.DynamicFpsModule());
-        modules.register(new dev.aio.core.modules.performance.ParticleLimitModule());
-        modules.register(new dev.aio.core.modules.performance.XpClumpsModule());
+        modules.register(new AutoToolModule());
+        modules.register(new AutoWeaponModule());
+        modules.register(new ElytraSwapModule());
+        modules.register(new KeyBindsModule());
+        modules.register(new FoodInfoModule());
+        modules.register(new FpsBoostModule());
+        modules.register(new EntityCullingModule());
+        modules.register(new RenderDistanceModule());
+        modules.register(new DynamicFpsModule());
+        modules.register(new ParticleLimitModule());
+        modules.register(new XpClumpsModule());
     }
 
     /** Hängt alle Module an, lädt die Config und registriert die Kern-Listener. */
@@ -191,7 +238,7 @@ public final class AioCore {
     // ---- Eingaben ----
 
     /** Strg/Alt/Windows als Hotkey: erst beim Loslassen auslösen, wenn nichts dazwischen kam. */
-    private final dev.aio.core.platform.Hotkeys.Tap tap = new dev.aio.core.platform.Hotkeys.Tap();
+    private final Hotkeys.Tap tap = new Hotkeys.Tap();
 
     private void onKey(Events.Key e) {
         if (e.isRelease()) {
@@ -207,8 +254,8 @@ public final class AioCore {
     private void handleKeybind(String key) {
         if (Keys.isNone(key)) return;
         // Nur allein gedrückte Hotkeys zählen (F3+F4 löst F4 nicht aus)
-        if (dev.aio.core.platform.Hotkeys.otherComboHeld(platform, key)) return;
-        if (dev.aio.core.platform.Hotkeys.isModifier(key) && isBoundAnywhere(key)) {
+        if (Hotkeys.otherComboHeld(platform, key)) return;
+        if (Hotkeys.isModifier(key) && isBoundAnywhere(key)) {
             tap.arm(key);
             return;
         }
@@ -269,15 +316,15 @@ public final class AioCore {
     // ---- Verträglichkeit mit anderen Mods ----
 
     private int hookCheckIn;
-    private final java.util.Map<String, String> brokenHooks = new java.util.HashMap<>();
-    private final java.util.Set<String> announcedBroken = new java.util.HashSet<>();
+    private final Map<String, String> brokenHooks = new HashMap<>();
+    private final Set<String> announcedBroken = new HashSet<>();
 
     /**
      * Setzt für jedes Modul, ob es gerade laufen kann: Eingriff fehlt (immer aus) oder eine andere
      * Mod mit derselben Funktion ist installiert (aus, solange "Prefer other mods" an ist).
      */
     public void applyAvailability() {
-        java.util.Map<String, String> other = clientSettings.preferOtherMods.on() ? platform.conflictingMods() : java.util.Map.of();
+        Map<String, String> other = clientSettings.preferOtherMods.on() ? platform.conflictingMods() : Map.of();
         for (Module m : modules.all()) {
             String reason = null;
             if (brokenHooks.containsKey(m.id())) reason = "Not available: " + brokenHooks.get(m.id());
@@ -287,7 +334,7 @@ public final class AioCore {
     }
 
     private void checkHooks() {
-        java.util.Map<String, String> now;
+        Map<String, String> now;
         try {
             now = platform.brokenHooks();
         } catch (RuntimeException e) {
@@ -298,7 +345,7 @@ public final class AioCore {
         brokenHooks.clear();
         brokenHooks.putAll(now);
         if (changed) applyAvailability();
-        java.util.List<String> names = new java.util.ArrayList<>();
+        List<String> names = new ArrayList<>();
         for (String id : now.keySet()) {
             if (!announcedBroken.add(id)) continue;
             Module m = modules.get(id);

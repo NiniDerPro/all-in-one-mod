@@ -3,6 +3,8 @@ package dev.aio.core.modules.chat;
 import dev.aio.core.event.Events;
 import dev.aio.core.module.Category;
 import dev.aio.core.module.Module;
+import dev.aio.core.platform.Keys;
+import dev.aio.core.platform.Renderer;
 import dev.aio.core.platform.VanillaOption;
 import dev.aio.core.setting.ActionSetting;
 import dev.aio.core.setting.BooleanSetting;
@@ -11,6 +13,8 @@ import dev.aio.core.setting.NumberSetting;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Chat-Verbesserungen: Zeitstempel, längerer Verlauf, Kopieren (Rechtsklick im Chat oder Taste)
@@ -38,7 +42,7 @@ public final class ChatModule extends Module {
         seconds = add(new BooleanSetting("seconds", "With seconds", false));
         seconds.visibleWhen(timestamps::on);
         history = add(new NumberSetting("history", "History length", 500, 100, 2000, 50, " lines"));
-        copyKey = add(new KeybindSetting("copyKey", "Copy chat key", dev.aio.core.platform.Keys.NONE));
+        copyKey = add(new KeybindSetting("copyKey", "Copy chat key", Keys.NONE));
         add(new ActionSetting("copy", "Copy chat", this::openCopy));
         width = vanilla("width", "Width", VanillaOption.CHAT_WIDTH, 1.0);
         heightFocused = vanilla("heightFocused", "Height (open)", VanillaOption.CHAT_HEIGHT_FOCUSED, 1.0);
@@ -147,7 +151,7 @@ public final class ChatModule extends Module {
      * @param x      linke Kante der Box
      * @param bottom untere Kante der Box
      */
-    public void renderPreview(dev.aio.core.platform.Renderer r, float x, float bottom) {
+    public void renderPreview(Renderer r, float x, float bottom) {
         float s = (float) Math.max(0.1, scale.get());
         int lineH = lineHeight();
         int innerW = (int) Math.ceil(boxWidth() / s);
@@ -158,7 +162,7 @@ public final class ChatModule extends Module {
         String prefix = timestamps.on() ? "[" + LocalTime.now().format(seconds.on() ? HMS : HM) + "] " : "";
 
         // Beispiele in Zeilen umbrechen wie Vanilla (an Wortgrenzen)
-        java.util.List<String> wrapped = new java.util.ArrayList<>();
+        List<String> wrapped = new ArrayList<>();
         for (String msg : SAMPLE) wrap(r, prefix + msg, innerW, wrapped);
 
         r.push();
@@ -174,7 +178,7 @@ public final class ChatModule extends Module {
         r.pop();
     }
 
-    private static void wrap(dev.aio.core.platform.Renderer r, String text, int maxW, java.util.List<String> out) {
+    private static void wrap(Renderer r, String text, int maxW, List<String> out) {
         String rest = text;
         while (!rest.isEmpty()) {
             if (r.textWidth(rest) <= maxW) { out.add(rest); return; }

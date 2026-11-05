@@ -1,10 +1,9 @@
 package dev.aio.core.modules.performance;
 
-import dev.aio.core.i18n.Lang;
-
 import dev.aio.core.AioCore;
-import dev.aio.core.platform.Keys;
+import dev.aio.core.i18n.Lang;
 import dev.aio.core.platform.Renderer;
+import dev.aio.core.ui.TextEdit;
 import dev.aio.core.ui.Theme;
 import dev.aio.core.ui.UiScreen;
 
@@ -76,7 +75,7 @@ public final class ParticleScreen implements UiScreen {
         r.fill(sx, sy, sx + sw, sy + 14, 0xF0202028);
         r.outline(sx, sy, sx + sw, sy + 14, 1, Theme.accent(core));
         boolean caret = !queryAll && (System.currentTimeMillis() / 500) % 2 == 0;
-        if (queryAll) dev.aio.core.ui.TextEdit.drawSelection(r, sx + 4, sy + 3, r.trim(query, sw - 8));
+        if (queryAll) TextEdit.drawSelection(r, sx + 4, sy + 3, r.trim(query, sw - 8));
         String shown = query.isEmpty() ? Lang.tr("aio.ui.particle.search_just_type", "Search… (just type)") : query + (caret ? "_" : "");
         r.text(r.trim(shown, sw - 8), sx + 4, sy + 3, query.isEmpty() ? Theme.TEXT_MUTED : Theme.TEXT, false);
 
@@ -160,7 +159,7 @@ public final class ParticleScreen implements UiScreen {
     }
 
     @Override public boolean keyPressed(String key) {
-        var res = dev.aio.core.ui.TextEdit.key(core.platform(), query, queryAll, key);
+        var res = TextEdit.key(core.platform(), query, queryAll, key);
         if (!res.text().equals(query)) scroll = 0;
         query = res.text().length() > 40 ? res.text().substring(0, 40) : res.text();
         queryAll = res.allSelected();
@@ -169,7 +168,7 @@ public final class ParticleScreen implements UiScreen {
 
     @Override public boolean charTyped(String text) {
         if (text.isEmpty() || text.codePointAt(0) < 32) return false;
-        query = dev.aio.core.ui.TextEdit.type(query, queryAll, text);
+        query = TextEdit.type(query, queryAll, text);
         if (query.length() > 40) query = query.substring(0, 40);
         queryAll = false;
         scroll = 0;

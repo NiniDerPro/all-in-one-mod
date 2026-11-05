@@ -5,7 +5,6 @@ import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.Keys;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.ui.McGui;
-import dev.aio.core.ui.Theme;
 
 import java.util.List;
 

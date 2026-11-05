@@ -1,6 +1,7 @@
 package dev.aio.core.ui;
 
 import dev.aio.core.AioCore;
+import dev.aio.core.platform.Renderer;
 import dev.aio.core.util.Colors;
 
 /** Farben der Oberfläche. Die Akzentfarbe ist in den Client-Einstellungen wählbar. */
@@ -32,7 +33,7 @@ public final class Theme {
     }
 
     /** Leiste als Farbverlauf (Regenbogen oder Akzent). */
-    public static void accentBar(dev.aio.core.platform.Renderer r, AioCore core, float x1, float y1, float x2, float y2) {
+    public static void accentBar(Renderer r, AioCore core, float x1, float y1, float x2, float y2) {
         if (!core.clientSettings().rainbowAccent.on()) {
             r.fill(x1, y1, x2, y2, accent(core));
             return;

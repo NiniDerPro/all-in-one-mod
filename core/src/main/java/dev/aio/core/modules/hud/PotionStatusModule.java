@@ -6,6 +6,7 @@ import dev.aio.core.platform.Renderer;
 import dev.aio.core.setting.BooleanSetting;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /** Aktive Trank-Effekte mit Stufe und Restzeit. */
@@ -37,7 +38,7 @@ public final class PotionStatusModule extends HudElement {
         if (platform().inWorld()) {
             List<EffectInfo> sorted = new ArrayList<>(platform().effects());
             // stabil wie im Vanilla-Inventar: gute vor schlechten, dann nach Name
-            sorted.sort(java.util.Comparator.comparing((EffectInfo e) -> !e.beneficial()).thenComparing(EffectInfo::name));
+            sorted.sort(Comparator.comparing((EffectInfo e) -> !e.beneficial()).thenComparing(EffectInfo::name));
             for (EffectInfo e : sorted) {
                 nextLines.add(e.name() + " " + roman(e.amplifier()) + "  " + formatDuration(e));
                 nextColors.add(!colorByType.on() ? textColor() : e.beneficial() ? 0xFF8CF08C : 0xFFFF7070);

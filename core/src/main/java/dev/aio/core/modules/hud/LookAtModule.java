@@ -1,14 +1,15 @@
 package dev.aio.core.modules.hud;
 
-import dev.aio.core.i18n.Lang;
-
 import dev.aio.core.hud.ColorMode;
 import dev.aio.core.hud.HudElement;
+import dev.aio.core.i18n.Lang;
+import dev.aio.core.module.Category;
 import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.LookTarget;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.EnumSetting;
+import dev.aio.core.setting.NumberSetting;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +67,7 @@ public final class LookAtModule extends HudElement {
     private final BooleanSetting showArmor;
     private final BooleanSetting showCoords;
     private final BooleanSetting hideInMenus;
-    private final dev.aio.core.setting.NumberSetting range;
+    private final NumberSetting range;
 
     private LookTarget target;
     private String name = "";
@@ -76,7 +77,7 @@ public final class LookAtModule extends HudElement {
     private int heartsW;
 
     public LookAtModule() {
-        super("lookat", "Block Info", "Shows the block or mob under your crosshair", dev.aio.core.module.Category.QOL, false, 0.5, 0.0);
+        super("lookat", "Block Info", "Shows the block or mob under your crosshair", Category.QOL, false, 0.5, 0.0);
         style = add(new EnumSetting<>("style", "Style", Style.CLASSIC));
         showIcon = add(new BooleanSetting("showIcon", "Icon", true));
         showModName = add(new BooleanSetting("showModName", "Mod name", true));
@@ -87,7 +88,7 @@ public final class LookAtModule extends HudElement {
         showArmor = add(new BooleanSetting("showArmor", "Armor", true));
         showCoords = add(new BooleanSetting("showCoords", "Coordinates", false));
         hideInMenus = add(new BooleanSetting("hideInMenus", "Hide in menus", true));
-        range = add(new dev.aio.core.setting.NumberSetting("range", "Range (blocks)", 0, 0, 32, 1, " (0 = normal)"));
+        range = add(new NumberSetting("range", "Range (blocks)", 0, 0, 32, 1, " (0 = normal)"));
     }
 
     @Override protected int defaultBackgroundColor() { return BG; }

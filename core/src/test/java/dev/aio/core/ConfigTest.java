@@ -1,15 +1,17 @@
 package dev.aio.core;
 
 import dev.aio.core.config.ConfigManager;
+import dev.aio.core.hud.HudElement;
 import dev.aio.core.modules.hud.FpsModule;
 import dev.aio.core.modules.hud.KeystrokesModule;
-import dev.aio.core.hud.HudElement;
 import dev.aio.core.setting.NumberSetting;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -84,7 +86,7 @@ class ConfigTest {
         assertFalse(core.module(FpsModule.class).isEnabled());
 
         assertEquals("pvp-2", cfg.createProfile("pvp"));
-        assertTrue(cfg.profiles().containsAll(java.util.List.of("default", "pvp", "pvp-2")));
+        assertTrue(cfg.profiles().containsAll(List.of("default", "pvp", "pvp-2")));
         assertFalse(cfg.deleteProfile("pvp-2"), "aktives Profil nicht löschbar");
         cfg.switchProfile("default");
         assertTrue(cfg.deleteProfile("pvp-2"));
