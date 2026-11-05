@@ -37,12 +37,36 @@ public final class NametagsModule extends HudElement {
     private static final int ICON = 16;
 
     /**
-     * Größe nach Entfernung: bis 4 Blöcke voll, dann weich kleiner (8 → 66 %, 16 → 44 %, 32 → 29 %),
-     * nie unter 25 %, damit sich Tags auf Distanz nicht gegenseitig verdecken.
+     * Größe nach Entfernung: bis 4 Blöcke voll, dann weich kleiner (8 → 66 %, ab etwa 12 → 50 %).
+     * Kleiner wird die Minecraft-Schrift unleserlich; gegen Überlappen sorgt {@link #declutter}.
      */
     static float distanceScale(double distance) {
         if (distance <= 4) return 1f;
-        return (float) Math.max(0.25, Math.pow(4.0 / distance, 0.6));
+        return (float) Math.max(0.5, Math.pow(4.0 / distance, 0.6));
+    }
+
+    /** Ein Tag auf dem Bildschirm: Ziel, Ankerpunkt, Größe und grobe Fläche der Namenszeile. */
+    record Placed(NametagTarget target, float x, float y, float scale, float x1, float y1, float x2, float y2) {
+        float area() { return (x2 - x1) * (y2 - y1); }
+
+        float overlap(Placed o) {
+            float w = Math.min(x2, o.x2) - Math.max(x1, o.x1), h = Math.min(y2, o.y2) - Math.max(y1, o.y1);
+            return w > 0 && h > 0 ? w * h : 0;
+        }
+    }
+
+    /**
+     * Von nah nach fern: ein Tag, der zu mehr als 40 % hinter einem näheren läge, wird weggelassen.
+     * So bleibt bei Gruppen in der Ferne lesbar, wer vorne steht, statt eines Knäuels aus Tags.
+     */
+    static List<Placed> declutter(List<Placed> nearToFar) {
+        List<Placed> kept = new ArrayList<>();
+        outer:
+        for (Placed p : nearToFar) {
+            for (Placed k : kept) if (p.overlap(k) > 0.4f * p.area()) continue outer;
+            kept.add(p);
+        }
+        return kept;
     }
 
     private final BooleanSetting players, items, mobs, tnt, throughWalls;
@@ -112,14 +136,22 @@ public final class NametagsModule extends HudElement {
         CameraView cam = platform().camera(partialTick);
         float w = r.screenWidth(), h = r.screenHeight();
         float base = (float) (size.get() / 100.0);
-        for (int i = list.size() - 1; i >= 0; i--) {
-            NametagTarget t = list.get(i);
+        int fh = r.fontHeight();
+        List<Placed> placed = new ArrayList<>(list.size());
+        for (NametagTarget t : list) {
             Projection.Point pt = Projection.project(t.x(), t.y(), t.z(), cam, w, h);
             if (!pt.onScreen()) continue;
             float scale = base * distanceScale(t.distance());
+            float half = (r.textWidth(t.name()) / 2f + 18) * scale; // Name plus Herz/Ping grob
+            placed.add(new Placed(t, pt.x(), pt.y(), scale, pt.x() - half, pt.y() - (fh + 3) * scale, pt.x() + half, pt.y()));
+        }
+        List<Placed> kept = declutter(placed);
+        for (int i = kept.size() - 1; i >= 0; i--) { // von hinten nach vorne zeichnen
+            Placed p = kept.get(i);
+            NametagTarget t = p.target();
             r.push();
-            r.translate(pt.x(), pt.y());
-            r.scale(scale);
+            r.translate(p.x(), p.y());
+            r.scale(p.scale());
             switch (t.kind()) {
                 case PLAYER -> drawPlayer(r, t);
                 case MOB -> drawMob(r, t);

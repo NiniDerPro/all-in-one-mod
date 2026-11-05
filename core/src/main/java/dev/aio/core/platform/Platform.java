@@ -179,6 +179,14 @@ public interface Platform {
      */
     default boolean drawProfilerChart(Renderer r, int w, int h) { return false; }
 
+    /** Ebene im Profiler-Diagramm, die man in F3+1 mit den Zahlentasten wählt (z. B. "root.gameRenderer"). */
+    default String profilerChartPath() { return "root"; }
+
+    default void setProfilerChartPath(String path) {}
+
+    /** Zahl der Einträge unter dem Kreis (für die Höhe des Diagramms). */
+    default int profilerChartEntries() { return 7; }
+
     /** Ob das Spielfenster den Fokus hat (nach Alt+Tab nicht mehr). */
     default boolean windowFocused() { return true; }
 

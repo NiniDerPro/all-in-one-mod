@@ -12,12 +12,12 @@ import org.spongepowered.asm.mixin.injection.At;
 
 /**
  * Profiler Chart: Minecraft sammelt die Daten fürs Kreisdiagramm nur bei offenem F3 mit F3+1.
- * Nur an dieser einen Stelle (Frame-Schleife) wird das zusätzlich eingeschaltet, nicht global,
+ * Nur an dieser einen Stelle (Frame-Schleife in run) wird das zusätzlich eingeschaltet, nicht global,
  * damit die Zahlentasten weiter die Hotbar wechseln statt das Diagramm zu steuern.
  */
 @Mixin(Minecraft.class)
 public abstract class MinecraftProfilerMixin {
-    @WrapOperation(method = "runTick", at = @At(value = "INVOKE",
+    @WrapOperation(method = "run", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/components/DebugScreenOverlay;showProfilerChart()Z"))
     private boolean aio$profilerChart(DebugScreenOverlay overlay, Operation<Boolean> original) {
         boolean vanilla = original.call(overlay);

@@ -58,17 +58,22 @@ public final class HudPart implements HudTarget {
 
     @Override public float screenX(Renderer r) {
         ensurePlaced(r);
-        return HudElement.toScreen(posX.get(), r.screenWidth(), scaledWidth(r));
+        return HudElement.toScreen(posX.get(), r.screenWidth(), scaledWidth(r), owner.partEdgeMargin());
     }
 
     @Override public float screenY(Renderer r) {
         ensurePlaced(r);
-        return HudElement.toScreen(posY.get(), r.screenHeight(), scaledHeight(r));
+        return HudElement.toScreen(posY.get(), r.screenHeight(), scaledHeight(r), owner.partEdgeMargin());
     }
 
     @Override public void setScreenPos(Renderer r, float x, float y) {
-        posX.set(HudElement.toFraction(x, r.screenWidth(), scaledWidth(r)));
-        posY.set(HudElement.toFraction(y, r.screenHeight(), scaledHeight(r)));
+        posX.set(HudElement.toFraction(x, r.screenWidth(), scaledWidth(r), owner.partEdgeMargin()));
+        posY.set(HudElement.toFraction(y, r.screenHeight(), scaledHeight(r), owner.partEdgeMargin()));
+    }
+
+    /** Steht der Teil fast am linken Rand, ganz an den Rand setzen. */
+    public void snapLeft(double threshold) {
+        if (placed.on() && posX.get() <= threshold) posX.set(0.0);
     }
 
     @Override public void setScreenBounds(Renderer r, float x, float y, float w, float h) {

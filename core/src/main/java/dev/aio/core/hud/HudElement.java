@@ -245,23 +245,40 @@ public abstract class HudElement extends Module implements HudTarget {
     public static final float EDGE = 3;
 
     /** Bildschirm-Position aus dem gespeicherten Anteil (0 = linker Rand, 1 = rechter Rand). */
-    static float toScreen(double fraction, float screen, float size) {
-        float free = screen - size - 2 * EDGE;
-        return free <= 0 ? Math.max(0, (screen - size) / 2f) : EDGE + (float) (fraction * free);
+    static float toScreen(double fraction, float screen, float size) { return toScreen(fraction, screen, size, EDGE); }
+
+    static double toFraction(float pos, float screen, float size) { return toFraction(pos, screen, size, EDGE); }
+
+    static float toScreen(double fraction, float screen, float size, float edge) {
+        float free = screen - size - 2 * edge;
+        return free <= 0 ? Math.max(0, (screen - size) / 2f) : edge + (float) (fraction * free);
     }
 
-    static double toFraction(float pos, float screen, float size) {
-        float free = screen - size - 2 * EDGE;
-        return free <= 0 ? 0 : clamp01((pos - EDGE) / free);
+    static double toFraction(float pos, float screen, float size, float edge) {
+        float free = screen - size - 2 * edge;
+        if (free <= 0) return 0;
+        // Bis an den Bildschirmrand gezogen: am Rand einrasten (auch wenn der Abstand negativ ist)
+        if (pos <= Math.max(edge, 0)) return 0;
+        if (pos >= screen - size - Math.max(edge, 0)) return 1;
+        return clamp01((pos - edge) / free);
     }
 
-    public float screenX(Renderer r) { return toScreen(posX.get(), r.screenWidth(), scaledWidth(r)); }
+    /**
+     * Abstand zum Bildschirmrand bei Position 0 bzw. 1. Negativ heißt: der (unsichtbare) Innenabstand
+     * darf über den Rand ragen, damit der Inhalt selbst am Rand anliegt.
+     */
+    protected float edgeMargin() { return EDGE; }
 
-    public float screenY(Renderer r) { return toScreen(posY.get(), r.screenHeight(), scaledHeight(r)); }
+    /** Wie {@link #edgeMargin()}, für einzeln verschobene Teile. */
+    protected float partEdgeMargin() { return EDGE; }
+
+    public float screenX(Renderer r) { return toScreen(posX.get(), r.screenWidth(), scaledWidth(r), edgeMargin()); }
+
+    public float screenY(Renderer r) { return toScreen(posY.get(), r.screenHeight(), scaledHeight(r), edgeMargin()); }
 
     public void setScreenPos(Renderer r, float x, float y) {
-        posX.set(toFraction(x, r.screenWidth(), scaledWidth(r)));
-        posY.set(toFraction(y, r.screenHeight(), scaledHeight(r)));
+        posX.set(toFraction(x, r.screenWidth(), scaledWidth(r), edgeMargin()));
+        posY.set(toFraction(y, r.screenHeight(), scaledHeight(r), edgeMargin()));
     }
 
     public NumberSetting scaleSetting() { return scale; }
