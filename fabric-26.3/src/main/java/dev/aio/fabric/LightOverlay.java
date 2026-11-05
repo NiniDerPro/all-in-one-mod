@@ -1,43 +1,70 @@
 package dev.aio.fabric;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.aio.core.AioCore;
 import dev.aio.core.modules.render.LightOverlayModule;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
- * Light Level Overlay. Damit es nicht laggt:
+ * Light Level Overlay, zwischengespeichert pro Chunk-Abschnitt (16³ Blöcke).
  * <ul>
- *   <li>Gescannt wird nur, wenn man sich um einen Block bewegt hat oder spätestens jede Sekunde
- *       (Fackel gesetzt, Block abgebaut), und dann verteilt auf mehrere Ticks.</li>
- *   <li>Pro Spalte nur die Oberflächen im Höhenbereich um den Spieler.</li>
- *   <li>Gezeichnet wird alles in einem einzigen Aufruf als flache Vierecke.</li>
+ *   <li>Jeder Abschnitt wird einmal ausgewertet. Meldet Minecraft eine Änderung darin (Block
+ *       gesetzt/abgebaut oder Licht geändert), wird genau dieser Abschnitt im nächsten Tick neu
+ *       berechnet – eine Fackel färbt die Umgebung also sofort grün.</li>
+ *   <li>Neue Abschnitte werden vom Spieler aus nach außen ergänzt, mit Zeitbudget pro Tick.</li>
+ *   <li>Gezeichnet wird alles in einem Aufruf; die Liste wird nur bei Änderungen neu aufgebaut.</li>
  * </ul>
  */
 final class LightOverlay {
     private LightOverlay() {}
 
-    /** Ergebnis: x, y (Oberkante), z, Farbe – flach in einem Array. */
+    /** Zeitbudget für das Auswerten neuer Abschnitte pro Tick (geänderte gehen immer vor). */
+    private static final long BUDGET_NANOS = 3_000_000;
+    /** Höhenbereich um den Spieler, in dem Oberflächen gezeigt werden. */
+    private static final int BELOW = 24, ABOVE = 12;
+
+    /** Abschnitt → Einträge (lx | ly << 4 | lz << 8 | lit << 12) der Böden im Abschnitt. */
+    private static final Map<Long, int[]> CACHE = new HashMap<>();
+    /** Von Minecraft gemeldete Änderungen (kann von mehreren Stellen kommen). */
+    private static final Set<Long> DIRTY = ConcurrentHashMap.newKeySet();
+    private static ClientLevel cachedLevel;
+    private static boolean listDirty = true;
+    private static long lastCenter = Long.MIN_VALUE;
+    private static int lastRadius = -1;
+    /** Zu zeichnende Vierecke: x, y, z, lit – flach. */
     private static int[] quads = new int[0];
     private static int quadCount;
-    // Scan in Arbeit
-    private static int[] building = new int[4 * 4096];
-    private static int buildCount;
-    private static int scanRow = Integer.MIN_VALUE, scanCx, scanCy, scanCz, scanR;
-    private static BlockPos lastCenter;
-    private static int ticksSinceScan;
-    private static final int ROWS_PER_TICK = 8;
+
+    /** Aufgerufen, wenn Minecraft einen Abschnitt neu zeichnen will (Block- oder Lichtänderung). */
+    static void onSectionDirty(int sx, int sy, int sz) {
+        if (cachedLevel == null) return;
+        DIRTY.add(SectionPos.asLong(sx, sy, sz));
+        DIRTY.add(SectionPos.asLong(sx, sy - 1, sz)); // Böden ganz oben im Abschnitt darunter hängen davon ab
+    }
 
     static void register(AioCore core, Minecraft mc) {
         LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
@@ -49,10 +76,14 @@ final class LightOverlay {
             pose.translate(-cam.x, -cam.y, -cam.z);
             int[] q = quads;
             int n = quadCount;
+            int danger = m.dangerColor(), safe = m.safeColor();
+            boolean showSafe = m.showSafe();
             context.submitNodeCollector().submitCustomGeometry(pose, RenderTypes.debugFilledBox(), (p, buffer) -> {
                 for (int i = 0; i < n; i++) {
                     int o = i * 4;
-                    quad(p, buffer, q[o], q[o + 1], q[o + 2], q[o + 3]);
+                    boolean lit = q[o + 3] != 0;
+                    if (lit && !showSafe) continue;
+                    quad(p, buffer, q[o], q[o + 1], q[o + 2], lit ? safe : danger);
                 }
             });
             pose.popPose();
@@ -73,81 +104,160 @@ final class LightOverlay {
         v.addVertex(pose, x0, y1, z1).setColor(c);
     }
 
-    /** Jeden Client-Tick: bei Bedarf Scan starten bzw. fortsetzen. */
     static void tick(AioCore core, Minecraft mc) {
         LightOverlayModule m = core.module(LightOverlayModule.class);
         ClientLevel level = mc.level;
         if (m == null || !m.isActive() || level == null || mc.player == null) {
-            quadCount = 0;
-            lastCenter = null;
-            scanRow = Integer.MIN_VALUE;
+            clear();
             return;
         }
-        BlockPos center = mc.player.blockPosition();
-        ticksSinceScan++;
-        if (scanRow == Integer.MIN_VALUE && (lastCenter == null || !center.equals(lastCenter) || ticksSinceScan >= 20)) {
-            lastCenter = center;
-            ticksSinceScan = 0;
-            scanR = m.radius();
-            scanCx = center.getX();
-            scanCy = center.getY();
-            scanCz = center.getZ();
-            scanRow = -scanR;
-            buildCount = 0;
+        if (level != cachedLevel) {
+            clear();
+            cachedLevel = level;
         }
-        if (scanRow == Integer.MIN_VALUE) return;
-        int danger = m.dangerColor(), safe = m.safeColor();
-        boolean showSafe = m.showSafe();
-        BlockPos.MutableBlockPos floor = new BlockPos.MutableBlockPos();
-        BlockPos.MutableBlockPos above = new BlockPos.MutableBlockPos();
-        int r2 = scanR * scanR;
-        // Höhenbereich: unter dem Spieler mehr, darüber weniger
-        int yMin = Math.max(level.getMinY(), scanCy - 12), yMax = Math.min(level.getMaxY() - 2, scanCy + 6);
-        for (int k = 0; k < ROWS_PER_TICK && scanRow <= scanR; k++, scanRow++) {
-            int dx = scanRow;
-            for (int dz = -scanR; dz <= scanR; dz++) {
-                if (dx * dx + dz * dz > r2) continue;
-                int x = scanCx + dx, z = scanCz + dz;
-                if (!level.hasChunk(x >> 4, z >> 4)) continue;
-                for (int y = yMax; y >= yMin; y--) {
-                    floor.set(x, y, z);
-                    BlockState fs = level.getBlockState(floor);
-                    if (fs.isAir() || !fs.isFaceSturdy(level, floor, Direction.UP)) continue;
-                    above.set(x, y + 1, z);
-                    BlockState as = level.getBlockState(above);
-                    if (!NaturalSpawner.isValidEmptySpawnBlock(level, above, as, as.getFluidState(), EntityTypes.ZOMBIE)) continue;
-                    if (!fs.isValidSpawn(level, floor, EntityTypes.ZOMBIE)) continue;
-                    above.set(x, y + 2, z);
-                    BlockState as2 = level.getBlockState(above);
-                    if (!NaturalSpawner.isValidEmptySpawnBlock(level, above, as2, as2.getFluidState(), EntityTypes.ZOMBIE)) continue;
-                    above.set(x, y + 1, z);
-                    int light = level.getBrightness(LightLayer.BLOCK, above); // Sonne ignorieren
-                    if (light > 0 && !showSafe) continue;
-                    add(x, y + 1, z, light == 0 ? danger : safe);
+        BlockPos center = mc.player.blockPosition();
+        int radius = m.radius();
+        int csx = SectionPos.blockToSectionCoord(center.getX()), csz = SectionPos.blockToSectionCoord(center.getZ());
+        int syMin = Math.max(level.getMinSectionY(), SectionPos.blockToSectionCoord(center.getY() - BELOW));
+        int syMax = Math.min(level.getMaxSectionY(), SectionPos.blockToSectionCoord(center.getY() + ABOVE));
+        int rc = (radius >> 4) + 1;
+
+        // 1. Geänderte Abschnitte in Reichweite sofort neu berechnen
+        if (!DIRTY.isEmpty()) {
+            for (Iterator<Long> it = DIRTY.iterator(); it.hasNext(); ) {
+                long key = it.next();
+                it.remove();
+                if (CACHE.containsKey(key)) {
+                    CACHE.put(key, scan(level, SectionPos.x(key), SectionPos.y(key), SectionPos.z(key)));
+                    listDirty = true;
                 }
             }
         }
-        if (scanRow > scanR) {
-            // fertig: Ergebnis übernehmen
-            int[] done = new int[buildCount * 4];
-            System.arraycopy(building, 0, done, 0, done.length);
-            quads = done;
-            quadCount = buildCount;
-            scanRow = Integer.MIN_VALUE;
+
+        // 2. Fehlende Abschnitte von innen nach außen ergänzen (Zeitbudget)
+        long start = System.nanoTime();
+        outer:
+        for (int ring = 0; ring <= rc; ring++) {
+            for (int dx = -ring; dx <= ring; dx++) {
+                for (int dz = -ring; dz <= ring; dz++) {
+                    if (Math.max(Math.abs(dx), Math.abs(dz)) != ring) continue;
+                    if (dx * dx + dz * dz > rc * rc) continue;
+                    int sx = csx + dx, sz = csz + dz;
+                    for (int sy = syMin; sy <= syMax; sy++) {
+                        long key = SectionPos.asLong(sx, sy, sz);
+                        if (CACHE.containsKey(key)) continue;
+                        if (level.getChunkSource().getChunk(sx, sz, ChunkStatus.FULL, false) == null) continue;
+                        CACHE.put(key, scan(level, sx, sy, sz));
+                        listDirty = true;
+                        if (System.nanoTime() - start > BUDGET_NANOS) break outer;
+                    }
+                }
+            }
+        }
+
+        // 3. Weit entfernte Abschnitte vergessen
+        if (CACHE.size() > 64) {
+            CACHE.keySet().removeIf(key -> {
+                int dx = SectionPos.x(key) - csx, dz = SectionPos.z(key) - csz, sy = SectionPos.y(key);
+                boolean out = dx * dx + dz * dz > (rc + 2) * (rc + 2) || sy < syMin - 1 || sy > syMax + 1;
+                if (out) listDirty = true;
+                return out;
+            });
+        }
+
+        long centerKey = center.asLong();
+        if (listDirty || centerKey != lastCenter || radius != lastRadius) {
+            rebuildList(center, radius);
+            lastCenter = centerKey;
+            lastRadius = radius;
+            listDirty = false;
         }
     }
 
-    private static void add(int x, int y, int z, int color) {
-        if ((buildCount + 1) * 4 > building.length) {
-            int[] bigger = new int[building.length * 2];
-            System.arraycopy(building, 0, bigger, 0, building.length);
-            building = bigger;
+    private static void rebuildList(BlockPos center, int radius) {
+        int r2 = radius * radius;
+        int yMin = center.getY() - BELOW, yMax = center.getY() + ABOVE;
+        List<int[]> parts = new ArrayList<>();
+        int total = 0;
+        int[] buf = new int[4096 * 4];
+        int n = 0;
+        for (Map.Entry<Long, int[]> e : CACHE.entrySet()) {
+            long key = e.getKey();
+            int bx = SectionPos.sectionToBlockCoord(SectionPos.x(key)), by = SectionPos.sectionToBlockCoord(SectionPos.y(key)),
+                    bz = SectionPos.sectionToBlockCoord(SectionPos.z(key));
+            for (int entry : e.getValue()) {
+                int x = bx + (entry & 15), y = by + ((entry >> 4) & 15) + 1, z = bz + ((entry >> 8) & 15);
+                if (y < yMin || y > yMax) continue;
+                int dx = x - center.getX(), dz = z - center.getZ();
+                if (dx * dx + dz * dz > r2) continue;
+                if (n + 4 > buf.length) {
+                    parts.add(buf);
+                    total += n;
+                    buf = new int[buf.length];
+                    n = 0;
+                }
+                buf[n] = x;
+                buf[n + 1] = y;
+                buf[n + 2] = z;
+                buf[n + 3] = (entry >> 12) & 1;
+                n += 4;
+            }
         }
-        int o = buildCount * 4;
-        building[o] = x;
-        building[o + 1] = y;
-        building[o + 2] = z;
-        building[o + 3] = color;
-        buildCount++;
+        int[] out = new int[total + n];
+        int pos = 0;
+        for (int[] p : parts) {
+            System.arraycopy(p, 0, out, pos, p.length);
+            pos += p.length;
+        }
+        System.arraycopy(buf, 0, out, pos, n);
+        quads = out;
+        quadCount = out.length / 4;
+    }
+
+    /** Alle Spawn-Böden eines Abschnitts mit Blocklicht-Status. */
+    private static int[] scan(ClientLevel level, int sx, int sy, int sz) {
+        LevelChunk chunk = level.getChunkSource().getChunk(sx, sz, ChunkStatus.FULL, false);
+        if (chunk == null) return new int[0];
+        int index = level.getSectionIndexFromSectionY(sy);
+        if (index < 0 || index >= chunk.getSections().length) return new int[0];
+        LevelChunkSection section = chunk.getSection(index);
+        if (section.hasOnlyAir()) return new int[0];
+        int bx = SectionPos.sectionToBlockCoord(sx), by = SectionPos.sectionToBlockCoord(sy), bz = SectionPos.sectionToBlockCoord(sz);
+        BlockPos.MutableBlockPos floor = new BlockPos.MutableBlockPos();
+        BlockPos.MutableBlockPos above = new BlockPos.MutableBlockPos();
+        int[] buf = new int[64];
+        int n = 0;
+        for (int ly = 0; ly < 16; ly++) {
+            for (int lz = 0; lz < 16; lz++) {
+                for (int lx = 0; lx < 16; lx++) {
+                    BlockState fs = section.getBlockState(lx, ly, lz);
+                    if (fs.isAir()) continue;
+                    floor.set(bx + lx, by + ly, bz + lz);
+                    if (!fs.isFaceSturdy(level, floor, Direction.UP)) continue;
+                    above.set(floor.getX(), floor.getY() + 1, floor.getZ());
+                    BlockState a1 = ly < 15 ? section.getBlockState(lx, ly + 1, lz) : level.getBlockState(above);
+                    if (!NaturalSpawner.isValidEmptySpawnBlock(level, above, a1, a1.getFluidState(), EntityTypes.ZOMBIE)) continue;
+                    if (!fs.isValidSpawn(level, floor, EntityTypes.ZOMBIE)) continue;
+                    above.set(floor.getX(), floor.getY() + 2, floor.getZ());
+                    BlockState a2 = ly < 14 ? section.getBlockState(lx, ly + 2, lz) : level.getBlockState(above);
+                    if (!NaturalSpawner.isValidEmptySpawnBlock(level, above, a2, a2.getFluidState(), EntityTypes.ZOMBIE)) continue;
+                    above.set(floor.getX(), floor.getY() + 1, floor.getZ());
+                    boolean lit = level.getBrightness(LightLayer.BLOCK, above) > 0; // Sonne ignorieren
+                    if (n == buf.length) buf = java.util.Arrays.copyOf(buf, n * 2);
+                    buf[n++] = lx | ly << 4 | lz << 8 | (lit ? 1 << 12 : 0);
+                }
+            }
+        }
+        return java.util.Arrays.copyOf(buf, n);
+    }
+
+    private static void clear() {
+        CACHE.clear();
+        DIRTY.clear();
+        cachedLevel = null;
+        quads = new int[0];
+        quadCount = 0;
+        lastCenter = Long.MIN_VALUE;
+        listDirty = true;
     }
 }
