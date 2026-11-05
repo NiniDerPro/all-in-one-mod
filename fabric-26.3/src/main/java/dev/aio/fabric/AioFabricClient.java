@@ -73,6 +73,7 @@ public final class AioFabricClient implements ClientModInitializer {
 
         ScreenHooks.register(core, client);
         BlockOutlineRenderer.register(core, client);
+        LightOverlay.register(core, client);
         ShulkerTooltipHook.register(core);
         ClientRecipeSynchronizedEvent.EVENT.register((c, recipes) -> RecipeSource.onSynced(recipes));
 
@@ -92,6 +93,7 @@ public final class AioFabricClient implements ClientModInitializer {
             Culler.tick();
             FoodHud.tick();
             Freecam.tick();
+            LightOverlay.tick(core, c);
             long t0 = System.nanoTime();
             platform.saveOptionsIfDirty();
             core.bus().post(Events.Tick.INSTANCE);
