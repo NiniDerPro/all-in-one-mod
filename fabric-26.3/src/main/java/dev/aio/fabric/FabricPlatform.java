@@ -449,8 +449,16 @@ public final class FabricPlatform implements Platform {
         if (state.requiresCorrectToolForDrops() && stack.isCorrectToolForDrops(state)) speed += 1000;
         // fast kaputte Werkzeuge schonen
         if (stack.isDamageableItem() && stack.getMaxDamage() - stack.getDamageValue() <= 2) speed -= 2000;
+        if (toolSaverAvoids(stack)) speed -= 4000; // vom Tool Saver geschützt
         return speed;
     }
+
+    private static boolean toolSaverAvoids(ItemStack stack) {
+        AioCore core = AioCore.get();
+        var m = core == null ? null : core.module(dev.aio.core.modules.player.ToolSaverModule.class);
+        return m != null && !stack.isEmpty() && m.avoid(FabricItemRef.of(stack));
+    }
+
 
     @Override public int bestWeaponSlot(boolean preferAxe) {
         LocalPlayer p = player();
@@ -460,7 +468,7 @@ public final class FabricPlatform implements Platform {
         for (int i = 0; i < 9; i++) {
             ItemStack s = p.getInventory().getItem(i);
             int type = s.is(ItemTags.SWORDS) ? (preferAxe ? 1 : 2) : s.is(ItemTags.AXES) ? (preferAxe ? 2 : 1) : 0;
-            if (type == 0) continue;
+            if (type == 0 || toolSaverAvoids(s)) continue;
             // höhere Stufe = mehr Haltbarkeit (Holz < Stein < Eisen < Diamant < Netherit)
             int score = type * 100_000 + s.getMaxDamage();
             if (score > bestScore) {
@@ -548,6 +556,18 @@ public final class FabricPlatform implements Platform {
             optionsDirtyAt = -1;
             client.options.save();
         }
+    }
+
+    @Override public void playSound(String id, float volume, float pitch) {
+        net.minecraft.sounds.SoundEvent ev = switch (id) {
+            case "bell" -> SoundEvents.NOTE_BLOCK_BELL.value();
+            case "anvil" -> SoundEvents.ANVIL_LAND;
+            case "xp" -> SoundEvents.EXPERIENCE_ORB_PICKUP;
+            case "bass" -> SoundEvents.NOTE_BLOCK_BASS.value();
+            case "break" -> SoundEvents.ITEM_BREAK.value();
+            default -> SoundEvents.NOTE_BLOCK_PLING.value();
+        };
+        client.getSoundManager().play(SimpleSoundInstance.forUI(ev, pitch, Math.max(0.05f, volume)));
     }
 
     @Override public void playAlertSound() {

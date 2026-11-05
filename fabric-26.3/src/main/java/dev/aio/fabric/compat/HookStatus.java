@@ -48,6 +48,7 @@ public final class HookStatus {
             Map.entry("MinecraftFpsMixin", "dynamicfps"),
             Map.entry("MinecraftProfilerMixin", "piechart"),
             Map.entry("SmallItemsMixin", "smallitems"),
+            Map.entry("ToolSaverMixin", "toolsaver"),
             Map.entry("ShieldIndicatorOwnerMixin", "shieldindicator"), Map.entry("ShieldIndicatorRenderMixin", "shieldindicator"),
             Map.entry("MultiPlayerGameModeMixin#aio$startBreak", "autotool"),
             Map.entry("MultiPlayerGameModeMixin#aio$attack", "autoweapon"),

@@ -41,7 +41,8 @@
     "MinecraftProfilerMixin",
     "SmallItemsMixin",
     "ShieldIndicatorOwnerMixin",
-    "ShieldIndicatorRenderMixin"
+    "ShieldIndicatorRenderMixin",
+    "ToolSaverMixin"
   ],
   "injectors": {
     "defaultRequire": 0
