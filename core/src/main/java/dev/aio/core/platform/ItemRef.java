@@ -1,5 +1,7 @@
 package dev.aio.core.platform;
 
+import java.util.List;
+
 /** Versionsunabhängige Sicht auf einen ItemStack. */
 public interface ItemRef {
     ItemRef EMPTY = new ItemRef() {
@@ -37,6 +39,11 @@ public interface ItemRef {
     }
 
     default boolean isDamageable() { return maxDamage() > 0; }
+
+    /** Verzauberung mit Stufe; {@code curse} = Fluch (rot anzeigen). */
+    record Enchant(String name, int level, boolean curse) {}
+
+    default List<Enchant> enchantments() { return List.of(); }
 
     default int durability() { return maxDamage() - damage(); }
 

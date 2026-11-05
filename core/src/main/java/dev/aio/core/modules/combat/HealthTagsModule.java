@@ -3,8 +3,10 @@ package dev.aio.core.modules.combat;
 import dev.aio.core.hud.HudElement;
 import dev.aio.core.module.Category;
 import dev.aio.core.modules.navigation.Projection;
+import dev.aio.core.modules.render.NametagsModule;
 import dev.aio.core.platform.CameraView;
 import dev.aio.core.platform.HealthTarget;
+import dev.aio.core.platform.NametagTarget;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.EnumSetting;
@@ -39,8 +41,7 @@ public final class HealthTagsModule extends HudElement {
 
     public HealthTagsModule() {
         super("healthtags", "Health Indicator", "Hearts above players and mobs, like the HealthIndicator mod", Category.PVP, false, 0, 0);
-        posX.hidden();
-        posY.hidden();
+        hideBoxSettings();
         players = add(new BooleanSetting("players", "Players", true));
         hostile = add(new BooleanSetting("hostile", "Hostile mobs", false));
         passive = add(new BooleanSetting("passive", "Other mobs", false));
@@ -65,8 +66,11 @@ public final class HealthTagsModule extends HudElement {
 
     @Override public void renderOverlay(Renderer r, float partialTick) {
         if (!isActive() || !hasContent()) return;
+        // Zeigen die Nametags schon das Leben von Spielern, hier keine zweite Anzeige darüber
+        NametagsModule tags = core.module(NametagsModule.class);
+        boolean playersHere = players.on() && (tags == null || !tags.replaces(NametagTarget.Kind.PLAYER));
         List<HealthTarget> list = new ArrayList<>(platform().healthTargets(distance.get(), partialTick,
-                players.on(), hostile.on(), passive.on(), throughWalls.on()));
+                playersHere, hostile.on(), passive.on(), throughWalls.on()));
         if (list.isEmpty()) return;
         list.sort((a, b) -> Double.compare(b.distance(), a.distance())); // nahe zuletzt (oben)
         CameraView cam = platform().camera(partialTick);

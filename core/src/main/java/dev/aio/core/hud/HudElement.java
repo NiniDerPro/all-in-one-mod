@@ -7,6 +7,7 @@ import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.ColorSetting;
 import dev.aio.core.setting.EnumSetting;
 import dev.aio.core.setting.NumberSetting;
+import dev.aio.core.setting.Setting;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -120,6 +121,14 @@ public abstract class HudElement extends Module implements HudTarget {
 
     /** Zeichnet einen Teil im lokalen Koordinatensystem (0,0 = obere linke Ecke des Teils). */
     protected void renderPart(Renderer r, HudPart part, boolean preview) {}
+
+    /** Für Elemente, die frei über den Bildschirm zeichnen (Marker, Namensschilder): Box-Einstellungen ausblenden. */
+    protected final void hideBoxSettings() {
+        for (var s : new Setting<?>[]{posX, posY, scale, scaleY, colorMode, textColor, secondColor,
+                colorSpeed, background, backgroundColor, shadow}) {
+            s.hidden();
+        }
+    }
 
     /** Standard-Farbmodus. Wird im Konstruktor abgefragt, darf also nur eine Konstante liefern. */
     protected ColorMode defaultColorMode() { return ColorMode.CHROMA; }

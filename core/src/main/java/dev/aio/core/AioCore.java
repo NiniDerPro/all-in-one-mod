@@ -59,6 +59,7 @@ import dev.aio.core.modules.render.FreecamModule;
 import dev.aio.core.modules.render.FreelookModule;
 import dev.aio.core.modules.render.FullbrightModule;
 import dev.aio.core.modules.render.LightOverlayModule;
+import dev.aio.core.modules.render.NametagsModule;
 import dev.aio.core.modules.render.NoFogModule;
 import dev.aio.core.modules.render.NoHurtcamModule;
 import dev.aio.core.modules.render.NoPumpkinModule;
@@ -146,6 +147,7 @@ public final class AioCore {
         modules.register(new LightOverlayModule());
         modules.register(new HealthTagsModule());
         modules.register(new DynamicLightsModule());
+        modules.register(new NametagsModule());
         modules.register(new PlaytimeModule());
         modules.register(new ServerInfoModule());
         modules.register(new VillagerInfoModule());
