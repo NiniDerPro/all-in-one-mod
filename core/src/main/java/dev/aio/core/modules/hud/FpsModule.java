@@ -43,7 +43,7 @@ public final class FpsModule extends TextHudElement {
         StringBuilder sb = new StringBuilder().append(platform().fps()).append(" FPS");
         if (stats.size() > 0 && (showAverage.on() || showMinMax.on())) {
             sb.append(" (");
-            if (showAverage.on()) sb.append("Ø ").append(stats.average());
+            if (showAverage.on()) sb.append("avg ").append(stats.average());
             if (showAverage.on() && showMinMax.on()) sb.append(", ");
             if (showMinMax.on()) sb.append(stats.min()).append('–').append(stats.max());
             sb.append(')');

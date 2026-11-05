@@ -20,6 +20,9 @@ final class DevSelfTest {
     private DevSelfTest() {}
 
     private static final String DIR = System.getProperty("aio.selftest", "");
+    /** Mit {@code -Daio.selftest.interactive=true}: nach dem Laden der Welt offen bleiben und Änderungen protokollieren. */
+    private static final boolean INTERACTIVE = Boolean.getBoolean("aio.selftest.interactive");
+    private static final java.util.Map<String, String> lastState = new java.util.HashMap<>();
 
     /** Ein Schritt: wartet, bis {@code ready} gilt, und führt dann nach {@code delay} Ticks {@code run} aus. */
     private record Step(BooleanSupplier ready, int delay, Runnable run) {}
@@ -30,7 +33,10 @@ final class DevSelfTest {
     static void tick(AioCore core, Minecraft mc) {
         if (DIR.isEmpty()) return;
         if (steps == null) steps = plan(core, mc, new File(DIR));
-        if (index >= steps.size()) return;
+        if (index >= steps.size()) {
+            if (INTERACTIVE) logChanges(core, mc);
+            return;
+        }
         Step s = steps.get(index);
         if (!s.ready.getAsBoolean()) {
             waited = 0;
@@ -70,6 +76,12 @@ final class DevSelfTest {
                 new Step(any, 5, () -> CreateWorldScreen.openFresh(mc, () -> mc.gui.setScreen(new TitleScreen()))),
                 new Step(() -> mc.gui.screen() instanceof CreateWorldScreen, 40, () -> pressCreate(mc)),
                 new Step(inWorld, 200, () -> shot(mc, dir, "05_world_hud.png")),
+                new Step(any, 5, () -> {
+                    if (!INTERACTIVE) return;
+                    logChanges(core, mc);
+                    AioFabricClient.LOGGER.info("[aio] Selftest ready for input");
+                    index = Integer.MAX_VALUE; // Rest überspringen, Eingaben kommen von außen
+                }),
                 new Step(any, 5, () -> mc.pauseGame(false)),
                 new Step(any, 30, () -> shot(mc, dir, "06_pause.png")),
                 new Step(any, 5, () -> core.openClickGui(null)),
@@ -90,6 +102,25 @@ final class DevSelfTest {
             m.invoke(mc.gui.screen());
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException(e);
+        }
+    }
+
+    /** Schreibt jede Änderung an Modulen, Einstellungen, Profil und offenem Screen ins Log. */
+    private static void logChanges(AioCore core, Minecraft mc) {
+        java.util.Map<String, String> now = new java.util.LinkedHashMap<>();
+        now.put("screen", mc.gui.screen() == null ? "none" : mc.gui.screen() instanceof AioScreen a
+                ? a.ui().getClass().getSimpleName() : mc.gui.screen().getClass().getSimpleName());
+        now.put("profile", core.config().activeProfile());
+        now.put("profiles", String.valueOf(core.config().profiles()));
+        for (var m : core.modules().all()) {
+            now.put(m.id(), m.isEnabled() ? "on" : "off");
+            for (var st : m.settings()) now.put(m.id() + "." + st.id(), String.valueOf(st.get()));
+        }
+        for (var e : now.entrySet()) {
+            String old = lastState.put(e.getKey(), e.getValue());
+            if (old != null && !old.equals(e.getValue())) {
+                AioFabricClient.LOGGER.info("[aio] Selftest change {}: {} -> {}", e.getKey(), old, e.getValue());
+            }
         }
     }
 

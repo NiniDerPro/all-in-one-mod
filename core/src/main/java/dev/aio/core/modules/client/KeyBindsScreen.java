@@ -210,9 +210,14 @@ public final class KeyBindsScreen implements UiScreen {
         return true;
     }
 
+    /** Das Zeichen zur gerade belegten Taste kommt danach noch als charTyped und darf nicht in die Suche. */
+    private boolean swallowChar;
+
     @Override public boolean keyPressed(String key) {
+        swallowChar = false;
         if (listening != null) {
             assign(Keys.ESCAPE.equals(key) ? Keys.NONE : key);
+            swallowChar = true;
             return true;
         }
         var res = TextEdit.key(core.platform(), query, queryAll, key);
@@ -223,6 +228,10 @@ public final class KeyBindsScreen implements UiScreen {
     }
 
     @Override public boolean charTyped(String text) {
+        if (swallowChar) {
+            swallowChar = false;
+            return true;
+        }
         if (listening != null || text.isEmpty() || text.codePointAt(0) < 32) return false;
         query = TextEdit.type(query, queryAll, text);
         if (query.length() > 40) query = query.substring(0, 40);

@@ -62,6 +62,8 @@ public final class ClickGuiScreen implements UiScreen {
     private int clip;
     private SliderDrag slider;
     private KeybindSetting listening;
+    /** Das Zeichen zur gerade belegten Taste kommt danach noch als charTyped und darf nicht in die Suche. */
+    private boolean swallowChar;
     private StringSetting editing;
     private String editBuffer = "";
     private ColorSetting expandedColor;
@@ -72,9 +74,16 @@ public final class ClickGuiScreen implements UiScreen {
     private int statusColor;
     private long statusUntil;
 
+    /** Stand beim letzten Schließen, damit das Menü dort wieder aufgeht (nur für diese Sitzung). */
+    private record Memory(AioCore owner, Category category, String search, float listScroll, String drawerId, boolean clientDrawer,
+                          float drawerScroll, boolean appearanceOpen) {}
+    private static Memory memory;
+
     public ClickGuiScreen(AioCore core, Module focus) {
         this.core = core;
-        if (focus == core.clientSettings()) {
+        if (focus == null && memory != null && memory.owner() == core && core.clientSettings().rememberMenu.on()) {
+            restore(memory);
+        } else if (focus == core.clientSettings()) {
             clientDrawer = true;
             anim.set("drawer", 1);
         } else if (focus != null) {
@@ -919,9 +928,11 @@ public final class ClickGuiScreen implements UiScreen {
     }
 
     @Override public boolean keyPressed(String key) {
+        swallowChar = false;
         if (listening != null) {
             listening.set(Keys.ESCAPE.equals(key) || Keys.BACKSPACE.equals(key) || Keys.DELETE.equals(key) ? Keys.NONE : key);
             listening = null;
+            swallowChar = true;
             return true;
         }
         if (editing != null) {
@@ -971,6 +982,10 @@ public final class ClickGuiScreen implements UiScreen {
 
     @Override public boolean charTyped(String text) {
         if (text == null || text.isEmpty()) return false;
+        if (swallowChar) {
+            swallowChar = false;
+            return true;
+        }
         int cp = text.codePointAt(0);
         if (editing != null) {
             if (cp < 32 || cp == 127) return false;
@@ -996,5 +1011,21 @@ public final class ClickGuiScreen implements UiScreen {
     @Override public void onClose() {
         commitEdit();
         core.config().save();
+        memory = new Memory(core, category, search, listScroll, drawer != null ? drawer.id() : null, clientDrawer,
+                drawerScroll, appearanceOpen);
+    }
+
+    private void restore(Memory m) {
+        category = m.category();
+        search = m.search();
+        listScroll = m.listScroll();
+        Module d = m.drawerId() != null ? core.modules().get(m.drawerId()) : null;
+        if (m.clientDrawer()) clientDrawer = true;
+        else if (d != null) drawer = d;
+        if (drawerOpen()) {
+            anim.set("drawer", 1);
+            drawerScroll = m.drawerScroll();
+            appearanceOpen = m.appearanceOpen();
+        }
     }
 }

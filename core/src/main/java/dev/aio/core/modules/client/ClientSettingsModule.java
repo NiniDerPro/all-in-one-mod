@@ -28,6 +28,7 @@ public final class ClientSettingsModule extends Module {
     public final BooleanSetting preferOtherMods;
     /** "AIO"-Knopf im Pause- und Titelmenü. */
     public final BooleanSetting menuButton;
+    public final BooleanSetting rememberMenu;
 
     public ClientSettingsModule() {
         super("client", "Client", "Menu key, server compatibility and look", Category.CLIENT, false);
@@ -37,6 +38,7 @@ public final class ClientSettingsModule extends Module {
         allowList = add(new StringSetting("allowList", "Allowed servers (comma separated)", "", 256));
         allowList.visibleWhen(() -> compatMode.get() == CompatMode.AUTO);
         menuButton = add(new BooleanSetting("menuButton", "AIO button in menus", true));
+        rememberMenu = add(new BooleanSetting("rememberMenu", "Reopen where you left off", true));
         preferOtherMods = add(new BooleanSetting("preferOtherMods", "Defer to other mods", true));
         toggleMessages = add(new BooleanSetting("toggleMessages", "Message when toggling", true));
         rainbowAccent = add(new BooleanSetting("rainbowAccent", "Rainbow accent", false));
