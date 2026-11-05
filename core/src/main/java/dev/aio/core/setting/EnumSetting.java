@@ -23,8 +23,17 @@ public class EnumSetting<E extends Enum<E>> extends Setting<E> {
         set(values[i]);
     }
 
-    public String display() {
-        return value instanceof Named n ? n.displayName() : value.name();
+    public String display() { return label(value); }
+
+    /** Translated name of an enum constant ({@code aio.enum.<Type>.<constant>}). */
+    public static String label(Enum<?> e) {
+        String fallback = e instanceof Named n ? n.displayName() : e.name();
+        return dev.aio.core.i18n.Lang.tr(key(e), fallback);
+    }
+
+    public static String key(Enum<?> e) {
+        return "aio.enum." + e.getDeclaringClass().getSimpleName().toLowerCase(java.util.Locale.ROOT)
+                + "." + e.name().toLowerCase(java.util.Locale.ROOT);
     }
 
     @Override public JsonElement toJson() { return new JsonPrimitive(value.name()); }

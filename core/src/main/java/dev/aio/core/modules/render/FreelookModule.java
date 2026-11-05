@@ -1,5 +1,7 @@
 package dev.aio.core.modules.render;
 
+import dev.aio.core.i18n.Lang;
+
 import dev.aio.core.module.Category;
 import dev.aio.core.platform.Keys;
 import dev.aio.core.platform.Perspective;
@@ -31,7 +33,7 @@ public final class FreelookModule extends KeyActivatedModule {
     @Override protected void onEngage() {
         if (!platform().freelookSupported() && !warned) {
             warned = true;
-            platform().notify("Freelook: camera hook not available in this version, disabled");
+            platform().notify(Lang.tr("aio.ui.freelook.freelook_camera_hook_not_available", "Freelook: camera hook not available in this version, disabled"));
         }
         yaw = platform().playerYaw();
         pitch = platform().playerPitch();

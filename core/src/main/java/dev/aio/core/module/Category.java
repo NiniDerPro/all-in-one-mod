@@ -21,7 +21,11 @@ public enum Category {
         this.icon = icon;
     }
 
-    public String displayName() { return displayName; }
+    public String displayName() { return dev.aio.core.i18n.Lang.tr(key(), displayName); }
+
+    public String defaultName() { return displayName; }
+
+    public String key() { return "aio.category." + name().toLowerCase(java.util.Locale.ROOT); }
 
     /** Eigene Farbe der Kategorie für Menü und Karten. */
     public int color() { return color; }

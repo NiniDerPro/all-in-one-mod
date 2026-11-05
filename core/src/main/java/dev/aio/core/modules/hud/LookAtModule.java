@@ -1,5 +1,7 @@
 package dev.aio.core.modules.hud;
 
+import dev.aio.core.i18n.Lang;
+
 import dev.aio.core.hud.ColorMode;
 import dev.aio.core.hud.HudElement;
 import dev.aio.core.platform.ItemRef;
@@ -125,7 +127,7 @@ public final class LookAtModule extends HudElement {
             if (showGrowth.on() && !Float.isNaN(t.growth())) {
                 boolean done = t.growth() >= 1f;
                 next.add(new Line("Growth: ", INFO, false,
-                        done ? "fully grown" : Math.round(t.growth() * 100) + "%", done ? GOOD : 0xFFFFFFFF));
+                        done ? Lang.tr("aio.ui.look_at.fully_grown", "fully grown") : Math.round(t.growth() * 100) + "%", done ? GOOD : 0xFFFFFFFF));
             }
             if (showDetails.on()) {
                 for (LookTarget.Detail d : t.details()) {
@@ -181,7 +183,7 @@ public final class LookAtModule extends HudElement {
         return target != null && target.icon() != null && !target.icon().isEmpty();
     }
 
-    private String shownName(boolean preview) { return previewing(preview) ? "Grass Block" : name; }
+    private String shownName(boolean preview) { return previewing(preview) ? Lang.tr("aio.ui.look_at.grass_block", "Grass Block") : name; }
 
     private List<Line> shownLines(boolean preview) {
         if (!previewing(preview)) return lines;

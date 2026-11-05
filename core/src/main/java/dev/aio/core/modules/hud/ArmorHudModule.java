@@ -1,5 +1,7 @@
 package dev.aio.core.modules.hud;
 
+import dev.aio.core.i18n.Lang;
+
 import dev.aio.core.hud.HudElement;
 import dev.aio.core.hud.HudPart;
 import dev.aio.core.platform.ItemRef;
@@ -50,7 +52,7 @@ public final class ArmorHudModule extends HudElement {
     private Entry[] slots = new Entry[6];
     private final HudPart[] parts = new HudPart[6];
     private static final String[][] PARTS = {{"offhand", "Offhand"}, {"head", "Helmet"}, {"chest", "Chestplate"},
-            {"legs", "Leggings"}, {"feet", "Boots"}, {"mainhand", "Main hand"}};
+            {"legs", Lang.tr("aio.ui.armor_hud.leggings", "Leggings")}, {"feet", Lang.tr("aio.ui.armor_hud.boots", "Boots")}, {"mainhand", Lang.tr("aio.ui.armor_hud.main_hand", "Main hand")}};
     /** Innenabstand eines einzelnen Teils: so passen die Teile lückenlos untereinander. */
     private static final int PART_PAD = 1;
     private int cachedW = -1;

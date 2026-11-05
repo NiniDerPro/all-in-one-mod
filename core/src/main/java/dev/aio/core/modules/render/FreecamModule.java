@@ -1,5 +1,7 @@
 package dev.aio.core.modules.render;
 
+import dev.aio.core.i18n.Lang;
+
 import dev.aio.core.event.Events;
 import dev.aio.core.module.Category;
 import dev.aio.core.setting.BooleanSetting;
@@ -40,7 +42,7 @@ public final class FreecamModule extends KeyActivatedModule {
     @Override protected void onDisengage() {
         boolean was = platform().freecamActive();
         platform().setFreecam(false);
-        if (was && notify.on()) platform().notify("Freecam off");
+        if (was && notify.on()) platform().notify(Lang.tr("aio.ui.freecam.freecam_off", "Freecam off"));
     }
 
     public double horizontalSpeed() { return horizontalSpeed.get(); }

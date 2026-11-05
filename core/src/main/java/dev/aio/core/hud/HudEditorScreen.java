@@ -1,5 +1,7 @@
 package dev.aio.core.hud;
 
+import dev.aio.core.i18n.Lang;
+
 import dev.aio.core.AioCore;
 import dev.aio.core.modules.chat.ChatModule;
 import dev.aio.core.platform.Keys;
@@ -61,7 +63,7 @@ public final class HudEditorScreen implements UiScreen {
         core.hud().setEditorOpen(true);
     }
 
-    @Override public String title() { return "HUD Editor"; }
+    @Override public String title() { return Lang.tr("aio.ui.hud_editor.title", "HUD Editor"); }
 
     private List<HudElement> visibleElements() {
         List<HudElement> list = new ArrayList<>();
@@ -142,7 +144,7 @@ public final class HudEditorScreen implements UiScreen {
 
     private String nameOf(Object target) {
         if (target instanceof HudTarget el) return el.name();
-        return target == CHAT ? "Chat" : "";
+        return target == CHAT ? Lang.tr("aio.ui.hud_editor.chat", "Chat") : "";
     }
 
     // =====================================================================
@@ -213,13 +215,13 @@ public final class HudEditorScreen implements UiScreen {
             r.centeredText(sel, w / 2f, 26, accent, true);
         }
 
-        String hint = "Drag: move · Edges: resize · Drag on empty space: select several · Ctrl+click: add · Double click: all parts · Right click: settings · R: reset";
-        if (r.textWidth(hint) > w - 8) hint = "Drag · Edges: resize · Drag empty: select · Ctrl+click · Double click · R";
-        if (r.textWidth(hint) > w - 8) hint = "Drag · Edges · Select · Right click · R";
+        String hint = Lang.tr("aio.ui.hud_editor.drag_move_edges_resize_drag", "Drag: move · Edges: resize · Drag on empty space: select several · Ctrl+click: add · Double click: all parts · Right click: settings · R: reset");
+        if (r.textWidth(hint) > w - 8) hint = Lang.tr("aio.ui.hud_editor.drag_edges_resize_drag_empty", "Drag · Edges: resize · Drag empty: select · Ctrl+click · Double click · R");
+        if (r.textWidth(hint) > w - 8) hint = Lang.tr("aio.ui.hud_editor.drag_edges_select_right_click", "Drag · Edges · Select · Right click · R");
         r.centeredText(hint, w / 2f, h - 14, 0xB0FFFFFF, true);
 
-        drawButton(r, settingsButton(r), "Settings", true, mouseX, mouseY);
-        drawButton(r, resetButton(r), "Reset", selected != null || !group.isEmpty(), mouseX, mouseY);
+        drawButton(r, settingsButton(r), Lang.tr("aio.ui.hud_editor.settings", "Settings"), true, mouseX, mouseY);
+        drawButton(r, resetButton(r), Lang.tr("aio.ui.hud_editor.reset", "Reset"), selected != null || !group.isEmpty(), mouseX, mouseY);
     }
 
     private static void frame(Renderer r, float[] b, int color) {
@@ -258,13 +260,13 @@ public final class HudEditorScreen implements UiScreen {
     }
 
     private float[] settingsButton(Renderer r) {
-        float bw = r.textWidth("Settings") + 16;
+        float bw = r.textWidth(Lang.tr("aio.ui.hud_editor.settings", "Settings")) + 16;
         float x = r.screenWidth() / 2f - bw - 3;
         return new float[]{x, 6, x + bw, 22};
     }
 
     private float[] resetButton(Renderer r) {
-        float bw = r.textWidth("Reset") + 16;
+        float bw = r.textWidth(Lang.tr("aio.ui.hud_editor.reset", "Reset")) + 16;
         float x = r.screenWidth() / 2f + 3;
         return new float[]{x, 6, x + bw, 22};
     }
