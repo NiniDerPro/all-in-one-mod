@@ -69,6 +69,7 @@ class PreviewTest {
 
         ClickGuiScreen gui = new ClickGuiScreen(core, null);
         render(gui, new File(outDir, "menu_all.png"), 300, 120, true);
+        render(new ClickGuiScreen(core, null), new File(outDir, "menu_hover.png"), 250, 106, true);
 
         Module waypoints = core.modules().get("waypoints");
         render(new ClickGuiScreen(core, waypoints), new File(outDir, "menu_settings.png"), 400, 150, true);
