@@ -130,6 +130,9 @@ public interface Platform {
     /** Kurzer Hinweiston (z. B. Namens-Alarm). */
     void playAlertSound();
 
+    /** Kurzer UI-Ton: "pling", "bell", "anvil", "xp", "bass", "break". */
+    default void playSound(String id, float volume, float pitch) { playAlertSound(); }
+
     // ---- Eingabe ----
     boolean isGameKeyDown(GameKey key);
 
