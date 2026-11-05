@@ -108,7 +108,16 @@ final class DevSelfTest {
 
     /** {@code -Daio.selftest.cmds=a;b;c}: Befehle als Server-Operator ausführen (z. B. Mobs für Nametags). */
     private static void runCommands(Minecraft mc) {
-        String cmds = System.getProperty("aio.selftest.cmds", "");
+        String raw = System.getProperty("aio.selftest.cmds", "");
+        if (raw.startsWith("@")) { // @Datei: ein Befehl pro Zeile (für Befehle mit Anführungszeichen)
+            try {
+                raw = String.join(";", java.nio.file.Files.readAllLines(java.nio.file.Path.of(raw.substring(1))));
+            } catch (java.io.IOException e) {
+                AioFabricClient.LOGGER.error("[aio] Selftest command file", e);
+                return;
+            }
+        }
+        String cmds = raw;
         var server = mc.getSingleplayerServer();
         if (cmds.isBlank() || server == null) return;
         server.executeIfPossible(() -> {
@@ -126,6 +135,7 @@ final class DevSelfTest {
         now.put("screen", mc.gui.screen() == null ? "none" : mc.gui.screen() instanceof AioScreen a
                 ? a.ui().getClass().getSimpleName() : mc.gui.screen().getClass().getSimpleName());
         now.put("profile", core.config().activeProfile());
+        now.put("sprinting", String.valueOf(mc.player != null && mc.player.isSprinting()));
         now.put("profiles", String.valueOf(core.config().profiles()));
         for (var m : core.modules().all()) {
             now.put(m.id(), m.isEnabled() ? "on" : "off");

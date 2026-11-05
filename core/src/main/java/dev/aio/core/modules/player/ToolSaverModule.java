@@ -56,9 +56,10 @@ public final class ToolSaverModule extends Module {
     /** Items, für die schon gewarnt wurde (ID + Name + Schaden), damit es nicht dauernd piept. */
     private final Set<String> warned = new HashSet<>();
     private long lastBlockedNotice;
+    private boolean wasHeld;
 
     public ToolSaverModule() {
-        super("toolsaver", "Tool Saver", "Stops using tools and weapons before they break, with a warning sound", Category.QOL, false);
+        super("toolsaver", "Tool Saver", "Low tools and weapons stop working instead of breaking: no mining or hitting, with a sound and message on every try", Category.QOL, false);
         threshold = add(new NumberSetting("threshold", "Protect at", 10, 1, 100, 1, ""));
         unit = add(new EnumSetting<>("unit", "Unit", Unit.POINTS));
         block = add(new BooleanSetting("block", "Stop the tool from working", true));
@@ -87,13 +88,16 @@ public final class ToolSaverModule extends Module {
         return !(sneakOverride.on() && platform().isGameKeyDown(GameKey.SNEAK));
     }
 
-    /** Auto Tool / Auto Weapon sollen geschützte Items gar nicht erst wählen. */
-    public boolean avoid(ItemRef item) { return isActive() && block.on() && isLow(item); }
-
-    /** Wurde blockiert: kurz Bescheid geben (höchstens alle 2 s). */
+    /**
+     * Wurde blockiert: bei jedem neuen Versuch (erneut klicken) Nachricht und Ton. Beim Gedrückthalten
+     * fragt Minecraft jeden Tick erneut an, das zählt als derselbe Versuch.
+     */
     public void onBlocked(ItemRef item) {
         long now = System.currentTimeMillis();
-        if (now - lastBlockedNotice < 2000) return;
+        boolean held = platform().isGameKeyDown(GameKey.ATTACK) || platform().isGameKeyDown(GameKey.USE);
+        boolean sameAttempt = held && wasHeld && now - lastBlockedNotice < 1500;
+        wasHeld = held;
+        if (sameAttempt) return;
         lastBlockedNotice = now;
         platform().notify(Lang.tr("aio.ui.tool_saver.protected_only_durability_left", "%s protected: only %s durability left", item.name(), item.durability()));
         if (warn.on()) platform().playSound(sound.get().id, (float) (volume.get() / 100.0), 0.8f);
@@ -101,6 +105,7 @@ public final class ToolSaverModule extends Module {
 
     private void tick() {
         if (!platform().inWorld()) return;
+        if (!platform().isGameKeyDown(GameKey.ATTACK) && !platform().isGameKeyDown(GameKey.USE)) wasHeld = false;
         check(platform().mainHand(), true);
         check(platform().offHand(), true);
         if (armor.on()) for (ItemRef a : platform().armor()) check(a, false);

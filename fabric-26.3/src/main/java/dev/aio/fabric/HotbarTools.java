@@ -1,7 +1,5 @@
 package dev.aio.fabric;
 
-import dev.aio.core.AioCore;
-import dev.aio.core.modules.player.ToolSaverModule;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -41,16 +39,8 @@ final class HotbarTools {
         if (state.requiresCorrectToolForDrops() && stack.isCorrectToolForDrops(state)) speed += 1000;
         // fast kaputte Werkzeuge schonen
         if (stack.isDamageableItem() && stack.getMaxDamage() - stack.getDamageValue() <= 2) speed -= 2000;
-        if (toolSaverAvoids(stack)) speed -= 4000; // vom Tool Saver geschützt
         return speed;
     }
-
-    private static boolean toolSaverAvoids(ItemStack stack) {
-        AioCore core = AioCore.get();
-        var m = core == null ? null : core.module(ToolSaverModule.class);
-        return m != null && !stack.isEmpty() && m.avoid(FabricItemRef.of(stack));
-    }
-
 
     int bestWeaponSlot(boolean preferAxe) {
         LocalPlayer p = client.player;
@@ -60,7 +50,7 @@ final class HotbarTools {
         for (int i = 0; i < 9; i++) {
             ItemStack s = p.getInventory().getItem(i);
             int type = s.is(ItemTags.SWORDS) ? (preferAxe ? 1 : 2) : s.is(ItemTags.AXES) ? (preferAxe ? 2 : 1) : 0;
-            if (type == 0 || toolSaverAvoids(s)) continue;
+            if (type == 0) continue; // geschützte Waffen nicht meiden: Tool Saver blockiert statt zu wechseln
             // höhere Stufe = mehr Haltbarkeit (Holz < Stein < Eisen < Diamant < Netherit)
             int score = type * 100_000 + s.getMaxDamage();
             if (score > bestScore) {

@@ -9,6 +9,9 @@ import dev.aio.core.platform.Vec3;
 import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.NumberSetting;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Setzt beim Tod automatisch einen Wegpunkt und entfernt ihn, sobald man wieder dort ist.
  * Der Punkt wird immer gespeichert, auch wenn das Modul aus ist; angezeigt wird er nur, solange es an
@@ -46,14 +49,24 @@ public final class DeathPointModule extends Module {
         if (!dead && isActive()) checkArrival();
     }
 
+    /** Wie viele Todespunkte pro Welt bleiben: der neueste und die zwei davor. */
+    static final int KEEP = 3;
+    static final int OLD_COLOR = 0xAA5555;
+
     private void onDeath() {
         WaypointsModule wp = waypoints();
         if (wp == null) return;
-        // nur ein Todespunkt pro Welt: alten ersetzen
-        for (Waypoint w : wp.inThisWorld()) if (w.death()) wp.remove(w);
+        // Der neueste heißt "Death", die zwei davor "Old death" (blasser); ältere fallen weg
+        List<Waypoint> deaths = new ArrayList<>();
+        for (Waypoint w : wp.inThisWorld()) if (w.death()) deaths.add(w);
+        while (deaths.size() >= KEEP) wp.remove(deaths.removeFirst());
+        for (Waypoint w : deaths) {
+            String old = Lang.tr("aio.ui.death_point.old_death", "Old death");
+            if (!w.name().equals(old) || w.color() != OLD_COLOR) wp.replace(w, w.withName(old).withColor(OLD_COLOR));
+        }
         Vec3 p = platform().playerPos();
         int x = (int) Math.floor(p.x()), y = (int) Math.floor(p.y()), z = (int) Math.floor(p.z());
-        wp.add(new Waypoint("Death", x, y, z, platform().worldKey(), platform().dimension(), 0xFF5555, true, true));
+        wp.add(new Waypoint(Lang.tr("aio.ui.death_point.death", "Death"), x, y, z, platform().worldKey(), platform().dimension(), 0xFF5555, true, true));
         if (isActive() && chatMessage.on()) platform().notify(Lang.tr("aio.ui.death_point.died_at", "Died at %s %s %s", x, y, z));
     }
 

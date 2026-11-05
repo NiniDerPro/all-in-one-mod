@@ -265,7 +265,8 @@ public final class NametagsModule extends HudElement {
         parts.add(new Part(t.name(), 0xFFFFFFFF));
         if (health.on()) parts.add(new Part(number(t.health()) + " ❤", healthColor(t.health(), t.maxHealth())));
         if (distance.on()) parts.add(new Part(Math.round(t.distance()) + "m", GRAY));
-        line(r, parts, 0);
+        float top = line(r, parts, 0);
+        if (gear.on()) drawGear(r, t.items(), top - 2); // nur, wenn der Mob etwas trägt
     }
 
     private void drawItem(Renderer r, NametagTarget t) {
