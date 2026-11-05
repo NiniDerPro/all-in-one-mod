@@ -31,6 +31,7 @@ public abstract class MultiPlayerGameModeMixin {
     private void aio$attack(Player player, Entity target, CallbackInfo ci) {
         AioCore core = AioCore.get();
         if (core != null) core.bus().post(new Events.AttackEntity(target instanceof LivingEntity));
+        dev.aio.fabric.ShieldIndicator.onAttack(player, target);
     }
 
     // ---- Freecam: keine Interaktion aus der Kamera heraus ----
