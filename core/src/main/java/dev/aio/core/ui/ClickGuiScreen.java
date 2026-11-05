@@ -318,23 +318,25 @@ public final class ClickGuiScreen implements UiScreen {
             if (m.isActive()) {
                 r.fill(x1, y1, x2, y2, dev.aio.core.util.Colors.withAlpha(cc, hover ? 0x2A : 0x1C));
                 r.fill(x1, y1, x1 + 2, y2, cc);
-            } else if (m.isEnabled() && m.isBlocked()) {
+            } else if (m.isEnabled() && (m.isBlocked() || m.unavailableReason() != null)) {
                 r.fill(x1, y1, x1 + 2, y2, Theme.WARNING);
             }
 
             r.text(r.trim(m.name(), cardW - 40), x1 + 8, y1 + 7, Theme.TEXT, false);
             r.text(r.trim(m.description(), cardW - 16), x1 + 8, y1 + 19, Theme.TEXT_DIM, false);
-            String footer = m.isBlocked() ? "Blocked (server)" :
+            String footer = m.unavailableReason() != null ? m.unavailableReason() :
+                    m.isBlocked() ? "Blocked (server)" :
                     m.toggleKey().isBound() ? "Key: " + core.platform().keyName(m.toggleKey().key()) :
                     category == null || !search.isEmpty() ? m.category().displayName() : "";
-            r.text(r.trim(footer, cardW - 30), x1 + 8, y1 + 31, m.isBlocked() ? Theme.WARNING : Theme.TEXT_MUTED, false);
+            r.text(r.trim(footer, cardW - 30), x1 + 8, y1 + 31,
+                    m.isBlocked() || m.unavailableReason() != null ? Theme.WARNING : Theme.TEXT_MUTED, false);
             r.text("›", x2 - 10, y1 + 31, hover ? Theme.TEXT : Theme.TEXT_MUTED, false);
 
             // Karte öffnet die Einstellungen, der Schalter schaltet um (Schalter wird später registriert und gewinnt)
             hit(x1, y1, x2, y2, b -> openSettings(m));
             if (m.canToggle()) {
                 float sx = x2 - 28, sy = y1 + 6;
-                toggleSwitch(r, sx, sy, m.isEnabled(), m.isBlocked(), cc);
+                toggleSwitch(r, sx, sy, m.isEnabled(), m.isBlocked() || m.unavailableReason() != null, cc);
                 hit(sx - 2, sy - 2, sx + 22, sy + 12, b -> m.toggle());
             }
         }
@@ -374,7 +376,7 @@ public final class ClickGuiScreen implements UiScreen {
         r.text(r.trim(selected.name(), w - 120), x + 62, y + 3, Theme.TEXT, false);
         if (selected.canToggle()) {
             float sx = x + w - 22, sy = y + 2;
-            toggleSwitch(r, sx, sy, selected.isEnabled(), selected.isBlocked(), accent);
+            toggleSwitch(r, sx, sy, selected.isEnabled(), selected.isBlocked() || selected.unavailableReason() != null, accent);
             Module m = selected;
             hit(sx - 2, sy - 2, sx + 22, sy + 12, b -> m.toggle());
             if (m.isBlocked()) {
@@ -388,6 +390,10 @@ public final class ClickGuiScreen implements UiScreen {
         float startY = y;
         r.text(r.trim(selected.description(), w), x, y, Theme.TEXT_DIM, false);
         y += 14;
+        if (selected.unavailableReason() != null) {
+            r.text(r.trim("⚠ " + selected.unavailableReason(), w), x, y, Theme.WARNING, false);
+            y += 14;
+        }
         if (selected.isGameplayAffecting()) {
             r.text(r.trim("May count as an advantage on servers and is blocked by compatibility mode.", w), x, y, Theme.WARNING, false);
             y += 14;

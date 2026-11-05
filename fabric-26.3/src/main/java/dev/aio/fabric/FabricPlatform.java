@@ -583,6 +583,14 @@ public final class FabricPlatform implements Platform {
 
     @Override public boolean windowFocused() { return client.isWindowActive(); }
 
+    @Override public java.util.Map<String, String> conflictingMods() { return dev.aio.fabric.compat.ModConflicts.installed(); }
+
+    @Override public java.util.Map<String, String> brokenHooks() {
+        java.util.List<String> missing = dev.aio.fabric.compat.HookStatus.missing();
+        if (!missing.isEmpty()) AioFabricClient.LOGGER.warn("[aio] Hooks not applied (changed by another mod?): {}", missing);
+        return dev.aio.fabric.compat.HookStatus.broken();
+    }
+
     @Override public boolean matchesGameKey(GameKey gameKey, String key) {
         return client.options != null && !Keys.isNone(key) && key.equals(mapping(gameKey).saveString());
     }

@@ -139,6 +139,18 @@ public interface Platform {
     /** Prüft, ob eine Taste oder Maustaste (MC-Tastenname, siehe {@link Keys}) gerade gehalten wird. */
     boolean isKeyDown(String key);
 
+    /**
+     * Installierte Mods, die dieselbe Funktion wie ein AIO-Modul haben: Modul-ID → Name der Mod.
+     * Diese Mods haben Vorrang, das AIO-Modul bleibt dann aus.
+     */
+    default java.util.Map<String, String> conflictingMods() { return java.util.Map.of(); }
+
+    /**
+     * Module, deren Eingriff ins Spiel nicht greift (meist weil eine andere Mod dieselbe Stelle
+     * verändert): Modul-ID → kurze Beschreibung. Wird nach dem Laden der Welt abgefragt.
+     */
+    default java.util.Map<String, String> brokenHooks() { return java.util.Map.of(); }
+
     /** Ob das Spielfenster den Fokus hat (nach Alt+Tab nicht mehr). */
     default boolean windowFocused() { return true; }
 

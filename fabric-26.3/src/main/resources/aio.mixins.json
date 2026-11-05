@@ -1,5 +1,5 @@
 {
-  "required": true,
+  "required": false,
   "package": "dev.aio.fabric.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
@@ -40,9 +40,10 @@
     "FreecamPacketListenerMixin"
   ],
   "injectors": {
-    "defaultRequire": 1
+    "defaultRequire": 0
   },
   "overwrites": {
     "requireAnnotations": true
-  }
+  },
+  "plugin": "dev.aio.fabric.compat.AioMixinPlugin"
 }

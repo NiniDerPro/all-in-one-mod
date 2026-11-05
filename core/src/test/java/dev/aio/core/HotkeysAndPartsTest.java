@@ -101,4 +101,28 @@ class HotkeysAndPartsTest {
         assertEquals("Hi", list.get(0).name());
         assertEquals(12, list.get(0).x());
     }
+
+    @Test void otherModTakesPriorityAndBrokenHookDisablesOnlyThatModule() {
+        java.util.Map<String, String> broken = new java.util.HashMap<>();
+        FakePlatform p = new FakePlatform() {
+            @Override public java.util.Map<String, String> conflictingMods() { return java.util.Map.of("foodinfo", "AppleSkin"); }
+            @Override public java.util.Map<String, String> brokenHooks() { return broken; }
+        };
+        AioCore core = start(p);
+        var food = core.module(dev.aio.core.modules.player.FoodInfoModule.class);
+        assertTrue(food.isEnabled());
+        assertFalse(food.isActive(), "AppleSkin hat Vorrang");
+        assertTrue(food.unavailableReason().contains("AppleSkin"));
+        core.clientSettings().preferOtherMods.set(false);
+        assertTrue(food.isActive(), "abschaltbar");
+
+        var zoom = core.module(dev.aio.core.modules.render.ZoomModule.class);
+        assertTrue(zoom.isActive());
+        broken.put("zoom", "conflict in CameraMixin");
+        core.bus().post(new Events.ServerJoin(null));
+        for (int i = 0; i < 61; i++) core.bus().post(Events.Tick.INSTANCE);
+        assertFalse(zoom.isActive(), "nur Zoom aus");
+        assertTrue(zoom.isEnabled(), "Einstellung bleibt");
+        assertTrue(core.module(dev.aio.core.modules.render.FreelookModule.class).isActive() || !core.module(dev.aio.core.modules.render.FreelookModule.class).isEnabled());
+    }
 }
