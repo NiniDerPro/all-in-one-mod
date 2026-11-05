@@ -139,6 +139,12 @@ final class DevSelfTest {
             server.executeIfPossible(() -> {
                 for (String c : cmds.split(";")) {
                     if (c.isBlank()) continue;
+                    if (c.strip().equals("lan")) { // Welt im LAN öffnen (Port 25565), für einen zweiten Client
+                        server.setUsesAuthentication(false); // offline: zweiter Test-Client ohne Mojang-Login
+                        boolean ok = server.publishServer(net.minecraft.server.MinecraftServer.MultiplayerScope.LAN, true, 25565);
+                        AioFabricClient.LOGGER.info("[aio] Selftest LAN published: {}", ok);
+                        continue;
+                    }
                     server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), c.strip());
                     AioFabricClient.LOGGER.info("[aio] Selftest command: {}", c.strip());
                 }
