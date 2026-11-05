@@ -300,7 +300,7 @@ public final class ClickGuiScreen implements UiScreen {
             sx += r.textWidth(cat) + 5;
         }
         r.text(r.trim(sub, right - sx), sx, y + 17, problem ? Theme.WARNING : Theme.TEXT_MUTED, false);
-        if (hover && problem) hint = sub;
+        if (hover) hint = problem ? sub : m.description();
         // Zeile öffnet die Einstellungen (Schalter wird später geprüft und gewinnt)
         hits.add(hits.size() - (m.canToggle() ? 1 : 0), new Hit(x, y, x + w, y + ROW_H, clip, b -> openDrawer(m)));
     }
