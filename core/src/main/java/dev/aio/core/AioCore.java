@@ -150,6 +150,13 @@ public final class AioCore {
         clientSettings.compatMode.onChange(v -> applyCompat(true));
         clientSettings.allowList.onChange(v -> applyCompat(false));
         applyCompat(false);
+        clientSettings.preferOtherMods.onChange(v -> applyAvailability());
+        applyAvailability();
+        // Ob alle Eingriffe greifen, steht erst fest, wenn die Welt geladen ist: kurz danach prüfen
+        bus.subscribe(Events.ServerJoin.class, e -> hookCheckIn = 60);
+        bus.subscribe(Events.Tick.class, e -> {
+            if (hookCheckIn > 0 && --hookCheckIn == 0) checkHooks();
+        });
         Log.info(NAME + " started with " + modules.all().size() + " modules (profile: " + config.activeProfile() + ")");
     }
 
@@ -222,6 +229,10 @@ public final class AioCore {
 
     /** Schaltet ein Modul um und meldet das dem Spieler (oder warum es gesperrt ist). */
     public void toggleWithFeedback(Module m) {
+        if (m.unavailableReason() != null) {
+            platform.notify(m.name() + ": " + m.unavailableReason());
+            return;
+        }
         if (m.isBlocked() && !m.isEnabled()) {
             m.setEnabled(true);
             platform.notify(m.name() + ": blocked on this server (compatibility mode)");
@@ -245,6 +256,52 @@ public final class AioCore {
     }
 
     // ---- Server-Kompatibilität ----
+
+    // ---- Verträglichkeit mit anderen Mods ----
+
+    private int hookCheckIn;
+    private final java.util.Map<String, String> brokenHooks = new java.util.HashMap<>();
+    private final java.util.Set<String> announcedBroken = new java.util.HashSet<>();
+
+    /**
+     * Setzt für jedes Modul, ob es gerade laufen kann: Eingriff fehlt (immer aus) oder eine andere
+     * Mod mit derselben Funktion ist installiert (aus, solange "Prefer other mods" an ist).
+     */
+    public void applyAvailability() {
+        java.util.Map<String, String> other = clientSettings.preferOtherMods.on() ? platform.conflictingMods() : java.util.Map.of();
+        for (Module m : modules.all()) {
+            String reason = null;
+            if (brokenHooks.containsKey(m.id())) reason = "Not available: " + brokenHooks.get(m.id());
+            else if (other.containsKey(m.id())) reason = other.get(m.id()) + " is installed and takes priority";
+            m.setUnavailable(reason);
+        }
+    }
+
+    private void checkHooks() {
+        java.util.Map<String, String> now;
+        try {
+            now = platform.brokenHooks();
+        } catch (RuntimeException e) {
+            Log.error("Hook check failed", e);
+            return;
+        }
+        boolean changed = !now.equals(brokenHooks);
+        brokenHooks.clear();
+        brokenHooks.putAll(now);
+        if (changed) applyAvailability();
+        java.util.List<String> names = new java.util.ArrayList<>();
+        for (String id : now.keySet()) {
+            if (!announcedBroken.add(id)) continue;
+            Module m = modules.get(id);
+            String name = m == null ? id : m.name();
+            names.add(name);
+            Log.warn("[aio] Module " + name + " turned off: " + now.get(id));
+        }
+        if (!names.isEmpty()) {
+            platform.notify(String.join(", ", names) + (names.size() == 1 ? " is" : " are")
+                    + " turned off because another mod changes the same part of the game");
+        }
+    }
 
     private void applyCompat(boolean announce) {
         int blocked = compat.apply(clientSettings.compatMode.get(), clientSettings.allowList.get());

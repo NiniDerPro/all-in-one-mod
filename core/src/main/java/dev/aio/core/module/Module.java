@@ -107,6 +107,22 @@ public abstract class Module {
 
     public void toggle() { setEnabled(!enabled); }
 
+    /** Grund, warum das Modul gerade nicht laufen kann (andere Mod übernimmt / Eingriff fehlt), sonst null. */
+    private String unavailable;
+
+    /**
+     * Macht das Modul unabhängig vom Ein/Aus-Schalter unwirksam, z. B. weil eine andere Mod dieselbe
+     * Funktion hat oder die nötige Stelle im Spiel von einer anderen Mod verändert wurde.
+     * {@code null} hebt das wieder auf. Der gespeicherte Ein/Aus-Zustand bleibt unberührt.
+     */
+    public void setUnavailable(String reason) {
+        if (java.util.Objects.equals(unavailable, reason)) return;
+        unavailable = reason;
+        updateActive();
+    }
+
+    public String unavailableReason() { return unavailable; }
+
     public void setBlocked(boolean value) {
         if (blocked == value) return;
         blocked = value;
@@ -114,7 +130,7 @@ public abstract class Module {
     }
 
     private void updateActive() {
-        boolean shouldBeActive = enabled && !blocked && core != null;
+        boolean shouldBeActive = enabled && !blocked && unavailable == null && core != null;
         if (shouldBeActive == active) return;
         active = shouldBeActive;
         if (active) {
