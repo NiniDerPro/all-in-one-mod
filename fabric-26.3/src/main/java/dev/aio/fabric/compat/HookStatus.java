@@ -46,6 +46,7 @@ public final class HookStatus {
             Map.entry("ItemStackMixin", "shulkerpreview"),
             Map.entry("LightmapMixin", "fullbright"),
             Map.entry("MinecraftFpsMixin", "dynamicfps"),
+            Map.entry("MinecraftProfilerMixin", "piechart"),
             Map.entry("MultiPlayerGameModeMixin#aio$startBreak", "autotool"),
             Map.entry("MultiPlayerGameModeMixin#aio$attack", "autoweapon"),
             Map.entry("MultiPlayerGameModeMixin", "freecam"));

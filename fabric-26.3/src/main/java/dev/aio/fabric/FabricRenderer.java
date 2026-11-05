@@ -23,6 +23,9 @@ public final class FabricRenderer implements Renderer {
         this.client = client;
     }
 
+    /** Für Vanilla-Zeichenfunktionen (z. B. das Profiler-Diagramm). */
+    public GuiGraphicsExtractor graphics() { return g; }
+
     public void begin(GuiGraphicsExtractor graphics) {
         this.g = graphics;
     }
