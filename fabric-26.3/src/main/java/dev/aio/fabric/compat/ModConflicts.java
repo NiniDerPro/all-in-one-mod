@@ -32,6 +32,7 @@ public final class ModConflicts {
             Map.entry("chat", List.of("chatpatches")),
             Map.entry("fullbright", List.of("gammautils", "fullbrightnesstoggle")),
             Map.entry("nofog", List.of("sodium-extra")),
+            Map.entry("shieldindicator", List.of("shieldstatuses", "shield-statuses", "shieldstatus", "sentinelshield")),
             Map.entry("togglesprint", List.of("togglesprint")),
             Map.entry("elytraswap", List.of("elytraswap", "elytra-swapper")));
 

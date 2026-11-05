@@ -39,7 +39,9 @@
     "FreecamMinecraftMixin",
     "FreecamPacketListenerMixin",
     "MinecraftProfilerMixin",
-    "SmallItemsMixin"
+    "SmallItemsMixin",
+    "ShieldIndicatorOwnerMixin",
+    "ShieldIndicatorRenderMixin"
   ],
   "injectors": {
     "defaultRequire": 0
