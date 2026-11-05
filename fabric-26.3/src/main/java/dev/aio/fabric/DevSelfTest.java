@@ -34,6 +34,7 @@ final class DevSelfTest {
         if (DIR.isEmpty()) return;
         if (steps == null) steps = plan(core, mc, new File(DIR));
         if (index >= steps.size()) {
+            runPending(mc);
             if (INTERACTIVE) logChanges(core, mc);
             return;
         }
@@ -117,16 +118,32 @@ final class DevSelfTest {
                 return;
             }
         }
-        String cmds = raw;
+        // "wait" trennt Etappen; jede weitere Etappe läuft 5 s später (z. B. nach einem Dimensionswechsel)
+        String[] stages = raw.split(";\\s*wait\\s*(;|$)");
+        for (int i = 0; i < stages.length; i++) PENDING.add(new Stage(i * 100, stages[i]));
+        stageTicks = 0;
+    }
+
+    private record Stage(int atTick, String commands) {}
+
+    private static final java.util.List<Stage> PENDING = new java.util.ArrayList<>();
+    private static int stageTicks;
+
+    private static void runPending(Minecraft mc) {
+        if (PENDING.isEmpty()) return;
+        stageTicks++;
         var server = mc.getSingleplayerServer();
-        if (cmds.isBlank() || server == null) return;
-        server.executeIfPossible(() -> {
-            for (String c : cmds.split(";")) {
-                if (c.isBlank()) continue;
-                server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), c.strip());
-                AioFabricClient.LOGGER.info("[aio] Selftest command: {}", c.strip());
-            }
-        });
+        if (server == null) return;
+        while (!PENDING.isEmpty() && PENDING.getFirst().atTick() <= stageTicks) {
+            String cmds = PENDING.removeFirst().commands();
+            server.executeIfPossible(() -> {
+                for (String c : cmds.split(";")) {
+                    if (c.isBlank()) continue;
+                    server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), c.strip());
+                    AioFabricClient.LOGGER.info("[aio] Selftest command: {}", c.strip());
+                }
+            });
+        }
     }
 
     /** Schreibt jede Änderung an Modulen, Einstellungen, Profil und offenem Screen ins Log. */
