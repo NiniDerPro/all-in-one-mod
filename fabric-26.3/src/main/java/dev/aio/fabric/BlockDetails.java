@@ -1,6 +1,7 @@
 package dev.aio.fabric;
 
 import dev.aio.core.platform.LookTarget.Detail;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -13,6 +14,8 @@ import net.minecraft.world.level.block.state.properties.ComparatorMode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Blockspezifische Angaben für die Blick-Info. Jede Zeile erscheint nur bei der Blockart,
@@ -87,7 +90,7 @@ final class BlockDetails {
     }
 
     /** Zuletzt vom Server-Thread gelesene Bienenanzahl je Position. */
-    private static final java.util.Map<BlockPos, Integer> BEES = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<BlockPos, Integer> BEES = new ConcurrentHashMap<>();
     private static volatile BlockPos requested;
 
     /**

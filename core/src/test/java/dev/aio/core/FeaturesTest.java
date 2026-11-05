@@ -15,10 +15,14 @@ import dev.aio.core.modules.navigation.Compass;
 import dev.aio.core.modules.navigation.DeathPointModule;
 import dev.aio.core.modules.navigation.Projection;
 import dev.aio.core.modules.navigation.Waypoint;
+import dev.aio.core.modules.navigation.WaypointEditScreen;
 import dev.aio.core.modules.navigation.WaypointsModule;
+import dev.aio.core.platform.EffectInfo;
 import dev.aio.core.platform.GameKey;
 import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.VanillaOption;
+import dev.aio.core.setting.BooleanSetting;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -123,7 +127,7 @@ class FeaturesTest {
         AioCore core = newCore(p);
         core.module(WaypointsModule.class).setEnabled(true);
         core.bus().post(new Events.Key("key.keyboard.b", 1, false));
-        assertInstanceOf(dev.aio.core.modules.navigation.WaypointEditScreen.class, p.screen);
+        assertInstanceOf(WaypointEditScreen.class, p.screen);
         assertEquals(0, core.module(WaypointsModule.class).inThisWorld().size(), "erst beim Speichern");
     }
 
@@ -201,7 +205,7 @@ class FeaturesTest {
         assertEquals(5, p.selected, "Standard: bleibt beim Werkzeug");
 
         // Mit "Switch back afterwards" geht es zum alten Slot
-        ((dev.aio.core.setting.BooleanSetting) m.setting("restore")).set(true);
+        ((BooleanSetting) m.setting("restore")).set(true);
         p.selected = 2;
         p.heldGameKeys.add(GameKey.ATTACK);
         core.bus().post(new Events.StartBreak(0, 0, 0));
@@ -215,7 +219,7 @@ class FeaturesTest {
         AioCore core = newCore(p);
         AutoWeaponModule m = core.module(AutoWeaponModule.class);
         m.setEnabled(true);
-        ((dev.aio.core.setting.BooleanSetting) m.setting("restore")).set(true);
+        ((BooleanSetting) m.setting("restore")).set(true);
         p.selected = 0;
         p.bestWeapon = 3;
         core.bus().post(new Events.AttackEntity(true));
@@ -328,7 +332,7 @@ class FeaturesTest {
         p.singleplayer = false;
         p.heldDetails = List.of("Sharpness V");
         p.mainHand = item("minecraft:diamond_sword", "Schwert", "Minecraft");
-        p.effects.add(new dev.aio.core.platform.EffectInfo("Tempo", 0, 200, false, true, "minecraft:mob_effect/speed"));
+        p.effects.add(new EffectInfo("Tempo", 0, 200, false, true, "minecraft:mob_effect/speed"));
         AioCore core = newCore(p);
         for (Module m : core.modules().all()) m.setEnabled(true);
         FakeRenderer r = new FakeRenderer();

@@ -5,6 +5,7 @@ import dev.aio.core.event.Events;
 import dev.aio.core.module.ModuleRegistry;
 import dev.aio.core.platform.Renderer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /** Zeichnet alle aktiven HUD-Elemente und versorgt sie pro Tick mit Updates. */
@@ -41,7 +42,7 @@ public final class HudManager {
     public void placeNew(Renderer r) {
         for (HudElement el : elements) {
             if (!el.isActive() || !el.editable() || el.isPlaced()) continue;
-            java.util.List<Snapper.Rect> others = new java.util.ArrayList<>();
+            List<Snapper.Rect> others = new ArrayList<>();
             for (HudElement o : elements) {
                 if (o != el && o.isActive() && o.editable() && o.isPlaced()) {
                     others.add(new Snapper.Rect(o.screenX(r), o.screenY(r), o.scaledWidth(r), o.scaledHeight(r)));

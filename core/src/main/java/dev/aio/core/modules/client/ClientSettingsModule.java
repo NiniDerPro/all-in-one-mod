@@ -9,6 +9,7 @@ import dev.aio.core.setting.ColorSetting;
 import dev.aio.core.setting.EnumSetting;
 import dev.aio.core.setting.KeybindSetting;
 import dev.aio.core.setting.StringSetting;
+import dev.aio.core.ui.SortMode;
 
 /** Globale Client-Einstellungen. Immer aktiv, lassen sich nicht ausschalten. */
 public final class ClientSettingsModule extends Module {
@@ -19,7 +20,7 @@ public final class ClientSettingsModule extends Module {
     public final BooleanSetting toggleMessages;
     public final ColorSetting accent;
     public final BooleanSetting rainbowAccent;
-    public final EnumSetting<dev.aio.core.ui.SortMode> sortMode;
+    public final EnumSetting<SortMode> sortMode;
     /** Andere installierte Mods mit gleicher Funktion haben Vorrang (das AIO-Modul bleibt dann aus). */
     public final BooleanSetting preferOtherMods;
 
@@ -33,7 +34,7 @@ public final class ClientSettingsModule extends Module {
         preferOtherMods = add(new BooleanSetting("preferOtherMods", "Prefer other mods with the same feature", true));
         toggleMessages = add(new BooleanSetting("toggleMessages", "Message when toggling", true));
         rainbowAccent = add(new BooleanSetting("rainbowAccent", "Rainbow accent", true));
-        sortMode = add(new EnumSetting<>("sortMode", "Menu sorting", dev.aio.core.ui.SortMode.DEFAULT));
+        sortMode = add(new EnumSetting<>("sortMode", "Menu sorting", SortMode.DEFAULT));
         accent = add(new ColorSetting("accent", "Accent color", 0xFF7C5CFF));
         accent.visibleWhen(() -> !rainbowAccent.on());
     }

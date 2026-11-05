@@ -2,13 +2,22 @@ package dev.aio.core;
 
 import dev.aio.core.event.Events;
 import dev.aio.core.hud.HudPart;
+import dev.aio.core.modules.hud.ArmorHudModule;
 import dev.aio.core.modules.info.DateTimeModule;
+import dev.aio.core.modules.navigation.WaypointEditScreen;
+import dev.aio.core.modules.navigation.WaypointsModule;
+import dev.aio.core.modules.player.FoodInfoModule;
 import dev.aio.core.modules.render.FreecamModule;
 import dev.aio.core.modules.render.FreelookModule;
+import dev.aio.core.modules.render.ZoomModule;
+
+import com.google.gson.JsonPrimitive;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -73,21 +82,21 @@ class HotkeysAndPartsTest {
         AioCore core = start(p);
         DateTimeModule dt = core.module(DateTimeModule.class);
         dt.setEnabled(true);
-        dt.setting("seconds").fromJson(new com.google.gson.JsonPrimitive(true));
-        core.module(dev.aio.core.modules.hud.ArmorHudModule.class).setEnabled(false);
+        dt.setting("seconds").fromJson(new JsonPrimitive(true));
+        core.module(ArmorHudModule.class).setEnabled(false);
         core.resetAll();
         assertFalse(dt.isEnabled());
         assertEquals(false, dt.setting("seconds").get());
-        assertTrue(core.module(dev.aio.core.modules.hud.ArmorHudModule.class).isEnabled());
+        assertTrue(core.module(ArmorHudModule.class).isEnabled());
         assertTrue(core.clientSettings().isEnabled());
     }
 
     @Test void waypointDialogCreatesWaypointWithEditedCoords() {
         FakePlatform p = new FakePlatform();
         AioCore core = start(p);
-        var wm = core.module(dev.aio.core.modules.navigation.WaypointsModule.class);
+        var wm = core.module(WaypointsModule.class);
         wm.setEnabled(true);
-        var dlg = new dev.aio.core.modules.navigation.WaypointEditScreen(core, wm, null);
+        var dlg = new WaypointEditScreen(core, wm, null);
         dlg.render(new FakeRenderer(), 0, 0, 0);
         try { Thread.sleep(200); } catch (InterruptedException ignored) {}
         dlg.charTyped("H"); // Name ist anfangs markiert → ersetzt
@@ -103,26 +112,26 @@ class HotkeysAndPartsTest {
     }
 
     @Test void otherModTakesPriorityAndBrokenHookDisablesOnlyThatModule() {
-        java.util.Map<String, String> broken = new java.util.HashMap<>();
+        Map<String, String> broken = new HashMap<>();
         FakePlatform p = new FakePlatform() {
-            @Override public java.util.Map<String, String> conflictingMods() { return java.util.Map.of("foodinfo", "AppleSkin"); }
-            @Override public java.util.Map<String, String> brokenHooks() { return broken; }
+            @Override public Map<String, String> conflictingMods() { return Map.of("foodinfo", "AppleSkin"); }
+            @Override public Map<String, String> brokenHooks() { return broken; }
         };
         AioCore core = start(p);
-        var food = core.module(dev.aio.core.modules.player.FoodInfoModule.class);
+        var food = core.module(FoodInfoModule.class);
         assertTrue(food.isEnabled());
         assertFalse(food.isActive(), "AppleSkin hat Vorrang");
         assertTrue(food.unavailableReason().contains("AppleSkin"));
         core.clientSettings().preferOtherMods.set(false);
         assertTrue(food.isActive(), "abschaltbar");
 
-        var zoom = core.module(dev.aio.core.modules.render.ZoomModule.class);
+        var zoom = core.module(ZoomModule.class);
         assertTrue(zoom.isActive());
         broken.put("zoom", "conflict in CameraMixin");
         core.bus().post(new Events.ServerJoin(null));
         for (int i = 0; i < 61; i++) core.bus().post(Events.Tick.INSTANCE);
         assertFalse(zoom.isActive(), "nur Zoom aus");
         assertTrue(zoom.isEnabled(), "Einstellung bleibt");
-        assertTrue(core.module(dev.aio.core.modules.render.FreelookModule.class).isActive() || !core.module(dev.aio.core.modules.render.FreelookModule.class).isEnabled());
+        assertTrue(core.module(FreelookModule.class).isActive() || !core.module(FreelookModule.class).isEnabled());
     }
 }

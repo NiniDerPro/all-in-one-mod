@@ -3,12 +3,15 @@ package dev.aio.core.hud;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.util.Colors;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /** Zeichnet Text in fester Farbe, als Regenbogen-Welle oder als wandernden Verlauf. */
 public final class ColoredText {
     private ColoredText() {}
 
     /** Breite je Zeichen: MC-Schrift hat kein Kerning, also Text = Summe der Zeichen. */
-    private static final java.util.Map<Integer, Integer> CHAR_WIDTH = new java.util.HashMap<>();
+    private static final Map<Integer, Integer> CHAR_WIDTH = new HashMap<>();
     private static int probeWidth = -1;
 
     private static int charWidth(Renderer r, int cp) {

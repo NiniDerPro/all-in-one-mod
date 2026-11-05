@@ -2,7 +2,11 @@ package dev.aio.core.platform;
 
 import dev.aio.core.ui.UiScreen;
 
+import com.google.gson.JsonElement;
+
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Alles, was der Kern über das Spiel wissen oder darin ändern muss.
@@ -92,7 +96,7 @@ public interface Platform {
     ItemRef item(String id);
 
     /** Ausgewähltes Item in der Hotbar hat sich geändert, Rückgabe: Infozeilen (Verzauberungen o. Ä.). */
-    java.util.List<String> heldItemDetails();
+    List<String> heldItemDetails();
 
     // ---- Hotbar ----
 
@@ -112,10 +116,10 @@ public interface Platform {
     ContainerView container();
 
     /** Alle Items aus der Registry (für die Item-Liste). */
-    java.util.List<ItemRef> allItems();
+    List<ItemRef> allItems();
 
     /** Rezepte, die {@code item} herstellen ({@code usages = true}: die es verwenden). Kann leer sein. */
-    java.util.List<RecipeView> recipes(ItemRef item, boolean usages);
+    List<RecipeView> recipes(ItemRef item, boolean usages);
 
     /** Ob Rezepte verfügbar sind (Singleplayer oder vom Server synchronisiert). */
     boolean recipesAvailable();
@@ -146,18 +150,18 @@ public interface Platform {
      * Installierte Mods, die dieselbe Funktion wie ein AIO-Modul haben: Modul-ID → Name der Mod.
      * Diese Mods haben Vorrang, das AIO-Modul bleibt dann aus.
      */
-    default java.util.Map<String, String> conflictingMods() { return java.util.Map.of(); }
+    default Map<String, String> conflictingMods() { return Map.of(); }
 
     /**
      * Module, deren Eingriff ins Spiel nicht greift (meist weil eine andere Mod dieselbe Stelle
      * verändert): Modul-ID → kurze Beschreibung. Wird nach dem Laden der Welt abgefragt.
      */
-    default java.util.Map<String, String> brokenHooks() { return java.util.Map.of(); }
+    default Map<String, String> brokenHooks() { return Map.of(); }
 
     /** Lebewesen für den Health Indicator (interpoliert, ohne den eigenen Spieler). */
-    default java.util.List<HealthTarget> healthTargets(double maxDistance, float partialTick, boolean players,
+    default List<HealthTarget> healthTargets(double maxDistance, float partialTick, boolean players,
                                                        boolean hostile, boolean passive, boolean throughWalls) {
-        return java.util.List.of();
+        return List.of();
     }
 
     /** Ob der F3-Bildschirm gerade offen ist. */
@@ -187,7 +191,7 @@ public interface Platform {
      * Alle JSON-Dateien eines Datenpaket-Ordners nach ID, z. B. {@code loot_table} →
      * {@code minecraft:chests/desert_pyramid}. Darf von einem Hintergrund-Thread aufgerufen werden.
      */
-    default java.util.Map<String, com.google.gson.JsonElement> dataFiles(String dir) { return java.util.Map.of(); }
+    default Map<String, JsonElement> dataFiles(String dir) { return Map.of(); }
 
     /** Item nach ID mit Anzahl; {@link ItemRef#EMPTY}, wenn es das Item nicht gibt. */
     default ItemRef item(String id, int count) { return ItemRef.EMPTY; }
@@ -196,16 +200,16 @@ public interface Platform {
     default String translate(String key, String fallback) { return fallback; }
 
     /** Dorfbewohner-Berufe mit Arbeitsblock und Trade-Sets. */
-    default java.util.List<Profession> professions() { return java.util.List.of(); }
+    default List<Profession> professions() { return List.of(); }
 
     /** Vorschau von Rüstungsverzierungen für eine Schmiedevorlage (leer, wenn keine). */
-    default java.util.List<RecipeView> trimViews(ItemRef template) { return java.util.List.of(); }
+    default List<RecipeView> trimViews(ItemRef template) { return List.of(); }
 
     /**
      * Handelsangebote bekannter Dorfbewohner in der Nähe (bekannt, sobald man ihr Handelsfenster
      * einmal geöffnet hat), Position über dem Kopf, interpoliert.
      */
-    default java.util.List<WorldLabel> villagerLabels(double maxDistance, float partialTick) { return java.util.List.of(); }
+    default List<WorldLabel> villagerLabels(double maxDistance, float partialTick) { return List.of(); }
 
     /**
      * FPS-Boost: Vanilla-Einstellungen für die gewünschten Optimierungen setzen. Nicht mehr gewünschte
@@ -214,7 +218,7 @@ public interface Platform {
      * @param saved bisher gespeicherte Ursprungswerte (vom Adapter kodiert)
      * @return neue Ursprungswerte zum Speichern, null = unverändert (z. B. Optionen noch nicht geladen)
      */
-    default String applyFpsBoost(java.util.Set<String> tweaks, String saved) { return null; }
+    default String applyFpsBoost(Set<String> tweaks, String saved) { return null; }
 
     /** FPS-Boost aus: Ursprungswerte wiederherstellen. */
     default void restoreFpsBoost(String saved) {}
@@ -225,7 +229,7 @@ public interface Platform {
     default boolean freecamActive() { return false; }
 
     /** IDs aller Partikelarten, z. B. {@code minecraft:crit}. */
-    default java.util.List<String> particleTypes() { return java.util.List.of(); }
+    default List<String> particleTypes() { return List.of(); }
 
     /** Ob gerade ein Inventar-/Container-Screen offen ist (nicht Chat, Menü, ...). */
     default boolean containerScreenOpen() { return false; }
@@ -234,7 +238,7 @@ public interface Platform {
     default FoodState foodState() { return FoodState.NONE; }
 
     /** Alle Tastenbelegungen von Minecraft und Mods (Steuerung). */
-    default java.util.List<KeyBinding> keyBindings() { return java.util.List.of(); }
+    default List<KeyBinding> keyBindings() { return List.of(); }
 
     /** Belegt eine Minecraft-/Mod-Taste neu und speichert die Optionen. Leer = nicht belegt. */
     default void setKeyBinding(String id, String key) {}

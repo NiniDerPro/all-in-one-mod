@@ -1,27 +1,36 @@
 package dev.aio.core.modules.inventory;
 
+import dev.aio.core.event.Events;
 import dev.aio.core.module.Category;
 import dev.aio.core.module.Module;
+import dev.aio.core.modules.inventory.data.InfoViews;
+import dev.aio.core.modules.inventory.data.WorldInfo;
 import dev.aio.core.platform.ItemRef;
+import dev.aio.core.platform.RecipeView;
+import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.NumberSetting;
+import dev.aio.core.util.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** Item-Liste rechts in Inventaren mit Suche (@mod) und Rezeptansicht. */
 public final class ItemListModule extends Module {
     private final NumberSetting maxColumns;
     private ItemPanel panel;
 
-    private final dev.aio.core.setting.BooleanSetting worldInfo;
+    private final BooleanSetting worldInfo;
     /** Welt-Infos (Beute, Handel, Spawns, Erze); null = noch nicht geladen. */
-    private volatile dev.aio.core.modules.inventory.data.WorldInfo info;
+    private volatile WorldInfo info;
     private volatile boolean loading;
 
     public ItemListModule() {
         super("itemlist", "Item Browser", "All items next to your inventory (also creative), search with @mod, recipes (R/U)", Category.QOL, false);
         maxColumns = add(new NumberSetting("columns", "Max columns", 8, 3, 16, 1));
-        worldInfo = add(new dev.aio.core.setting.BooleanSetting("worldInfo", "Trades, loot, spawns and ores", true));
+        worldInfo = add(new BooleanSetting("worldInfo", "Trades, loot, spawns and ores", true));
         // Neue Welt oder neuer Server: Daten (Datenpakete, Mods) können anders sein
-        on(dev.aio.core.event.Events.ServerJoin.class, e -> info = null);
-        on(dev.aio.core.event.Events.ServerLeave.class, e -> info = null);
+        on(Events.ServerJoin.class, e -> info = null);
+        on(Events.ServerLeave.class, e -> info = null);
     }
 
     /** Früher 9 Spalten: überdeckt bei GUI-Stufe 3 die Effekte, darum auf die neuen 8 umstellen. */
@@ -38,11 +47,11 @@ public final class ItemListModule extends Module {
         loading = true;
         Thread t = new Thread(() -> {
             try {
-                dev.aio.core.modules.inventory.data.WorldInfo loaded = dev.aio.core.modules.inventory.data.WorldInfo.load(platform());
+                WorldInfo loaded = WorldInfo.load(platform());
                 info = loaded;
-                dev.aio.core.util.Log.info("Item Browser: world info loaded in " + loaded.loadMillis() + " ms");
+                Log.info("Item Browser: world info loaded in " + loaded.loadMillis() + " ms");
             } catch (Throwable e) {
-                dev.aio.core.util.Log.error("Item Browser: could not load world info", e);
+                Log.error("Item Browser: could not load world info", e);
             } finally {
                 loading = false;
             }
@@ -52,13 +61,13 @@ public final class ItemListModule extends Module {
     }
 
     /** Rezepte bzw. Verwendungen samt Handel, Beute, Berufen, Spawns, Erzen und Verzierungen. */
-    public java.util.List<dev.aio.core.platform.RecipeView> recipesFor(ItemRef item, boolean usages) {
-        java.util.List<dev.aio.core.platform.RecipeView> out = new java.util.ArrayList<>(platform().recipes(item, usages));
+    public List<RecipeView> recipesFor(ItemRef item, boolean usages) {
+        List<RecipeView> out = new ArrayList<>(platform().recipes(item, usages));
         out.addAll(platform().trimViews(item));
         ensureWorldInfo();
-        dev.aio.core.modules.inventory.data.WorldInfo wi = info;
+        WorldInfo wi = info;
         if (wi != null && worldInfo.on()) {
-            dev.aio.core.modules.inventory.data.InfoViews views = new dev.aio.core.modules.inventory.data.InfoViews(platform(), wi);
+            InfoViews views = new InfoViews(platform(), wi);
             out.addAll(usages ? views.usages(item) : views.sources(item));
         }
         return out;

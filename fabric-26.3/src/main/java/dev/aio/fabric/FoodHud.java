@@ -3,6 +3,7 @@ package dev.aio.fabric;
 import dev.aio.core.modules.player.FoodInfoModule;
 import dev.aio.core.modules.player.FoodMath;
 import dev.aio.fabric.mixin.FoodDataAccessor;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -17,6 +18,7 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.Locale;
 import java.util.Random;
 
 /**
@@ -146,9 +148,9 @@ public final class FoodHud {
         FoodData stats = p.getFoodData();
         if (m.showSaturation()) drawSaturation(g, 0, stats.getSaturationLevel(), right, top, 1F);
         if (m.showValues()) {
-            String text = String.format(java.util.Locale.ROOT, "Hunger %d · Sat %.1f", stats.getFoodLevel(), stats.getSaturationLevel());
+            String text = String.format(Locale.ROOT, "Hunger %d · Sat %.1f", stats.getFoodLevel(), stats.getSaturationLevel());
             float ex = exhaustion(mc);
-            if (Float.isFinite(ex)) text += String.format(java.util.Locale.ROOT, " · Exh %.2f", ex);
+            if (Float.isFinite(ex)) text += String.format(Locale.ROOT, " · Exh %.2f", ex);
             g.text(mc.font, text, right - mc.font.width(text), top - 10, 0xFFE0E0E0, true);
         }
         Held held = m.showPreview() ? held(p) : null;

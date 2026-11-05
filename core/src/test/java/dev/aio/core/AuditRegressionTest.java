@@ -2,6 +2,8 @@ package dev.aio.core;
 
 import dev.aio.core.event.Events;
 import dev.aio.core.modules.chat.ChatModule;
+import dev.aio.core.modules.hud.LookAtModule;
+import dev.aio.core.modules.hud.PotionStatusModule;
 import dev.aio.core.modules.inventory.InventoryTweaksModule;
 import dev.aio.core.modules.inventory.ItemListModule;
 import dev.aio.core.modules.navigation.WaypointsModule;
@@ -9,7 +11,9 @@ import dev.aio.core.modules.render.FreelookModule;
 import dev.aio.core.platform.EffectInfo;
 import dev.aio.core.platform.Keys;
 import dev.aio.core.platform.VanillaOption;
+import dev.aio.core.setting.NumberSetting;
 import dev.aio.core.setting.Setting;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -129,7 +133,7 @@ class AuditRegressionTest {
         p.effects.add(new EffectInfo("Tempo", 0, 100, false, true));
         p.effects.add(new EffectInfo("Eile", 0, 100, false, true));
         AioCore core = start(p);
-        var m = core.module(dev.aio.core.modules.hud.PotionStatusModule.class);
+        var m = core.module(PotionStatusModule.class);
         m.setEnabled(true);
         m.update();
         FakeRenderer r = new FakeRenderer();
@@ -155,8 +159,8 @@ class AuditRegressionTest {
     @Test void lookAtUsesConfiguredRange() {
         FakePlatform p = new FakePlatform();
         AioCore core = start(p);
-        var m = core.module(dev.aio.core.modules.hud.LookAtModule.class);
-        ((dev.aio.core.setting.NumberSetting) m.setting("range")).set(12.0);
+        var m = core.module(LookAtModule.class);
+        ((NumberSetting) m.setting("range")).set(12.0);
         m.update();
         assertEquals(12.0, p.lastLookRange);
     }

@@ -1,13 +1,16 @@
 package dev.aio.core.ui;
 
-import dev.aio.core.i18n.Lang;
-
 import dev.aio.core.AioCore;
 import dev.aio.core.config.ConfigManager;
+import dev.aio.core.hud.ColorMode;
+import dev.aio.core.hud.ColoredText;
+import dev.aio.core.i18n.Lang;
 import dev.aio.core.module.Category;
 import dev.aio.core.module.Module;
+import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.Keys;
 import dev.aio.core.platform.Renderer;
+import dev.aio.core.setting.ActionSetting;
 import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.ColorSetting;
 import dev.aio.core.setting.EnumSetting;
@@ -15,9 +18,12 @@ import dev.aio.core.setting.KeybindSetting;
 import dev.aio.core.setting.NumberSetting;
 import dev.aio.core.setting.Setting;
 import dev.aio.core.setting.StringSetting;
+import dev.aio.core.util.Colors;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.DoubleConsumer;
 import java.util.function.IntConsumer;
 
@@ -137,8 +143,8 @@ public final class ClickGuiScreen implements UiScreen {
     }
 
     private void renderSidebar(Renderer r, int mx, int my, int px, int py, int ph, int accent) {
-        dev.aio.core.hud.ColoredText.draw(r, AioCore.NAME, px + 10, py + 9,
-                core.clientSettings().rainbowAccent.on() ? dev.aio.core.hud.ColorMode.CHROMA : dev.aio.core.hud.ColorMode.STATIC,
+        ColoredText.draw(r, AioCore.NAME, px + 10, py + 9,
+                core.clientSettings().rainbowAccent.on() ? ColorMode.CHROMA : ColorMode.STATIC,
                 accent, accent, 0.25f, true, 0);
         float y = py + 28;
         int used = 1; // "All"
@@ -194,9 +200,9 @@ public final class ClickGuiScreen implements UiScreen {
         });
     }
 
-    private final java.util.Map<String, dev.aio.core.platform.ItemRef> icons = new java.util.HashMap<>();
+    private final Map<String, ItemRef> icons = new HashMap<>();
 
-    private dev.aio.core.platform.ItemRef icon(String id) {
+    private ItemRef icon(String id) {
         return icons.computeIfAbsent(id, k -> core.platform().item(k, 1));
     }
 
@@ -217,12 +223,12 @@ public final class ClickGuiScreen implements UiScreen {
             for (int i = 0; i < steps; i++) {
                 int a = base * (steps - i) / steps;
                 float sx = Math.round(x1 + i * w), ex = Math.round(x1 + (i + 1) * w); // ganze Pixel: keine Streifen
-                r.fill(sx, y, ex, y + rh, dev.aio.core.util.Colors.withAlpha(cc, Math.max(a, sel ? 0x10 : 0x06)));
+                r.fill(sx, y, ex, y + rh, Colors.withAlpha(cc, Math.max(a, sel ? 0x10 : 0x06)));
             }
             if (sel) r.fill(x1, y, x1 + 2, y + rh, cc);
         }
         // Symbol (Item, etwas kleiner)
-        dev.aio.core.platform.ItemRef ic = icon(c == null ? "minecraft:nether_star" : c.icon());
+        ItemRef ic = icon(c == null ? "minecraft:nether_star" : c.icon());
         float iconSize = Math.min(12, rh - 2);
         if (ic != null && !ic.isEmpty()) {
             r.push();
@@ -240,7 +246,7 @@ public final class ClickGuiScreen implements UiScreen {
         r.push();
         r.translate(x2 - 4 - cw, ty + 1);
         r.scale(0.75f);
-        r.text(count, 0, 0, sel ? dev.aio.core.util.Colors.withAlpha(cc, 0xFF) : Theme.TEXT_MUTED, false);
+        r.text(count, 0, 0, sel ? Colors.withAlpha(cc, 0xFF) : Theme.TEXT_MUTED, false);
         r.pop();
         r.text(r.trim(label, x2 - x1 - 26 - cw), x1 + 9 + iconSize, ty, sel ? Theme.TEXT : hover ? 0xFFDDDDE6 : Theme.TEXT_DIM, sel);
         hit(px, y, px + SIDEBAR_W, y + rh, b -> {
@@ -318,7 +324,7 @@ public final class ClickGuiScreen implements UiScreen {
             int cc = m.category().color();
             r.fill(x1, y1, x2, y2, hover ? Theme.CARD_HOVER : Theme.CARD);
             if (m.isActive()) {
-                r.fill(x1, y1, x2, y2, dev.aio.core.util.Colors.withAlpha(cc, hover ? 0x2A : 0x1C));
+                r.fill(x1, y1, x2, y2, Colors.withAlpha(cc, hover ? 0x2A : 0x1C));
                 r.fill(x1, y1, x1 + 2, y2, cc);
             } else if (m.isEnabled() && (m.isBlocked() || m.unavailableReason() != null)) {
                 r.fill(x1, y1, x1 + 2, y2, Theme.WARNING);
@@ -344,7 +350,7 @@ public final class ClickGuiScreen implements UiScreen {
         }
         int rows = (list.size() + cols - 1) / cols;
         float height = rows * (CARD_H + GAP) - GAP;
-        if (category == dev.aio.core.module.Category.CLIENT && search.isEmpty()) height += renderResetAll(r, mx, my, x, y + height + 18, w) + 18;
+        if (category == Category.CLIENT && search.isEmpty()) height += renderResetAll(r, mx, my, x, y + height + 18, w) + 18;
         return height;
     }
 
@@ -424,7 +430,7 @@ public final class ClickGuiScreen implements UiScreen {
         r.fill(x, y, right, y + ROW_H, 0x10FFFFFF);
         r.text(r.trim(s.name(), w * 0.5f), x + 6, textY, Theme.TEXT, false);
 
-        if (s instanceof dev.aio.core.setting.ActionSetting a) {
+        if (s instanceof ActionSetting a) {
             float bw = Math.max(70, r.textWidth(a.name()) + 16);
             button(r, mx, my, right - 4 - bw, y + 3, right - 4, y + ROW_H - 3, Lang.tr("aio.ui.click_gui.open", "Open"), accent, true, btn -> a.run());
             return y + ROW_H + 2;

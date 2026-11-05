@@ -1,14 +1,15 @@
 package dev.aio.core.modules.hud;
 
-import dev.aio.core.i18n.Lang;
-
+import dev.aio.core.hud.ColorMode;
 import dev.aio.core.hud.HudElement;
+import dev.aio.core.i18n.Lang;
 import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.NumberSetting;
 import dev.aio.core.util.Colors;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,7 +45,7 @@ public final class HeldItemInfoModule extends HudElement {
         showName.onChange(v -> cachedW = -1);
     }
 
-    @Override protected dev.aio.core.hud.ColorMode defaultColorMode() { return dev.aio.core.hud.ColorMode.STATIC; }
+    @Override protected ColorMode defaultColorMode() { return ColorMode.STATIC; }
 
     @Override protected int defaultBackgroundColor() { return 0x00000000; }
 
@@ -89,7 +90,7 @@ public final class HeldItemInfoModule extends HudElement {
             lastKey = key;
             int max = maxLines.intValue();
             if (next.size() > max) {
-                List<String> cut = new java.util.ArrayList<>(next.subList(0, max - 1));
+                List<String> cut = new ArrayList<>(next.subList(0, max - 1));
                 cut.add("+" + (next.size() - max + 1) + " more");
                 next = cut;
             }
@@ -153,7 +154,7 @@ public final class HeldItemInfoModule extends HudElement {
             String line = s.get(i);
             float x = (w - r.textWidth(line)) / 2f;
             // Grau wie die Verzauberungen im Vanilla-Tooltip (Flüche bringen ihr Rot selbst mit)
-            int color = Colors.fade(colorMode() == dev.aio.core.hud.ColorMode.STATIC ? textColor() : dynamicColor(i * 12), a);
+            int color = Colors.fade(colorMode() == ColorMode.STATIC ? textColor() : dynamicColor(i * 12), a);
             if (Colors.alpha(color) < 8) continue;
             r.text(line, x, top + i * LINE, color, shadow());
         }

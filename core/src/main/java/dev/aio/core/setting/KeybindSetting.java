@@ -1,8 +1,11 @@
 package dev.aio.core.setting;
 
+import dev.aio.core.platform.Hotkeys;
+import dev.aio.core.platform.Keys;
+import dev.aio.core.platform.Platform;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
-import dev.aio.core.platform.Keys;
 
 /** Tastenbelegung als Minecraft-Tastenname (siehe {@link Keys}); leer = keine. */
 public class KeybindSetting extends Setting<String> {
@@ -17,8 +20,8 @@ public class KeybindSetting extends Setting<String> {
     public boolean matches(String key) { return isBound() && value.equals(key); }
 
     /** Wie {@link #matches}, aber nur ohne zusätzlich gehaltene Kombi-Taste (F3+F4 zählt nicht als F4). */
-    public boolean triggeredBy(dev.aio.core.platform.Platform platform, String key) {
-        return matches(key) && !dev.aio.core.platform.Hotkeys.otherComboHeld(platform, key);
+    public boolean triggeredBy(Platform platform, String key) {
+        return matches(key) && !Hotkeys.otherComboHeld(platform, key);
     }
 
     @Override public JsonElement toJson() { return new JsonPrimitive(value); }

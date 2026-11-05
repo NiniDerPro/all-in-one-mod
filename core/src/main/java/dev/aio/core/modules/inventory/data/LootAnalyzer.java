@@ -3,6 +3,7 @@ package dev.aio.core.modules.inventory.data;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,7 +52,7 @@ public final class LootAnalyzer {
             if (pool == null) continue;
             double rolls = Json.range(pool.get("rolls"), Json.Range.ONE).avg();
             Cond poolCond = conditions(pool);
-            List<Weighted> entries = new java.util.ArrayList<>();
+            List<Weighted> entries = new ArrayList<>();
             flatten(Json.list(pool, "entries"), entries, 0);
             double total = 0;
             for (Weighted w : entries) total += w.weight;
@@ -108,7 +109,7 @@ public final class LootAnalyzer {
 
     /** Funktionen/Modifikatoren: 26.3 "modifier" (Typ in "type"), älter "functions" (Typ in "function"). */
     private static List<JsonElement> modifiers(JsonObject o) {
-        List<JsonElement> out = new java.util.ArrayList<>(Json.list(o, "modifier"));
+        List<JsonElement> out = new ArrayList<>(Json.list(o, "modifier"));
         out.addAll(Json.list(o, "functions"));
         return out;
     }

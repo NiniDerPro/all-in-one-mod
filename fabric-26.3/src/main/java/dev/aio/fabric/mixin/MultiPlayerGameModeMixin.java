@@ -2,12 +2,22 @@ package dev.aio.fabric.mixin;
 
 import dev.aio.core.AioCore;
 import dev.aio.core.event.Events;
+import dev.aio.fabric.Freecam;
+import dev.aio.fabric.ShieldIndicator;
+import dev.aio.fabric.ToolSaverHook;
+
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -26,52 +36,52 @@ public abstract class MultiPlayerGameModeMixin {
         AioCore core = AioCore.get();
         if (core != null) core.bus().post(new Events.StartBreak(pos.getX(), pos.getY(), pos.getZ()));
         // Tool Saver erst nach Auto Tool: sieht schon das eingewechselte Werkzeug
-        var p = net.minecraft.client.Minecraft.getInstance().player;
-        if (p != null && dev.aio.fabric.ToolSaverHook.block(p.getMainHandItem())) cir.setReturnValue(false);
+        var p = Minecraft.getInstance().player;
+        if (p != null && ToolSaverHook.block(p.getMainHandItem())) cir.setReturnValue(false);
     }
 
     @Inject(method = "attack", at = @At("HEAD"), cancellable = true)
     private void aio$attack(Player player, Entity target, CallbackInfo ci) {
         AioCore core = AioCore.get();
         if (core != null) core.bus().post(new Events.AttackEntity(target instanceof LivingEntity));
-        if (dev.aio.fabric.ToolSaverHook.block(player.getMainHandItem())) {
+        if (ToolSaverHook.block(player.getMainHandItem())) {
             ci.cancel();
             return;
         }
-        dev.aio.fabric.ShieldIndicator.onAttack(player, target);
+        ShieldIndicator.onAttack(player, target);
     }
 
     // ---- Freecam: keine Interaktion aus der Kamera heraus ----
 
     @Inject(method = "startDestroyBlock", at = @At("HEAD"), cancellable = true)
     private void aio$freecamBreak(BlockPos pos, Direction face, CallbackInfoReturnable<Boolean> cir) {
-        if (dev.aio.fabric.Freecam.active() && dev.aio.fabric.Freecam.preventInteractions()) cir.setReturnValue(false);
+        if (Freecam.active() && Freecam.preventInteractions()) cir.setReturnValue(false);
     }
 
     @Inject(method = "continueDestroyBlock", at = @At("HEAD"), cancellable = true)
     private void aio$freecamContinue(BlockPos pos, Direction face, CallbackInfoReturnable<Boolean> cir) {
-        if (dev.aio.fabric.Freecam.active() && dev.aio.fabric.Freecam.preventInteractions()) cir.setReturnValue(false);
+        if (Freecam.active() && Freecam.preventInteractions()) cir.setReturnValue(false);
     }
 
     @Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true)
-    private void aio$freecamUseOn(net.minecraft.client.player.LocalPlayer player, net.minecraft.world.InteractionHand hand,
-                                  net.minecraft.world.phys.BlockHitResult hit, CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
-        if (dev.aio.fabric.Freecam.active() && dev.aio.fabric.Freecam.preventInteractions()) cir.setReturnValue(net.minecraft.world.InteractionResult.FAIL);
+    private void aio$freecamUseOn(LocalPlayer player, InteractionHand hand,
+                                  BlockHitResult hit, CallbackInfoReturnable<InteractionResult> cir) {
+        if (Freecam.active() && Freecam.preventInteractions()) cir.setReturnValue(InteractionResult.FAIL);
     }
 
     @Inject(method = "useItem", at = @At("HEAD"), cancellable = true)
-    private void aio$freecamUse(Player player, net.minecraft.world.InteractionHand hand, CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
-        if (dev.aio.fabric.Freecam.active() && dev.aio.fabric.Freecam.preventInteractions()) cir.setReturnValue(net.minecraft.world.InteractionResult.FAIL);
+    private void aio$freecamUse(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
+        if (Freecam.active() && Freecam.preventInteractions()) cir.setReturnValue(InteractionResult.FAIL);
     }
 
     @Inject(method = "attack", at = @At("HEAD"), cancellable = true)
     private void aio$freecamAttack(Player player, Entity target, CallbackInfo ci) {
-        if (dev.aio.fabric.Freecam.active() && dev.aio.fabric.Freecam.preventInteractions()) ci.cancel();
+        if (Freecam.active() && Freecam.preventInteractions()) ci.cancel();
     }
 
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
-    private void aio$freecamInteract(Player player, Entity target, net.minecraft.world.phys.EntityHitResult hit,
-                                     net.minecraft.world.InteractionHand hand, CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
-        if (dev.aio.fabric.Freecam.active() && dev.aio.fabric.Freecam.preventInteractions()) cir.setReturnValue(net.minecraft.world.InteractionResult.FAIL);
+    private void aio$freecamInteract(Player player, Entity target, EntityHitResult hit,
+                                     InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
+        if (Freecam.active() && Freecam.preventInteractions()) cir.setReturnValue(InteractionResult.FAIL);
     }
 }

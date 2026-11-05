@@ -1,15 +1,17 @@
 package dev.aio.core.config;
 
+import dev.aio.core.hud.HudElement;
+import dev.aio.core.module.Module;
+import dev.aio.core.module.ModuleRegistry;
+import dev.aio.core.setting.Setting;
+import dev.aio.core.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
-import dev.aio.core.module.Module;
-import dev.aio.core.module.ModuleRegistry;
-import dev.aio.core.setting.Setting;
-import dev.aio.core.util.Log;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -291,11 +293,11 @@ public final class ConfigManager {
                         if (settings.has(s.id())) s.fromJson(settings.get(s.id()));
                     }
                     // Alte Configs kannten nur eine gemeinsame Größe ("scale"): für die Höhe übernehmen
-                    if (m instanceof dev.aio.core.hud.HudElement el && settings.has("scale") && !settings.has("scaleY")) {
+                    if (m instanceof HudElement el && settings.has("scale") && !settings.has("scaleY")) {
                         el.setting("scaleY").fromJson(settings.get("scale"));
                     }
                     // Configs von vor der Auto-Platzierung: vorhandene Positionen nicht verschieben
-                    if (m instanceof dev.aio.core.hud.HudElement el && settings.has("x") && !settings.has("placed")) {
+                    if (m instanceof HudElement el && settings.has("x") && !settings.has("placed")) {
                         el.markPlaced();
                     }
                 }

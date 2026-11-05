@@ -5,12 +5,14 @@ import dev.aio.core.compat.ServerCompat;
 import dev.aio.core.event.EventBus;
 import dev.aio.core.event.Events;
 import dev.aio.core.hud.Snapper;
+import dev.aio.core.platform.Keys;
 import dev.aio.core.setting.ColorSetting;
 import dev.aio.core.setting.NumberSetting;
 import dev.aio.core.util.Animation;
 import dev.aio.core.util.ClickTracker;
 import dev.aio.core.util.Colors;
 import dev.aio.core.util.RollingStats;
+
 import com.google.gson.JsonPrimitive;
 import org.junit.jupiter.api.Test;
 
@@ -109,10 +111,10 @@ class UtilTest {
     }
 
     @Test void mouseKeyNamesRoundTrip() {
-        for (int b = 0; b < 8; b++) assertEquals(b, dev.aio.core.platform.Keys.mouseButton(dev.aio.core.platform.Keys.mouse(b)));
-        assertEquals("key.mouse.left", dev.aio.core.platform.Keys.mouse(0));
-        assertEquals("key.mouse.4", dev.aio.core.platform.Keys.mouse(3));
-        assertEquals(-1, dev.aio.core.platform.Keys.mouseButton("key.keyboard.a"));
+        for (int b = 0; b < 8; b++) assertEquals(b, Keys.mouseButton(Keys.mouse(b)));
+        assertEquals("key.mouse.left", Keys.mouse(0));
+        assertEquals("key.mouse.4", Keys.mouse(3));
+        assertEquals(-1, Keys.mouseButton("key.keyboard.a"));
     }
 
     @Test void hsvAndChroma() {
