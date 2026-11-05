@@ -36,6 +36,15 @@ public final class NametagsModule extends HudElement {
 
     private static final int ICON = 16;
 
+    /**
+     * Größe nach Entfernung: bis 4 Blöcke voll, dann weich kleiner (8 → 66 %, 16 → 44 %, 32 → 29 %),
+     * nie unter 25 %, damit sich Tags auf Distanz nicht gegenseitig verdecken.
+     */
+    static float distanceScale(double distance) {
+        if (distance <= 4) return 1f;
+        return (float) Math.max(0.25, Math.pow(4.0 / distance, 0.6));
+    }
+
     private final BooleanSetting players, items, mobs, tnt, throughWalls;
     private final BooleanSetting health, ping, gameMode, distance;
     private final BooleanSetting gear, enchants, skipEmpty, itemCount;
@@ -107,7 +116,7 @@ public final class NametagsModule extends HudElement {
             NametagTarget t = list.get(i);
             Projection.Point pt = Projection.project(t.x(), t.y(), t.z(), cam, w, h);
             if (!pt.onScreen()) continue;
-            float scale = base * (float) Math.max(0.5, Math.min(1.0, 12.0 / Math.max(1, t.distance())));
+            float scale = base * distanceScale(t.distance());
             r.push();
             r.translate(pt.x(), pt.y());
             r.scale(scale);

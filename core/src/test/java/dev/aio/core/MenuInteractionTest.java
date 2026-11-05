@@ -128,4 +128,45 @@ class MenuInteractionTest {
             }
         }
     }
+
+    @Test void bindingAKeyDoesNotTypeItIntoTheSearch() throws Exception {
+        ClickGuiScreen gui = open();
+        FakeRenderer r = new FakeRenderer();
+        gui.render(r, 0, 0, 0);
+        var zoomKey = (dev.aio.core.setting.KeybindSetting) core.modules().get("zoom").settings().stream()
+                .filter(st -> st.id().equals("key")).findFirst().orElseThrow();
+        var listening = ClickGuiScreen.class.getDeclaredField("listening");
+        listening.setAccessible(true);
+        listening.set(gui, zoomKey);
+        // So kommt es vom Spiel: erst die Taste, dann das Zeichen dazu
+        assertTrue(gui.keyPressed("key.keyboard.v"));
+        assertTrue(gui.charTyped("v"));
+        assertEquals("key.keyboard.v", zoomKey.get());
+        var search = ClickGuiScreen.class.getDeclaredField("search");
+        search.setAccessible(true);
+        assertEquals("", search.get(gui), "das Zeichen der belegten Taste landet nicht in der Suche");
+        // danach tippt man normal weiter
+        gui.keyPressed("key.keyboard.z");
+        gui.charTyped("z");
+        assertEquals("z", search.get(gui));
+    }
+
+    @Test void reopensWhereItWasClosedUnlessTurnedOff() {
+        ClickGuiScreen gui = open();
+        FakeRenderer r = new FakeRenderer();
+        gui.render(r, 0, 0, 0);
+        Module zoom = core.modules().get("zoom");
+        ClickGuiScreen focused = new ClickGuiScreen(core, zoom); // Panel und Kategorie von Zoom
+        focused.render(r, 0, 0, 0);
+        focused.onClose();
+
+        ClickGuiScreen again = new ClickGuiScreen(core, null);
+        again.render(r, 0, 0, 0);
+        assertTrue(again.keyPressed("key.keyboard.escape"), "Zoom-Panel ist wieder offen und ESC schließt es");
+
+        core.clientSettings().rememberMenu.set(false);
+        ClickGuiScreen fresh = new ClickGuiScreen(core, null);
+        fresh.render(r, 0, 0, 0);
+        assertFalse(fresh.keyPressed("key.keyboard.escape"), "ohne die Option startet das Menü leer");
+    }
 }
