@@ -22,6 +22,7 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -243,12 +244,12 @@ final class LightOverlay {
                     if (!NaturalSpawner.isValidEmptySpawnBlock(level, above, a2, a2.getFluidState(), EntityTypes.ZOMBIE)) continue;
                     above.set(floor.getX(), floor.getY() + 1, floor.getZ());
                     boolean lit = level.getBrightness(LightLayer.BLOCK, above) > 0; // Sonne ignorieren
-                    if (n == buf.length) buf = java.util.Arrays.copyOf(buf, n * 2);
+                    if (n == buf.length) buf = Arrays.copyOf(buf, n * 2);
                     buf[n++] = lx | ly << 4 | lz << 8 | (lit ? 1 << 12 : 0);
                 }
             }
         }
-        return java.util.Arrays.copyOf(buf, n);
+        return Arrays.copyOf(buf, n);
     }
 
     private static void clear() {

@@ -2,11 +2,19 @@ package dev.aio.fabric;
 
 import dev.aio.core.platform.ItemRef;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.TextColor;
+import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -47,5 +55,16 @@ public record FabricItemRef(ItemStack stack) implements ItemRef {
 
     @Override public boolean sameItemAs(ItemRef other) {
         return other instanceof FabricItemRef o && !stack.isEmpty() && ItemStack.isSameItemSameComponents(stack, o.stack);
+    }
+
+    @Override public List<Enchant> enchantments() {
+        ItemEnchantments ench = stack.getEnchantments();
+        if (ench.isEmpty()) ench = stack.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY);
+        if (ench.isEmpty()) return List.of();
+        List<Enchant> out = new ArrayList<>();
+        for (Object2IntMap.Entry<Holder<Enchantment>> e : ench.entrySet()) {
+            out.add(new Enchant(e.getKey().value().description().getString(), e.getIntValue(), e.getKey().is(EnchantmentTags.CURSE)));
+        }
+        return out;
     }
 }

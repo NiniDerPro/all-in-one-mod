@@ -12,6 +12,7 @@ import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.KeyBinding;
 import dev.aio.core.platform.Keys;
 import dev.aio.core.platform.LookTarget;
+import dev.aio.core.platform.NametagTarget;
 import dev.aio.core.platform.Perspective;
 import dev.aio.core.platform.Platform;
 import dev.aio.core.platform.Profession;
@@ -421,6 +422,11 @@ public final class FabricPlatform implements Platform {
     @Override public List<HealthTarget> healthTargets(double maxDistance, float partialTick, boolean players,
                                                                          boolean hostile, boolean passive, boolean throughWalls) {
         return HealthTargets.collect(client, maxDistance, partialTick, players, hostile, passive, throughWalls);
+    }
+
+    @Override public List<NametagTarget> nametagTargets(double maxDistance, float partialTick, boolean players, boolean mobs,
+                                                        boolean items, boolean tnt, boolean throughWalls) {
+        return NametagTargets.collect(client, maxDistance, partialTick, players, mobs, items, tnt, throughWalls);
     }
 
     @Override public boolean debugScreenOpen() { return client.debugEntries.isOverlayVisible(); }
