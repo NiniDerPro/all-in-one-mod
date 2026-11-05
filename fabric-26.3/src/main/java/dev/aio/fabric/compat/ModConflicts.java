@@ -36,6 +36,7 @@ public final class ModConflicts {
             Map.entry("lightoverlay", List.of("lightoverlay", "light-overlay")),
             Map.entry("toolsaver", List.of("toolsaver", "durabilitywarning", "durability-warning", "damagewarning")),
             Map.entry("healthtags", List.of("healthindicator", "health-indicator", "healthindicators", "neat")),
+            Map.entry("dynamiclights", List.of("lambdynlights", "sodiumdynamiclights", "dynamiclights", "ryoamiclights")),
             Map.entry("togglesprint", List.of("togglesprint")),
             Map.entry("elytraswap", List.of("elytraswap", "elytra-swapper")));
 

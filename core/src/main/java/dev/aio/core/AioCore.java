@@ -96,6 +96,7 @@ public final class AioCore {
         modules.register(new dev.aio.core.modules.player.ToolSaverModule());
         modules.register(new dev.aio.core.modules.render.LightOverlayModule());
         modules.register(new dev.aio.core.modules.combat.HealthTagsModule());
+        modules.register(new dev.aio.core.modules.render.DynamicLightsModule());
         modules.register(new dev.aio.core.modules.info.PlaytimeModule());
         modules.register(new dev.aio.core.modules.info.ServerInfoModule());
         modules.register(new dev.aio.core.modules.info.VillagerInfoModule());
