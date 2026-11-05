@@ -50,7 +50,7 @@ final class ScreenHooks {
             if ((screen instanceof PauseScreen || screen instanceof TitleScreen) && core.clientSettings().menuButton.on()) {
                 Button open = Button.builder(Component.literal("AIO"), b -> core.openClickGui(null))
                         .bounds(6, 6, 44, 20)
-                        .tooltip(Tooltip.create(Component.literal(Lang.tr("aio.ui.menu.open_aio", "Open AIO Client settings"))))
+                        .tooltip(Tooltip.create(Component.literal(Lang.tr("aio.ui.menu.open_aio", "Open the AIO menu"))))
                         .build();
                 Screens.getWidgets(screen).add(open);
             }

@@ -26,6 +26,7 @@
     "MouseHandlerMixin",
     "MultiPlayerGameModeMixin",
     "WaterFogMixin",
+    "ToastManagerMixin",
     "FreecamBlockStateMixin",
     "FreecamCameraMixin",
     "FreecamEntityMixin",
