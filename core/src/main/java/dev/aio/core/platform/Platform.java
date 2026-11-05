@@ -164,6 +164,12 @@ public interface Platform {
         return List.of();
     }
 
+    /** Namensschilder für Spieler, Mobs, Items am Boden und TNT (ohne den eigenen Spieler). */
+    default List<NametagTarget> nametagTargets(double maxDistance, float partialTick, boolean players, boolean mobs,
+                                                         boolean items, boolean tnt, boolean throughWalls) {
+        return List.of();
+    }
+
     /** Ob der F3-Bildschirm gerade offen ist. */
     default boolean debugScreenOpen() { return false; }
 

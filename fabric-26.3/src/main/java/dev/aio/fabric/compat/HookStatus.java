@@ -47,6 +47,7 @@ public final class HookStatus {
             Map.entry("MultiPlayerGameModeMixin#aio$startBreak", "autotool"),
             Map.entry("ToolSaverMixin", "toolsaver"),
             Map.entry("LightOverlayDirtyMixin", "lightoverlay"),
+            Map.entry("NametagsVanillaMixin", "nametags"),
             Map.entry("MultiPlayerGameModeMixin#aio$attack", "autoweapon"),
             Map.entry("MultiPlayerGameModeMixin", "freecam"));
 
@@ -65,7 +66,7 @@ public final class HookStatus {
 
     /** Modul-ID → Beschreibung für alle Module, deren Mixin nicht eingebaut werden konnte. */
     public static Map<String, String> broken() {
-        Map<String, String> out = new java.util.LinkedHashMap<>();
+        Map<String, String> out = new LinkedHashMap<>();
         for (String mixin : started) {
             if (finished.contains(mixin)) continue;
             for (String key : MODULE.keySet()) {
@@ -77,8 +78,8 @@ public final class HookStatus {
     }
 
     /** Für das Log: alle Mixins, deren Einbau abgebrochen ist. */
-    public static java.util.List<String> missing() {
-        java.util.List<String> out = new java.util.ArrayList<>();
+    public static List<String> missing() {
+        List<String> out = new ArrayList<>();
         for (String mixin : started) if (!finished.contains(mixin)) out.add(mixin);
         return out;
     }
