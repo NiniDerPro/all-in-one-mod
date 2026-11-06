@@ -18,6 +18,7 @@ public final class ModConflicts {
             Map.entry("waypoints", List.of("xaerominimap", "xaerominimapfair", "journeymap", "voxelmap")),
             Map.entry("deathpoint", List.of("xaerominimap", "xaerominimapfair", "journeymap", "voxelmap")),
             Map.entry("freecam", List.of("freecam")),
+            Map.entry("map", List.of("xaerominimap", "xaerominimapfair", "journeymap", "voxelmap", "diorama")),
             Map.entry("chatheads", List.of("chat_heads")),
             Map.entry("itemlist", List.of("jei", "roughlyenoughitems", "emi")),
             Map.entry("foodinfo", List.of("appleskin")),

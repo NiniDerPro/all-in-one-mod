@@ -184,6 +184,12 @@ public interface Platform {
 
     default void setProfilerChartPath(String path) {}
 
+    /**
+     * Oberfläche einer Blocksäule für die Karte: unten 32 Bit ARGB-Farbe, oben die Höhe + 1024;
+     * 0 = Chunk nicht geladen. {@code refY} ist die Spielerhöhe (für Dimensionen mit Decke wie den Nether).
+     */
+    default long mapColumn(int x, int z, int refY) { return 0; }
+
     /** Chatzeilen neu aufbauen (z. B. wenn Chat Heads ein- oder ausgeschaltet wird). */
     default void refreshChat() {}
 

@@ -446,6 +446,8 @@ public final class FabricPlatform implements Platform {
                 ? a.aio$getPath() : "root";
     }
 
+    @Override public long mapColumn(int x, int z, int refY) { return MapSampler.column(client, x, z, refY); }
+
     @Override public void refreshChat() { ChatHeads.refresh(); }
 
     @Override public int profilerChartEntries() {
