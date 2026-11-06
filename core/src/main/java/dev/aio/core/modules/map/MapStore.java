@@ -26,6 +26,8 @@ public final class MapStore {
     private final Map<Long, Tile> tiles = new HashMap<>();
     private String key = "";
     private boolean dirty;
+    /** Zählt jede Änderung, damit die Minimap weiß, wann sie neu zeichnen muss. */
+    public int version;
 
     public MapStore(Path root) { this.root = root; }
 
@@ -49,6 +51,7 @@ public final class MapStore {
             t.rgb[i] = argb;
             t.h[i] = (short) height;
             dirty = true;
+            version++;
         }
     }
 
@@ -58,6 +61,7 @@ public final class MapStore {
         if (next.equals(key)) return;
         save();
         tiles.clear();
+        version++;
         key = next;
         load();
     }

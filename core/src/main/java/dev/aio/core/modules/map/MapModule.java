@@ -10,7 +10,6 @@ import dev.aio.core.platform.Renderer;
 import dev.aio.core.platform.Vec3;
 import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.EnumSetting;
-import dev.aio.core.setting.KeybindSetting;
 import dev.aio.core.setting.NumberSetting;
 import dev.aio.core.ui.Draw;
 import dev.aio.core.ui.Theme;
@@ -18,11 +17,12 @@ import dev.aio.core.ui.Theme;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 /**
- * Karte: Minimap im HUD (eckig oder rund, flach oder als schräges "Diorama") und eine
- * Vollbild-Karte auf Tastendruck. Die Welt wird beim Spielen mitgelesen und pro Welt und Dimension
- * gespeichert; Unerforschtes bleibt dunkel.
+ * Minimap im HUD (eckig oder rund, flach oder als schräges "Diorama"). Die Welt wird beim Spielen
+ * langsam mitgelesen und pro Welt und Dimension gespeichert. Das Bild wird nur bei Änderung neu
+ * gebacken und pro Frame als eine Textur gezeichnet.
  */
 public final class MapModule extends HudElement {
     public enum Shape implements EnumSetting.Named {
@@ -35,33 +35,28 @@ public final class MapModule extends HudElement {
         @Override public String displayName() { return displayName; }
     }
 
-    private static final int RADIUS = 8; // Chunks um den Spieler, die gelesen werden
+    private static final int RADIUS = 6; // Chunks um den Spieler, die gelesen werden
 
     private final EnumSetting<Shape> shape;
     private final NumberSetting size, blocks;
     private final BooleanSetting diorama, radar, waypoints;
-    private final KeybindSetting openKey;
     private MapStore store;
     private final List<int[]> offsets = new ArrayList<>();
     private int scanIndex, nearIndex, ticks;
 
     public MapModule() {
-        super("map", "Map", "Minimap and full map with a slanted diorama look", Category.QOL, false, 1.0, 0.0);
+        super("map", "Map", "Minimap with a slanted diorama look", Category.QOL, false, 1.0, 0.0);
         shape = add(new EnumSetting<>("shape", "Shape", Shape.SQUARE));
         size = add(new NumberSetting("size", "Size", 110, 64, 180, 2, " px"));
         blocks = add(new NumberSetting("blocks", "View width", 64, 24, 192, 4, " blocks"));
         diorama = add(new BooleanSetting("diorama", "Diorama look (slanted)", true));
         radar = add(new BooleanSetting("radar", "Players and mobs", true));
         waypoints = add(new BooleanSetting("waypoints", "Waypoints", true));
-        openKey = add(new KeybindSetting("openKey", "Open full map", "key.keyboard.m"));
         for (int x = -RADIUS; x <= RADIUS; x++) {
             for (int z = -RADIUS; z <= RADIUS; z++) offsets.add(new int[]{x, z});
         }
         offsets.sort(Comparator.comparingInt(o -> o[0] * o[0] + o[1] * o[1]));
         on(Events.Tick.class, e -> tick());
-        on(Events.Key.class, e -> {
-            if (e.isPress() && !e.screenOpen() && openKey.triggeredBy(platform(), e.key())) openFullMap();
-        });
         on(Events.ServerLeave.class, e -> { if (store != null) store.save(); });
     }
 
@@ -84,15 +79,13 @@ public final class MapModule extends HudElement {
         return store;
     }
 
-    public boolean dioramaOn() { return diorama.on(); }
-
-    public void setDiorama(boolean on) { diorama.set(on); }
-
-    public void openFullMap() {
-        if (platform().inWorld()) platform().openScreen(new MapScreen(core, this));
-    }
 
     // ---- Welt lesen ----
+
+    private int[] buf = new int[0];
+    private int bakedVersion = -1, bakedKey, imageVersion;
+    private long lastBake;
+    private List<NametagTarget> radarCache = List.of();
 
     private void tick() {
         if (!platform().inWorld()) return;
@@ -100,13 +93,19 @@ public final class MapModule extends HudElement {
         s.switchTo(platform().worldKey(), platform().dimension());
         Vec3 p = platform().playerPos();
         int pcx = (int) Math.floor(p.x()) >> 4, pcz = (int) Math.floor(p.z()) >> 4, py = (int) Math.floor(p.y());
-        scanChunk(s, pcx + offsets.get(scanIndex % offsets.size())[0], pcz + offsets.get(scanIndex++ % offsets.size())[1], py);
-        scanChunk(s, pcx + offsets.get(scanIndex % offsets.size())[0], pcz + offsets.get(scanIndex++ % offsets.size())[1], py);
-        if (ticks++ % 4 == 0) { // die Chunks direkt um den Spieler öfter auffrischen (Bauen, Abbauen)
+        // ein Chunk alle 2 Ticks (16 × 16 Säulen), die Chunks direkt um den Spieler öfter
+        if (ticks % 2 == 0) {
+            int[] o = offsets.get(scanIndex++ % offsets.size());
+            scanChunk(s, pcx + o[0], pcz + o[1], py);
+        }
+        if (ticks % 10 == 0) {
             int[] o = offsets.get(nearIndex++ % 9);
             scanChunk(s, pcx + o[0], pcz + o[1], py);
         }
-        if (ticks % 1200 == 0) s.save();
+        if (ticks % 6 == 0 && radar.on()) {
+            radarCache = platform().nametagTargets(blocks.intValue() * 0.75, 0f, true, true, false, false, true);
+        }
+        if (++ticks % 1200 == 0) s.save();
     }
 
     private void scanChunk(MapStore s, int cx, int cz, int refY) {
@@ -125,12 +124,22 @@ public final class MapModule extends HudElement {
         int sz = size.intValue();
         MapStore s = store();
         Vec3 p = platform().playerPos();
-        int refH = s.rgb((int) Math.floor(p.x()), (int) Math.floor(p.z())) == 0 ? (int) p.y()
-                : s.height((int) Math.floor(p.x()), (int) Math.floor(p.z()));
+        int bx = (int) Math.floor(p.x()), bz = (int) Math.floor(p.z());
+        int refH = s.rgb(bx, bz) == 0 ? (int) p.y() : s.height(bx, bz);
         boolean round = shape.get() == Shape.ROUND;
-        MapView v = new MapView(0, 0, sz, sz, p.x(), p.z(), sz / (float) blocks.intValue(), refH, diorama.on());
+        // Mitte immer auf dem Block des Spielers: das Bild muss nur beim Blockwechsel neu gebacken werden
+        MapView v = new MapView(0, 0, sz, sz, bx + 0.5, bz + 0.5, sz / (float) blocks.intValue(), refH, diorama.on());
+        int key = Objects.hash(bx, bz, sz, blocks.intValue(), diorama.on(), round, refH / 2);
+        long now = System.currentTimeMillis();
+        if ((key != bakedKey || s.version != bakedVersion) && now - lastBake >= 120) {
+            if (buf.length != sz * sz) buf = new int[sz * sz];
+            MapRenderer.bake(buf, sz, s, v, round);
+            bakedKey = key;
+            bakedVersion = s.version;
+            lastBake = now;
+            imageVersion++;
+        }
         int accent = Theme.accent(core);
-
         if (round) {
             r.fill(sz * 0.14f, 0, sz * 0.86f, sz, 0xC0080A0E);
             r.fill(0, sz * 0.14f, sz, sz * 0.86f, 0xC0080A0E);
@@ -138,16 +147,16 @@ public final class MapModule extends HudElement {
         } else {
             Draw.round(r, -1, -1, sz + 1, sz + 1, 2, 0xC0080A0E);
         }
-        MapRenderer.draw(r, s, v, round);
+        if (buf.length == sz * sz) r.image("minimap", buf, sz, sz, imageVersion, 0, 0, sz, sz);
         markers(r, v, p, round);
-        MapRenderer.player(r, v, v.sx(p.x()), v.sy(p.z(), refH), platform().playerYaw());
+        MapRenderer.player(r, v.sx(p.x()), v.sy(p.z(), refH), platform().playerYaw());
         if (round) {
             ring(r, sz, accent);
         } else {
             Draw.roundOutline(r, -1, -1, sz + 1, sz + 1, accent & 0x00FFFFFF | 0x90000000);
         }
         r.centeredText("N", sz / 2f, 2, 0xFFFFFFFF, true);
-        String pos = (int) Math.floor(p.x()) + ", " + (int) Math.floor(p.y()) + ", " + (int) Math.floor(p.z());
+        String pos = bx + ", " + (int) Math.floor(p.y()) + ", " + bz;
         r.centeredText(pos, sz / 2f, sz + 2, Theme.TEXT, true);
     }
 
@@ -164,15 +173,14 @@ public final class MapModule extends HudElement {
 
     private void markers(Renderer r, MapView v, Vec3 p, boolean round) {
         MapStore s = store();
-        if (waypoints.on()) drawWaypoints(r, v, s, p);
+        if (waypoints.on()) drawWaypoints(r, v);
         if (radar.on()) {
-            double range = blocks.intValue() * 0.75;
-            for (NametagTarget t : platform().nametagTargets(range, 0f, true, true, false, false, true)) {
+            for (NametagTarget t : radarCache) {
                 int c = t.kind() == NametagTarget.Kind.PLAYER ? 0xFF55AAFF : 0xFFFF5555;
-                int h = s.rgb((int) Math.floor(t.x()), (int) Math.floor(t.z())) == 0 ? v.refH() : s.height((int) Math.floor(t.x()), (int) Math.floor(t.z()));
+                int tx = (int) Math.floor(t.x()), tz = (int) Math.floor(t.z());
+                int h = s.rgb(tx, tz) == 0 ? v.refH() : s.height(tx, tz);
                 float x = v.sx(t.x()), y = v.sy(t.z(), Math.max(h, (int) t.y()));
-                if (round && inside(v, x, y)) MapRenderer.dot(r, v, x, y, 1.2f, c);
-                else if (!round) MapRenderer.dot(r, v, x, y, 1.2f, c);
+                if (!round || inside(v, x, y)) MapRenderer.dot(r, x, y, 1.2f, c);
             }
         }
     }
@@ -183,14 +191,14 @@ public final class MapModule extends HudElement {
     }
 
     /** Wegpunkte (auch Todespunkte) als Punkte; was außerhalb liegt, sitzt am Rand. */
-    void drawWaypoints(Renderer r, MapView v, MapStore s, Vec3 p) {
+    private void drawWaypoints(Renderer r, MapView v) {
         WaypointsModule wp = core.module(WaypointsModule.class);
         if (wp == null) return;
         for (Waypoint w : wp.shownHere()) {
             float x = v.sx(w.x() + 0.5), y = v.sy(w.z() + 0.5, w.y());
-            x = Math.max(v.x0() + 3, Math.min(v.x0() + v.w() - 3, x));
-            y = Math.max(v.y0() + 3, Math.min(v.y0() + v.h() - 3, y));
-            MapRenderer.dot(r, v, x, y, w.death() ? 2.4f : 2f, 0xFF000000 | w.color());
+            x = Math.max(3, Math.min(v.w() - 3, x));
+            y = Math.max(3, Math.min(v.h() - 3, y));
+            MapRenderer.dot(r, x, y, w.death() ? 2.4f : 2f, 0xFF000000 | w.color());
         }
     }
 }
