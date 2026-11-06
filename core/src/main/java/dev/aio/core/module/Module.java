@@ -200,6 +200,9 @@ public abstract class Module {
     /** Nach dem Laden der Config aufgerufen, z. B. um alte Standardwerte umzustellen. */
     public void afterLoad() {}
 
+    /** Nach dem Laden: gespeichertes Ein/Aus einmalig anpassen (z. B. wenn sich der Standard geändert hat). */
+    public boolean adjustLoadedEnabled(boolean enabled) { return enabled; }
+
     public KeybindSetting toggleKey() { return toggleKey; }
 
     public List<Setting<?>> settings() { return Collections.unmodifiableList(settings); }
@@ -214,7 +217,7 @@ public abstract class Module {
 
     /** Module, die bei einer neuen Installation an sind (alles andere ist aus). */
     public static final Set<String> DEFAULT_ON = Set.of(
-            "armorhud", "lookat", "chat", "helditeminfo", "dynamicfps", "elytraswap", "entityculling", "foodinfo",
+            "armorhud", "lookat", "flexchat", "helditeminfo", "dynamicfps", "elytraswap", "entityculling", "foodinfo",
             "freelook", "fullbright", "itemlist", "invtweaks", "coordinates", "namealert", "shulkerpreview",
             "keybinds", "xpclumps", "zoom", "potions");
 

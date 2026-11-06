@@ -18,19 +18,19 @@ public final class ChatResizer {
 
     public ChatResizer(AioCore core) { this.core = core; }
 
-    private ChatModule chat() {
-        ChatModule c = core.module(ChatModule.class);
+    private FlexChatModule chat() {
+        FlexChatModule c = core.module(FlexChatModule.class);
         return c != null && c.isActive() ? c : null;
     }
 
     /** x, y, Breite, Höhe der Chatbox. */
-    private float[] box(Renderer r, ChatModule c) {
+    private float[] box(Renderer r, FlexChatModule c) {
         float bottom = r.screenHeight() - 40;
         return new float[]{2, bottom - c.boxHeight(), c.boxWidth(), c.boxHeight()};
     }
 
     private int edgesAt(Renderer r, double mx, double my) {
-        ChatModule c = chat();
+        FlexChatModule c = chat();
         if (c == null) return 0;
         float[] b = box(r, c);
         boolean inX = mx >= b[0] && mx <= b[0] + b[2] + GRIP, inY = my >= b[1] - GRIP && my <= b[1] + b[3];
@@ -44,7 +44,7 @@ public final class ChatResizer {
 
     /** Rahmen und Griffe, sobald die Maus an einer Kante ist oder gezogen wird. */
     public void render(Renderer r, int mx, int my) {
-        ChatModule c = chat();
+        FlexChatModule c = chat();
         if (c == null) return;
         int hot = edges != 0 ? edges : edgesAt(r, mx, my);
         if (hot == 0) return;
@@ -79,7 +79,7 @@ public final class ChatResizer {
     }
 
     public boolean mouseDragged(double mx, double my) {
-        ChatModule c = chat();
+        FlexChatModule c = chat();
         if (edges == 0 || c == null) return false;
         float w = (edges & RIGHT) != 0 ? startW + (float) mx - startMx : startW;
         float h = (edges & TOP) != 0 ? startH - ((float) my - startMy) : startH;

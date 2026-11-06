@@ -48,7 +48,7 @@ public enum Category {
             // QoL
             Map.entry("lookat", QOL), Map.entry("foodinfo", QOL), Map.entry("shulkerpreview", QOL), Map.entry("invtweaks", QOL),
             Map.entry("itemlist", QOL), Map.entry("elytraswap", QOL), Map.entry("autotool", QOL), Map.entry("villagerinfo", QOL),
-            Map.entry("keybinds", QOL), Map.entry("namealert", QOL), Map.entry("chat", QOL), Map.entry("waypoints", QOL),
+            Map.entry("keybinds", QOL), Map.entry("namealert", QOL), Map.entry("chat", QOL), Map.entry("flexchat", QOL), Map.entry("chatheads", QOL), Map.entry("waypoints", QOL),
             Map.entry("deathpoint", QOL), Map.entry("portalcalc", QOL),
             // Visuals
             Map.entry("fullbright", VISUALS), Map.entry("nofog", VISUALS), Map.entry("nopumpkin", VISUALS),

@@ -4,6 +4,7 @@ import dev.aio.core.event.Events;
 import dev.aio.core.module.Category;
 import dev.aio.core.module.Module;
 import dev.aio.core.modules.chat.ChatModule;
+import dev.aio.core.modules.chat.FlexChatModule;
 import dev.aio.core.modules.combat.AutoToolModule;
 import dev.aio.core.modules.combat.AutoWeaponModule;
 import dev.aio.core.modules.info.PlaytimeModule;
@@ -171,7 +172,7 @@ class FeaturesTest {
         p.options.put(VanillaOption.CHAT_SCALE, 1.0);
         p.options.put(VanillaOption.CHAT_HEIGHT_FOCUSED, 0.2);
         AioCore core = newCore(p);
-        ChatModule chat = core.module(ChatModule.class);
+        FlexChatModule chat = core.module(FlexChatModule.class);
         assertTrue(chat.isActive());
         assertEquals(0.3, chat.setting("width").get(), "übernimmt Vanilla-Wert");
         assertEquals(0.3, p.options.get(VanillaOption.CHAT_WIDTH));
@@ -183,6 +184,7 @@ class FeaturesTest {
     @Test void chatHistoryCollectsMessages() {
         FakePlatform p = new FakePlatform();
         AioCore core = newCore(p);
+        core.module(ChatModule.class).setEnabled(true); // Custom Chat ist standardmäßig aus
         core.bus().post(new Events.ChatReceived("Hallo Welt", false));
         core.bus().post(new Events.ChatReceived("Zweite", true));
         assertEquals(2, core.module(ChatModule.class).chatHistory().entries().size());
