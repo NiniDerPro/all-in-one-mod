@@ -82,6 +82,40 @@ public final class FabricRenderer implements Renderer {
         pose.popMatrix();
     }
 
+    private record Img(net.minecraft.client.renderer.texture.DynamicTexture tex, Identifier id, int version, int w, int h) {}
+
+    private final Map<String, Img> images = new HashMap<>();
+
+    @Override public void image(String key, int[] argb, int w, int h, int version, float x, float y, float dw, float dh) {
+        Img img = images.get(key);
+        if (img == null || img.w != w || img.h != h) {
+            if (img != null) client.getTextureManager().release(img.id);
+            var tex = new net.minecraft.client.renderer.texture.DynamicTexture(() -> "aio_" + key, w, h, false);
+            Identifier id = Identifier.fromNamespaceAndPath("aio", "dyn/" + key);
+            client.getTextureManager().register(id, tex);
+            img = new Img(tex, id, -1, w, h);
+            images.put(key, img);
+        }
+        if (img.version != version) {
+            var px = img.tex.getPixels();
+            for (int j = 0; j < h; j++) {
+                for (int i = 0; i < w; i++) {
+                    int c = argb[j * w + i];
+                    px.setPixelABGR(i, j, (c & 0xFF00FF00) | ((c >> 16) & 0xFF) | ((c & 0xFF) << 16));
+                }
+            }
+            img.tex.upload();
+            img = new Img(img.tex, img.id, version, w, h);
+            images.put(key, img);
+        }
+        Matrix3x2fStack pose = g.pose();
+        pose.pushMatrix();
+        pose.translate(x, y);
+        pose.scale(dw / w, dh / h);
+        g.blit(RenderPipelines.GUI_TEXTURED, img.id, 0, 0, 0f, 0f, w, h, w, h);
+        pose.popMatrix();
+    }
+
     private final Map<String, Identifier> sprites = new HashMap<>();
 
     @Override public void sprite(String id, float x, float y, int width, int height) {
