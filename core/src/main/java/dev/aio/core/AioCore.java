@@ -107,6 +107,12 @@ public final class AioCore {
         this.platform = platform;
         this.config = new ConfigManager(configDir, modules, System::currentTimeMillis);
         this.hud = new HudManager(modules);
+        this.hud.onFirstPlaced(() -> {
+            if (clientSettings == null || clientSettings.hudHintSeen.on()) return;
+            clientSettings.hudHintSeen.set(true);
+            config.save();
+            platform.notify(Lang.tr("aio.ui.hud_hint", "Tip: you can move HUD elements. Open the AIO menu and click \"Edit HUD layout\"."));
+        });
         this.compat = new ServerCompat(modules);
         this.clicks = new ClickTracker(bus, System::nanoTime);
         this.stats = new Stats(config, modules, System::currentTimeMillis);
