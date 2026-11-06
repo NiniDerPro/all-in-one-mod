@@ -34,15 +34,13 @@ final class ChatWaypoints {
                         ClientCommands.argument("data", StringArgumentType.greedyString()).executes(c -> {
                             var f = SharedWaypoint.Found.fromPayload(StringArgumentType.getString(c, "data"));
                             WaypointsModule wp = core.module(WaypointsModule.class);
-                            if (f != null && wp != null && wp.isActive()) wp.addShared(f);
+                            if (f != null && wp != null) wp.addShared(f);
                             return 1;
                         }))));
     }
 
     /** Schreibt die Nachricht um, wenn sie einen geteilten Wegpunkt enthält; sonst unverändert. */
     static Component rewrite(AioCore core, Component message) {
-        WaypointsModule wp = core.module(WaypointsModule.class);
-        if (wp == null || !wp.isActive()) return message;
         String text = message.getString();
         List<SharedWaypoint.Match> found = SharedWaypoint.find(text);
         if (found.isEmpty()) return message;

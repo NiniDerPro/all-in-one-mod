@@ -64,8 +64,8 @@ public final class WaypointsModule extends HudElement {
         posX.hidden();
         posY.hidden();
         addKey = add(new KeybindSetting("addKey", "Add waypoint", "key.keyboard.b"));
-        manageKey = add(new KeybindSetting("manageKey", "Open waypoint list", "key.keyboard.n"));
-        add(new ActionSetting("manage", "Waypoint list", () -> core.platform().openScreen(new WaypointScreen(core, this))));
+        manageKey = add(new KeybindSetting("manageKey", "Waypoint menu key", "key.keyboard.n"));
+        add(new ActionSetting("manage", "Open waypoints", () -> core.platform().openScreen(new WaypointScreen(core, this))));
         showDistance = add(new BooleanSetting("distance", "Show distance", true));
         edgeMarkers = add(new BooleanSetting("edge", "Show at screen edge", true));
         maxDistance = add(new NumberSetting("maxDistance", "Max distance", 0, 0, 10000, 100, " m (0 = ∞)"));
