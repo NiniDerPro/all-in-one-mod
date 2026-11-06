@@ -71,7 +71,7 @@ public final class WaypointsModule extends HudElement {
         maxDistance = add(new NumberSetting("maxDistance", "Max distance", 0, 0, 10000, 100, " m (0 = ∞)"));
         markerStyle = add(new EnumSetting<>("markerStyle", "Marker", MarkerStyle.DOT));
         alwaysNames = add(new BooleanSetting("alwaysNames", "Always show names", false));
-        importShared = add(new BooleanSetting("importShared", "Add waypoints shared in chat", true));
+        importShared = add(new BooleanSetting("importShared", "Add shared waypoints automatically", false));
         on(Events.ChatReceived.class, e -> { if (importShared.on() && !e.fromSelf()) importShared(e.text()); });
         on(Events.Key.class, e -> {
             if (!e.isPress() || e.screenOpen()) return;
@@ -84,21 +84,24 @@ public final class WaypointsModule extends HudElement {
 
     private final BooleanSetting importShared;
 
-    /** Im Chat geteilte Wegpunkte (Xaero-Textformat) übernehmen und kurz Bescheid geben. */
+    /** Im Chat geteilte Wegpunkte automatisch übernehmen (nur wenn eingeschaltet). */
     private void importShared(String text) {
-        for (SharedWaypoint.Found f : SharedWaypoint.parse(text)) {
-            String dim = f.dimension() != null ? f.dimension() : platform().dimension();
-            String world = platform().worldKey();
-            int y = f.y() != null ? f.y() : (int) Math.floor(platform().playerPos().y());
-            boolean known = false;
-            for (Waypoint w : inThisWorld()) {
-                if (w.x() == f.x() && w.z() == f.z() && w.dimension().equals(dim)) known = true;
+        for (SharedWaypoint.Found f : SharedWaypoint.parse(text)) addShared(f);
+    }
+
+    /** Fügt einen geteilten Wegpunkt hinzu (Klick im Chat oder automatisch); doppelte werden übersprungen. */
+    public boolean addShared(SharedWaypoint.Found f) {
+        String dim = f.dimension() != null ? f.dimension() : platform().dimension();
+        int y = f.y() != null ? f.y() : (int) Math.floor(platform().playerPos().y());
+        for (Waypoint w : inThisWorld()) {
+            if (w.x() == f.x() && w.z() == f.z() && w.dimension().equals(dim)) {
+                platform().notify(dev.aio.core.i18n.Lang.tr("aio.ui.waypoints.shared_known", "Waypoint \"%s\" already exists", w.name()));
+                return false;
             }
-            if (known) continue;
-            add(new Waypoint(f.name(), f.x(), y, f.z(), world, dim, f.color(), true, false));
-            platform().notify(dev.aio.core.i18n.Lang.tr("aio.ui.waypoints.shared_added", "Waypoint \"%s\" added (%s %s %s)",
-                    f.name(), f.x(), y, f.z()));
         }
+        add(new Waypoint(f.name(), f.x(), y, f.z(), platform().worldKey(), dim, f.color(), true, false));
+        platform().notify(dev.aio.core.i18n.Lang.tr("aio.ui.waypoints.shared_added", "Waypoint \"%s\" added (%s %s %s)", f.name(), f.x(), y, f.z()));
+        return true;
     }
 
     @Override protected void onActivate() { load(); }
