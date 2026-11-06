@@ -7,7 +7,7 @@ import dev.aio.core.hud.HudEditorScreen;
 import dev.aio.core.hud.HudElement;
 import dev.aio.core.module.Category;
 import dev.aio.core.module.Module;
-import dev.aio.core.modules.chat.ChatModule;
+import dev.aio.core.modules.chat.FlexChatModule;
 import dev.aio.core.modules.hud.FpsModule;
 import dev.aio.core.platform.EffectInfo;
 import dev.aio.core.platform.Keys;
@@ -196,7 +196,7 @@ class UiSmokeTest {
     @Test void chatCanBeSelectedResizedAndReset() {
         FakePlatform p = new FakePlatform();
         AioCore core = newCore(p);
-        ChatModule chat = core.module(ChatModule.class);
+        FlexChatModule chat = core.module(FlexChatModule.class);
         chat.setEnabled(true);
         core.bus().post(Events.Tick.INSTANCE);
         FakeRenderer r = new FakeRenderer();
