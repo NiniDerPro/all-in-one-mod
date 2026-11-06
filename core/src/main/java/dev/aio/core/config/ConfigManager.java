@@ -309,7 +309,7 @@ public final class ConfigManager {
             }
         }
         m.afterLoad();
-        m.setEnabled(enabled);
+        m.setEnabled(m.adjustLoadedEnabled(enabled));
     }
 
     // ---- Hilfen ----

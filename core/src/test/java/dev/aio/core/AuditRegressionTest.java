@@ -1,7 +1,7 @@
 package dev.aio.core;
 
 import dev.aio.core.event.Events;
-import dev.aio.core.modules.chat.ChatModule;
+import dev.aio.core.modules.chat.FlexChatModule;
 import dev.aio.core.modules.hud.LookAtModule;
 import dev.aio.core.modules.hud.PotionStatusModule;
 import dev.aio.core.modules.inventory.InventoryTweaksModule;
@@ -40,7 +40,7 @@ class AuditRegressionTest {
             @Override public double option(VanillaOption o) { return ready[0] ? 0.42 : Double.NaN; }
         };
         AioCore core = assertDoesNotThrow(() -> start(p));
-        ChatModule chat = core.module(ChatModule.class);
+        FlexChatModule chat = core.module(FlexChatModule.class);
         assertTrue(chat.isActive());
         ready[0] = true;
         core.bus().post(Events.Tick.INSTANCE);
@@ -50,7 +50,7 @@ class AuditRegressionTest {
     /** A1: Ein laut Config ausgeschaltetes Modul wird beim Laden nicht kurz aktiviert. */
     @Test void disabledModuleIsNotActivatedWhileLoading() {
         AioCore first = start(new FakePlatform());
-        first.module(ChatModule.class).setEnabled(false);
+        first.module(FlexChatModule.class).setEnabled(false);
         first.shutdown();
         int[] calls = {0};
         FakePlatform p = new FakePlatform() {
@@ -66,8 +66,8 @@ class AuditRegressionTest {
             @Override public double option(VanillaOption o) { throw new IllegalStateException("kaputt"); }
         };
         AioCore core = assertDoesNotThrow(() -> start(p));
-        assertFalse(core.module(ChatModule.class).isActive(), "fehlerhaftes Modul ausgehängt");
-        assertTrue(core.module(ChatModule.class).isEnabled(), "Wunsch bleibt gespeichert");
+        assertFalse(core.module(FlexChatModule.class).isActive(), "fehlerhaftes Modul ausgehängt");
+        assertTrue(core.module(FlexChatModule.class).isEnabled(), "Wunsch bleibt gespeichert");
     }
 
     /** A2: "Reset" im Menü lässt Wegpunkte in Ruhe. */

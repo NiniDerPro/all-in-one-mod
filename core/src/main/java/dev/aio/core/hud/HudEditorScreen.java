@@ -3,7 +3,7 @@ package dev.aio.core.hud;
 import dev.aio.core.i18n.Lang;
 
 import dev.aio.core.AioCore;
-import dev.aio.core.modules.chat.ChatModule;
+import dev.aio.core.modules.chat.FlexChatModule;
 import dev.aio.core.platform.Keys;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.ui.Draw;
@@ -92,8 +92,8 @@ public final class HudEditorScreen implements UiScreen {
     // Ziele (Element oder Chat) als Rechteck
     // =====================================================================
 
-    private ChatModule chat() {
-        ChatModule c = core.module(ChatModule.class);
+    private FlexChatModule chat() {
+        FlexChatModule c = core.module(FlexChatModule.class);
         return c != null && c.isActive() ? c : null;
     }
 
@@ -103,7 +103,7 @@ public final class HudEditorScreen implements UiScreen {
             return new float[]{el.screenX(r), el.screenY(r), el.scaledWidth(r), el.scaledHeight(r)};
         }
         if (target == CHAT) {
-            ChatModule c = chat();
+            FlexChatModule c = chat();
             if (c == null) return null;
             float bottom = r.screenHeight() - 40;
             return new float[]{2, bottom - c.boxHeight(), c.boxWidth(), c.boxHeight()};

@@ -11,6 +11,7 @@ import dev.aio.core.module.Module;
 import dev.aio.core.module.ModuleRegistry;
 import dev.aio.core.modules.chat.ChatHeadsModule;
 import dev.aio.core.modules.chat.ChatModule;
+import dev.aio.core.modules.chat.FlexChatModule;
 import dev.aio.core.modules.chat.NameAlertModule;
 import dev.aio.core.modules.client.ClientSettingsModule;
 import dev.aio.core.modules.client.KeyBindsModule;
@@ -135,6 +136,7 @@ public final class AioCore {
         modules.register(new FullbrightModule());
         modules.register(new ToggleSprintModule());
         modules.register(new ChatModule());
+        modules.register(new FlexChatModule());
         modules.register(new ChatHeadsModule());
         modules.register(new NameAlertModule());
         // Info
