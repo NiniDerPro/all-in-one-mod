@@ -767,8 +767,12 @@ public final class ClickGuiScreen implements UiScreen {
             text = hint;
             color = Theme.TEXT_DIM;
         } else {
-            text = Lang.tr("aio.ui.menu.tip", "Type to search · Right click a key to clear it");
+            text = Lang.tr("aio.ui.menu.close_hint", "Esc  Close");
             color = Theme.TEXT_MUTED;
+            float cw = r.textWidth(text);
+            boolean hv = inside(mx, my, px + pw - 12 - cw, y + 2, px + pw - 4, y + BOTTOM - 2);
+            color = hv ? Theme.TEXT : Theme.TEXT_MUTED;
+            hit(px + pw - 12 - cw, y + 2, px + pw - 4, y + BOTTOM - 2, b -> core.platform().closeScreen());
         }
         float maxW = px + pw - 8 - (x + 20);
         String shown = r.trim(text, maxW);
