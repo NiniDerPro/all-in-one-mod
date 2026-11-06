@@ -13,6 +13,10 @@ public final class HudManager {
     private final ModuleRegistry modules;
     private List<HudElement> elements = List.of();
     private boolean editorOpen;
+    private Runnable onFirstPlaced;
+
+    /** Wird einmal aufgerufen, wenn ein Element zum ersten Mal auf dem Bildschirm erscheint. */
+    public void onFirstPlaced(Runnable r) { this.onFirstPlaced = r; }
 
     public HudManager(ModuleRegistry modules) {
         this.modules = modules;
@@ -52,6 +56,7 @@ public final class HudManager {
                     others, r.screenWidth(), r.screenHeight());
             el.setScreenPos(r, p[0], p[1]);
             el.markPlaced();
+            if (onFirstPlaced != null) { Runnable r0 = onFirstPlaced; onFirstPlaced = null; r0.run(); }
         }
     }
 

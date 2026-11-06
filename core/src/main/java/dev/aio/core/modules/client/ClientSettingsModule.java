@@ -33,6 +33,7 @@ public final class ClientSettingsModule extends Module {
     public final BooleanSetting telemetry;
     /** Ob der Erststart-Hinweis zur Statistik schon weggeklickt wurde (versteckt). */
     public final BooleanSetting telemetryNoticeSeen;
+    public final BooleanSetting hudHintSeen;
 
     public ClientSettingsModule() {
         super("client", "Client", "Menu key, server compatibility and look", Category.CLIENT, false);
@@ -46,6 +47,8 @@ public final class ClientSettingsModule extends Module {
         telemetry = add(new BooleanSetting("telemetry", "Send anonymous usage statistics", true));
         telemetryNoticeSeen = add(new BooleanSetting("telemetryNoticeSeen", "Stats notice seen", false));
         telemetryNoticeSeen.hidden();
+        hudHintSeen = add(new BooleanSetting("hudHintSeen", "HUD hint seen", false));
+        hudHintSeen.hidden();
         preferOtherMods = add(new BooleanSetting("preferOtherMods", "Defer to other mods", true));
         toggleMessages = add(new BooleanSetting("toggleMessages", "Message when toggling", true));
         rainbowAccent = add(new BooleanSetting("rainbowAccent", "Rainbow accent", false));

@@ -675,6 +675,7 @@
   "aio.ui.hud_editor.selected_count": "%s selected",
   "aio.ui.hud_editor.settings": "Settings",
   "aio.ui.hud_editor.title": "HUD Editor",
+  "aio.ui.hud_hint": "Tip: you can move HUD elements. Open the AIO menu and click \"Edit HUD layout\".",
   "aio.ui.key_binds.click_a_key_to_change": "Click a key to change it · Scroll: browse",
   "aio.ui.key_binds.key_binds": "Key Binds",
   "aio.ui.key_binds.nothing_found": "Nothing found.",
