@@ -9,6 +9,7 @@ import dev.aio.core.hud.HudManager;
 import dev.aio.core.i18n.Lang;
 import dev.aio.core.module.Module;
 import dev.aio.core.module.ModuleRegistry;
+import dev.aio.core.stats.Stats;
 import dev.aio.core.modules.chat.ChatHeadsModule;
 import dev.aio.core.modules.chat.ChatModule;
 import dev.aio.core.modules.chat.FlexChatModule;
@@ -98,6 +99,7 @@ public final class AioCore {
     private final HudManager hud;
     private final ServerCompat compat;
     private final ClickTracker clicks;
+    private final Stats stats;
     private ClientSettingsModule clientSettings;
 
     public AioCore(Platform platform, Path configDir) {
@@ -106,6 +108,7 @@ public final class AioCore {
         this.hud = new HudManager(modules);
         this.compat = new ServerCompat(modules);
         this.clicks = new ClickTracker(bus, System::nanoTime);
+        this.stats = new Stats(config, modules, System::currentTimeMillis);
     }
 
     public static AioCore init(Platform platform, Path configDir) {
@@ -194,6 +197,8 @@ public final class AioCore {
         for (Module m : modules.all()) m.attach(this);
         config.load();
         hud.init(bus);
+        stats.start();
+        bus.subscribe(Events.Tick.class, e -> stats.tick());
 
         bus.subscribe(Events.Tick.class, e -> config.tick());
         bus.subscribe(Events.Key.class, this::onKey, EventBus.PRIORITY_HIGH);
@@ -238,6 +243,7 @@ public final class AioCore {
     }
 
     public void shutdown() {
+        stats.flush();
         config.save();
     }
 
@@ -380,6 +386,8 @@ public final class AioCore {
     public ModuleRegistry modules() { return modules; }
 
     public ConfigManager config() { return config; }
+
+    public Stats stats() { return stats; }
 
     public HudManager hud() { return hud; }
 

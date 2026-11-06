@@ -29,6 +29,10 @@ public final class ClientSettingsModule extends Module {
     /** "AIO"-Knopf im Pause- und Titelmenü. */
     public final BooleanSetting menuButton;
     public final BooleanSetting rememberMenu;
+    /** Anonyme Nutzungsstatistik an bStats senden (abschaltbar; der Erststart-Hinweis erklärt es). */
+    public final BooleanSetting telemetry;
+    /** Ob der Erststart-Hinweis zur Statistik schon weggeklickt wurde (versteckt). */
+    public final BooleanSetting telemetryNoticeSeen;
 
     public ClientSettingsModule() {
         super("client", "Client", "Menu key, server compatibility and look", Category.CLIENT, false);
@@ -39,6 +43,9 @@ public final class ClientSettingsModule extends Module {
         allowList.visibleWhen(() -> compatMode.get() == CompatMode.AUTO);
         menuButton = add(new BooleanSetting("menuButton", "AIO button in menus", true));
         rememberMenu = add(new BooleanSetting("rememberMenu", "Reopen where you left off", true));
+        telemetry = add(new BooleanSetting("telemetry", "Send anonymous usage statistics", true));
+        telemetryNoticeSeen = add(new BooleanSetting("telemetryNoticeSeen", "Stats notice seen", false));
+        telemetryNoticeSeen.hidden();
         preferOtherMods = add(new BooleanSetting("preferOtherMods", "Defer to other mods", true));
         toggleMessages = add(new BooleanSetting("toggleMessages", "Message when toggling", true));
         rainbowAccent = add(new BooleanSetting("rainbowAccent", "Rainbow accent", false));
