@@ -40,6 +40,12 @@ public interface Renderer {
     /** Zeichnet ein Sprite aus dem GUI-Atlas, z. B. {@code minecraft:mob_effect/speed}. */
     void sprite(String id, float x, float y, int width, int height);
 
+    /**
+     * Zeichnet ein Pixelbild (ARGB, w×h) skaliert nach dw×dh. Das Bild wird nur neu hochgeladen,
+     * wenn sich {@code version} geändert hat; so kostet es pro Frame nur ein Rechteck.
+     */
+    default void image(String key, int[] argb, int w, int h, int version, float x, float y, float dw, float dh) {}
+
     /** Sprite mit Farbe/Transparenz (ARGB-Multiplikator). */
     default void sprite(String id, float x, float y, int width, int height, int argb) { sprite(id, x, y, width, height); }
 
