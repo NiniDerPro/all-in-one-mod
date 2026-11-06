@@ -71,6 +71,8 @@ public final class WaypointsModule extends HudElement {
         maxDistance = add(new NumberSetting("maxDistance", "Max distance", 0, 0, 10000, 100, " m (0 = ∞)"));
         markerStyle = add(new EnumSetting<>("markerStyle", "Marker", MarkerStyle.DOT));
         alwaysNames = add(new BooleanSetting("alwaysNames", "Always show names", false));
+        importShared = add(new BooleanSetting("importShared", "Add waypoints shared in chat", true));
+        on(Events.ChatReceived.class, e -> { if (importShared.on() && !e.fromSelf()) importShared(e.text()); });
         on(Events.Key.class, e -> {
             if (!e.isPress() || e.screenOpen()) return;
             if (addKey.triggeredBy(platform(), e.key())) platform().openScreen(new WaypointEditScreen(core, this, null));
@@ -79,6 +81,25 @@ public final class WaypointsModule extends HudElement {
         data.onChange(v -> { if (!saving && core != null && loaded) load(); });
     }
 
+
+    private final BooleanSetting importShared;
+
+    /** Im Chat geteilte Wegpunkte (Xaero-Textformat) übernehmen und kurz Bescheid geben. */
+    private void importShared(String text) {
+        for (SharedWaypoint.Found f : SharedWaypoint.parse(text)) {
+            String dim = f.dimension() != null ? f.dimension() : platform().dimension();
+            String world = platform().worldKey();
+            int y = f.y() != null ? f.y() : (int) Math.floor(platform().playerPos().y());
+            boolean known = false;
+            for (Waypoint w : inThisWorld()) {
+                if (w.x() == f.x() && w.z() == f.z() && w.dimension().equals(dim)) known = true;
+            }
+            if (known) continue;
+            add(new Waypoint(f.name(), f.x(), y, f.z(), world, dim, f.color(), true, false));
+            platform().notify(dev.aio.core.i18n.Lang.tr("aio.ui.waypoints.shared_added", "Waypoint \"%s\" added (%s %s %s)",
+                    f.name(), f.x(), y, f.z()));
+        }
+    }
 
     @Override protected void onActivate() { load(); }
 
