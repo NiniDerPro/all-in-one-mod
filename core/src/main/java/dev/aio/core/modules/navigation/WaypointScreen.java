@@ -46,7 +46,7 @@ public final class WaypointScreen implements UiScreen {
         int px = (w - pw) / 2, py = (h - ph) / 2;
         Window.frame(r, px, py, px + pw, py + ph);
         Window.title(r, Lang.tr("aio.ui.waypoint.waypoints", "Waypoints"), px + 10, py + 9);
-        button(r, mx, my, px + pw - 110, py + 6, px + pw - 8, py + 20, Lang.tr("aio.ui.waypoint.add_here", "+ Add here"), true,
+        button(r, mx, my, px + pw - 110, py + 6, px + pw - 8, py + 20, Lang.tr("aio.ui.waypoint.add_here", "Add here"), true,
                 b -> core.platform().openScreen(new WaypointEditScreen(core, module, null)));
 
         List<Waypoint> list = module.inThisWorld();
@@ -86,18 +86,18 @@ public final class WaypointScreen implements UiScreen {
             });
         }
         String coords = wp.x() + " " + wp.y() + " " + wp.z() + (wp.dimension().equals(dim) ? "" : "  (" + dimName(wp.dimension()) + ")");
-        boolean ch = mx >= x + 146 && mx <= x + 146 + r.textWidth(coords) + 8 && my >= y + 4 && my <= y + 18;
-        r.text(coords + (ch ? "  ✎" : ""), x + 150, y + 7, ch ? Theme.TEXT : Theme.TEXT_DIM, false);
-        hitClipped(x + 146, y + 4, x + 146 + r.textWidth(coords) + 14, y + 18, top, bottom,
-                b -> core.platform().openScreen(new WaypointEditScreen(core, module, wp)));
+        r.text(coords, x + 150, y + 7, Theme.TEXT_DIM, false);
         if (wp.dimension().equals(dim)) {
             String d = WaypointsModule.formatDistance(wp.distanceTo(pos.x(), pos.y(), pos.z()));
-            r.text(d, x + w - 92 - r.textWidth(d), y + 7, Theme.TEXT_MUTED, false);
+            r.text(d, x + w - 104 - r.textWidth(d), y + 7, Theme.TEXT_MUTED, false);
         }
-        button(r, mx, my, x + w - 86, y + 4, x + w - 46, y + 18, wp.visible() ? Lang.tr("aio.ui.waypoint.off", "Off") : Lang.tr("aio.ui.waypoint.on", "On"), false,
+        // Ein/Aus, Stift (bearbeiten), Mülleimer (löschen mit Rückfrage)
+        button(r, mx, my, x + w - 98, y + 4, x + w - 58, y + 18, wp.visible() ? Lang.tr("aio.ui.waypoint.on", "On") : Lang.tr("aio.ui.waypoint.off", "Off"), wp.visible(),
                 b -> module.replace(wp, wp.withVisible(!wp.visible())), top, bottom);
+        iconButton(r, mx, my, x + w - 54, y + 4, Draw.PENCIL, false, Theme.TEXT,
+                b -> core.platform().openScreen(new WaypointEditScreen(core, module, wp)), top, bottom);
         boolean confirm = confirmDelete == wp;
-        button(r, mx, my, x + w - 42, y + 4, x + w - 4, y + 18, confirm ? Lang.tr("aio.ui.waypoint.sure", "Sure?") : "✖", false, b -> {
+        iconButton(r, mx, my, x + w - 28, y + 4, Draw.TRASH, confirm, confirm ? 0xFFFFFFFF : Theme.DANGER, b -> {
             if (confirmDelete == wp) {
                 module.remove(wp);
                 confirmDelete = null;
@@ -105,6 +105,14 @@ public final class WaypointScreen implements UiScreen {
                 confirmDelete = wp;
             }
         }, top, bottom);
+    }
+
+    /** Quadratischer Knopf (24 × 14) mit Symbol; {@code hot} färbt ihn rot ein (Löschen bestätigen). */
+    private void iconButton(Renderer r, int mx, int my, float x, float y, String[] icon, boolean hot, int color, IntConsumer action, int cy1, int cy2) {
+        boolean hover = mx >= x && mx <= x + 24 && my >= y && my <= y + 14;
+        Draw.round(r, x, y, x + 24, y + 14, 2, hot ? Theme.DANGER : hover ? 0xFF33333E : 0xFF24242C);
+        Draw.icon(r, icon, x + 8, y + 3, color);
+        if (my >= cy1 && my <= cy2) hits.add(new Hit(x, Math.max(y, cy1), x + 24, Math.min(y + 14, cy2), action));
     }
 
     private static String dimName(String dim) {
