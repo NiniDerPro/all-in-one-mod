@@ -317,7 +317,10 @@ public final class ClickGuiScreen implements UiScreen {
         r.text(r.trim(sub, right - sx), sx, y + 17, problem ? Theme.WARNING : Theme.TEXT_MUTED, false);
         if (hover) hint = problem ? sub : m.description();
         // Zeile öffnet die Einstellungen (Schalter wird später geprüft und gewinnt)
-        hits.add(hits.size() - (m.canToggle() ? 1 : 0), new Hit(x, y, x + w, y + ROW_H, clip, b -> openDrawer(m)));
+        hits.add(hits.size() - (m.canToggle() ? 1 : 0), new Hit(x, y, x + w, y + ROW_H, clip, b -> {
+            if (drawer == m && !clientDrawer) closeDrawer(); // zweiter Klick auf dieselbe Zeile schließt
+            else openDrawer(m);
+        }));
     }
 
     private float ghostButton(Renderer r, int mx, int my, float right, float y, String label, String[] icon, int accent,
