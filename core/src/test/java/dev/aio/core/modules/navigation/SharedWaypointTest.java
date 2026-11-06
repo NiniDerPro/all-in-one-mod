@@ -24,4 +24,12 @@ class SharedWaypointTest {
         assertTrue(SharedWaypoint.parse("xaero-waypoint:kaputt").isEmpty());
         assertTrue(SharedWaypoint.parse("hello world").isEmpty());
     }
+
+    @Test void payloadRoundTrips() {
+        var f = SharedWaypoint.parse("xaero-waypoint:Base:B:100:64:-200:4:false:0:Internal-the_nether-waypoints").get(0);
+        var g = SharedWaypoint.Found.fromPayload(f.payload());
+        assertEquals(f, g);
+        var m = SharedWaypoint.find("<Steve> xaero-waypoint:Base:B:100:64:-200:4:false:0:Internal-overworld-waypoints").get(0);
+        assertEquals(8, m.start());
+    }
 }

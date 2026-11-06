@@ -20,7 +20,37 @@ public final class SharedWaypoint {
 
     private static final Pattern XAERO = Pattern.compile("xaero[-_]waypoint:([^\\s]+)");
 
-    public record Found(String name, int x, Integer y, int z, int color, String dimension) {}
+    public record Found(String name, int x, Integer y, int z, int color, String dimension) {
+        /** Kurzform für den Klick-Befehl: name|x|y|z|farbe|dimension (y leer = aktuelle Höhe). */
+        public String payload() {
+            return name.replace("|", " ") + "|" + x + "|" + (y == null ? "" : y) + "|" + z + "|" + Integer.toHexString(color) + "|" + (dimension == null ? "" : dimension);
+        }
+
+        public static Found fromPayload(String s) {
+            String[] p = s.split("\\|", -1);
+            if (p.length < 6) return null;
+            try {
+                return new Found(p[0], Integer.parseInt(p[1]), p[2].isEmpty() ? null : Integer.valueOf(p[2]), Integer.parseInt(p[3]),
+                        Integer.parseInt(p[4], 16), p[5].isEmpty() ? null : p[5]);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+    }
+
+    /** Ein Treffer samt Textstelle, damit die Nachricht umgeschrieben werden kann. */
+    public record Match(Found waypoint, int start, int end) {}
+
+    public static List<Match> find(String text) {
+        List<Match> out = new ArrayList<>();
+        if (text == null) return out;
+        Matcher m = XAERO.matcher(text);
+        while (m.find()) {
+            Found f = one(m.group(1));
+            if (f != null) out.add(new Match(f, m.start(), m.end()));
+        }
+        return out;
+    }
 
     private SharedWaypoint() {}
 

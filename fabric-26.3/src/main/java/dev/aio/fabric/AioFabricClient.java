@@ -53,6 +53,7 @@ public final class AioFabricClient implements ClientModInitializer {
         FabricPlatform platform = new FabricPlatform(client);
         AioCore core = AioCore.init(platform, FabricLoader.getInstance().getConfigDir().resolve("aio"));
         Telemetry.init(core);
+        ChatWaypoints.register(core);
         FabricRenderer hudRenderer = new FabricRenderer(client);
 
         // Ganz oben über allen Vanilla-HUD-Elementen zeichnen (F1 blendet das HUD samt diesem Element aus).
