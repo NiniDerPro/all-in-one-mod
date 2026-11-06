@@ -698,7 +698,7 @@
   "aio.ui.menu.client_desc": "Menu key, look, server compatibility and profiles.",
   "aio.ui.menu.client_settings": "Client settings",
   "aio.ui.menu.client_title": "Client settings",
-  "aio.ui.menu.close_hint": "Esc  Close",
+  "aio.ui.menu.close": "Close",
   "aio.ui.menu.danger_zone": "Danger zone",
   "aio.ui.menu.delete": "Delete",
   "aio.ui.menu.disable_all": "Disable all",

@@ -757,26 +757,29 @@ public final class ClickGuiScreen implements UiScreen {
             hit(x, y + 2, x + 11, y + BOTTOM - 2, b -> cycleProfile(1));
         }
 
-        // Rechts: Meldung, Tooltip oder Tipp
-        String text;
-        int color;
+        // Ganz rechts: Schließen-Knopf mit rotem Rand; links davon Meldung oder Beschreibung
+        String label = Lang.tr("aio.ui.menu.close", "Close") + "  Esc";
+        float bw = 8 + 5 + r.textWidth(label) + 12, bx2 = px + pw - 6, bx1 = bx2 - bw, by1 = y + 2, by2 = y + BOTTOM - 2;
+        boolean hv = inside(mx, my, bx1, by1, bx2, by2);
+        Draw.round(r, bx1, by1, bx2, by2, 2, hv ? Colors.withAlpha(Theme.DANGER, 0x40) : 0x00000000);
+        Draw.roundOutline(r, bx1, by1, bx2, by2, Colors.withAlpha(Theme.DANGER, hv ? 0xFF : 0xA0));
+        Draw.icon(r, Draw.CLOSE, bx1 + 5, ty - 1, hv ? Theme.DANGER : Colors.withAlpha(Theme.DANGER, 0xCC));
+        r.text(label, bx1 + 18, ty, hv ? Theme.TEXT : Theme.TEXT_DIM, false);
+        hit(bx1, by1, bx2, by2, b -> core.platform().closeScreen());
+
+        String text = null;
+        int color = Theme.TEXT_DIM;
         if (status != null && System.currentTimeMillis() < statusUntil) {
             text = status;
             color = statusColor;
         } else if (hint != null) {
             text = hint;
-            color = Theme.TEXT_DIM;
-        } else {
-            text = Lang.tr("aio.ui.menu.close_hint", "Esc  Close");
-            color = Theme.TEXT_MUTED;
-            float cw = r.textWidth(text);
-            boolean hv = inside(mx, my, px + pw - 12 - cw, y + 2, px + pw - 4, y + BOTTOM - 2);
-            color = hv ? Theme.TEXT : Theme.TEXT_MUTED;
-            hit(px + pw - 12 - cw, y + 2, px + pw - 4, y + BOTTOM - 2, b -> core.platform().closeScreen());
         }
-        float maxW = px + pw - 8 - (x + 20);
-        String shown = r.trim(text, maxW);
-        r.text(shown, px + pw - 8 - r.textWidth(shown), ty, color, false);
+        if (text != null) {
+            float maxW = bx1 - 14 - (x + 20);
+            String shown = r.trim(text, maxW);
+            r.text(shown, bx1 - 14 - r.textWidth(shown), ty, color, false);
+        }
     }
 
     // =====================================================================
