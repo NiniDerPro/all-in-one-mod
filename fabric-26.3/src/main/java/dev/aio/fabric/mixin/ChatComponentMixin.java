@@ -23,6 +23,7 @@ public abstract class ChatComponentMixin {
     private Component aio$timestamp(Component message) {
         AioCore core = AioCore.get();
         if (core == null) return message;
+        message = dev.aio.fabric.ChatWaypointsBridge.rewrite(core, message);
         String prefix = core.module(ChatModule.class).timestampPrefix();
         if (prefix == null) return message;
         return Component.literal(prefix).withStyle(ChatFormatting.GRAY).append(message);
