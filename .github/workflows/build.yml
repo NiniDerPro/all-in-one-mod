@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,3 +25,19 @@ jobs:
         with:
           name: aio-client
           path: fabric-*/build/libs/*.jar
+
+      # Jar direkt als Release-Datei (keine ZIP): ein Release pro Version, z. B. v0.2.0
+      - name: Release mit Jar
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VER=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
+          TAG="v$VER"
+          PRE=""; case "$VER" in 0.*) PRE="--prerelease";; esac
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" fabric-*/build/libs/*.jar --clobber
+          else
+            gh release create "$TAG" fabric-*/build/libs/*.jar --target "$GITHUB_SHA" \
+              --title "AIO ClientSide $VER" --notes "Build $VER" $PRE
+          fi
