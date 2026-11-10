@@ -43,3 +43,8 @@ jobs:
             gh release create "$TAG" fabric-*/build/libs/*.jar --target "$GITHUB_SHA" \
               --title "AIO ClientSide $VER (Minecraft $MC)" --notes "Build $VER" $PRE
           fi
+      - name: Altes Release aufräumen
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/26.')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release delete v0.2.1 --cleanup-tag -y || true
