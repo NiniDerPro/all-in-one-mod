@@ -11,7 +11,7 @@ version = "${project.mod_version}+mc${project.minecraft_version}"
 group = project.maven_group
 
 base {
-    archivesName = 'aio-client'
+    archivesName = 'aio-clientside'
 }
 
 java {
