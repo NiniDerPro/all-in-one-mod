@@ -1,120 +1,159 @@
 package dev.aio.fabric;
 
+import com.google.gson.Gson;
+
 import dev.aio.core.AioCore;
+import dev.aio.fabric.compat.HookStatus;
+import dev.aio.fabric.compat.ModConflicts;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Anonyme Online-Statistik über bStats – nur aggregierte Zahlen, keine Namen, keine IPs bei uns
- * (bStats verwirft die IP sofort). Sendet nur, wenn der Nutzer "Send anonymous usage statistics"
- * anlässt (standardmäßig aus, Opt-in per Hinweis beim ersten Start) und eine gültige bStats-Service-ID gesetzt ist.
- *
- * <p>bStats wird über Reflection angesprochen, damit die Mod auch ohne die bStats-Bibliothek baut und
- * läuft (dann passiert hier schlicht nichts, die lokale Statistik läuft weiter). Zum Scharfschalten:
- * bStats ins Jar einbinden (siehe {@code docs/TELEMETRY.md}) und {@link #SERVICE_ID} auf die eigene
- * bStats-Service-ID setzen.
+ * Anonyme Nutzungsstatistik an den eigenen Statistik-Server. Sendet nur, wenn der Nutzer "Send
+ * anonymous usage statistics" eingeschaltet hat (standardmäßig aus, Opt-in über den Hinweis beim
+ * ersten Start) und {@link #ENDPOINT} gesetzt ist. Details und die komplette Feldliste:
+ * {@code docs/TELEMETRY.md}. Gesendet werden nur technische Zahlen, nie Name, UUID, IP, Server,
+ * Koordinaten oder Chat.
  */
 final class Telemetry {
     private Telemetry() {}
 
-    /**
-     * Eigene bStats-Service-ID (auf bStats.org beim Anlegen des Mod-Eintrags vergeben). 0 = aus:
-     * solange hier 0 steht, wird nichts gesendet, auch wenn der Schalter an ist.
-     */
-    private static final int SERVICE_ID = 0;
+    /** Adresse des Statistik-Servers (HTTPS). Leer = es wird nichts gesendet. */
+    private static final String ENDPOINT = "";
 
+    private static final long FIRST_DELAY_S = 90;
+    private static final long PERIOD_MIN = 10;
+
+    private static final Gson GSON = new Gson();
     private static AioCore core;
-    private static Object metrics;
-    private static boolean bstatsMissingLogged;
+    private static ScheduledExecutorService scheduler;
+    private static HttpClient http;
+
+    // Leistung dieser Sitzung (nur Zähler, keine Einzelwerte)
+    private static long fpsSum, fpsCount;
+    private static int fpsMin = Integer.MAX_VALUE;
+    private static int tickCounter;
+    private static final long startedMs = System.currentTimeMillis();
 
     static void init(AioCore aioCore) {
         core = aioCore;
-        core.clientSettings().telemetry.onChange(on -> {
-            if (on) start();
-            else stop();
+        if (ENDPOINT.isEmpty() || !ENDPOINT.startsWith("https://")) return;
+        scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "aio-stats");
+            t.setDaemon(true);
+            return t;
         });
-        if (core.clientSettings().telemetry.on()) start();
+        scheduler.scheduleWithFixedDelay(Telemetry::sendSafely, FIRST_DELAY_S, PERIOD_MIN * 60, TimeUnit.SECONDS);
     }
 
-    private static synchronized void start() {
-        if (metrics != null || SERVICE_ID <= 0) return;
-        ModContainer mod = FabricLoader.getInstance().getModContainer("aio").orElse(null);
-        if (mod == null) return;
+    /** Jeden Client-Tick: alle 5 Sekunden die FPS in die Sitzungs-Zähler aufnehmen. */
+    static void tick(int fps) {
+        if (++tickCounter % 100 != 0 || fps <= 0) return;
+        fpsSum += fps;
+        fpsCount++;
+        if (fps < fpsMin) fpsMin = fps;
+    }
+
+    private static void sendSafely() {
         try {
-            Class<?> metricsCls = Class.forName("org.bstats.fabric.Metrics");
-            Constructor<?> ctor = metricsCls.getConstructor(ModContainer.class, int.class);
-            Object m = ctor.newInstance(mod, SERVICE_ID);
-            Class<?> chartCls = Class.forName("org.bstats.charts.CustomChart");
-            Method add = metricsCls.getMethod("addCustomChart", chartCls);
-
-            add.invoke(m, intChart("active_modules", () -> core.stats().activeModuleCount()));
-            add.invoke(m, intChart("peak_active_modules", () -> core.stats().peakActiveModules()));
-            add.invoke(m, pie("most_used_module", Telemetry::mostUsedModule));
-            add.invoke(m, advancedPie("modules_in_use", Telemetry::modulesInUse));
-
-            metrics = m;
-            AioFabricClient.LOGGER.info("[aio] Anonymous statistics (bStats) started");
-        } catch (ClassNotFoundException e) {
-            if (!bstatsMissingLogged) {
-                bstatsMissingLogged = true;
-                AioFabricClient.LOGGER.info("[aio] bStats not bundled; only local statistics are kept");
-            }
-        } catch (ReflectiveOperationException | RuntimeException e) {
-            AioFabricClient.LOGGER.warn("[aio] Could not start anonymous statistics", e);
+            if (core == null || !core.clientSettings().telemetry.on()) return;
+            if (http == null) http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+            HttpRequest req = HttpRequest.newBuilder(URI.create(ENDPOINT))
+                    .timeout(Duration.ofSeconds(10))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(payload())))
+                    .build();
+            http.send(req, HttpResponse.BodyHandlers.discarding());
+        } catch (Exception ignored) {
+            // Statistik darf das Spiel nie stören: Fehler werden still verworfen
         }
     }
 
-    private static synchronized void stop() {
-        if (metrics == null) return;
-        try {
-            metrics.getClass().getMethod("shutdown").invoke(metrics);
-        } catch (ReflectiveOperationException | RuntimeException ignored) {
-            // kein shutdown verfügbar: nächster Neustart sendet dann einfach nicht mehr
-        }
-        metrics = null;
-    }
+    /** Alles, was gesendet wird. Nur technische, anonyme Werte. */
+    static Map<String, Object> payload() {
+        Map<String, Object> p = new LinkedHashMap<>();
+        p.put("schema", 1);
+        p.put("installId", core.stats().installId());
 
-    /** Am längsten genutztes Modul, für die "meistgenutzt"-Grafik. */
-    private static String mostUsedModule() {
-        String best = "none";
-        long bestMs = 0;
-        for (Map.Entry<String, Long> e : core.stats().moduleMillis().entrySet()) {
-            if (e.getValue() > bestMs) {
-                bestMs = e.getValue();
-                best = e.getKey();
-            }
-        }
-        return best;
-    }
+        // Versionen
+        Map<String, Object> ver = new LinkedHashMap<>();
+        ver.put("mod", FabricLoader.getInstance().getModContainer("aio")
+                .map(ModContainer::getMetadata).map(m -> m.getVersion().getFriendlyString()).orElse("?"));
+        ver.put("minecraft", FabricLoader.getInstance().getModContainer("minecraft")
+                .map(m -> m.getMetadata().getVersion().getFriendlyString()).orElse("?"));
+        ver.put("loader", FabricLoader.getInstance().getModContainer("fabricloader")
+                .map(m -> m.getMetadata().getVersion().getFriendlyString()).orElse("?"));
+        ver.put("java", System.getProperty("java.specification.version", "?"));
+        ver.put("os", os());
+        p.put("versions", ver);
 
-    /** Welche Module gerade aktiv sind (je 1), damit bStats über alle Nutzer zählt, was beliebt ist. */
-    private static Map<String, Integer> modulesInUse() {
-        Map<String, Integer> out = new LinkedHashMap<>();
+        // Nutzung
+        Map<String, Object> use = new LinkedHashMap<>();
+        use.put("launches", core.stats().launches());
+        use.put("playHours", bucketHours(core.stats().totalPlayMillis()));
+        use.put("sessionMinutes", (System.currentTimeMillis() - startedMs) / 60_000);
+        p.put("usage", use);
+
+        // Module: aktive plus grobe Nutzungsdauer je Modul
+        List<String> active = new ArrayList<>();
         core.modules().all().forEach(m -> {
-            if (m.canToggle() && m.isActive()) out.put(m.id(), 1);
+            if (m.canToggle() && m.isActive()) active.add(m.id());
         });
-        return out;
+        Map<String, String> durations = new LinkedHashMap<>();
+        core.stats().moduleMillis().forEach((id, ms) -> durations.put(id, bucketHours(ms)));
+        Map<String, Object> modules = new LinkedHashMap<>();
+        modules.put("active", active);
+        modules.put("activeCount", active.size());
+        modules.put("peakActive", core.stats().peakActiveModules());
+        modules.put("hours", durations);
+        p.put("modules", modules);
+
+        // Kompatibilität und Fehler
+        Map<String, Object> compat = new LinkedHashMap<>();
+        compat.put("deferredTo", ModConflicts.installed()); // Modul -> Name der Mod, die Vorrang hat
+        compat.put("brokenHooks", new ArrayList<>(HookStatus.broken().keySet()));
+        compat.put("missingMixins", HookStatus.missing());
+        compat.put("compatMode", core.clientSettings().compatMode.get().name());
+        p.put("compat", compat);
+
+        // Leistung (Durchschnitt/Minimum dieser Sitzung)
+        Map<String, Object> perf = new LinkedHashMap<>();
+        perf.put("avgFps", fpsCount == 0 ? 0 : Math.round((float) fpsSum / fpsCount));
+        perf.put("minFps", fpsCount == 0 ? 0 : fpsMin);
+        perf.put("samples", fpsCount);
+        p.put("performance", perf);
+        return p;
     }
 
-    private static Object intChart(String id, Callable<Integer> value) throws ReflectiveOperationException {
-        return Class.forName("org.bstats.charts.SingleLineChart")
-                .getConstructor(String.class, Callable.class).newInstance(id, value);
+    private static String os() {
+        String n = System.getProperty("os.name", "").toLowerCase();
+        if (n.contains("win")) return "windows";
+        if (n.contains("mac") || n.contains("darwin")) return "macos";
+        if (n.contains("linux")) return "linux";
+        return "other";
     }
 
-    private static Object pie(String id, Callable<String> value) throws ReflectiveOperationException {
-        return Class.forName("org.bstats.charts.SimplePie")
-                .getConstructor(String.class, Callable.class).newInstance(id, value);
-    }
-
-    private static Object advancedPie(String id, Callable<Map<String, Integer>> value) throws ReflectiveOperationException {
-        return Class.forName("org.bstats.charts.AdvancedPie")
-                .getConstructor(String.class, Callable.class).newInstance(id, value);
+    /** Dauer in grobe Gruppen, damit keine exakten Zeiten übertragen werden. */
+    private static String bucketHours(long ms) {
+        double h = ms / 3_600_000.0;
+        if (h < 1) return "<1";
+        if (h < 10) return "1-10";
+        if (h < 50) return "10-50";
+        if (h < 200) return "50-200";
+        return "200+";
     }
 }

@@ -110,6 +110,7 @@ public final class AioFabricClient implements ClientModInitializer {
             LightOverlay.tick(core, c);
             DynamicLights.tick(c);
             DevSelfTest.tick(core, c);
+            Telemetry.tick(c.getFps());
             long t0 = System.nanoTime();
             platform.saveOptionsIfDirty();
             core.bus().post(Events.Tick.INSTANCE);
