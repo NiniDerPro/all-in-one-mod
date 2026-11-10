@@ -6,6 +6,14 @@ const i = (v) => (Number.isFinite(v) ? Math.max(0, Math.min(1e9, Math.trunc(v)))
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { "content-type": "application/json", "access-control-allow-origin": "*" } });
 
 export default {
+  async scheduled(_event, env) {
+    const cut = Date.now() - 395 * 86400000;
+    await env.DB.batch([
+      env.DB.prepare("DELETE FROM module_use WHERE install_id IN (SELECT install_id FROM installs WHERE last_seen < ?)").bind(cut),
+      env.DB.prepare("DELETE FROM issues WHERE install_id IN (SELECT install_id FROM installs WHERE last_seen < ?)").bind(cut),
+      env.DB.prepare("DELETE FROM installs WHERE last_seen < ?").bind(cut),
+    ]);
+  },
   async fetch(req, env) {
     const url = new URL(req.url);
     if (req.method === "POST" && url.pathname === "/v1/ping") return ping(req, env);

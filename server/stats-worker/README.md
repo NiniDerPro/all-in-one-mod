@@ -13,3 +13,5 @@ Its public address is kept out of the repository (build-time secret `AIO_STATS_U
 
 `GET /admin` serves a small dashboard page (`dashboard.html`, embedded in `worker.js`). The page
 itself holds no data; it asks for the admin token and loads `/v1/stats`.
+
+A daily cron (`17 3 * * *`) deletes installs not seen for 395 days (about 13 months).
