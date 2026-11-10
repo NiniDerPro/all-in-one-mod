@@ -10,3 +10,6 @@ Deploy: `wrangler deploy` (config: name `aio-stats`, `main = "worker.js"`, D1 bi
 
 The worker answers everything except a valid ping / authorised stats request with an empty 404.
 Its public address is kept out of the repository (build-time secret `AIO_STATS_URL`).
+
+`GET /admin` serves a small dashboard page (`dashboard.html`, embedded in `worker.js`). The page
+itself holds no data; it asks for the admin token and loads `/v1/stats`.
