@@ -44,7 +44,7 @@ public final class ClientSettingsModule extends Module {
         allowList.visibleWhen(() -> compatMode.get() == CompatMode.AUTO);
         menuButton = add(new BooleanSetting("menuButton", "AIO button in menus", true));
         rememberMenu = add(new BooleanSetting("rememberMenu", "Reopen where you left off", true));
-        telemetry = add(new BooleanSetting("telemetry", "Send anonymous usage statistics", true));
+        telemetry = add(new BooleanSetting("telemetry", "Send anonymous usage statistics", false));
         telemetryNoticeSeen = add(new BooleanSetting("telemetryNoticeSeen", "Stats notice seen", false));
         telemetryNoticeSeen.hidden();
         hudHintSeen = add(new BooleanSetting("hudHintSeen", "HUD hint seen", false));

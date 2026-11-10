@@ -7,9 +7,8 @@ import dev.aio.core.ui.Draw;
 import dev.aio.core.ui.Theme;
 
 /**
- * Einmaliger Hinweis oben im Titelbildschirm, dass AIO anonyme Nutzungsstatistik sendet, mit einem
- * Knopf zum AIO-Menü (zum Abschalten) und einem zum Wegklicken. Erst wenn er weggeklickt wurde,
- * kommt er nie wieder. So ist das Senden offengelegt, bleibt aber unaufdringlich.
+ * Einmaliger Hinweis oben im Titelbildschirm, dass AIO anonyme Nutzungsstatistik sendet, Anonyme Statistik ist standardmäßig AUS;
+ * "Okay" schaltet sie ein, "No thanks" lässt sie aus. Danach kommt der Hinweis nie wieder. So ist das Senden offengelegt, bleibt aber unaufdringlich.
  */
 final class StatsNotice {
     private StatsNotice() {}
@@ -30,7 +29,7 @@ final class StatsNotice {
     private static float[][] buttons(int screenW) {
         float[] b = box(screenW);
         float by = b[3] - 17, bh = 13;
-        float aioW = 54, okW = 70, gap = 6;
+        float aioW = 60, okW = 70, gap = 6;
         float total = aioW + gap + okW;
         float bx = (b[0] + b[2]) / 2f - total / 2f;
         return new float[][]{
@@ -47,14 +46,14 @@ final class StatsNotice {
         Draw.roundOutline(r, b[0], b[1], b[2], b[3], Theme.LINE);
         Draw.round(r, b[0], b[1], b[0] + 3, b[3], 1, accent);
         float cx = (b[0] + b[2]) / 2f;
-        r.centeredText(Lang.tr("aio.ui.stats_notice.line1", "AIO collects anonymous usage data for public statistics."),
+        r.centeredText(Lang.tr("aio.ui.stats_notice.line1", "Share anonymous usage data for public statistics?"),
                 cx, b[1] + 6, Theme.TEXT, true);
-        r.centeredText(Lang.tr("aio.ui.stats_notice.line2", "You can turn this off in the settings."),
+        r.centeredText(Lang.tr("aio.ui.stats_notice.line2", "No names or IPs. You can change this anytime in the settings."),
                 cx, b[1] + 17, Theme.TEXT_DIM, true);
 
         float[][] bt = buttons(screenW);
-        button(r, bt[0], accent, Lang.tr("aio.ui.stats_notice.open", "AIO"), true);
-        button(r, bt[1], accent, Lang.tr("aio.ui.stats_notice.ok", "Got it"), false);
+        button(r, bt[0], accent, Lang.tr("aio.ui.stats_notice.accept", "Okay"), true);
+        button(r, bt[1], accent, Lang.tr("aio.ui.stats_notice.decline", "No thanks"), false);
     }
 
     private static void button(Renderer r, float[] bt, int accent, String label, boolean primary) {
@@ -74,8 +73,8 @@ final class StatsNotice {
             return mx >= b[0] && mx <= b[2] && my >= b[1] && my <= b[3]; // Klick im Banner nicht durchreichen
         }
         core.clientSettings().telemetryNoticeSeen.set(true);
+        core.clientSettings().telemetry.set(inAio); // Okay = an, Nein danke = aus
         core.config().save();
-        if (inAio) core.openClickGui(core.clientSettings());
         return true;
     }
 
