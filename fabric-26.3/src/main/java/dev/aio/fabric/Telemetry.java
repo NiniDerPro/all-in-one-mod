@@ -32,8 +32,20 @@ import java.util.concurrent.TimeUnit;
 final class Telemetry {
     private Telemetry() {}
 
-    /** Adresse des Statistik-Servers (HTTPS). Leer = es wird nichts gesendet. */
-    private static final String ENDPOINT = "https://aio-stats.aioclientside.workers.dev/v1/ping";
+    /**
+     * Adresse des Statistik-Servers (HTTPS). Steht bewusst nicht im Quelltext: der Build schreibt sie
+     * aus der Umgebungsvariable {@code AIO_STATS_URL} in die Datei {@code aio_stats_url.txt}. Ohne
+     * diese Variable (z. B. bei eigenen Builds) ist sie leer und es wird nichts gesendet.
+     */
+    private static final String ENDPOINT = loadEndpoint();
+
+    private static String loadEndpoint() {
+        try (var in = Telemetry.class.getResourceAsStream("/aio_stats_url.txt")) {
+            return in == null ? "" : new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).trim();
+        } catch (Exception e) {
+            return "";
+        }
+    }
 
     private static final long FIRST_DELAY_S = 90;
     private static final long PERIOD_MIN = 10;

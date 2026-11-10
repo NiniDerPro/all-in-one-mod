@@ -7,3 +7,6 @@ Receives the anonymous pings described in `docs/TELEMETRY.md`.
 
 Bindings: D1 database `DB`, secret `ADMIN_TOKEN`. Create the tables with `schema.sql`.
 Deploy: `wrangler deploy` (config: name `aio-stats`, `main = "worker.js"`, D1 binding `DB`).
+
+The worker answers everything except a valid ping / authorised stats request with an empty 404.
+Its public address is kept out of the repository (build-time secret `AIO_STATS_URL`).
