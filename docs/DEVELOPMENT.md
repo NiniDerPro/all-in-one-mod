@@ -1,4 +1,4 @@
-# AIO Client
+# AIO ClientSide
 
 Modularer, farbiger Minecraft-Client für **Minecraft 26.3** (Fabric) mit schlankem Kern,
 ähnlich Lunar/Badlion. Jedes Feature ist ein eigenes Modul, das sich nur über den Event-Bus einklinkt.
