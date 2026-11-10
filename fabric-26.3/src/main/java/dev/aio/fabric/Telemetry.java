@@ -33,7 +33,7 @@ final class Telemetry {
     private Telemetry() {}
 
     /** Adresse des Statistik-Servers (HTTPS). Leer = es wird nichts gesendet. */
-    private static final String ENDPOINT = "";
+    private static final String ENDPOINT = "https://aio-stats.aioclientside.workers.dev/v1/ping";
 
     private static final long FIRST_DELAY_S = 90;
     private static final long PERIOD_MIN = 10;
