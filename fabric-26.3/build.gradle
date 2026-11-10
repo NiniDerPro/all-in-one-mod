@@ -44,3 +44,12 @@ processResources {
 jar {
     from(project(':core').sourceSets.main.output)
 }
+
+// Adresse des Statistik-Servers kommt nur aus der Umgebung (CI-Secret), nicht aus dem Quelltext
+processResources {
+    def statsUrl = System.getenv('AIO_STATS_URL') ?: ''
+    inputs.property('statsUrl', statsUrl)
+    doLast {
+        new File(destinationDir, 'aio_stats_url.txt').text = statsUrl
+    }
+}

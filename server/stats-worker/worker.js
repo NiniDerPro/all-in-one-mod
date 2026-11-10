@@ -9,7 +9,7 @@ export default {
     const url = new URL(req.url);
     if (req.method === "POST" && url.pathname === "/v1/ping") return ping(req, env);
     if (req.method === "GET" && url.pathname === "/v1/stats") return stats(req, env);
-    return json({ error: "not found" }, 404);
+    return new Response(null, { status: 404 });
   },
 };
 
@@ -17,8 +17,8 @@ async function ping(req, env) {
   const text = await req.text();
   if (text.length > 20000) return json({ error: "too large" }, 413);
   let p;
-  try { p = JSON.parse(text); } catch { return json({ error: "bad json" }, 400); }
-  if (p.schema !== 1 || typeof p.installId !== "string" || !UUID.test(p.installId)) return json({ error: "bad payload" }, 400);
+  try { p = JSON.parse(text); } catch { return new Response(null, { status: 404 }); }
+  if (p.schema !== 1 || typeof p.installId !== "string" || !UUID.test(p.installId)) return new Response(null, { status: 404 });
   const now = Date.now();
   const id = p.installId.toLowerCase();
   const v = p.versions || {}, u = p.usage || {}, m = p.modules || {}, c = p.compat || {}, f = p.performance || {};
@@ -55,7 +55,7 @@ async function ping(req, env) {
 
 async function stats(req, env) {
   const auth = req.headers.get("authorization") || "";
-  if (!env.ADMIN_TOKEN || auth !== "Bearer " + env.ADMIN_TOKEN) return json({ error: "unauthorized" }, 401);
+  if (!env.ADMIN_TOKEN || auth !== "Bearer " + env.ADMIN_TOKEN) return new Response(null, { status: 404 });
   const now = Date.now();
   const q = (sql, ...b) => env.DB.prepare(sql).bind(...b).all().then((r) => r.results);
   const one = (sql, ...b) => env.DB.prepare(sql).bind(...b).first();

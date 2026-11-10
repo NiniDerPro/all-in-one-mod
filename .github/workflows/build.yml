@@ -21,6 +21,8 @@ jobs:
       - name: Kern testen
         run: ./gradlew :core:test -Paio.coreOnly=true
       - name: Mod bauen (alle Versionen)
+        env:
+          AIO_STATS_URL: ${{ secrets.AIO_STATS_URL }}
         run: ./gradlew build
       - uses: actions/upload-artifact@v4
         with:

@@ -6,8 +6,9 @@ Zusätzlich kann AIO **anonyme technische Zahlen** an einen eigenen Statistik-Se
 „Share anonymous usage data for public statistics?“ – **Okay** schaltet es ein, **No thanks** lässt es aus.
 Jederzeit änderbar unter **Client → Send anonymous usage statistics**.
 
-Gesendet wird nur, wenn der Schalter an ist **und** in `Telemetry.java` eine Server-Adresse (`ENDPOINT`,
-HTTPS) eingetragen ist. Ist sie leer, wird nichts gesendet.
+Gesendet wird nur, wenn der Schalter an ist **und** der Build eine Server-Adresse enthält. Die Adresse steht
+nicht im Quelltext; offizielle Builds bekommen sie beim Bauen aus einem Secret (`AIO_STATS_URL`), eigene Builds
+senden nichts.
 
 ## Was gesendet wird
 
@@ -31,6 +32,6 @@ Spielername, UUID, Account, IP-Adresse (der Server speichert sie nicht), Servern
 Chat, Dateien, Einstellungswerte, Tastenbelegungen.
 
 ## Server
-Der Server (Cloudflare Worker + D1, Quelltext in `server/stats-worker/`) nimmt `POST` mit JSON entgegen, speichert die Felder pro
+Der Server (Cloudflare Worker + D1, Quelltext in `server/stats-worker/`; die Adresse steht nicht im Repo, sie wird beim Bauen aus einem Secret eingesetzt) nimmt `POST` mit JSON entgegen, speichert die Felder pro
 Installations-ID (zuletzt gesehen) und wertet sie aus. Er darf keine IP-Adressen und keine
 Header außer den nötigen speichern.
