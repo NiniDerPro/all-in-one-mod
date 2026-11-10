@@ -1,0 +1,44 @@
+name: Bug report
+description: Something does not work as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting! Please fill in as much as you can.
+  - type: input
+    id: version
+    attributes:
+      label: AIO ClientSide version
+      description: For example 0.3.3 (see the jar file name)
+    validations:
+      required: true
+  - type: input
+    id: mc
+    attributes:
+      label: Minecraft / Fabric Loader / Fabric API version
+      placeholder: "26.3 / 0.19.5 / 0.165.0"
+    validations:
+      required: true
+  - type: input
+    id: module
+    attributes:
+      label: Which module?
+      placeholder: "e.g. Waypoints, Zoom, HUD editor"
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead? Steps to reproduce help a lot.
+    validations:
+      required: true
+  - type: textarea
+    id: mods
+    attributes:
+      label: Other installed mods
+      description: Especially minimap, HUD, zoom, inventory or performance mods.
+  - type: textarea
+    id: log
+    attributes:
+      label: Log or crash report
+      description: Paste `latest.log` or the crash report (or a link, e.g. mclo.gs).
+      render: text
