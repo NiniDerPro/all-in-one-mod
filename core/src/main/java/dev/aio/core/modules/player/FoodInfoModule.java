@@ -49,7 +49,7 @@ public final class FoodInfoModule extends Module {
 
     public boolean showValues() { return isActive() && values.on(); }
 
-    /** Blinken der Vorschau wie bei AppleSkin-ähnlichen Anzeigen: sanft pulsierend. */
+    /** Blinken der Vorschau: sanft pulsierend. */
     private static float pulse() {
         double t = (System.currentTimeMillis() % 1500) / 1500.0;
         return (float) (0.35 + 0.45 * (0.5 + 0.5 * Math.sin(t * Math.PI * 2)));

@@ -19,11 +19,9 @@ given out of courtesy.
   not redistributed in this mod. Fabric API: Apache License 2.0.
 - Gson (Apache License 2.0) is provided by Minecraft.
 
-## Not included
-Code or assets from Jade, EntityCulling, Meteor Client, Diorama, Xaero's mods, JourneyMap or
-VoxelMap are **not** part of this mod. The shared-waypoint chat feature reads the publicly visible
-chat text format only. Where one of those mods is installed, AIO defers to it and turns the
-overlapping module off.
+## Other mods
+No code or assets from other mods are included beyond what is listed above. Where another installed mod
+provides the same feature, AIO defers to it and turns the overlapping module off.
 
 "Minecraft" is a trademark of Mojang AB. AIO ClientSide is an unofficial mod and is not affiliated with
 or endorsed by Mojang or Microsoft.

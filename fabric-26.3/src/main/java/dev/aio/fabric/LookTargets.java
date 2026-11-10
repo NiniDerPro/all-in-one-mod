@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Was der Spieler gerade ansieht, aufbereitet für die Block-Info (Jade-Stil). */
+/** Was der Spieler gerade ansieht, aufbereitet für die Block-Info. */
 final class LookTargets {
     private final Minecraft client;
 
