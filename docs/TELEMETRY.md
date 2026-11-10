@@ -31,6 +31,6 @@ Spielername, UUID, Account, IP-Adresse (der Server speichert sie nicht), Servern
 Chat, Dateien, Einstellungswerte, Tastenbelegungen.
 
 ## Server
-Der Server (z. B. Cloudflare Worker + D1) nimmt `POST` mit JSON entgegen, speichert die Felder pro
+Der Server (Cloudflare Worker + D1, Quelltext in `server/stats-worker/`) nimmt `POST` mit JSON entgegen, speichert die Felder pro
 Installations-ID (zuletzt gesehen) und wertet sie aus. Er darf keine IP-Adressen und keine
 Header außer den nötigen speichern.
