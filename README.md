@@ -62,7 +62,7 @@ AIO keeps a small statistics file **on your computer only** (`config/aio/stats.j
 sends it by itself. On the first start AIO asks whether you want to share **anonymous** usage statistics
 (via bStats): **Okay** turns it on, **No thanks** keeps it off. It is **off by default** and can be changed
 anytime under *Client → Send anonymous usage statistics*. No names, accounts, IPs, servers, coordinates or
-chat are ever sent. Details: [`docs/TELEMETRY.md`](docs/TELEMETRY.md).
+chat are ever sent. Full privacy information: [`PRIVACY.md`](PRIVACY.md). Technical details: [`docs/TELEMETRY.md`](docs/TELEMETRY.md).
 
 ## Building
 
