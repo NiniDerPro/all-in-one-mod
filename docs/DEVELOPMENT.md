@@ -69,7 +69,7 @@ Server-Sperre = vom Server-Schutz sperrbar (Standard: Schutz aus).
 | Info | Biom, Tagzähler, Uhrzeit (Welt) | – | Biomname, „Tag 42“, Weltzeit mit ☀/☾ |
 | Info | Spielzeit | – | Aus der Statistik der Welt, z. B. „2 T 3 Std 14 Min“ |
 | Info | Server-Info | – | Name, IP, Ping, Spieler, Version, Software |
-| Info | Blick-Info | – | Wie Jade (Reichweite für Blöcke einstellbar): Icon, Name, Werkzeug ✔/✘, Wachstum, Entity-Typ, Herzen + HP, Rüstung, Mod; Block-Details nur beim passenden Block (Honig/Bienen, Komposter, Kessel, Seelenanker, Ackerboden, Redstone, Notenblock, …) |
+| Info | Blick-Info | – | Tooltip oben in der Mitte (Reichweite für Blöcke einstellbar): Icon, Name, Werkzeug ✔/✘, Wachstum, Entity-Typ, Herzen + HP, Rüstung, Mod; Block-Details nur beim passenden Block (Honig/Bienen, Komposter, Kessel, Seelenanker, Ackerboden, Redstone, Notenblock, …) |
 | Navigation | Kompass | – | Leiste oben oder rund, mit Wegpunkten |
 | Navigation | Wegpunkte | – | B = setzen, N = verwalten; Marker mit Name + Entfernung im Bild und am Rand; pro Welt und Dimension |
 | Navigation | Todespunkt | – | Wegpunkt beim Tod, verschwindet bei Ankunft |

@@ -16,10 +16,9 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Blick-Info im Stil von Jade/WAILA: Tooltip oben in der Mitte mit dem Block oder Wesen
+ * Blick-Info: Tooltip oben in der Mitte mit dem Block oder Wesen
  * unter dem Fadenkreuz. Zeigt Icon, Name, Werkzeug, Wachstum, Leben, Rüstung und die Mod.
  *
- * <p>Eigene Implementierung, kein Code aus Jade übernommen.
  */
 public final class LookAtModule extends HudElement {
     public enum Style implements EnumSetting.Named {
@@ -286,7 +285,7 @@ public final class LookAtModule extends HudElement {
     }
 
     /**
-     * Werkzeug wie bei Jade: kleines Item-Symbol rechts in der Namenszeile, darunter ✔ (grün, passt)
+     * Werkzeug: kleines Item-Symbol rechts in der Namenszeile, darunter ✔ (grün, passt)
      * oder ✕ (rot, ohne dieses Werkzeug kein Drop).
      */
     private void drawTool(Renderer r, float x, float y, boolean preview) {

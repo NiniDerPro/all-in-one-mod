@@ -9,7 +9,7 @@ import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.NumberSetting;
 
 /**
- * Zoom wie bei bekannten Zoom-Mods: Taste halten = sofort 3-fach, Mausrad zoomt weiter rein/raus
+ * Zoom: Taste halten = sofort 3-fach, Mausrad zoomt weiter rein/raus
  * (je ×1,1, 1× bis 50×, ohne den Hotbar-Slot zu wechseln). Die Maus wird so verlangsamt, als würde
  * die Empfindlichkeit durch die Zoomstufe geteilt; die Hand rückt mit aus dem Bild. Jeder neue
  * Druck beginnt wieder bei der Standardstufe.

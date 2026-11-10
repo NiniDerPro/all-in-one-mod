@@ -41,7 +41,7 @@ public record LookTarget(Kind kind, String name, String source, ItemRef icon, Bo
         toolIcon = toolIcon == null ? ItemRef.EMPTY : toolIcon;
     }
 
-    /** Mit Werkzeug-Symbol (das schwächste Werkzeug, das den Block abbaut), wie bei Jade neben dem Namen. */
+    /** Mit Werkzeug-Symbol (das schwächste Werkzeug, das den Block abbaut), neben dem Namen. */
     public LookTarget withToolIcon(ItemRef tool) {
         return new LookTarget(kind, name, source, icon, correctTool, toolType, growth, health, maxHealth, armor, x, y, z,
                 details, typeName, tool);

@@ -271,7 +271,7 @@ public final class WaypointsModule extends HudElement {
      * <ul>
      *   <li>Im Bild ein kleiner Punkt (oder auf Wunsch ein Symbol mit Anfangsbuchstaben wie bei Xaero).</li>
      *   <li>Zielt man darauf (oder "Always show names"), blendet die Beschriftung weich ein: Name in
-     *       der Wegpunktfarbe, Entfernung dahinter in Grau (wie JourneyMap).</li>
+     *       der Wegpunktfarbe, Entfernung dahinter in Grau.</li>
      *   <li>Der angezielte Marker wird etwas größer, nahe Marker (< 4 Blöcke) blenden aus.</li>
      *   <li>Außerhalb des Bildes ein kleiner Pfeil am Rand, der in die Richtung zeigt.</li>
      * </ul>
@@ -351,7 +351,7 @@ public final class WaypointsModule extends HudElement {
         r.translate(x, y);
         if (hovered) r.scale(1.3f);
         if (markerStyle.get() == MarkerStyle.ICON) {
-            // Quadrat mit Anfangsbuchstaben, wie bei Xaero
+            // Quadrat mit Anfangsbuchstaben
             String letter = wp.death() ? "✖" : wp.name().isEmpty() ? "?" : wp.name().substring(0, 1).toUpperCase(Locale.ROOT);
             int s = 5;
             r.fill(-s - 1, -s - 1, s + 1, s + 1, alpha(0xC0000000, a));
