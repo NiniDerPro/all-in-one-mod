@@ -1,0 +1,23 @@
+name: Suggestion
+description: An idea for a new module or an improvement
+labels: ["suggestion"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: What should AIO ClientSide do?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would it help?
+      description: When would you use it? Which mod do you use for this today (if any)?
+  - type: dropdown
+    id: fair
+    attributes:
+      label: Could it be an advantage on servers?
+      options:
+        - No / not sure
+        - Yes (should be blockable by the compatibility mode)
