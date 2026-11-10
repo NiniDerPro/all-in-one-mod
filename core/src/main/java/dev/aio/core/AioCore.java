@@ -88,7 +88,7 @@ import java.util.Set;
  * Der Adapter erzeugt genau eine Instanz über {@link #init(Platform, Path)}.
  */
 public final class AioCore {
-    public static final String NAME = "AIO Client";
+    public static final String NAME = "AIO ClientSide";
 
     private static AioCore instance;
 

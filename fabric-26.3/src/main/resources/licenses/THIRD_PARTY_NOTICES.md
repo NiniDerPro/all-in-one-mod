@@ -1,6 +1,6 @@
 # Third-party notices
 
-AIO Client is released under the MIT License (see `LICENSE`). It contains the following
+AIO ClientSide is released under the MIT License (see `LICENSE`). It contains the following
 third-party material or material derived from third-party work.
 
 ## Freecam — MIT License
@@ -25,5 +25,5 @@ VoxelMap are **not** part of this mod. The shared-waypoint chat feature reads th
 chat text format only. Where one of those mods is installed, AIO defers to it and turns the
 overlapping module off.
 
-"Minecraft" is a trademark of Mojang AB. AIO Client is an unofficial mod and is not affiliated with
+"Minecraft" is a trademark of Mojang AB. AIO ClientSide is an unofficial mod and is not affiliated with
 or endorsed by Mojang or Microsoft.

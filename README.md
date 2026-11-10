@@ -1,10 +1,29 @@
-# AIO Client
+# AIO ClientSide – All in One
 
-An all-in-one **client-side** mod for **Minecraft 26.3 (Fabric)**: 50+ small modules in one clean menu —
-HUD, PvP helpers, quality-of-life tweaks and information overlays. Every module can be switched on or
-off on its own, and a module costs nothing while it is off.
+> One mod instead of thirty: HUD, PvP and quality-of-life features in a single menu.
 
-> Client-side only. Install it on your own game, not on a server.
+Zoom, Freecam, HUD, waypoints, item browser, villager info, chat tools and more are normally spread over
+a pile of separate mods, each with its own menu, keybinds and updates. AIO ClientSide puts them in
+**one download** with **one menu**, and you switch on only what you want.
+
+- 50+ modules, each on/off on its own. A module costs nothing while it is off.
+- One menu, one search, one HUD editor, one config with profiles.
+- Already have a favourite mod for something? **It wins.** AIO turns only the overlapping module off.
+- Client-side only. Fabric, Minecraft 26.3.
+
+## What it replaces
+
+| Instead of a separate mod for… | …use the AIO module |
+|---|---|
+| FPS / CPS / Keystrokes / Armor HUD | HUD modules |
+| Zoom, Freelook, Freecam, Fullbright | Camera modules |
+| Waypoints, death point, compass | Navigation modules |
+| Look-at info, villager info, food values | Info modules |
+| Item list (recipe browser), mouse tweaks, sorting | Inventory modules |
+| Chat timestamps, copy, chat heads, resizable chat | Chat modules |
+| Entity culling, particle control, XP clumping | Performance modules |
+
+AIO is its own implementation; it does not contain the code of those mods.
 
 ## Highlights
 
@@ -22,7 +41,7 @@ off on its own, and a module costs nothing while it is off.
 ## Install
 
 1. Install Fabric Loader (0.16+) and **Fabric API** for Minecraft 26.3 (Java 25).
-2. Put the `aio-client-*.jar` into your `mods` folder.
+2. Put the `aio-clientside-*.jar` into your `mods` folder.
 3. Start the game. Open the menu with **Right Shift** (or the **AIO** button in the title and pause menu).
 
 ## Works with your other mods

@@ -49,7 +49,7 @@ public final class KeyBindIndex {
             for (Setting<?> s : m.settings()) {
                 if (s instanceof KeybindSetting k && !(k == m.toggleKey() && !m.canToggle()) && !k.isHidden()) {
                     list.add(new KeyBinding(AIO_PREFIX + m.id() + "." + k.id(), m.name() + ": " + k.name(),
-                            "AIO Client", k.key(), k.defaultValue()));
+                            "AIO ClientSide", k.key(), k.defaultValue()));
                 }
             }
         }
