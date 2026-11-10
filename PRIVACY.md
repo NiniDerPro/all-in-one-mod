@@ -57,4 +57,4 @@ Consent (GDPR Art. 6(1)(a)), given by clicking "Okay". You can withdraw it at an
 setting off.
 
 ## Changes
-If the data changes, this file and the in-game notice are updated, and the notice is shown again.
+If the collected data changes, this file is updated before the new version is released.
