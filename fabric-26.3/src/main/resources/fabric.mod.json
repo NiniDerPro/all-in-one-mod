@@ -3,8 +3,9 @@
   "id": "aio",
   "version": "${version}",
   "name": "AIO Client",
-  "description": "Modularer PvP-/QoL-Client: farbiges HUD (FPS, CPS, Keystrokes, ArmorHUD, ...), Freelook, Zoom und mehr. Mit Server-Kompatibilitätsmodus.",
+  "description": "Modular PvP/QoL client: HUD, zoom, freecam, waypoints, item browser and 50+ more modules. Defers to other mods and has a server compatibility mode.",
   "authors": ["niniderpro"],
+  "license": "MIT",
   "environment": "client",
   "entrypoints": {
     "client": ["dev.aio.fabric.AioFabricClient"]

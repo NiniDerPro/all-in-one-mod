@@ -19,10 +19,9 @@ Gesendet werden nur anonyme, aggregierte Zahlen:
 **Nicht** gesendet werden: Spielername, UUID, IP, Server, Koordinaten, Chat – nichts
 Persönliches. bStats verwirft die IP sofort beim Empfang.
 
-Der Nutzer sieht beim ersten Start oben im Titelbildschirm den Hinweis
-„AIO collects anonymous usage data for public statistics“ und kann es jederzeit unter
-**Client → Send anonymous usage statistics** abschalten (Opt-out). Das ist der Grund, warum
-„standardmäßig an“ erlaubt ist: es ist offengelegt und abschaltbar.
+Standardmäßig ist das Senden **aus** (Opt-in). Beim ersten Start fragt ein Hinweis im Titelbildschirm
+„Share anonymous usage data for public statistics?“ – **Okay** schaltet es ein, **No thanks** lässt es aus.
+Jederzeit änderbar unter **Client → Send anonymous usage statistics**.
 
 ## Aktivieren (zwei Schritte)
 

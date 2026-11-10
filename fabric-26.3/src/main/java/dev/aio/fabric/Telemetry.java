@@ -14,7 +14,7 @@ import java.util.concurrent.Callable;
 /**
  * Anonyme Online-Statistik über bStats – nur aggregierte Zahlen, keine Namen, keine IPs bei uns
  * (bStats verwirft die IP sofort). Sendet nur, wenn der Nutzer "Send anonymous usage statistics"
- * anlässt (standardmäßig an, Hinweis beim ersten Start) und eine gültige bStats-Service-ID gesetzt ist.
+ * anlässt (standardmäßig aus, Opt-in per Hinweis beim ersten Start) und eine gültige bStats-Service-ID gesetzt ist.
  *
  * <p>bStats wird über Reflection angesprochen, damit die Mod auch ohne die bStats-Bibliothek baut und
  * läuft (dann passiert hier schlicht nichts, die lokale Statistik läuft weiter). Zum Scharfschalten:
