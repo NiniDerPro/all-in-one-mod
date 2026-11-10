@@ -135,12 +135,12 @@ Minecraft 26.3, Fabric Loader 0.20.1, Fabric API 0.165.0+26.3, Loom 1.19, Gradle
 
 ## Stand der Verifikation
 
-- **Kern:** kompiliert, 84 Tests grün, darunter Regressionstests zu jedem Fund aus dem Selbst-Audit
+- **Kern:** kompiliert, 84 Tests grün, darunter Regressionstests zu jedem behobenen Fehler
   (Start ohne geladene Optionen, Config-Laden ohne kurzes Aktivieren, Wegpunkte sicher vor
   „Zurücksetzen“ und Profilwechsel, Shift-„+“ mit wenigen Paketen, Freelook ohne Kamera-Hook,
   Namens-Alarm bei Server-Chatformaten, Mod-Konflikte).
 - **Adapter 26.3:** kompiliert gegen Minecraft 26.3 (CI). Mixin-Ziele prüft erst Minecraft beim
-  Laden. Belegt in 26.3-Quellen anderer Mods: Tastatur/Maus, `Entity.turn`, `Camera.calculateFov`,
+  Laden. Geprüft gegen 26.3-Quellen: Tastatur/Maus, `Entity.turn`, `Camera.calculateFov`,
   Lightmap, Fog, `Hud`, `MultiPlayerGameMode`, `ItemStack`-Tooltip, Container-Felder.
   Unbelegt und darum mit `require = 0` (kosten nur die Funktion): Freelook-Kamera, Chat-Zeitstempel/
   Verlaufslänge, No Hurtcam. Freelook schaltet sich selbst ab, wenn der Kamera-Hook nicht greift.
