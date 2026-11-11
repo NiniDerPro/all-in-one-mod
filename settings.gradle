@@ -11,11 +11,11 @@ pluginManagement {
 
 rootProject.name = 'all-in-one-mod'
 
-// Versionsunabhängiger Kern: Event-Bus, Config, Module, HUD, GUI-Logik.
+// Version-independent core: event bus, config, modules, HUD, GUI logic.
 include 'core'
 
-// Dünne Adapter-Schichten pro Minecraft-Version.
-// Mit -Paio.coreOnly=true lässt sich nur der Kern bauen/testen (ohne Fabric-Maven).
+// Thin adapter layers per Minecraft version.
+// With -Paio.coreOnly=true only the core is built/tested (without the Fabric Maven).
 if (!Boolean.parseBoolean(providers.gradleProperty('aio.coreOnly').getOrElse('false'))) {
     include 'fabric-26.3'
 }

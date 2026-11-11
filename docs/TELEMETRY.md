@@ -1,37 +1,38 @@
-# Anonyme Nutzungsstatistik
+# Anonymous usage statistics
 
-AIO sammelt lokal eine private Statistik (`config/aio/stats.json`, nur auf dem eigenen Rechner).
-Zusätzlich kann AIO **anonyme technische Zahlen** an einen eigenen Statistik-Server senden. Das ist
-**standardmäßig aus**: beim ersten Start fragt ein Hinweis im Titelbildschirm
-„Share anonymous usage data for public statistics?“ – **Okay** schaltet es ein, **No thanks** lässt es aus.
-Jederzeit änderbar unter **Client → Send anonymous usage statistics**.
+AIO keeps a private statistic locally (`config/aio/stats.json`, only on your own computer).
+In addition it can send **anonymous technical numbers** to the project's own statistics server.
+This is **off by default**: on the first start a notice on the title screen asks
+"Share anonymous usage data for public statistics?" – **Okay** turns it on, **No thanks** keeps it off.
+You can change this at any time under **Client → Send anonymous usage statistics**.
 
-Gesendet wird nur, wenn der Schalter an ist **und** der Build eine Server-Adresse enthält. Die Adresse steht
-nicht im Quelltext; offizielle Builds bekommen sie beim Bauen aus einem Secret (`AIO_STATS_URL`), eigene Builds
-senden nichts.
+Data is only sent if the switch is on **and** the build contains a server address. The address is not in the
+source code; official builds receive it at build time from a secret (`AIO_STATS_URL`), your own builds send nothing.
 
-## Was gesendet wird
+Full privacy information: [`PRIVACY.md`](../PRIVACY.md).
 
-Beim Spielstart (nach ca. 90 s) und danach alle 10 Minuten ein Paket:
+## What is sent
 
-| Gruppe | Felder |
+A package right after the start (about 90 s) and then every 10 minutes:
+
+| Group | Fields |
 |---|---|
-| Installation | zufällige Installations-ID (keine Verbindung zu Konto oder Gerät), Schema-Version |
-| Versionen | Mod-, Minecraft-, Fabric-Loader-, Java-Version, Betriebssystem (windows/macos/linux/other) |
-| Nutzung | Zahl der Starts, Gesamtspielzeit in Gruppen (<1, 1-10, 10-50, 50-200, 200+ h), Länge der Sitzung |
-| Module | Liste der aktiven Module, Anzahl, Höchstwert, Nutzungsdauer je Modul in Gruppen |
-| Kompatibilität | welche Module wegen einer anderen Mod abgeschaltet sind (und welche Mod), Server-Kompatibilitätsmodus |
-| Fehler | Module mit nicht greifenden Hooks, nicht eingebaute Mixins |
-| Leistung | Durchschnitts- und Mindest-FPS dieser Sitzung (alle 5 s gemessen) |
+| Installation | random installation id (not linked to account or device), schema version |
+| Versions | mod, Minecraft, Fabric Loader and Java version, operating system (windows/macos/linux/other) |
+| Usage | number of starts, total play time in groups (<1, 1-10, 10-50, 50-200, 200+ h), session length |
+| Modules | list of active modules, count, peak, time in use per module in groups |
+| Compatibility | which modules are off because of another mod (and which), server compatibility mode |
+| Errors | modules with failing hooks, mixins that were not applied |
+| Performance | average and minimum FPS of this session (sampled every 5 s) |
 
-Live-Nutzer bestimmt der Server daraus, dass eine Installations-ID in den letzten ca. 15 Minuten
-gesendet hat.
+The server derives "live users" from an installation id having sent in the last ~15 minutes.
 
-## Was nie gesendet wird
-Spielername, UUID, Account, IP-Adresse (der Server speichert sie nicht), Servernamen, Koordinaten,
-Chat, Dateien, Einstellungswerte, Tastenbelegungen.
+## What is never sent
+Player name, UUID, account, IP address (the server does not store it), server names, coordinates, chat, files,
+setting values, key bindings.
 
 ## Server
-Der Server (Cloudflare Worker + D1, Quelltext in `server/stats-worker/`; die Adresse steht nicht im Repo, sie wird beim Bauen aus einem Secret eingesetzt) nimmt `POST` mit JSON entgegen, speichert die Felder pro
-Installations-ID (zuletzt gesehen) und wertet sie aus. Er darf keine IP-Adressen und keine
-Header außer den nötigen speichern.
+Cloudflare Worker + D1 database, source in `server/stats-worker/`. The address is kept out of the repository
+(secret at build time). The worker accepts `POST` with JSON, stores the fields per installation id (last seen),
+and deletes installations that have not been seen for 395 days. It must not store IP addresses or any headers
+other than the ones it needs.

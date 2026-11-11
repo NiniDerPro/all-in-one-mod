@@ -1,116 +1,58 @@
-# AIO ClientSide
+# AIO ClientSide – developer notes
 
-Modularer, farbiger Minecraft-Client für **Minecraft 26.3** (Fabric) mit schlankem Kern,
-ähnlich Lunar/Badlion. Jedes Feature ist ein eigenes Modul, das sich nur über den Event-Bus einklinkt.
+A modular Minecraft **26.3** (Fabric) client mod with a slim core. Every feature is a module that only
+hooks in through the event bus.
 
-## Aufbau
+## Layout
 
 ```
-core/                 Versionsunabhängiger Kern, KEINE Minecraft-Abhängigkeit (nur Gson)
-  event/              Event-Bus + Events (Tick, RenderHud, Key, MouseButton, MouseScroll, ServerJoin/Leave)
-  setting/            Boolean, Number, Enum, Color, Keybind, String (JSON-serialisierbar)
-  module/             Module-Basisklasse, Kategorien, Registry
-  config/             JSON pro Modul, Profile, Export/Import, verzögertes Speichern
-  compat/             Server-Kompatibilitätsmodus (sperrt Vorteils-Module)
-  hud/                HudElement, TextHudElement, HudManager, HUD-Editor, Snapping
-  ui/                 Einstellungs-GUI (ClickGuiScreen), Theme, UiScreen-Schnittstelle
-  platform/           Versions-Abstraktion: Platform, Renderer, ItemRef, ...
-  modules/            Die eigentlichen Features
-fabric-26.3/          Dünner Adapter für MC 26.3: Platform-/Renderer-Implementierung + Mixins
+core/                 Version-independent core, NO Minecraft dependency (Gson only)
+  event/              Event bus + events (Tick, RenderHud, Key, MouseButton, MouseScroll, ServerJoin/Leave)
+  setting/            Boolean, Number, Enum, Color, Keybind, String (JSON-serialisable)
+  module/             Module base class, categories, registry
+  config/             JSON per module, profiles, export/import, delayed saving
+  compat/             Server compatibility mode (blocks advantage modules)
+  hud/                HudElement, TextHudElement, HudManager, HUD editor, snapping
+  ui/                 Settings GUI (ClickGuiScreen), theme, UiScreen interface
+  platform/           Version abstraction: Platform, Renderer, ItemRef, ...
+  modules/            The actual features
+fabric-26.3/          Thin adapter for MC 26.3: Platform/Renderer implementation + mixins
+server/stats-worker/  Cloudflare Worker for the optional anonymous statistics
 ```
 
-**Versions-Abstraktion:** Module, HUD und GUI sprechen nur mit `Platform` und `Renderer`.
-Für eine neue MC-Version wird nur ein Adapter-Ordner (`fabric-<version>/`) kopiert und angepasst:
-`FabricPlatform`, `FabricRenderer`, `FabricItemRef`, `AioScreen`, `InputState` und 6 kleine Mixins.
-Tasten werden über ihre MC-Namen gespeichert (`key.keyboard.right.shift`, `key.mouse.left`), nicht
-über numerische Codes. Die Config bleibt so auch beim Wechsel von GLFW auf SDL (ab 26.x) gültig.
+**Version abstraction:** modules, HUD and GUI only talk to `Platform` and `Renderer`. For a new
+Minecraft version only an adapter folder (`fabric-<version>/`) is copied and adapted:
+`FabricPlatform`, `FabricRenderer`, `FabricItemRef`, `AioScreen`, `InputState` and a few small mixins.
+Keys are stored by their Minecraft names (`key.keyboard.right.shift`, `key.mouse.left`), not numeric
+codes, so configs stay valid when the game switches between GLFW and SDL.
 
-### Farben
+Branches: `main` holds the overview; the code lives in one branch per Minecraft version (`26.3`, later `26.2`, ...).
 
-- Jedes HUD-Element hat einen **Farbmodus**: *Regenbogen* (Standard, Welle über den Text),
-  *Verlauf* zwischen zwei Farben oder *Fest*. Das Tempo ist einstellbar.
-- Keystrokes leuchten beim Drücken im Farbmodus.
-- Das Menü hat einen Regenbogen-Akzent (abschaltbar, dann eigene Akzentfarbe) und eine Farbe pro Kategorie.
-- Die Zeichenpositionen werden pro Text gecacht, also nicht in jedem Frame neu gemessen.
+## Core principles
 
-### Kern-Prinzipien
+- **Modules cost nothing while off:** listeners are only *declared* in the constructor (`on(...)`) and
+  attached to the bus while the module is active. Shared services such as the `ClickTracker` only listen
+  while a module uses them (reference counting).
+- **Caching:** `TextHudElement` asks `getText()` once per tick (not per frame) and only re-measures the
+  text width when the text changed. A test covers this.
+- **Colours:** every HUD element has a colour mode: rainbow (default), gradient or fixed.
+- **Config:** `config/aio/profiles/<profile>/<module>.json`. Changes are collected and written at the
+  earliest 1 s after the last change. Damaged files fall back to defaults.
+- **Server compatibility:** modules with `gameplayAffecting = true` (freelook, zoom, fullbright, toggle
+  sprint, ...) can be blocked depending on the mode: *Off* (default), *Auto* (on multiplayer servers
+  unless the server is on the allow list) or *Always*. The player's choice stays stored; when the block
+  ends the modules run again. Purely visual HUD modules are never blocked.
+- **No input automation.** No autoclicker or similar. Toggle sprint follows the vanilla option.
+- **Other mods win:** `ModConflicts` maps module ids to mod ids that do the same job. If such a mod is
+  installed, only the affected module is switched off. Mixins that cannot be applied are detected
+  (`HookStatus`) and their module is disabled instead of crashing the game.
 
-- **Module ohne Kosten, wenn aus:** Listener werden im Konstruktor nur *deklariert* (`on(...)`)
-  und hängen nur am Bus, solange das Modul aktiv ist. Geteilte Dienste wie der `ClickTracker`
-  lauschen nur, solange ein Modul sie nutzt (Referenzzählung).
-- **Caching:** `TextHudElement` fragt `getText()` pro Tick ab (nicht pro Frame) und misst die
-  Textbreite nur neu, wenn sich der Text geändert hat. Das deckt ein Test ab.
-- **Config:** `config/aio/profiles/<profil>/<modul>.json`. Änderungen werden gesammelt und frühestens
-  1 s nach der letzten Änderung geschrieben. Beschädigte Dateien fallen auf Standardwerte zurück.
-- **Server-Kompatibilität:** Module mit `gameplayAffecting = true` (Freelook, Zoom, Fullbright,
-  Toggle Sprint) werden je nach Modus gesperrt:
-  - *Aus* (Standard): nie
-  - *Auto*: auf Multiplayer-Servern, außer der Server steht auf der Erlaubt-Liste
-  - *Immer*: überall
-
-  Der Wunsch des Spielers bleibt gespeichert; nach dem Verlassen laufen die Module wieder.
-  Rein visuelle HUD-Module werden nie gesperrt.
-- **Keine Eingabe-Automatisierung.** Kein Autoclicker o. Ä. Toggle Sprint entspricht der Vanilla-Option.
-
-## Module
-
-Server-Sperre = vom Server-Schutz sperrbar (Standard: Schutz aus).
-
-| Kategorie | Modul | Sperre | Inhalt |
-|---|---|---|---|
-| HUD | FPS | – | FPS, optional Ø und Min/Max |
-| HUD | CPS | – | Klicks/s links und rechts |
-| HUD | Keystrokes | – | WASD, Maus (mit CPS), Leertaste; sanfter Farbwechsel; 3 Layouts |
-| HUD | ArmorHUD | – | Rüstung, Hand/Zweithand; Haltbarkeit als Balken, Zahl oder % |
-| HUD | Trank-Effekte | – | Original-Effekt-Icons, Stufe und Restzeit |
-| HUD | Totem-Zähler / Pfeil-Zähler | – | Anzahl im Inventar mit Icon, rot bei 0 |
-| HUD | Item-Info | – | Verzauberungen des Items in der Hand über der Hotbar, blendet aus |
-| Info | Koordinaten, Ping | – | XYZ + Richtung + Biom; Latenz |
-| Info | Biom, Tagzähler, Uhrzeit (Welt) | – | Biomname, „Tag 42“, Weltzeit mit ☀/☾ |
-| Info | Spielzeit | – | Aus der Statistik der Welt, z. B. „2 T 3 Std 14 Min“ |
-| Info | Server-Info | – | Name, IP, Ping, Spieler, Version, Software |
-| Info | Blick-Info | – | Tooltip oben in der Mitte (Reichweite für Blöcke einstellbar): Icon, Name, Werkzeug ✔/✘, Wachstum, Entity-Typ, Herzen + HP, Rüstung, Mod; Block-Details nur beim passenden Block (Honig/Bienen, Komposter, Kessel, Seelenanker, Ackerboden, Redstone, Notenblock, …) |
-| Navigation | Kompass | – | Leiste oben oder rund, mit Wegpunkten |
-| Navigation | Wegpunkte | – | B = setzen, N = verwalten; Marker mit Name + Entfernung im Bild und am Rand; pro Welt und Dimension |
-| Navigation | Todespunkt | – | Wegpunkt beim Tod, verschwindet bei Ankunft |
-| Navigation | Portalrechner | – | Nether-/Oberwelt-Koordinaten (÷8 / ×8) |
-| Grafik | Freelook, Zoom, Fullbright | ja | wie bisher |
-| Grafik | NoFog | ja | Klares Wasser, klare Lava, optional kein Sichtweiten-Nebel |
-| Grafik | No Hurtcam | – | Kein Kamerawackeln bei Schaden |
-| Grafik | No Pumpkin Overlay | ja | Kein Kürbis-Sichtrahmen |
-| Grafik | Block-Outline | – | Farbe (auch Regenbogen), Dicke, Füllung |
-| Inventar | Shulker-Vorschau | – | Inhalt als Raster im Tooltip (Shift), in Kistenfarbe |
-| Inventar | Maus-Tweaks & Sortieren | – | Mausrad = einzelne Items verschieben (Shift = Stack), Shift + Ziehen, Mittelklick sortiert |
-| Inventar | Item-Liste | – | Alle Items rechts im Inventar, Suche (`@mod`, `$id`, `-ausschließen`), Rezepte (Klick/R) und Verwendungen (Rechtsklick/U). **+** legt das Rezept ins 2×2, die Werkbank, den Ofen/Schmelz-/Räucherofen oder die Steinsäge (Shift = so viele wie möglich), fehlende Zutaten werden rot markiert |
-| Spieler & Kampf | Toggle Sprint | ja | Dauersprinten per Sprint-Taste |
-| Spieler & Kampf | Auto Tool | ja | Bestes Werkzeug beim Abbauen, danach zurück |
-| Spieler & Kampf | Auto Sword | ja | Beste Waffe, sobald ein Lebewesen anvisiert wird (also vor dem Schlag) |
-| Chat | Chat | – | Zeitstempel, langer Verlauf, Größe/Schrift/Deckkraft, **Chat kopieren** (Rechtsklick im Chat), Chatbox im HUD-Editor an der Ecke ziehen |
-| Chat | Namens-Alarm | – | Ton + Hinweis bei deinem Namen (mit/ohne @) und eigenen Stichwörtern |
-| Client | Client | – | Menü-Taste, HUD-Editor-Taste, Server-Schutz, Farben, Sortierung |
-
-## Bedienung
-
-- **Rechts-Shift**: Einstellungsmenü. Links die Kategorien (ganz oben „Alle“), Module als Karten mit
-  Schalter; ein Klick auf die Karte öffnet Einstellungen, Tastenbelegung, Farben und Aktionen.
-  Oben rechts das **Suchfeld** (Strg+F) über alle Kategorien und der Knopf **↕** für die Sortierung:
-  Standard, A–Z, Aktive zuerst (wird gespeichert). Unten links die Profile: wechseln, neu, löschen,
-  Export/Import über die Zwischenablage.
-- **HUD bearbeiten** (Button im Menü oder eigene Taste): Elemente ziehen, Mausrad = Größe,
-  Einrasten an Rändern, Mitte und anderen Elementen (Shift = frei), Rechtsklick = Einstellungen,
-  R = zurücksetzen. Die Chatbox unten links an der Ecke (⤢) ziehen, Mausrad = Schriftgröße.
-- **Linke Alt-Taste** (halten): Freelook. **C** (halten): Zoom. **B**: Wegpunkt setzen, **N**: Wegpunkte verwalten.
-- **Im Inventar:** Mausrad über Items verschiebt einzeln (Shift = ganzer Stack), Shift + Ziehen
-  verschiebt alle überfahrenen Stacks, Mittelklick sortiert. Rechts die Item-Liste (Suchfeld unten,
-  Strg+F); Klick oder R zeigt Rezepte, Rechtsklick oder U die Verwendungen.
-- **Im Chat:** Rechtsklick öffnet „Chat kopieren“ (Zeilen markieren, Strg+C).
-
-## Ein neues HUD-Modul
+## A new HUD module
 
 ```java
 public final class DayTimeModule extends TextHudElement {
     public DayTimeModule() {
-        super("daytime", "Uhrzeit", "Zeigt die echte Uhrzeit", 0.0, 0.25);
+        super("daytime", "Clock", "Shows the real time", 0.0, 0.25);
     }
 
     @Override protected String getText() {
@@ -119,36 +61,42 @@ public final class DayTimeModule extends TextHudElement {
 }
 ```
 
-Danach in `AioCore.registerDefaultModules()` registrieren. Position, Größe, Farben, Hintergrund,
-Schatten, Speichern und Editor-Unterstützung kommen von `HudElement`.
-
-## Bauen
+Register it in `AioCore.registerDefaultModules()`. Position, size, colours, background, shadow, saving and
+HUD-editor support come from `HudElement`. New `Lang.tr` keys need a regenerated language file:
 
 ```bash
-./gradlew :core:test -Paio.coreOnly=true   # nur Kern + Tests (ohne Minecraft)
-./gradlew build                            # Mod-Jar: fabric-26.3/build/libs/
-./gradlew :fabric-26.3:runClient           # Minecraft mit Mod starten
+./gradlew :core:test -Paio.coreOnly=true -Daio.writeLang=true --tests '*LangFileTest*'
 ```
 
-Benötigt **Java 25** für den Adapter (der Kern läuft ab Java 21). Versionen stehen in `gradle.properties`:
-Minecraft 26.3, Fabric Loader 0.20.1, Fabric API 0.165.0+26.3, Loom 1.19, Gradle 9.8.2.
+## Building
 
-## Stand der Verifikation
+```bash
+./gradlew :core:test -Paio.coreOnly=true   # core + tests only (no Minecraft)
+./gradlew build                            # mod jar: fabric-26.3/build/libs/
+./gradlew :fabric-26.3:runClient           # start Minecraft with the mod
+```
 
-- **Kern:** kompiliert, 84 Tests grün, darunter Regressionstests zu jedem behobenen Fehler
-  (Start ohne geladene Optionen, Config-Laden ohne kurzes Aktivieren, Wegpunkte sicher vor
-  „Zurücksetzen“ und Profilwechsel, Shift-„+“ mit wenigen Paketen, Freelook ohne Kamera-Hook,
-  Namens-Alarm bei Server-Chatformaten, Mod-Konflikte).
-- **Adapter 26.3:** kompiliert gegen Minecraft 26.3 (CI). Mixin-Ziele prüft erst Minecraft beim
-  Laden. Geprüft gegen 26.3-Quellen: Tastatur/Maus, `Entity.turn`, `Camera.calculateFov`,
-  Lightmap, Fog, `Hud`, `MultiPlayerGameMode`, `ItemStack`-Tooltip, Container-Felder.
-  Unbelegt und darum mit `require = 0` (kosten nur die Funktion): Freelook-Kamera, Chat-Zeitstempel/
-  Verlaufslänge, No Hurtcam. Freelook schaltet sich selbst ab, wenn der Kamera-Hook nicht greift.
-- **Nicht im Spiel getestet.** Minecraft lässt sich in der Entwicklungsumgebung nicht starten.
-- **Rezeptquellen:** Singleplayer → Rezepte des integrierten Servers (inkl. Datenpakete);
-  Server mit Fabric-Rezept-Sync → die Rezepte des Servers (auch geänderte);
-  sonst → die Standard-Rezepte aus dem Minecraft-Jar (`data/minecraft/recipe`).
-- **Daten:** Wegpunkte liegen in `config/aio/waypoints.json` (unabhängig von Profilen und vom Export).
-- **Kompatibilität:** Mit JEI, REI oder EMI blendet sich die eigene Item-Liste aus; mit Mouse Tweaks,
-  Mouse Wheelie oder Inventory Profiles Next die eigenen Maus-Tweaks.
-- **Grenzen:** Die Bienenanzahl kennt nur der Server (steht auch nicht in F3), auf Servern fehlt sie daher.
+Needs **Java 25** for the adapter (the core runs on Java 21). Versions are in `gradle.properties`.
+The official jars are built by GitHub Actions; the stats server address is injected from the secret
+`AIO_STATS_URL` at build time (see `docs/TELEMETRY.md`), local builds do not send statistics.
+
+## Releases and versions
+
+- `0.x.y` are pre-releases, `1.0.0` is the first release. Every build raises the version in `gradle.properties`.
+- Every push to a `26.*` branch builds the jar and publishes it as a GitHub release `v<version>-mc<minecraft>`
+  (the jar only, no zip).
+
+## Verification status
+
+- **Core:** compiles, unit tests cover regressions of every fixed bug (start without loaded options,
+  config loading, waypoints surviving resets and profile changes, freelook without camera hook, mod conflicts, ...).
+- **Adapter 26.3:** compiles against Minecraft 26.3 in CI. Mixin targets are only validated by Minecraft
+  at load time; hooks that could not be confirmed use `require = 0` so that only their feature is lost.
+- **In-game testing** is done by hand; there is a dev-only self test (`-Daio.selftest=<folder>`) that opens the
+  main screens and takes screenshots.
+- **Recipe sources:** singleplayer uses the integrated server's recipes; servers with Fabric recipe sync use the
+  server's recipes; otherwise the default recipes from the Minecraft jar (`data/minecraft/recipe`).
+- **Data:** waypoints live in `config/aio/waypoints.json` (independent of profiles and of the export).
+- **Compatibility:** with JEI, REI or EMI the built-in item list hides itself; with Mouse Tweaks, Mouse Wheelie or
+  Inventory Profiles Next the built-in mouse tweaks do.
+- **Limits:** the bee count is only known to the server, so it is missing on servers.

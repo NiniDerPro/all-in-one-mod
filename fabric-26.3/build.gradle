@@ -2,9 +2,9 @@ plugins {
     id 'net.fabricmc.fabric-loom'
 }
 
-// Adapter für Minecraft 26.3 (offizielle Mojang-Namen, keine Mappings mehr nötig).
-// Für eine weitere Version diesen Ordner kopieren, Versionen ergänzen und nur die
-// Adapter-Klassen/Mixins anpassen. Der Kern bleibt unverändert.
+// Adapter for Minecraft 26.3 (official Mojang names, no mappings needed anymore).
+// For another version copy this folder, add the versions and only adapt the
+// adapter classes/mixins. The core stays unchanged.
 evaluationDependsOn(':core')
 
 version = "${project.mod_version}+mc${project.minecraft_version}"
@@ -45,7 +45,7 @@ jar {
     from(project(':core').sourceSets.main.output)
 }
 
-// Adresse des Statistik-Servers kommt nur aus der Umgebung (CI-Secret), nicht aus dem Quelltext
+// The stats server address only comes from the environment (CI secret), not from the source code
 processResources {
     def statsUrl = System.getenv('AIO_STATS_URL') ?: ''
     inputs.property('statsUrl', statsUrl)

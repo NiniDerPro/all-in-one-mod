@@ -18,9 +18,9 @@ jobs:
           distribution: temurin
           java-version: 25
       - uses: gradle/actions/setup-gradle@v4
-      - name: Kern testen
+      - name: Test core
         run: ./gradlew :core:test -Paio.coreOnly=true
-      - name: Mod bauen (alle Versionen)
+      - name: Build mod (all versions)
         env:
           AIO_STATS_URL: ${{ secrets.AIO_STATS_URL }}
         run: ./gradlew build
@@ -29,8 +29,8 @@ jobs:
           name: aio-clientside
           path: fabric-*/build/libs/*.jar
 
-      # Jar direkt als Release-Datei (keine ZIP): ein Release pro Version, z. B. v0.2.2-mc26.3
-      - name: Release mit Jar
+      # Publish the jar itself as a release asset (no zip): one release per version, e.g. v0.2.2-mc26.3
+      - name: Release with jar
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/26.')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
