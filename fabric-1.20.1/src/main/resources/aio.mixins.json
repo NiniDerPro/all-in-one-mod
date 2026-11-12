@@ -8,6 +8,8 @@
     "EntityRendererCullMixin",
     "AbstractContainerScreenAccessor",
     "CameraMixin",
+    "GameRendererMixin",
+    "SpeedFovMixin",
     "ZoomFovMixin",
     "ChatComponentMixin",
     "EntityMixin",
