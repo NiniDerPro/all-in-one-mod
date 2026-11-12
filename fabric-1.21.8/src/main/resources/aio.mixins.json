@@ -1,0 +1,43 @@
+{
+  "required": false,
+  "package": "dev.aio.fabric.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ClientLevelParticlesMixin",
+    "ParticleEngineMixin",
+    "EntityRendererCullMixin",
+    "AbstractContainerScreenAccessor",
+    "CameraMixin",
+    "GameRendererMixin",
+    "SpeedFovMixin",
+    "ZoomFovMixin",
+    "ChatComponentMixin",
+    "EntityMixin",
+    "FoodDataAccessor",
+    "ItemStackMixin",
+    "KeyboardHandlerMixin",
+    "MouseHandlerMixin",
+    "MultiPlayerGameModeMixin",
+    "FreecamBlockStateMixin",
+    "FreecamCameraMixin",
+    "FreecamEntityMixin",
+    "FreecamEntityRenderDispatcherMixin",
+    "FreecamGameRendererMixin",
+    "FreecamHudMixin",
+    "FreecamLivingEntityMixin",
+    "FreecamLocalPlayerMixin",
+    "FreecamMinecraftMixin",
+    "FreecamPacketListenerMixin",
+    "MinecraftProfilerMixin",
+    "ToolSaverMixin",
+    "DynamicLightsEntityMixin",
+    "LightOverlayDirtyMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  },
+  "plugin": "dev.aio.fabric.compat.AioMixinPlugin"
+}
