@@ -12,10 +12,10 @@ import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.Keys;
 import dev.aio.forge.mixin.AbstractContainerScreenAccessor;
 
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
-import net.fabricmc.fabric.api.client.screen.v1.Screens;
+import dev.aio.forge.shim.ScreenEvents;
+import dev.aio.forge.shim.ScreenKeyboardEvents;
+import dev.aio.forge.shim.ScreenMouseEvents;
+import dev.aio.forge.shim.Screens;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -54,14 +54,16 @@ final class ScreenHooks {
                         .build();
                 Screens.getWidgets(screen).add(open);
             }
-            // One-time statistics notice at the top of the title screen
-            if (screen instanceof TitleScreen && StatsNotice.shouldShow(core)) {
+            // Notices at the top of the title screen: one-time statistics question, update available
+            if (screen instanceof TitleScreen) {
                 ScreenEvents.afterExtract(screen).register((s, graphics, mx, my, delta) -> {
                     renderer.begin(graphics);
                     StatsNotice.render(core, renderer, s.width);
+                    dev.aio.core.ui.UpdateNotice.render(core, renderer, s.width);
                 });
                 ScreenMouseEvents.allowMouseClick(screen).register((s, event) ->
-                        !StatsNotice.mouseClicked(core, event.x(), event.y(), s.width));
+                        !(StatsNotice.mouseClicked(core, event.x(), event.y(), s.width)
+                                || dev.aio.core.ui.UpdateNotice.mouseClicked(core, event.x(), event.y(), s.width)));
             }
             // Trade window: remember offers of the villager being looked at (villager info)
             if (screen instanceof MerchantScreen merchant) {

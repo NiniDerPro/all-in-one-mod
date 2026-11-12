@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.aio.core.AioCore;
 import dev.aio.core.modules.render.BlockOutlineModule;
-import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
+import dev.aio.forge.shim.LevelRenderEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;

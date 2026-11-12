@@ -3,7 +3,7 @@ package dev.aio.forge;
 import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.LookTarget;
 
-import net.fabricmc.loader.api.FabricLoader;
+import dev.aio.forge.shim.Loader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -43,8 +43,7 @@ final class LookTargets {
 
     /** Display name of a mod for a namespace ("minecraft" -> "Minecraft"). */
     private String modName(String namespace) {
-        return modNames.computeIfAbsent(namespace, ns -> FabricLoader.getInstance().getModContainer(ns)
-                .map(c -> c.getMetadata().getName())
+        return modNames.computeIfAbsent(namespace, ns -> Loader.modName(ns)
                 .orElse(ns.isEmpty() ? ns : Character.toUpperCase(ns.charAt(0)) + ns.substring(1)));
     }
 

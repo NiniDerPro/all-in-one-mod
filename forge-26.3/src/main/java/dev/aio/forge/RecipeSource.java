@@ -3,8 +3,6 @@ package dev.aio.forge;
 import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.RecipeKind;
 import dev.aio.core.platform.RecipeView;
-import net.fabricmc.fabric.api.recipe.v1.FabricRecipeManager;
-import net.fabricmc.fabric.api.recipe.v1.sync.SynchronizedRecipes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
@@ -24,24 +22,17 @@ import java.util.List;
 
 /**
  * Recipes for the item list. Source: in singleplayer the integrated server, otherwise the
- * recipes synced from the server via Fabric (only if the server offers it).
+ * the default recipes of Minecraft on servers (this loader has no recipe sync to the client).
  */
 final class RecipeSource {
     private static final int LIMIT = 1000;
-    private static volatile SynchronizedRecipes synced;
     /** Converted recipes of the current source; once per world/source instead of on every open. */
     private static volatile List<RecipeView> cache;
     private static volatile Object cacheSource;
 
     private RecipeSource() {}
 
-    static void onSynced(SynchronizedRecipes recipes) {
-        synced = recipes;
-        cache = null;
-    }
-
     static void clear() {
-        synced = null;
         cache = null;
         cacheSource = null;
         VanillaRecipes.clear();
@@ -53,18 +44,14 @@ final class RecipeSource {
     private static Collection<RecipeHolder<?>> all(Minecraft client) {
         var server = client.getSingleplayerServer();
         if (server != null) {
-            FabricRecipeManager rm = (FabricRecipeManager) server.getRecipeManager();
+            var types = java.util.Set.of(RecipeType.CRAFTING, RecipeType.SMELTING, RecipeType.BLASTING, RecipeType.SMOKING,
+                    RecipeType.CAMPFIRE_COOKING, RecipeType.STONECUTTING);
             List<RecipeHolder<?>> out = new ArrayList<>();
-            out.addAll(rm.getAllOfType(RecipeType.CRAFTING));
-            out.addAll(rm.getAllOfType(RecipeType.SMELTING));
-            out.addAll(rm.getAllOfType(RecipeType.BLASTING));
-            out.addAll(rm.getAllOfType(RecipeType.SMOKING));
-            out.addAll(rm.getAllOfType(RecipeType.CAMPFIRE_COOKING));
-            out.addAll(rm.getAllOfType(RecipeType.STONECUTTING));
+            for (RecipeHolder<?> holder : server.getRecipeManager().getRecipes()) {
+                if (types.contains(holder.value().getType())) out.add(holder);
+            }
             return out;
         }
-        SynchronizedRecipes s = synced;
-        if (s != null) return s.recipes(); // sent by the server: changed recipes too
         return VanillaRecipes.get(client);   // otherwise the default recipes of Minecraft
     }
 
@@ -80,7 +67,7 @@ final class RecipeSource {
 
     /** All recipes of the current source as display data (cached, source = server/sync/vanilla). */
     private static List<RecipeView> views(Minecraft client) {
-        Object source = client.getSingleplayerServer() != null ? client.getSingleplayerServer() : synced != null ? synced : client.level;
+        Object source = client.getSingleplayerServer() != null ? client.getSingleplayerServer() : client.level;
         List<RecipeView> c = cache;
         if (c != null && source == cacheSource) return c;
         ContextMap ctx = SlotDisplayContext.fromLevel(client.level);

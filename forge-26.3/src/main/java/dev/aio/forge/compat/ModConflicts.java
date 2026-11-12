@@ -1,6 +1,6 @@
 package dev.aio.forge.compat;
 
-import net.fabricmc.loader.api.FabricLoader;
+import dev.aio.forge.shim.Loader;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -45,12 +45,11 @@ public final class ModConflicts {
     /** Module id → name of the installed mod that takes priority. */
     public static Map<String, String> installed() {
         Map<String, String> out = new LinkedHashMap<>();
-        FabricLoader loader = FabricLoader.getInstance();
         for (Map.Entry<String, List<String>> e : TABLE.entrySet()) {
             for (String mod : e.getValue()) {
-                var c = loader.getModContainer(mod);
+                var c = Loader.modName(mod);
                 if (c.isPresent()) {
-                    out.put(e.getKey(), c.get().getMetadata().getName());
+                    out.put(e.getKey(), c.get());
                     break;
                 }
             }

@@ -29,6 +29,13 @@ final class DevSelfTest {
 
     private static List<Step> steps;
     private static int index, waited, stuck;
+    private static net.minecraft.world.phys.Vec3 fcStart;
+    private static float fovBase;
+
+    private static String zoomKey(AioCore core) {
+        for (var st : core.module(dev.aio.core.modules.render.ZoomModule.class).settings()) if (st.id().equals("key")) return String.valueOf(st.get());
+        return "key.keyboard.c";
+    }
 
     static void tick(AioCore core, Minecraft mc) {
         if (DIR.isEmpty()) return;
@@ -67,6 +74,11 @@ final class DevSelfTest {
         return List.of(
                 // On the first start the accessibility onboarding comes first: go straight to the title.
                 new Step(booted, 40, () -> { if (!(mc.gui.screen() instanceof TitleScreen)) mc.gui.setScreen(new TitleScreen()); }),
+                new Step(any, 5, () -> {
+                    if (!Boolean.getBoolean("aio.selftest.update")) return;
+                    core.clientSettings().telemetryNoticeSeen.set(true);
+                    dev.aio.core.update.UpdateCheck.preview(new dev.aio.core.update.UpdateCheck.Release("9.9.9", "https://github.com/"));
+                }),
                 new Step(any, 40, () -> shot(mc, dir, "01_title.png")),
                 new Step(any, 5, () -> core.openClickGui(null)),
                 new Step(any, 30, () -> shot(mc, dir, "02_menu.png")),
@@ -83,6 +95,36 @@ final class DevSelfTest {
                     runCommands(mc);
                     AioForgeClient.LOGGER.info("[aio] Selftest ready for input");
                     index = Integer.MAX_VALUE; // skip the rest, input comes from outside
+                }),
+                new Step(any, 5, () -> { Freecam.set(true); fcStart = Freecam.camera() == null ? null : Freecam.camera().position(); mc.options.keyUp.setDown(true); }),
+                new Step(any, 60, () -> {
+                    var cam = Freecam.camera();
+                    AioForgeClient.LOGGER.info("[aio] Selftest freecam: active={} start={} now={} moved={}", Freecam.active(), fcStart,
+                            cam == null ? null : cam.position(), cam != null && fcStart != null && cam.position().distanceTo(fcStart) > 0.5);
+                    mc.options.keyUp.setDown(false);
+                    Freecam.set(false);
+                }),
+                new Step(any, 5, () -> { fovBase = ForgeHooks.lastFov; for (var st : core.module(dev.aio.core.modules.render.ZoomModule.class).settings()) if (st.id().equals("mode")) ((dev.aio.core.setting.EnumSetting<dev.aio.core.modules.render.ActivationMode>) (Object) st).set(dev.aio.core.modules.render.ActivationMode.TOGGLE); InputState.update(zoomKey(core), 1); core.bus().post(new dev.aio.core.event.Events.Key(zoomKey(core), 1, false)); }),
+                new Step(any, 30, () -> {
+                    var z = core.module(dev.aio.core.modules.render.ZoomModule.class);
+                    for (var st : z.settings()) AioForgeClient.LOGGER.info("[aio] Selftest zoom setting {}={}", st.id(), st.get());
+                    AioForgeClient.LOGGER.info("[aio] Selftest zoom inWorld={} keyDown={}", core.platform().inWorld(), InputState.isDown(zoomKey(core)));
+                    AioForgeClient.LOGGER.info("[aio] Selftest zoom: active={} engaged={} fovBase={} fovNow={} mult={}", z.isActive(), z.isEngaged(), fovBase, ForgeHooks.lastFov, z.currentMultiplier());
+                    InputState.update(zoomKey(core), 0); core.bus().post(new dev.aio.core.event.Events.Key(zoomKey(core), 0, false));
+                }),
+                new Step(any, 5, () -> {
+                    var m = core.module(dev.aio.core.modules.render.NoSpeedFovModule.class);
+                    mc.player.setSprinting(true);
+                    mc.player.getAbilities().flying = true;
+                    boolean was = m.isEnabled();
+                    m.setEnabled(true);
+                    float on = mc.player.getFieldOfViewModifier(false, 1f);
+                    m.setEnabled(false);
+                    float off = mc.player.getFieldOfViewModifier(false, 1f);
+                    m.setEnabled(was);
+                    AioForgeClient.LOGGER.info("[aio] Selftest speedfov: with module={} without module={} (module on = {})", on, off, m.isActive());
+                    mc.player.getAbilities().flying = false;
+                    mc.player.setSprinting(false);
                 }),
                 new Step(any, 5, () -> mc.pauseGame(false)),
                 new Step(any, 30, () -> shot(mc, dir, "06_pause.png")),

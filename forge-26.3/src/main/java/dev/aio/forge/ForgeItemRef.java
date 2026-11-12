@@ -3,7 +3,7 @@ package dev.aio.forge;
 import dev.aio.core.platform.ItemRef;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import net.fabricmc.loader.api.FabricLoader;
+import dev.aio.forge.shim.Loader;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -46,8 +46,7 @@ public record ForgeItemRef(ItemStack stack) implements ItemRef {
     @Override public String modName() {
         String id = id();
         String ns = id.contains(":") ? id.substring(0, id.indexOf(':')) : "minecraft";
-        return MOD_NAMES.computeIfAbsent(ns, n -> FabricLoader.getInstance().getModContainer(n)
-                .map(c -> c.getMetadata().getName())
+        return MOD_NAMES.computeIfAbsent(ns, n -> Loader.modName(n)
                 .orElse(Character.toUpperCase(n.charAt(0)) + n.substring(1)));
     }
 

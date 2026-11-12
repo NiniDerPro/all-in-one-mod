@@ -6,8 +6,7 @@ import dev.aio.core.AioCore;
 import dev.aio.forge.compat.HookStatus;
 import dev.aio.forge.compat.ModConflicts;
 
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
+import dev.aio.forge.shim.Loader;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -103,12 +102,9 @@ final class Telemetry {
 
         // Versionen
         Map<String, Object> ver = new LinkedHashMap<>();
-        ver.put("mod", FabricLoader.getInstance().getModContainer("aio")
-                .map(ModContainer::getMetadata).map(m -> m.getVersion().getFriendlyString()).orElse("?"));
-        ver.put("minecraft", FabricLoader.getInstance().getModContainer("minecraft")
-                .map(m -> m.getMetadata().getVersion().getFriendlyString()).orElse("?"));
-        ver.put("loader", FabricLoader.getInstance().getModContainer("fabricloader")
-                .map(m -> m.getMetadata().getVersion().getFriendlyString()).orElse("?"));
+        ver.put("mod", Loader.modVersion("aio").orElse("?"));
+        ver.put("minecraft", Loader.modVersion("minecraft").orElse("?"));
+        ver.put("loader", "forge " + Loader.modVersion("forge").orElse("?"));
         ver.put("java", System.getProperty("java.specification.version", "?"));
         ver.put("os", os());
         p.put("versions", ver);

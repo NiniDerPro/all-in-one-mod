@@ -7,8 +7,8 @@ import dev.aio.core.i18n.Lang;
 import dev.aio.core.modules.navigation.SharedWaypoint;
 import dev.aio.core.modules.navigation.WaypointsModule;
 
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
+import net.minecraft.commands.Commands;
+import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -29,9 +29,9 @@ final class ChatWaypoints {
     static final String COMMAND = "aiowaypoint";
 
     static void register(AioCore core) {
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, context) ->
-                dispatcher.register(ClientCommands.literal(COMMAND).then(
-                        ClientCommands.argument("data", StringArgumentType.greedyString()).executes(c -> {
+        RegisterClientCommandsEvent.BUS.addListener(event ->
+                event.getDispatcher().register(Commands.literal(COMMAND).then(
+                        Commands.argument("data", StringArgumentType.greedyString()).executes(c -> {
                             var f = SharedWaypoint.Found.fromPayload(StringArgumentType.getString(c, "data"));
                             WaypointsModule wp = core.module(WaypointsModule.class);
                             if (f != null && wp != null) wp.addShared(f);

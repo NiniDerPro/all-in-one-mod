@@ -2,8 +2,8 @@ package dev.aio.forge;
 
 import dev.aio.core.AioCore;
 import dev.aio.core.modules.inventory.ShulkerPreviewModule;
-import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.ClientTooltipComponentCallback;
+import net.minecraftforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
@@ -20,9 +20,13 @@ public final class ShulkerTooltipHook {
     private ShulkerTooltipHook() {}
 
     static void register(AioCore core) {
-        ClientTooltipComponentCallback.EVENT.register(data -> data instanceof ShulkerTooltip.Data d ? new ShulkerTooltip.Client(d) : null);
-        ClientTooltipComponentCallback.EVENT.register(data -> data instanceof FoodTooltip.Data d ? new FoodTooltip.Client(d) : null);
-        ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> {
+        RegisterClientTooltipComponentFactoriesEvent.BUS.addListener(event -> {
+            event.register(ShulkerTooltip.Data.class, ShulkerTooltip.Client::new);
+            event.register(FoodTooltip.Data.class, FoodTooltip.Client::new);
+        });
+        ItemTooltipEvent.BUS.addListener(event -> {
+            var stack = event.getItemStack();
+            var lines = event.getToolTip();
             ShulkerPreviewModule m = core.module(ShulkerPreviewModule.class);
             if (m == null || !m.isActive() || !isShulker(stack)) return;
             int stacks = stackCount(stack.get(DataComponents.CONTAINER));

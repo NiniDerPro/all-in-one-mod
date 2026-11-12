@@ -9,15 +9,15 @@ import dev.aio.core.modules.performance.FpsBoostModule;
 import dev.aio.core.modules.player.FoodInfoModule;
 import dev.aio.core.util.Log;
 
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.recipe.v1.sync.ClientRecipeSynchronizedEvent;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
-import net.fabricmc.loader.api.FabricLoader;
+import dev.aio.forge.shim.Loader;
+import dev.aio.forge.shim.ScreenEvents;
+import net.minecraftforge.client.event.AddGuiOverlayLayersEvent;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.client.event.SystemMessageReceivedEvent;
+import net.minecraftforge.client.gui.overlay.ForgeLayeredDraw;
+import net.minecraftforge.event.GameShuttingDownEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -29,12 +29,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
 
-/** Entry point of the 26.3 adapter: connects Fabric events with the core event bus. */
-public final class AioForgeClient implements ClientModInitializer {
+/** Client start of the 26.3 Forge adapter: connects Forge events with the core event bus. */
+public final class AioForgeClient {
+    private AioForgeClient() {}
+
     public static final Logger LOGGER = LoggerFactory.getLogger("aio");
 
-    @Override
-    public void onInitializeClient() {
+    public static void init() {
         Log.sink = (level, message, error) -> {
             switch (level) {
                 case "ERROR" -> LOGGER.error(message, error);
@@ -52,56 +53,59 @@ public final class AioForgeClient implements ClientModInitializer {
 
         Minecraft client = Minecraft.getInstance();
         ForgePlatform platform = new ForgePlatform(client);
-        AioCore core = AioCore.init(platform, FabricLoader.getInstance().getConfigDir().resolve("aio"));
+        AioCore core = AioCore.init(platform, Loader.configDir().resolve("aio"));
         Telemetry.init(core);
+        dev.aio.core.update.UpdateCheck.start(core, Loader.modVersion("aio").orElse(""));
         ChatWaypoints.register(core);
         ForgeRenderer hudRenderer = new ForgeRenderer(client);
 
-        // Draw at the very top above all vanilla HUD elements (F1 hides the HUD including this element).
-        HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("aio", "hud"), (graphics, deltaTracker) -> {
-            if (hideHudFor(client.gui.screen())) return;
-            long t0 = System.nanoTime();
-            hudRenderer.begin(graphics);
-            core.bus().post(new Events.RenderHud(hudRenderer, deltaTracker.getGameTimeDeltaPartialTick(false)));
-            hudNanos += System.nanoTime() - t0;
-            hudFrames++;
+        AddGuiOverlayLayersEvent.BUS.addListener(event -> {
+            ForgeLayeredDraw layers = event.getLayeredDraw();
+            // Draw at the very top above all vanilla HUD elements (F1 hides the HUD including this element).
+            layers.addWithCondition(Identifier.fromNamespaceAndPath("aio", "hud"), (graphics, deltaTracker) -> {
+                if (hideHudFor(client.gui.screen())) return;
+                long t0 = System.nanoTime();
+                hudRenderer.begin(graphics);
+                core.bus().post(new Events.RenderHud(hudRenderer, deltaTracker.getGameTimeDeltaPartialTick(false)));
+                hudNanos += System.nanoTime() - t0;
+                hudFrames++;
+            }, () -> !client.gui.hud.isHidden());
+            // Hide vanilla parts that an active AIO module replaces
+            layers.addConditionTo(ForgeLayeredDraw.PRE_SLEEP_STACK, ForgeLayeredDraw.POTION_EFFECTS, () -> {
+                PotionStatusModule potions = core.module(PotionStatusModule.class);
+                return potions == null || !potions.isActive();
+            });
+            layers.addConditionTo(ForgeLayeredDraw.HOTBAR_AND_DECOS, ForgeLayeredDraw.SELECTED_ITEM_NAME, () -> {
+                HeldItemInfoModule info = core.module(HeldItemInfoModule.class);
+                return info == null || !info.replacesVanillaName();
+            });
+            // Food info directly at the hunger and health bars (positions like vanilla: centre +- 91, 39 above the bottom)
+            layers.addBelow(ForgeLayeredDraw.HOTBAR_AND_DECOS, Identifier.fromNamespaceAndPath("aio", "food_under"), ForgeLayeredDraw.HEALTH_BAR,
+                    (g, d) -> FoodHud.renderUnder(g, core.module(FoodInfoModule.class), g.guiWidth() / 2 + 91, g.guiHeight() - 39));
+            layers.addAbove(ForgeLayeredDraw.HOTBAR_AND_DECOS, Identifier.fromNamespaceAndPath("aio", "food_over"), ForgeLayeredDraw.HEALTH_BAR,
+                    (g, d) -> FoodHud.renderOver(g, core.module(FoodInfoModule.class), g.guiWidth() / 2 + 91, g.guiHeight() - 39));
+            layers.addAbove(ForgeLayeredDraw.HOTBAR_AND_DECOS, Identifier.fromNamespaceAndPath("aio", "health_over"), ForgeLayeredDraw.HEALTH_BAR,
+                    (g, d) -> FoodHud.renderHealth(g, core.module(FoodInfoModule.class), g.guiWidth() / 2 - 91, g.guiHeight() - 39));
         });
 
-        // Hide vanilla parts that an active AIO module replaces
-        HudElementRegistry.replaceElement(VanillaHudElements.MOB_EFFECTS, vanilla -> (graphics, delta) -> {
-            PotionStatusModule potions = core.module(PotionStatusModule.class);
-            if (potions == null || !potions.isActive()) vanilla.extractRenderState(graphics, delta);
-        });
-        HudElementRegistry.replaceElement(VanillaHudElements.HELD_ITEM_TOOLTIP, vanilla -> (graphics, delta) -> {
-            HeldItemInfoModule info = core.module(HeldItemInfoModule.class);
-            if (info == null || !info.replacesVanillaName()) vanilla.extractRenderState(graphics, delta);
-        });
-
-        // Food info directly at the hunger and health bars (positions like vanilla: centre ± 91, 39 above the bottom)
-        ForgeRenderer foodRenderer = new ForgeRenderer(client);
-        HudElementRegistry.attachElementBefore(VanillaHudElements.FOOD_BAR, Identifier.fromNamespaceAndPath("aio", "food_under"),
-                (g, d) -> FoodHud.renderUnder(g, core.module(FoodInfoModule.class), g.guiWidth() / 2 + 91, g.guiHeight() - 39));
-        HudElementRegistry.attachElementAfter(VanillaHudElements.FOOD_BAR, Identifier.fromNamespaceAndPath("aio", "food_over"),
-                (g, d) -> FoodHud.renderOver(g, core.module(FoodInfoModule.class), g.guiWidth() / 2 + 91, g.guiHeight() - 39));
-        HudElementRegistry.attachElementAfter(VanillaHudElements.HEALTH_BAR, Identifier.fromNamespaceAndPath("aio", "health_over"),
-                (g, d) -> FoodHud.renderHealth(g, core.module(FoodInfoModule.class), g.guiWidth() / 2 - 91, g.guiHeight() - 39));
-
+        ScreenEvents.install();
         ScreenHooks.register(core, client);
         BlockOutlineRenderer.register(core, client);
         LightOverlay.register(core, client);
         ShulkerTooltipHook.register(core);
-        ClientRecipeSynchronizedEvent.EVENT.register((c, recipes) -> RecipeSource.onSynced(recipes));
-
-        ClientReceiveMessageEvents.CHAT.register((message, signed, sender, params, timestamp) -> {
-            boolean self = sender != null && client.player != null && sender.equals(client.player.getGameProfile());
-            core.bus().post(new Events.ChatReceived(message.getString(), false, self));
+        ClientChatReceivedEvent.Player.BUS.addListener(event -> {
+            boolean self = event.getSender() != null && client.player != null && event.getSender().equals(client.player.getUUID());
+            core.bus().post(new Events.ChatReceived(event.getMessage().getString(), false, self));
+            return false;
         });
-        ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
-            if (!overlay) core.bus().post(new Events.ChatReceived(message.getString(), true));
+        SystemMessageReceivedEvent.BUS.addListener(event -> {
+            if (!event.isOverlay()) core.bus().post(new Events.ChatReceived(event.getMessage().getString(), true));
+            return false;
         });
 
-        ClientTickEvents.START_CLIENT_TICK.register(c -> Freecam.preTick());
-        ClientTickEvents.END_CLIENT_TICK.register(c -> {
+        TickEvent.ClientTickEvent.Pre.BUS.addListener(event -> Freecam.preTick());
+        TickEvent.ClientTickEvent.Post.BUS.addListener(event -> {
+            Minecraft c = client;
             // Window without focus (Alt+Tab): releases no longer arrive, so treat everything as released
             if (!c.isWindowActive()) InputState.clear();
             platform.applyPendingScreen();
@@ -119,19 +123,19 @@ public final class AioForgeClient implements ClientModInitializer {
             if (++diagTicks >= 600) reportPerformance(core);
         });
 
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, c) -> {
-            ServerData info = c.getCurrentServer();
-            String address = c.hasSingleplayerServer() || info == null ? null : info.ip;
+        ClientPlayerNetworkEvent.LoggingIn.BUS.addListener(event -> {
+            ServerData info = client.getCurrentServer();
+            String address = client.hasSingleplayerServer() || info == null ? null : info.ip;
             core.bus().post(new Events.ServerJoin(address));
         });
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, c) -> c.execute(() -> {
+        ClientPlayerNetworkEvent.LoggingOut.BUS.addListener(event -> client.execute(() -> {
             RecipeSource.clear();
             VillagerOffers.clear();
             ShieldIndicator.clear();
             core.bus().post(Events.ServerLeave.INSTANCE);
         }));
 
-        ClientLifecycleEvents.CLIENT_STOPPING.register(c -> core.shutdown());
+        GameShuttingDownEvent.BUS.addListener(event -> core.shutdown());
     }
 
     /**

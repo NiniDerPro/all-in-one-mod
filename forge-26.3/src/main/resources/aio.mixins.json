@@ -1,7 +1,8 @@
 {
   "required": false,
+  "minVersion": "0.8",
   "package": "dev.aio.forge.mixin",
-  "compatibilityLevel": "JAVA_25",
+  "compatibilityLevel": "JAVA_21",
   "client": [
     "ClientLevelParticlesMixin",
     "ParticleEngineMixin",
@@ -13,6 +14,8 @@
     "AbstractContainerScreenAccessor",
     "AtmosphericFogMixin",
     "CameraMixin",
+    "LevelRenderHooksMixin",
+    "SpeedFovMixin",
     "ChatComponentMixin",
     "EntityMixin",
     "FoodDataAccessor",

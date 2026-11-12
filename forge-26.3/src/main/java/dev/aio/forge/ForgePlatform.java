@@ -30,7 +30,7 @@ import dev.aio.forge.mixin.FoodDataAccessor;
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.platform.InputConstants;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import net.fabricmc.loader.api.FabricLoader;
+import dev.aio.forge.shim.Loader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.KeyMapping;
@@ -251,7 +251,7 @@ public final class ForgePlatform implements Platform {
 
     @Override public boolean freelookSupported() { return ForgeHooks.cameraHookSeen; }
 
-    @Override public boolean isModLoaded(String modId) { return FabricLoader.getInstance().isModLoaded(modId); }
+    @Override public boolean isModLoaded(String modId) { return Loader.isModLoaded(modId); }
 
     @Override public boolean crosshairOnLiving() {
         return client.hitResult instanceof EntityHitResult eh && eh.getEntity() instanceof LivingEntity le
