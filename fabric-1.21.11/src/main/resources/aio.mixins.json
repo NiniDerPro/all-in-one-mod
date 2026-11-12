@@ -17,6 +17,8 @@
     "AtmosphericFogMixin",
     "CameraMixin",
     "ChatComponentMixin",
+    "ChatHeadsDrawMixin",
+    "ChatHeadsLineMixin",
     "EntityMixin",
     "FoodDataAccessor",
     "HudMixin",
