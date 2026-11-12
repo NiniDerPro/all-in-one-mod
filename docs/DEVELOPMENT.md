@@ -16,7 +16,9 @@ core/                 Version-independent core, NO Minecraft dependency (Gson on
   ui/                 Settings GUI (ClickGuiScreen), theme, UiScreen interface
   platform/           Version abstraction: Platform, Renderer, ItemRef, ...
   modules/            The actual features
-fabric-26.3/          Thin adapter for MC 26.3: Platform/Renderer implementation + mixins
+fabric-26.3/          Thin adapter for MC 26.3 (Fabric/Quilt): Platform/Renderer implementation + mixins
+neoforge-26.3/        Placeholder for a NeoForge adapter (no build.gradle yet, skipped by the build)
+forge-26.3/           Placeholder for a Forge adapter (same)
 server/stats-worker/  Cloudflare Worker for the optional anonymous statistics
 ```
 
@@ -27,6 +29,11 @@ Keys are stored by their Minecraft names (`key.keyboard.right.shift`, `key.mouse
 codes, so configs stay valid when the game switches between GLFW and SDL.
 
 Branches: `main` holds the overview; the code lives in one branch per Minecraft version (`26.3`, later `26.2`, ...).
+Inside a version branch there is one adapter folder per loader (`fabric-<mc>`, `neoforge-<mc>`, `forge-<mc>`).
+`settings.gradle` includes every such folder that contains a `build.gradle`; folders without one are placeholders and
+are skipped, so the build keeps working. CI builds all included adapters on every push and attaches all jars
+(`aio-clientside-<loader>-<version>+mc<mc>.jar`) to one GitHub release per version. To add a loader or Minecraft
+version: copy an adapter folder, adapt the adapter classes, add its `build.gradle`; nothing else has to change.
 
 ## Core principles
 

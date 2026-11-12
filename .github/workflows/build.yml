@@ -24,10 +24,16 @@ jobs:
         env:
           AIO_STATS_URL: ${{ secrets.AIO_STATS_URL }}
         run: ./gradlew build
+      # Collect the jars of all adapters (fabric-*, neoforge-*, forge-* that have a build.gradle)
+      - name: Collect jars
+        run: |
+          mkdir -p dist
+          find . -path '*/build/libs/aio-clientside-*.jar' ! -name '*-sources.jar' ! -name '*-dev.jar' -exec cp {} dist/ \;
+          ls -la dist
       - uses: actions/upload-artifact@v4
         with:
           name: aio-clientside
-          path: fabric-*/build/libs/*.jar
+          path: dist/*.jar
 
       # Publish the jar itself as a release asset (no zip): one release per version, e.g. v0.2.2-mc26.3
       - name: Release with jar
@@ -40,9 +46,9 @@ jobs:
           TAG="v$VER-mc$MC"
           BETA=""; case "$VER" in 0.*) BETA=" (beta)";; esac
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" fabric-*/build/libs/*.jar --clobber
+            gh release upload "$TAG" dist/*.jar --clobber
             gh release edit "$TAG" --latest --prerelease=false --title "AIO ClientSide $VER$BETA (Minecraft $MC)"
           else
-            gh release create "$TAG" fabric-*/build/libs/*.jar --target "$GITHUB_SHA" --latest \
+            gh release create "$TAG" dist/*.jar --target "$GITHUB_SHA" --latest \
               --title "AIO ClientSide $VER$BETA (Minecraft $MC)" --notes "Build $VER"
           fi

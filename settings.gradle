@@ -14,8 +14,14 @@ rootProject.name = 'all-in-one-mod'
 // Version-independent core: event bus, config, modules, HUD, GUI logic.
 include 'core'
 
-// Thin adapter layers per Minecraft version.
-// With -Paio.coreOnly=true only the core is built/tested (without the Fabric Maven).
+// Thin adapter layers: one folder per loader and Minecraft version, e.g. fabric-26.3, neoforge-26.3, forge-26.3.
+// Every folder that matches <loader>-<version> AND contains a build.gradle is included automatically; folders
+// without a build.gradle (planned adapters) are skipped, so the build keeps working while they are only prepared.
+// With -Paio.coreOnly=true only the core is built/tested (without the Fabric/Maven repositories).
 if (!Boolean.parseBoolean(providers.gradleProperty('aio.coreOnly').getOrElse('false'))) {
-    include 'fabric-26.3'
+    rootDir.listFiles().sort { it.name }.each { dir ->
+        if (dir.isDirectory() && (dir.name ==~ /(fabric|neoforge|forge)-.+/) && new File(dir, 'build.gradle').exists()) {
+            include dir.name
+        }
+    }
 }
