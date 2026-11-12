@@ -219,7 +219,7 @@ public abstract class Module {
     public static final Set<String> DEFAULT_ON = Set.of(
             "armorhud", "lookat", "flexchat", "helditeminfo", "dynamicfps", "elytraswap", "entityculling", "foodinfo",
             "freelook", "fullbright", "itemlist", "invtweaks", "coordinates", "namealert", "shulkerpreview",
-            "keybinds", "xpclumps", "zoom", "potions", "noviewbob", "nospeedfov");
+            "keybinds", "xpclumps", "zoom", "potions", "noviewbob");
 
     /** Resets everything to default (without triggering a save, the caller does that). */
     public void resetToDefaults() {
