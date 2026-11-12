@@ -42,7 +42,7 @@ public abstract class ClientLevelParticlesMixin {
 
     @Inject(method = "createFireworks", at = @At("HEAD"), cancellable = true)
     private void aio$fireworks(double x, double y, double z, double vx, double vy, double vz,
-                               List<FireworkExplosion> explosions, boolean flag,
+                               List<FireworkExplosion> explosions,
                                CallbackInfo ci) {
         if (aio$off("minecraft:firework")) ci.cancel();
     }

@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(EntityRenderer.class)
 public abstract class EntityRendererCullMixin {
     @Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true, require = 0)
-    private void aio$cull(Entity entity, Frustum frustum, double camX, double camY, double camZ, float partialTick,
+    private void aio$cull(Entity entity, Frustum frustum, double camX, double camY, double camZ,
                           CallbackInfoReturnable<Boolean> cir) {
         if (!Culler.shouldRenderEntity(entity)) cir.setReturnValue(false);
     }
