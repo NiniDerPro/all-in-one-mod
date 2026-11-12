@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "aio",
+  "version": "${version}",
+  "name": "AIO ClientSide",
+  "description": "One mod instead of thirty: HUD, PvP and quality-of-life features in a single menu. Steps aside for mods you already have.",
+  "authors": ["niniderpro"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["dev.aio.fabric.AioFabricClient"]
+  },
+  "mixins": [
+    {
+      "config": "aio.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
