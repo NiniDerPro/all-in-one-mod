@@ -54,6 +54,8 @@ public final class AioFabricClient implements ClientModInitializer {
         FabricPlatform platform = new FabricPlatform(client);
         AioCore core = AioCore.init(platform, FabricLoader.getInstance().getConfigDir().resolve("aio"));
         Telemetry.init(core);
+        dev.aio.core.update.UpdateCheck.start(core, FabricLoader.getInstance().getModContainer("aio")
+                .map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse(""));
         ChatWaypoints.register(core);
         FabricRenderer hudRenderer = new FabricRenderer(client);
 
