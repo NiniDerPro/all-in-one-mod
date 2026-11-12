@@ -6,13 +6,13 @@ import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 
 /** Connects the shulker preview with Fabric's tooltip events. */
@@ -21,10 +21,10 @@ public final class ShulkerTooltipHook {
 
     static void register(AioCore core) {
         TooltipComponentCallback.EVENT.register(data -> data instanceof ShulkerTooltip.Data d ? new ShulkerTooltip.Client(d) : null);
-        ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> {
+        ItemTooltipCallback.EVENT.register((stack, flag, lines) -> {
             ShulkerPreviewModule m = core.module(ShulkerPreviewModule.class);
             if (m == null || !m.isActive() || !isShulker(stack)) return;
-            int stacks = stackCount(stack.get(DataComponents.CONTAINER));
+            int stacks = stackCount(stack.getTagElement("BlockEntityTag"));
             if (stacks == 0) return;
             // Replaces the vanilla list: short summary, below it the note about the key
             lines.add(Component.literal("Contains " + stacks + (stacks == 1 ? " Stack" : " Stacks")).withStyle(ChatFormatting.GRAY));
@@ -36,10 +36,10 @@ public final class ShulkerTooltipHook {
     }
 
     /** Occupied slots of a chest. */
-    static int stackCount(ItemContainerContents contents) {
+    static int stackCount(CompoundTag contents) {
         if (contents == null) return 0;
         NonNullList<ItemStack> items = NonNullList.withSize(27, ItemStack.EMPTY);
-        contents.copyInto(items);
+        ContainerHelper.loadAllItems(contents, items);
         int n = 0;
         for (ItemStack s : items) if (!s.isEmpty()) n++;
         return n;
@@ -50,14 +50,14 @@ public final class ShulkerTooltipHook {
     }
 
     // The tooltip is queried every frame: reuse the result for the same content
-    private static ItemContainerContents lastContents;
+    private static CompoundTag lastContents;
     private static boolean lastTint;
     private static TooltipComponent lastData;
 
     /** Tooltip data or null if the item is not a (filled) shulker box. */
     public static TooltipComponent create(ItemStack stack, boolean tint) {
         if (!isShulker(stack)) return null;
-        ItemContainerContents contents = stack.get(DataComponents.CONTAINER);
+        CompoundTag contents = stack.getTagElement("BlockEntityTag");
         if (contents == null) return null;
         if (contents == lastContents && tint == lastTint) return lastData;
         lastContents = contents;
@@ -66,16 +66,16 @@ public final class ShulkerTooltipHook {
         return lastData;
     }
 
-    private static TooltipComponent build(ItemStack stack, ItemContainerContents contents, boolean tint) {
+    private static TooltipComponent build(ItemStack stack, CompoundTag contents, boolean tint) {
         NonNullList<ItemStack> items = NonNullList.withSize(27, ItemStack.EMPTY);
-        contents.copyInto(items);
+        ContainerHelper.loadAllItems(contents, items);
         boolean any = false;
         for (ItemStack s : items) if (!s.isEmpty()) { any = true; break; }
         if (!any) return null;
         int color = 0;
         if (tint && ((BlockItem) stack.getItem()).getBlock() instanceof ShulkerBoxBlock box) {
             DyeColor dye = box.getColor();
-            color = dye == null ? 0x9A7D9A : dye.getTextureDiffuseColor() & 0xFFFFFF;
+            color = dye == null ? 0x9A7D9A : dye.getMapColor().col & 0xFFFFFF;
         }
         return new ShulkerTooltip.Data(items, color);
     }

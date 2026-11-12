@@ -52,7 +52,7 @@ public final class AioScreen extends Screen {
     }
 
     /** No vanilla background/blur: the UiScreens draw their own. */
-    @Override public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float delta) {}
+    @Override public void renderBackground(GuiGraphics graphics) {}
 
     @Override public boolean mouseClicked(double mouseX, double mouseY, int button) {
         return ui.mouseClicked(mouseX, mouseY, FabricPlatform.button(button));
@@ -66,7 +66,7 @@ public final class AioScreen extends Screen {
         return ui.mouseDragged(mouseX, mouseY, FabricPlatform.button(button), deltaX, deltaY);
     }
 
-    @Override public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+    @Override public boolean mouseScrolled(double mouseX, double mouseY, double verticalAmount) {
         return ui.mouseScrolled(mouseX, mouseY, verticalAmount);
     }
 

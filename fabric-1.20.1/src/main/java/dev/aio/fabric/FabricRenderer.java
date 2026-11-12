@@ -90,7 +90,7 @@ public final class FabricRenderer implements Renderer {
         if (img == null || img.w != w || img.h != h) {
             if (img != null) client.getTextureManager().release(img.id);
             var tex = new net.minecraft.client.renderer.texture.DynamicTexture(w, h, false);
-            ResourceLocation id = ResourceLocation.fromNamespaceAndPath("aio", "dyn/" + key);
+            ResourceLocation id = new ResourceLocation("aio", "dyn/" + key);
             client.getTextureManager().register(id, tex);
             img = new Img(tex, id, -1, w, h);
             images.put(key, img);
@@ -118,23 +118,11 @@ public final class FabricRenderer implements Renderer {
     private final Map<String, ResourceLocation> sprites = new HashMap<>();
 
     @Override public void sprite(String id, float x, float y, int width, int height) {
-        ResourceLocation sprite = sprites.computeIfAbsent(id, ResourceLocation::parse);
-        PoseStack pose = g.pose();
-        pose.pushPose();
-        pose.translate(x, y, 0);
-        g.blitSprite(sprite, 0, 0, width, height);
-        pose.popPose();
+        // GUI atlas sprites are not available through GuiGraphics on this Minecraft version
     }
 
     @Override public void sprite(String id, float x, float y, int width, int height, int argb) {
-        ResourceLocation sprite = sprites.computeIfAbsent(id, ResourceLocation::parse);
-        PoseStack pose = g.pose();
-        pose.pushPose();
-        pose.translate(x, y, 0);
-        g.setColor(((argb >> 16) & 0xFF) / 255f, ((argb >> 8) & 0xFF) / 255f, (argb & 0xFF) / 255f, ((argb >>> 24) & 0xFF) / 255f);
-        g.blitSprite(sprite, 0, 0, width, height);
-        g.setColor(1f, 1f, 1f, 1f);
-        pose.popPose();
+        // see above
     }
 
     @Override public void push() { g.pose().pushPose(); }

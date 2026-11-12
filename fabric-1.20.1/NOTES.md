@@ -1,4 +1,4 @@
-# Minecraft 1.21.1 adapter – scope
+# Minecraft 1.20.1 adapter – scope
 
 Working: menu, HUD elements, zoom, freelook, freecam, waypoints (menu, compass, markers), keybind search, chat tools
 (timestamps, copy), item list (items only), mouse tweaks, tool saver, auto tool/weapon, elytra swap, toggle sprint. See the module list in the menu: modules whose hooks are not ported are shown as "not available on this

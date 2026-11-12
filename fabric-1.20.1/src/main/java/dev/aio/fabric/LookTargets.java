@@ -53,7 +53,7 @@ final class LookTargets {
         HitResult hit = client.hitResult;
         if (p != null && maxDistance > 0 && (hit == null || hit.getType() == HitResult.Type.MISS)) {
             // look farther than the reach (blocks only, like binoculars for the look-at info)
-            hit = p.pick(maxDistance, client.getTimer().getGameTimeDeltaPartialTick(false), false);
+            hit = p.pick(maxDistance, client.getFrameTime(), false);
         }
         if (p == null || client.level == null || hit == null || hit.getType() == HitResult.Type.MISS) return null;
 
@@ -107,7 +107,7 @@ final class LookTargets {
         ItemRef result = ItemRef.EMPTY;
         if (kind != null) {
             for (String tier : TOOL_TIERS) {
-                var item = BuiltInRegistries.ITEM.getOptional(ResourceLocation.withDefaultNamespace(tier + "_" + kind));
+                var item = BuiltInRegistries.ITEM.getOptional(new ResourceLocation(tier + "_" + kind));
                 if (item.isEmpty()) continue;
                 ItemStack stack = new ItemStack(item.get());
                 if (!state.requiresCorrectToolForDrops() || stack.isCorrectToolForDrops(state)) {

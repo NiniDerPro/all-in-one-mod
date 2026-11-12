@@ -43,7 +43,6 @@ import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.locale.Language;
@@ -53,7 +52,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
-import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -68,7 +66,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.item.EnchantedBookItem;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.EntityHitResult;
@@ -151,7 +150,7 @@ public final class FabricPlatform implements Platform {
     @Override public String biome() {
         LocalPlayer p = player();
         if (p == null || client.level == null) return "";
-        String id = client.level.getBiome(p.blockPosition()).getRegisteredName();
+        String id = client.level.getBiome(p.blockPosition()).unwrapKey().map(k -> k.location().toString()).orElse("");
         return Component.translatable("biome." + id.replace(':', '.')).getString();
     }
 
@@ -171,14 +170,14 @@ public final class FabricPlatform implements Platform {
         if (p == null) return List.of();
         List<EffectInfo> list = new ArrayList<>();
         for (MobEffectInstance inst : p.getActiveEffects()) {
-            MobEffect effect = inst.getEffect().value();
+            MobEffect effect = inst.getEffect();
             list.add(new EffectInfo(
                     effect.getDisplayName().getString(),
                     inst.getAmplifier(),
                     inst.getDuration(),
-                    inst.isInfiniteDuration(),
+                    inst.getDuration() < 0,
                     effect.getCategory() == MobEffectCategory.BENEFICIAL,
-                    effectSprite(inst.getEffect().getRegisteredName())));
+                    effectSprite(BuiltInRegistries.MOB_EFFECT.getKey(effect).toString())));
         }
         return list;
     }
@@ -276,7 +275,7 @@ public final class FabricPlatform implements Platform {
         ServerData info = client.getCurrentServer();
         var conn = client.getConnection();
         if (info == null || conn == null) return null;
-        String brand = conn.serverBrand();
+        String brand = null;
         return new ServerInfo(info.name == null ? "" : info.name, info.ip, ping(), conn.getOnlinePlayers().size(),
                 info.version == null ? "" : info.version.getString(), info.motd == null ? "" : info.motd.getString(),
                 brand == null ? "" : brand);
@@ -289,7 +288,7 @@ public final class FabricPlatform implements Platform {
         if (p == null) return 0;
         Inventory inv = p.getInventory();
         boolean tag = idOrTag.startsWith("#");
-        TagKey<Item> key = tag ? tagCache.computeIfAbsent(idOrTag, t -> TagKey.create(Registries.ITEM, ResourceLocation.parse(t.substring(1)))) : null;
+        TagKey<Item> key = tag ? tagCache.computeIfAbsent(idOrTag, t -> TagKey.create(Registries.ITEM, new ResourceLocation(t.substring(1)))) : null;
         int n = 0;
         for (int i = 0; i < inv.getContainerSize(); i++) {
             ItemStack s = inv.getItem(i);
@@ -300,7 +299,7 @@ public final class FabricPlatform implements Platform {
     }
 
     @Override public ItemRef item(String id) {
-        return BuiltInRegistries.ITEM.getOptional(ResourceLocation.parse(id))
+        return BuiltInRegistries.ITEM.getOptional(new ResourceLocation(id))
                 .map(i -> FabricItemRef.of(new ItemStack(i)))
                 .orElse(ItemRef.EMPTY);
     }
@@ -309,13 +308,11 @@ public final class FabricPlatform implements Platform {
         LocalPlayer p = player();
         if (p == null) return List.of();
         ItemStack s = p.getMainHandItem();
-        ItemEnchantments ench = s.getEnchantments();
-        if (ench.isEmpty()) ench = s.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY);
+        net.minecraft.nbt.ListTag tags = s.getItem() instanceof EnchantedBookItem ? EnchantedBookItem.getEnchantments(s) : s.getEnchantmentTags();
         List<String> out = new ArrayList<>();
-        for (Object2IntMap.Entry<Holder<Enchantment>> e : ench.entrySet()) {
+        for (java.util.Map.Entry<Enchantment, Integer> e : EnchantmentHelper.deserializeEnchantments(tags).entrySet()) {
             // Curses red like in the vanilla tooltip
-            boolean curse = e.getKey().is(EnchantmentTags.CURSE);
-            out.add((curse ? "§c" : "") + Enchantment.getFullname(e.getKey(), e.getIntValue()).getString());
+            out.add((e.getKey().isCurse() ? "§c" : "") + e.getKey().getFullname(e.getValue()).getString());
         }
         return out;
     }
@@ -428,7 +425,7 @@ public final class FabricPlatform implements Platform {
         return NametagTargets.collect(client, maxDistance, partialTick, players, mobs, items, tnt, throughWalls);
     }
 
-    @Override public boolean debugScreenOpen() { return client.getDebugOverlay().showDebugScreen(); }
+    @Override public boolean debugScreenOpen() { return client.options.renderDebug; }
 
     @Override public boolean drawProfilerChart(Renderer r, int w, int h) { return false; }
 
@@ -539,10 +536,10 @@ public final class FabricPlatform implements Platform {
             var sp = server.getPlayerList().getPlayer(p.getUUID());
             if (sp != null) exhaustion = ((FoodDataAccessor) sp.getFoodData()).aio$exhaustion();
         }
-        FoodProperties food = p.getMainHandItem().get(DataComponents.FOOD);
-        if (food == null) food = p.getOffhandItem().get(DataComponents.FOOD);
-        int nutrition = food == null ? 0 : food.nutrition();
-        float sat = food == null ? 0 : food.saturation();
+        FoodProperties food = p.getMainHandItem().getItem().getFoodProperties();
+        if (food == null) food = p.getOffhandItem().getItem().getFoodProperties();
+        int nutrition = food == null ? 0 : food.getNutrition();
+        float sat = food == null ? 0 : food.getSaturationModifier();
         boolean canEat = food != null && p.canEat(food.canAlwaysEat());
         return new FoodState(fd.getFoodLevel(), fd.getSaturationLevel(), exhaustion,
                 p.getHealth(), p.getMaxHealth(), p.getAbsorptionAmount(), nutrition, sat, canEat, visible);

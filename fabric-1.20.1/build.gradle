@@ -2,7 +2,7 @@ plugins {
     id 'net.fabricmc.fabric-loom-remap'
 }
 
-// Adapter for Minecraft 1.21.11 (obfuscated game: official Mojang mappings, remapped jar).
+// Adapter for Minecraft 1.20.1 (obfuscated game: official Mojang mappings, remapped jar).
 // For another version copy this folder, add the versions and only adapt the
 // adapter classes/mixins. The core stays unchanged.
 evaluationDependsOn(':core')
@@ -15,8 +15,8 @@ base {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 dependencies {
@@ -30,7 +30,7 @@ dependencies {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-    options.release = 21
+    options.release = 17
     options.compilerArgs << '-Xmaxerrs' << '3000'
 }
 

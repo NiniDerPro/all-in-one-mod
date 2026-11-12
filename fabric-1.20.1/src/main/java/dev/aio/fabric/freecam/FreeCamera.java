@@ -69,7 +69,7 @@ public class FreeCamera extends AbstractClientPlayer {
     }
 
     public void spawn() {
-        getClientLevel().addEntity(this);
+        getClientLevel().putNonPlayerEntity(getId(), this);
     }
 
     public void despawn() {
@@ -110,7 +110,7 @@ public class FreeCamera extends AbstractClientPlayer {
 
     // The player's night vision also applies to the camera
     @Override
-    public MobEffectInstance getEffect(Holder<MobEffect> effect) {
+    public MobEffectInstance getEffect(MobEffect effect) {
         return MC.player.getEffect(effect);
     }
 

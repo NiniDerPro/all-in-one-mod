@@ -16,7 +16,7 @@ import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -72,15 +72,15 @@ final class LightOverlay {
     private static void quad(PoseStack.Pose pose, VertexConsumer v, int x, int y, int z, int c) {
         float y1 = y + 0.005f; // just above the surface, no flicker
         float a = 0.06f, x0 = x + a, z0 = z + a, x1 = x + 1 - a, z1 = z + 1 - a;
-        v.addVertex(pose, x0, y1, z0).setColor(c);
-        v.addVertex(pose, x0, y1, z1).setColor(c);
-        v.addVertex(pose, x1, y1, z1).setColor(c);
-        v.addVertex(pose, x1, y1, z0).setColor(c);
+        v.vertex(pose.pose(), x0, y1, z0).color((c >> 16) & 255, (c >> 8) & 255, c & 255, (c >>> 24) & 255).endVertex();
+        v.vertex(pose.pose(), x0, y1, z1).color((c >> 16) & 255, (c >> 8) & 255, c & 255, (c >>> 24) & 255).endVertex();
+        v.vertex(pose.pose(), x1, y1, z1).color((c >> 16) & 255, (c >> 8) & 255, c & 255, (c >>> 24) & 255).endVertex();
+        v.vertex(pose.pose(), x1, y1, z0).color((c >> 16) & 255, (c >> 8) & 255, c & 255, (c >>> 24) & 255).endVertex();
         // Back side, in case the fill is drawn single-sided
-        v.addVertex(pose, x0, y1, z0).setColor(c);
-        v.addVertex(pose, x1, y1, z0).setColor(c);
-        v.addVertex(pose, x1, y1, z1).setColor(c);
-        v.addVertex(pose, x0, y1, z1).setColor(c);
+        v.vertex(pose.pose(), x0, y1, z0).color((c >> 16) & 255, (c >> 8) & 255, c & 255, (c >>> 24) & 255).endVertex();
+        v.vertex(pose.pose(), x1, y1, z0).color((c >> 16) & 255, (c >> 8) & 255, c & 255, (c >>> 24) & 255).endVertex();
+        v.vertex(pose.pose(), x1, y1, z1).color((c >> 16) & 255, (c >> 8) & 255, c & 255, (c >>> 24) & 255).endVertex();
+        v.vertex(pose.pose(), x0, y1, z1).color((c >> 16) & 255, (c >> 8) & 255, c & 255, (c >>> 24) & 255).endVertex();
     }
 
     static void tick(AioCore core, Minecraft mc) {

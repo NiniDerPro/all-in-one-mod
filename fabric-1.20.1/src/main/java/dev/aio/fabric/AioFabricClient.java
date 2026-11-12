@@ -66,7 +66,7 @@ public final class AioFabricClient implements ClientModInitializer {
             if (hideHudFor(client.screen)) return;
             long t0 = System.nanoTime();
             hudRenderer.begin(graphics);
-            core.bus().post(new Events.RenderHud(hudRenderer, deltaTracker.getGameTimeDeltaPartialTick(false)));
+            core.bus().post(new Events.RenderHud(hudRenderer, deltaTracker));
             hudNanos += System.nanoTime() - t0;
             hudFrames++;
         });

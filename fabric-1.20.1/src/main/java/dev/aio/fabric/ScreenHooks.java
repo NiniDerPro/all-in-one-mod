@@ -27,8 +27,7 @@ import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.MerchantScreen;
-import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
-import net.minecraft.core.component.DataComponents;
+import net.minecraft.client.gui.screens.controls.KeyBindsScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.inventory.Slot;
@@ -173,7 +172,7 @@ final class ScreenHooks {
             if (creative) return true;
             Slot slot = slotAt(screen, mx, my);
             // Over bundles the mouse wheel selects the item in vanilla: do not interfere
-            if (slot == null || slot.getItem().has(DataComponents.BUNDLE_CONTENTS)) return true;
+            if (slot == null) return true;
             return !tweaks.onScroll(core.platform().container(), slot.index, v, shift());
         });
 

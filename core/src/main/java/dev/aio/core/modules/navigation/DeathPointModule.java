@@ -59,7 +59,7 @@ public final class DeathPointModule extends Module {
         // The newest is called "Death", the two before "Old death" (paler); older ones are dropped
         List<Waypoint> deaths = new ArrayList<>();
         for (Waypoint w : wp.inThisWorld()) if (w.death()) deaths.add(w);
-        while (deaths.size() >= KEEP) wp.remove(deaths.removeFirst());
+        while (deaths.size() >= KEEP) wp.remove(deaths.remove(0));
         for (Waypoint w : deaths) {
             String old = Lang.tr("aio.ui.death_point.old_death", "Old death");
             if (!w.name().equals(old) || w.color() != OLD_COLOR) wp.replace(w, w.withName(old).withColor(OLD_COLOR));

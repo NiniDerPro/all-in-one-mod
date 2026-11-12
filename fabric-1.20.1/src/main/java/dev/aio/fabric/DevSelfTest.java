@@ -134,8 +134,8 @@ final class DevSelfTest {
         stageTicks++;
         var server = mc.getSingleplayerServer();
         if (server == null) return;
-        while (!PENDING.isEmpty() && PENDING.getFirst().atTick() <= stageTicks) {
-            String cmds = PENDING.removeFirst().commands();
+        while (!PENDING.isEmpty() && PENDING.get(0).atTick() <= stageTicks) {
+            String cmds = PENDING.remove(0).commands();
             server.executeIfPossible(() -> {
                 for (String c : cmds.split(";")) {
                     if (c.isBlank()) continue;

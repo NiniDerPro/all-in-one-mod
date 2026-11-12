@@ -6,7 +6,7 @@ import dev.aio.core.modules.performance.ParticleLimitModule;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.item.component.FireworkExplosion;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -42,7 +42,7 @@ public abstract class ClientLevelParticlesMixin {
 
     @Inject(method = "createFireworks", at = @At("HEAD"), cancellable = true)
     private void aio$fireworks(double x, double y, double z, double vx, double vy, double vz,
-                               List<FireworkExplosion> explosions,
+                               CompoundTag explosions,
                                CallbackInfo ci) {
         if (aio$off("minecraft:firework")) ci.cancel();
     }

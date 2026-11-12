@@ -20,7 +20,6 @@ final class FpsBoost {
 
     private static final String[] KEYS = {FpsBoostModule.BIOME_BLEND, FpsBoostModule.SHADOWS, FpsBoostModule.CLOUDS,
             FpsBoostModule.CHUNK_UPDATES, FpsBoostModule.SMOOTH_LIGHT,
-            FpsBoostModule.MENU_BLUR,
             FpsBoostModule.MIPMAPS, FpsBoostModule.ENTITY_DISTANCE};
 
     @SuppressWarnings("unchecked")
@@ -31,7 +30,6 @@ final class FpsBoost {
             case FpsBoostModule.CLOUDS -> o.cloudStatus();
             case FpsBoostModule.CHUNK_UPDATES -> o.prioritizeChunkUpdates();
             case FpsBoostModule.SMOOTH_LIGHT -> o.ambientOcclusion();
-            case FpsBoostModule.MENU_BLUR -> o.menuBackgroundBlurriness();
             case FpsBoostModule.MIPMAPS -> o.mipmapLevels();
             case FpsBoostModule.ENTITY_DISTANCE -> o.entityDistanceScaling();
             default -> throw new IllegalArgumentException(key);
