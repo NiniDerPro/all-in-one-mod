@@ -4,6 +4,9 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "ClientLevelParticlesMixin",
+    "LightmapMixin",
+    "GameRendererMixin",
+    "DynamicLightsMixin",
     "ParticleEngineMixin",
     "MinecraftFpsMixin",
     "ExperienceOrbMixin",
