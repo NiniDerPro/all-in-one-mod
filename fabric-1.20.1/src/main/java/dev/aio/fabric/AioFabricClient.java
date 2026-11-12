@@ -58,6 +58,8 @@ public final class AioFabricClient implements ClientModInitializer {
             if (m != null) m.setUnavailable("Not available on this Minecraft version yet");
         }
         Telemetry.init(core);
+        dev.aio.core.update.UpdateCheck.start(core, FabricLoader.getInstance().getModContainer("aio")
+                .map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse(""));
         ChatWaypoints.register(core);
         FabricRenderer hudRenderer = new FabricRenderer(client);
 

@@ -53,13 +53,15 @@ final class ScreenHooks {
                 Screens.getButtons(screen).add(open);
             }
             // One-time statistics notice at the top of the title screen
-            if (screen instanceof TitleScreen && StatsNotice.shouldShow(core)) {
+            if (screen instanceof TitleScreen) {
                 ScreenEvents.afterRender(screen).register((s, graphics, mx, my, delta) -> {
                     renderer.begin(graphics);
                     StatsNotice.render(core, renderer, s.width);
+                    dev.aio.core.ui.UpdateNotice.render(core, renderer, s.width);
                 });
                 ScreenMouseEvents.allowMouseClick(screen).register((s, mouseX, mouseY, button) ->
-                        !StatsNotice.mouseClicked(core, mouseX, mouseY, s.width));
+                        !(StatsNotice.mouseClicked(core, mouseX, mouseY, s.width)
+                                || dev.aio.core.ui.UpdateNotice.mouseClicked(core, mouseX, mouseY, s.width)));
             }
             // Key bindings with search instead of the vanilla list (back leads to the controls)
             if (screen instanceof KeyBindsScreen) {
