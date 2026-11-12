@@ -1,0 +1,72 @@
+plugins {
+    id 'java'
+    id 'net.minecraftforge.gradle' version '[7.0.17,8)'
+}
+
+// Forge adapter for Minecraft 26.3 (official Mojang names). The core stays unchanged.
+evaluationDependsOn(':core')
+
+version = "${project.mod_version}+mc${project.minecraft_version}"
+group = project.maven_group
+
+base {
+    archivesName = 'aio-clientside-forge'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}
+
+minecraft {
+    runs {
+        configureEach {
+            workingDir = layout.projectDirectory.dir('run')
+            args '--mixin.config=aio.mixins.json'
+            systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
+        }
+        register('client')
+    }
+}
+
+repositories {
+    minecraft.mavenizer(it)
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
+    mavenCentral()
+}
+
+dependencies {
+    implementation minecraft.dependency("net.minecraftforge:forge:${project.forge_version}")
+    implementation project(':core')
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 25
+}
+
+processResources {
+    def version = project.version
+    inputs.property 'version', version
+    filesMatching('META-INF/mods.toml') {
+        expand 'version': version
+    }
+}
+
+// The core is packed directly into the mod jar; the mixin config is announced in the manifest.
+jar {
+    from(project(':core').sourceSets.main.output)
+    manifest {
+        attributes['MixinConfigs'] = 'aio.mixins.json'
+    }
+}
+
+// The stats server address only comes from the environment (CI secret), not from the source code
+processResources {
+    def statsUrl = System.getenv('AIO_STATS_URL') ?: ''
+    inputs.property('statsUrl', statsUrl)
+    doLast {
+        new File(destinationDir, 'aio_stats_url.txt').text = statsUrl
+    }
+}
