@@ -30,6 +30,12 @@ final class DevSelfTest {
     private static List<Step> steps;
     private static int index, waited, stuck;
     private static net.minecraft.world.phys.Vec3 fcStart;
+    private static float fovBase;
+    private static String zoomKey(AioCore core) {
+        for (var st : core.module(dev.aio.core.modules.render.ZoomModule.class).settings()) if (st.id().equals("key")) return String.valueOf(st.get());
+        return "key.keyboard.c";
+    }
+
 
     static void tick(AioCore core, Minecraft mc) {
         if (DIR.isEmpty()) return;
@@ -92,6 +98,14 @@ final class DevSelfTest {
                             cam == null ? null : cam.position(), cam != null && fcStart != null && cam.position().distanceTo(fcStart) > 0.5);
                     mc.options.keyUp.setDown(false);
                     Freecam.set(false);
+                }),
+                new Step(any, 5, () -> { fovBase = FabricHooks.lastFov; for (var st : core.module(dev.aio.core.modules.render.ZoomModule.class).settings()) if (st.id().equals("mode")) ((dev.aio.core.setting.EnumSetting<dev.aio.core.modules.render.ActivationMode>) (Object) st).set(dev.aio.core.modules.render.ActivationMode.TOGGLE); InputState.update(zoomKey(core), 1); core.bus().post(new dev.aio.core.event.Events.Key(zoomKey(core), 1, false)); }),
+                new Step(any, 30, () -> {
+                    var z = core.module(dev.aio.core.modules.render.ZoomModule.class);
+                    for (var st : z.settings()) AioFabricClient.LOGGER.info("[aio] Selftest zoom setting {}={}", st.id(), st.get());
+                    AioFabricClient.LOGGER.info("[aio] Selftest zoom inWorld={} keyDown={}", core.platform().inWorld(), InputState.isDown(zoomKey(core)));
+                    AioFabricClient.LOGGER.info("[aio] Selftest zoom: active={} engaged={} fovBase={} fovNow={} mult={}", z.isActive(), z.isEngaged(), fovBase, FabricHooks.lastFov, z.currentMultiplier());
+                    InputState.update(zoomKey(core), 0); core.bus().post(new dev.aio.core.event.Events.Key(zoomKey(core), 0, false));
                 }),
                 new Step(any, 5, () -> mc.pauseGame(false)),
                 new Step(any, 30, () -> shot(mc, dir, "06_pause.png")),
