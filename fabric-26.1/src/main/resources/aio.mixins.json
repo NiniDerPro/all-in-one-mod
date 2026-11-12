@@ -13,6 +13,7 @@
     "AbstractContainerScreenAccessor",
     "AtmosphericFogMixin",
     "CameraMixin",
+    "SpeedFovMixin",
     "ChatComponentMixin",
     "EntityMixin",
     "FoodDataAccessor",
