@@ -45,10 +45,13 @@ jobs:
           MC=$(grep '^minecraft_version=' gradle.properties | cut -d= -f2)
           TAG="v$VER-mc$MC"
           BETA=""; case "$VER" in 0.*) BETA=" (beta)";; esac
+          # Only the newest Minecraft version is marked "Latest" (change this when a newer version becomes the main one)
+          LATEST_MC="26.3"
+          if [ "$MC" = "$LATEST_MC" ]; then LATEST="--latest"; else LATEST="--latest=false"; fi
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/*.jar --clobber
-            gh release edit "$TAG" --latest --prerelease=false --title "AIO ClientSide $VER$BETA (Minecraft $MC)"
+            gh release edit "$TAG" $LATEST --prerelease=false --title "AIO ClientSide $VER$BETA (Minecraft $MC)"
           else
-            gh release create "$TAG" dist/*.jar --target "$GITHUB_SHA" --latest \
+            gh release create "$TAG" dist/*.jar --target "$GITHUB_SHA" $LATEST \
               --title "AIO ClientSide $VER$BETA (Minecraft $MC)" --notes "Build $VER"
           fi
