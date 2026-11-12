@@ -17,8 +17,7 @@ public abstract class BlockEntityCullMixin {
     @Inject(method = "tryExtractRenderState", at = @At("HEAD"), cancellable = true, require = 0)
     private void aio$cull(BlockEntity blockEntity, float partialTick,
                           ModelFeatureRenderer.CrumblingOverlay crumbling,
-                          boolean globallyRendered,
                           CallbackInfoReturnable<BlockEntityRenderState> cir) {
-        if (blockEntity != null && !globallyRendered && !Culler.shouldRenderBlockEntity(blockEntity)) cir.setReturnValue(null);
+        if (blockEntity != null && !Culler.shouldRenderBlockEntity(blockEntity)) cir.setReturnValue(null);
     }
 }
