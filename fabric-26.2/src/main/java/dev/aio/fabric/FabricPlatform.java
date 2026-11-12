@@ -434,9 +434,14 @@ public final class FabricPlatform implements Platform {
     @Override public boolean drawProfilerChart(Renderer r, int w, int h) {
         if (!(r instanceof FabricRenderer fr) || fr.graphics() == null || !FabricHooks.profilerResults) return false;
         var chart = client.getDebugOverlay().getProfilerPieChart();
-        // Vanilla aligns the chart at the bottom right: right edge = width − 5, bottom = height − offset
+        // In 26.2 the chart aligns itself at the bottom right of the screen: shift it so that its corner
+        // lands on the local rectangle (right edge = width − 5, bottom = height)
+        var g = fr.graphics();
         chart.setBottomOffset(0);
-        chart.extractRenderState(fr.graphics(), w + 5, h);
+        g.pose().pushMatrix();
+        g.pose().translate(w + 5 - g.guiWidth(), h - g.guiHeight());
+        chart.extractRenderState(g);
+        g.pose().popMatrix();
         return true;
     }
 

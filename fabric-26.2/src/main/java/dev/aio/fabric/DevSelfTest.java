@@ -141,7 +141,7 @@ final class DevSelfTest {
                     if (c.isBlank()) continue;
                     if (c.strip().equals("lan")) { // open the world to LAN (port 25565), for a second client
                         server.setUsesAuthentication(false); // offline: second test client without Mojang login
-                        boolean ok = server.publishServer(net.minecraft.server.MinecraftServer.MultiplayerScope.LAN, true, 25565);
+                        boolean ok = server.publishServer(net.minecraft.server.MinecraftServer.MultiplayerScope.LAN, null, true, 25565);
                         AioFabricClient.LOGGER.info("[aio] Selftest LAN published: {}", ok);
                         continue;
                     }

@@ -13,7 +13,6 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.MoveSimulationType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.PushReaction;
@@ -82,18 +81,9 @@ public class FreeCamera extends AbstractClientPlayer {
 
     // Hit and use animation of the hand come from the real player
     @Override
-    public SwingDescription getCurrentSwing() {
-        return MC.player.getCurrentSwing();
-    }
-
-    @Override
-    public float getSwingAnimation(final float partialTicks) {
-        return MC.player.getSwingAnimation(partialTicks);
-    }
-
-    @Override
-    public boolean isSwinging() {
-        return MC.player.isSwinging();
+    public float getAttackAnim(final float partialTicks) {
+        this.swinging = MC.player.swinging;
+        return MC.player.getAttackAnim(partialTicks);
     }
 
     @Override
@@ -126,7 +116,7 @@ public class FreeCamera extends AbstractClientPlayer {
     // Pistons do not push the camera when it flies through blocks
     @Override
     public PushReaction getPistonPushReaction() {
-        if (Freecam.noClip()) return PushReaction.IGNORE_ENTITY;
+        if (Freecam.noClip()) return PushReaction.IGNORE;
         return super.getPistonPushReaction();
     }
 
@@ -172,11 +162,6 @@ public class FreeCamera extends AbstractClientPlayer {
     @Override
     public boolean isEffectiveAi() {
         return true;
-    }
-
-    @Override
-    public MoveSimulationType getMoveSimulationType() {
-        return MoveSimulationType.SERVER_AND_CLIENT;
     }
 
     @Override
