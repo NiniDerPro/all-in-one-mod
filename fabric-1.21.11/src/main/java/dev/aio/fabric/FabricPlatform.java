@@ -208,7 +208,7 @@ public final class FabricPlatform implements Platform {
 
     @Override public String playerName() { return player() == null ? "" : player().getName().getString(); }
 
-    @Override public long dayTime() { return client.level == null ? 0 : client.level.getOverworldClockTime(); }
+    @Override public long dayTime() { return client.level == null ? 0 : client.level.getDayTime(); }
 
     @Override public String dimension() {
         if (client.level == null) return "";
@@ -440,7 +440,7 @@ public final class FabricPlatform implements Platform {
         chart.setBottomOffset(0);
         g.pose().pushMatrix();
         g.pose().translate(w + 5 - g.guiWidth(), h - g.guiHeight());
-        chart.extractRenderState(g);
+        chart.render(g);
         g.pose().popMatrix();
         return true;
     }
@@ -538,7 +538,7 @@ public final class FabricPlatform implements Platform {
                     break;
                 }
                 Map<Integer, String> sets = new TreeMap<>();
-                prof.tradeSetsByLevel().forEach((lvl, key) -> { if (key != null) sets.put(lvl, key.identifier().toString()); });
+                // Trade sets are data-driven only since 26.x; not available in 1.21.11
                 out.add(new Profession(ref.key().identifier().toString(), prof.name().getString(), jobBlock, sets));
             });
         } catch (RuntimeException e) {
@@ -688,7 +688,7 @@ public final class FabricPlatform implements Platform {
             AioFabricClient.LOGGER.info(message);
             return;
         }
-        p.sendOverlayMessage(Component.literal("AIO » ").withStyle(ChatFormatting.LIGHT_PURPLE)
-                .append(Component.literal(message).withStyle(ChatFormatting.WHITE)));
+        p.displayClientMessage(Component.literal("AIO » ").withStyle(ChatFormatting.LIGHT_PURPLE)
+                .append(Component.literal(message).withStyle(ChatFormatting.WHITE)), true);
     }
 }

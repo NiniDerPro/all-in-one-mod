@@ -5,7 +5,7 @@ import dev.aio.core.modules.player.FoodMath;
 import dev.aio.fabric.mixin.FoodDataAccessor;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
@@ -127,7 +127,7 @@ public final class FoodHud {
     // ---- Zeichnen ----
 
     /** Before the hunger bar: exhaustion as a bar. */
-    public static void renderUnder(GuiGraphicsExtractor g, FoodInfoModule m, int right, int top) {
+    public static void renderUnder(GuiGraphics g, FoodInfoModule m, int right, int top) {
         Minecraft mc = Minecraft.getInstance();
         if (m == null || !m.showExhaustion() || !visible(mc)) return;
         float exhaustion = exhaustion(mc);
@@ -139,7 +139,7 @@ public final class FoodHud {
     }
 
     /** After the hunger bar: saturation and preview. */
-    public static void renderOver(GuiGraphicsExtractor g, FoodInfoModule m, int right, int top) {
+    public static void renderOver(GuiGraphics g, FoodInfoModule m, int right, int top) {
         Minecraft mc = Minecraft.getInstance();
         if (m == null || !m.isActive() || !visible(mc)) return;
         Player p = mc.player;
@@ -151,7 +151,7 @@ public final class FoodHud {
             String text = String.format(Locale.ROOT, "Hunger %d · Sat %.1f", stats.getFoodLevel(), stats.getSaturationLevel());
             float ex = exhaustion(mc);
             if (Float.isFinite(ex)) text += String.format(Locale.ROOT, " · Exh %.2f", ex);
-            g.text(mc.font, text, right - mc.font.width(text), top - 10, 0xFFE0E0E0, true);
+            g.drawString(mc.font, text, right - mc.font.width(text), top - 10, 0xFFE0E0E0, true);
         }
         Held held = m.showPreview() ? held(p) : null;
         if (held == null) {
@@ -169,7 +169,7 @@ public final class FoodHud {
     }
 
     /** After the health bar: hearts that the food brings via natural healing. */
-    public static void renderHealth(GuiGraphicsExtractor g, FoodInfoModule m, int left, int top) {
+    public static void renderHealth(GuiGraphics g, FoodInfoModule m, int left, int top) {
         Minecraft mc = Minecraft.getInstance();
         if (m == null || !m.showHealthPreview() || !visible(mc)) return;
         Player p = mc.player;
@@ -200,7 +200,7 @@ public final class FoodHud {
         }
     }
 
-    private static void drawSaturation(GuiGraphicsExtractor g, float gained, float level, int right, int top, float alpha) {
+    private static void drawSaturation(GuiGraphics g, float gained, float level, int right, int top, float alpha) {
         if (level + gained < 0) return;
         float modified = Math.max(0, Math.min(level + gained, 20));
         int start = gained != 0 ? (int) Math.max(level / 2.0F, 0) : 0;
@@ -213,7 +213,7 @@ public final class FoodHud {
         }
     }
 
-    private static void drawHungerPreview(GuiGraphicsExtractor g, int restored, int food, int right, int top, float alpha, boolean rotten) {
+    private static void drawHungerPreview(GuiGraphics g, int restored, int food, int right, int top, float alpha, boolean rotten) {
         if (restored <= 0) return;
         int modified = Math.max(0, Math.min(20, food + restored));
         int start = Math.max(0, food / 2), end = (int) Math.ceil(modified / 2.0F);

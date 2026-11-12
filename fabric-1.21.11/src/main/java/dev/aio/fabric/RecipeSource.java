@@ -53,14 +53,7 @@ final class RecipeSource {
     private static Collection<RecipeHolder<?>> all(Minecraft client) {
         var server = client.getSingleplayerServer();
         if (server != null) {
-            FabricRecipeManager rm = (FabricRecipeManager) server.getRecipeManager();
-            List<RecipeHolder<?>> out = new ArrayList<>();
-            out.addAll(rm.getAllOfType(RecipeType.CRAFTING));
-            out.addAll(rm.getAllOfType(RecipeType.SMELTING));
-            out.addAll(rm.getAllOfType(RecipeType.BLASTING));
-            out.addAll(rm.getAllOfType(RecipeType.SMOKING));
-            out.addAll(rm.getAllOfType(RecipeType.CAMPFIRE_COOKING));
-            out.addAll(rm.getAllOfType(RecipeType.STONECUTTING));
+            List<RecipeHolder<?>> out = new ArrayList<>(server.getRecipeManager().getRecipes());
             return out;
         }
         SynchronizedRecipes s = synced;

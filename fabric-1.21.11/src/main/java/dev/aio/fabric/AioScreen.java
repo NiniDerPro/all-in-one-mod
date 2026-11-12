@@ -2,7 +2,7 @@ package dev.aio.fabric;
 
 import dev.aio.core.ui.UiScreen;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
@@ -49,13 +49,13 @@ public final class AioScreen extends Screen {
         else super.onClose();
     }
 
-    @Override public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+    @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         renderer.begin(graphics);
         ui.render(renderer, mouseX, mouseY, delta);
     }
 
     /** No vanilla background/blur: the UiScreens draw their own. */
-    @Override public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {}
+    @Override public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float delta) {}
 
     @Override public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         return ui.mouseClicked(event.x(), event.y(), FabricPlatform.button(event.button()));

@@ -52,11 +52,11 @@ final class ScreenHooks {
                         .bounds(6, 6, 44, 20)
                         .tooltip(Tooltip.create(Component.literal(Lang.tr("aio.ui.menu.open_aio", "Open the AIO menu"))))
                         .build();
-                Screens.getWidgets(screen).add(open);
+                Screens.getButtons(screen).add(open);
             }
             // One-time statistics notice at the top of the title screen
             if (screen instanceof TitleScreen && StatsNotice.shouldShow(core)) {
-                ScreenEvents.afterExtract(screen).register((s, graphics, mx, my, delta) -> {
+                ScreenEvents.afterRender(screen).register((s, graphics, mx, my, delta) -> {
                     renderer.begin(graphics);
                     StatsNotice.render(core, renderer, s.width);
                 });
@@ -84,7 +84,7 @@ final class ScreenHooks {
 
     private static void hookChat(AioCore core, FabricRenderer renderer, Screen screen) {
         ChatResizer resizer = new ChatResizer(core);
-        ScreenEvents.afterExtract(screen).register((s, graphics, mx, my, delta) -> {
+        ScreenEvents.afterRender(screen).register((s, graphics, mx, my, delta) -> {
             renderer.begin(graphics);
             resizer.render(renderer, mx, my);
         });
@@ -143,7 +143,7 @@ final class ScreenHooks {
         double[] mouse = new double[2];
         EditBox[] textProxy = new EditBox[1];
 
-        ScreenEvents.afterExtract(screen).register((s, graphics, mx, my, delta) -> {
+        ScreenEvents.afterRender(screen).register((s, graphics, mx, my, delta) -> {
             mouse[0] = mx;
             mouse[1] = my;
             ItemPanel panel = list.panel();

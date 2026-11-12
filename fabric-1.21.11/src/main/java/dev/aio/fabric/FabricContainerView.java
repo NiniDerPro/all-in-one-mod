@@ -12,7 +12,7 @@ import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.inventory.FurnaceMenu;
 import net.minecraft.world.inventory.SmokerMenu;
 import net.minecraft.world.inventory.StonecutterMenu;
-import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.DispenserMenu;
 import net.minecraft.world.inventory.HopperMenu;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -74,8 +74,8 @@ final class FabricContainerView implements ContainerView {
 
     @Override public void click(int slotIndex, int button, Click type) {
         if (client.gameMode == null || client.player == null) return;
-        ContainerInput input = type == Click.QUICK_MOVE ? ContainerInput.QUICK_MOVE : ContainerInput.PICKUP;
-        client.gameMode.handleContainerInput(menu.containerId, slotIndex, button, input, client.player);
+        ClickType input = type == Click.QUICK_MOVE ? ClickType.QUICK_MOVE : ClickType.PICKUP;
+        client.gameMode.handleInventoryMouseClick(menu.containerId, slotIndex, button, input, client.player);
     }
 
     @Override public boolean isPlayerOnly() { return menu instanceof InventoryMenu; }
@@ -84,9 +84,9 @@ final class FabricContainerView implements ContainerView {
     @Override public void dragSplit(int[] slots) {
         if (client.gameMode == null || client.player == null || slots.length == 0) return;
         int id = menu.containerId;
-        client.gameMode.handleContainerInput(id, -999, quickcraftMask(0, 0), ContainerInput.QUICK_CRAFT, client.player);
-        for (int s : slots) client.gameMode.handleContainerInput(id, s, quickcraftMask(1, 0), ContainerInput.QUICK_CRAFT, client.player);
-        client.gameMode.handleContainerInput(id, -999, quickcraftMask(2, 0), ContainerInput.QUICK_CRAFT, client.player);
+        client.gameMode.handleInventoryMouseClick(id, -999, quickcraftMask(0, 0), ClickType.QUICK_CRAFT, client.player);
+        for (int s : slots) client.gameMode.handleInventoryMouseClick(id, s, quickcraftMask(1, 0), ClickType.QUICK_CRAFT, client.player);
+        client.gameMode.handleInventoryMouseClick(id, -999, quickcraftMask(2, 0), ClickType.QUICK_CRAFT, client.player);
     }
 
     /** Like {@code AbstractContainerMenu.getQuickcraftMask}: phase (0 start, 1 slot, 2 end) + kind (0 = evenly). */

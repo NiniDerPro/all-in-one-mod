@@ -1,7 +1,7 @@
 package dev.aio.fabric;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
@@ -62,7 +62,7 @@ public final class FoodTooltip {
             return Math.max(hunger, sat);
         }
 
-        @Override public void extractImage(Font font, int tx, int ty, int totalWidth, int totalHeight, GuiGraphicsExtractor g) {
+        @Override public void renderImage(Font font, int tx, int ty, int totalWidth, int totalHeight, GuiGraphics g) {
             int nutrition = data.nutrition();
             // from right to left so that the drumsticks point in the right direction
             int x = tx + (hungerBars - 1) * 9, y = ty;
@@ -91,12 +91,12 @@ public final class FoodTooltip {
             if (saturationText != null) smallText(g, font, saturationText, x + 14, y, 1);
         }
 
-        private static void smallText(GuiGraphicsExtractor g, Font font, String text, int x, int y, int dy) {
+        private static void smallText(GuiGraphics g, Font font, String text, int x, int y, int dy) {
             Matrix3x2fStack pose = g.pose();
             pose.pushMatrix();
             pose.translate(x, y);
             pose.scale(0.75f, 0.75f);
-            g.text(font, text, 2, dy, 0xFFAAAAAA);
+            g.drawString(font, text, 2, dy, 0xFFAAAAAA);
             pose.popMatrix();
         }
     }

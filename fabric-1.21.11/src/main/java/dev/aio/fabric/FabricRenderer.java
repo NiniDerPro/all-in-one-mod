@@ -4,7 +4,7 @@ import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.Renderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix3x2fStack;
@@ -14,19 +14,19 @@ import java.util.Map;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
 
-/** {@link Renderer} over the {@link GuiGraphicsExtractor} of 26.3. Set per frame via {@link #begin}. */
+/** {@link Renderer} over the {@link GuiGraphics} of 26.3. Set per frame via {@link #begin}. */
 public final class FabricRenderer implements Renderer {
     private final Minecraft client;
-    private GuiGraphicsExtractor g;
+    private GuiGraphics g;
 
     public FabricRenderer(Minecraft client) {
         this.client = client;
     }
 
     /** For vanilla drawing functions (e.g. the profiler chart). */
-    public GuiGraphicsExtractor graphics() { return g; }
+    public GuiGraphics graphics() { return g; }
 
-    public void begin(GuiGraphicsExtractor graphics) {
+    public void begin(GuiGraphics graphics) {
         this.g = graphics;
     }
 
@@ -45,7 +45,7 @@ public final class FabricRenderer implements Renderer {
         Matrix3x2fStack pose = g.pose();
         pose.pushMatrix();
         pose.translate(x, y);
-        g.text(font(), text, 0, 0, argb, shadow);
+        g.drawString(font(), text, 0, 0, argb, shadow);
         pose.popMatrix();
     }
 
@@ -63,7 +63,7 @@ public final class FabricRenderer implements Renderer {
         Matrix3x2fStack pose = g.pose();
         pose.pushMatrix();
         pose.translate(x, y);
-        g.text(font(), seq, 0, 0, colors[0] | 0x00FFFFFF, shadow);
+        g.drawString(font(), seq, 0, 0, colors[0] | 0x00FFFFFF, shadow);
         pose.popMatrix();
     }
 
@@ -77,8 +77,8 @@ public final class FabricRenderer implements Renderer {
         Matrix3x2fStack pose = g.pose();
         pose.pushMatrix();
         pose.translate(x, y);
-        g.item(ref.stack(), 0, 0);
-        if (overlay) g.itemDecorations(font(), ref.stack(), 0, 0);
+        g.renderItem(ref.stack(), 0, 0);
+        if (overlay) g.renderItemDecorations(font(), ref.stack(), 0, 0);
         pose.popMatrix();
     }
 

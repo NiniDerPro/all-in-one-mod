@@ -53,6 +53,11 @@ public final class AioFabricClient implements ClientModInitializer {
         Minecraft client = Minecraft.getInstance();
         FabricPlatform platform = new FabricPlatform(client);
         AioCore core = AioCore.init(platform, FabricLoader.getInstance().getConfigDir().resolve("aio"));
+        // Features whose hooks are not ported to this Minecraft version yet are switched off with a reason
+        for (String id : new String[]{"chatheads", "dynamiclights", "fullbright", "nohurtcam", "blockoutline", "lightoverlay"}) {
+            var m = core.modules().get(id);
+            if (m != null) m.setUnavailable("Not available on this Minecraft version yet");
+        }
         Telemetry.init(core);
         ChatWaypoints.register(core);
         FabricRenderer hudRenderer = new FabricRenderer(client);
@@ -68,13 +73,13 @@ public final class AioFabricClient implements ClientModInitializer {
         });
 
         // Hide vanilla parts that an active AIO module replaces
-        HudElementRegistry.replaceElement(VanillaHudElements.MOB_EFFECTS, vanilla -> (graphics, delta) -> {
+        HudElementRegistry.replaceElement(VanillaHudElements.STATUS_EFFECTS, vanilla -> (graphics, delta) -> {
             PotionStatusModule potions = core.module(PotionStatusModule.class);
-            if (potions == null || !potions.isActive()) vanilla.extractRenderState(graphics, delta);
+            if (potions == null || !potions.isActive()) vanilla.render(graphics, delta);
         });
         HudElementRegistry.replaceElement(VanillaHudElements.HELD_ITEM_TOOLTIP, vanilla -> (graphics, delta) -> {
             HeldItemInfoModule info = core.module(HeldItemInfoModule.class);
-            if (info == null || !info.replacesVanillaName()) vanilla.extractRenderState(graphics, delta);
+            if (info == null || !info.replacesVanillaName()) vanilla.render(graphics, delta);
         });
 
         // Food info directly at the hunger and health bars (positions like vanilla: centre ± 91, 39 above the bottom)

@@ -17,24 +17,7 @@ final class FrameCamera {
      * (projection × view bobbing × viewing direction), so markers stay fixed on their point.
      */
     static CameraView current(Minecraft mc, double fov) {
-        try {
-            var c = mc.gameRenderer.getGameRenderState().levelRenderState.cameraRenderState;
-            if (c == null || !c.initialized || c.pos == null || c.projectionMatrix == null || c.viewRotationMatrix == null) return null;
-            Matrix4f m = new Matrix4f(c.projectionMatrix);
-            var e = c.entityRenderState;
-            if (e != null && e.isPlayer && mc.options.bobView().get()) {
-                float f = e.backwardsInterpolatedWalkDistance, g = e.bob;
-                m.translate(Mth.sin(f * (float) Math.PI) * g * 0.5f,
-                        -Math.abs(Mth.cos(f * (float) Math.PI) * g), 0);
-                m.rotateZ((float) Math.toRadians(Mth.sin(f * (float) Math.PI) * g * 3f));
-                m.rotateX((float) Math.toRadians(Math.abs(Mth.cos(f * (float) Math.PI - 0.2f) * g) * 5f));
-            }
-            m.mul(c.viewRotationMatrix);
-            float[] arr = new float[16];
-            m.get(arr);
-            return new CameraView(c.pos.x, c.pos.y, c.pos.z, c.yRot, c.xRot, fov, arr);
-        } catch (RuntimeException ex) {
-            return null;
-        }
+        // 1.21.11 has no render-state objects: markers fall back to the approximate camera
+        return null;
     }
 }

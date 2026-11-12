@@ -4,7 +4,7 @@ import dev.aio.core.hud.HudEditorScreen;
 import dev.aio.core.ui.ClickGuiScreen;
 import dev.aio.fabric.AioScreen;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.ToastManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ToastManager.class)
 public abstract class ToastManagerMixin {
     @Inject(method = "extractRenderState", at = @At("HEAD"), cancellable = true)
-    private void aio$hideOverMenu(GuiGraphicsExtractor graphics, CallbackInfo ci) {
+    private void aio$hideOverMenu(GuiGraphics graphics, CallbackInfo ci) {
         if (Minecraft.getInstance().screen instanceof AioScreen s
                 && (s.ui() instanceof ClickGuiScreen || s.ui() instanceof HudEditorScreen)) {
             ci.cancel();

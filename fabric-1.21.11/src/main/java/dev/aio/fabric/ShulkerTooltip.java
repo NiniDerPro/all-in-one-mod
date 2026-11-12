@@ -1,7 +1,7 @@
 package dev.aio.fabric;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
@@ -27,7 +27,7 @@ final class ShulkerTooltip {
 
         @Override public int getWidth(Font font) { return 9 * SLOT + 4; }
 
-        @Override public void extractImage(Font font, int x, int y, int totalWidth, int totalHeight, GuiGraphicsExtractor g) {
+        @Override public void renderImage(Font font, int x, int y, int totalWidth, int totalHeight, GuiGraphics g) {
             int w = 9 * SLOT + 2, h = rows() * SLOT + 2;
             int bg = data.color() == 0 ? 0xFF8B8B8B : 0xFF000000 | data.color();
             g.fill(x, y, x + w, y + h, 0xFF373737);
@@ -37,8 +37,8 @@ final class ShulkerTooltip {
                 g.fill(sx + 1, sy + 1, sx + SLOT - 1, sy + SLOT - 1, 0x40000000);
                 ItemStack stack = data.items().get(i);
                 if (stack.isEmpty()) continue;
-                g.item(stack, sx + 1, sy + 1);
-                g.itemDecorations(font, stack, sx + 1, sy + 1);
+                g.renderItem(stack, sx + 1, sy + 1);
+                g.renderItemDecorations(font, stack, sx + 1, sy + 1);
             }
         }
 
