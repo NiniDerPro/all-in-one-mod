@@ -45,6 +45,7 @@ public final class AioFabricClient implements ClientModInitializer {
 
         // Texts from assets/aio/lang/*.json; follows the language setting of Minecraft
         Lang.setLookup(key -> {
+            if (LangSwitch.forced()) return LangSwitch.get(key);
             Language language = Language.getInstance();
             return language.has(key) ? language.getOrDefault(key) : null;
         });

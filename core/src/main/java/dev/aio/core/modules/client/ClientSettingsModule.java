@@ -2,6 +2,7 @@ package dev.aio.core.modules.client;
 
 import dev.aio.core.compat.CompatMode;
 import dev.aio.core.module.Category;
+import dev.aio.core.i18n.UiLanguage;
 import dev.aio.core.module.Module;
 import dev.aio.core.platform.Keys;
 import dev.aio.core.hud.HudElement;
@@ -24,6 +25,8 @@ public final class ClientSettingsModule extends Module {
     public final ColorSetting accent;
     public final BooleanSetting rainbowAccent;
     public final EnumSetting<SortMode> sortMode;
+    /** Language of the AIO texts. */
+    public final EnumSetting<UiLanguage> language;
     /** Other installed mods with the same function take priority (the AIO module then stays off). */
     public final BooleanSetting preferOtherMods;
     /** "AIO" button in the pause and title menu. */
@@ -37,6 +40,7 @@ public final class ClientSettingsModule extends Module {
 
     public ClientSettingsModule() {
         super("client", "Client", "Menu key, server compatibility and look", Category.CLIENT, false);
+        language = add(new EnumSetting<>("language", "Language", UiLanguage.AUTO));
         guiKey = add(new KeybindSetting("guiKey", "Menu key", Keys.RIGHT_SHIFT));
         hudEditorKey = add(new KeybindSetting("hudEditorKey", "HUD editor key", Keys.NONE));
         compatMode = add(new EnumSetting<>("compatMode", "Server compatibility", CompatMode.OFF));

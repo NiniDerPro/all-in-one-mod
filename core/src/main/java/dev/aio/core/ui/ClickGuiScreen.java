@@ -60,6 +60,9 @@ public final class ClickGuiScreen implements UiScreen {
     /** Visible areas of the two scrollable regions (for clipping the click areas). */
     private float listY1, listY2, drawerX1, drawerY1, drawerY2;
     private int clip;
+    /** Dropdown list: the setting whose list is open, and the control it was opened from (set per frame). */
+    private EnumSetting<?> openEnum, ddEnum;
+    private float ddX1, ddY1, ddY2, ddX2;
     private SliderDrag slider;
     private KeybindSetting listening;
     /** The character for the key just bound still arrives as charTyped and must not go into the search. */
@@ -369,7 +372,9 @@ public final class ClickGuiScreen implements UiScreen {
         clip = 2;
         float y = top + 8 - drawerScroll;
         float start = y;
+        ddEnum = null;
         y = clientDrawer ? renderClientDrawer(r, mx, my, x, y, w, accent) : renderModuleDrawer(r, mx, my, drawer, x, y, w, accent);
+        renderDropdown(r, mx, my, accent);
         clip = 0;
         r.disableScissor();
         drawerMax = Math.max(0, (y - start) + 8 - (bottom - top));
@@ -644,14 +649,59 @@ public final class ClickGuiScreen implements UiScreen {
             }
             return;
         }
+        // Dropdown: the button shows the current value, a click opens the list of all values
         String label = e.display();
-        float cw = r.textWidth(label) + 22, cx = right - cw;
+        float widest = 0;
+        for (Enum<?> v : values) widest = Math.max(widest, r.textWidth(EnumSetting.label(v)));
+        float cw = Math.max(widest, r.textWidth(label)) + 24, cx = right - cw;
+        boolean open = openEnum == e;
         boolean hover = inside(mx, my, cx, y + 2, right, y + SET_H - 2);
-        Draw.round(r, cx, y + 2, right, y + SET_H - 2, 2, hover ? Theme.CARD_HOVER : Theme.CARD);
-        Draw.icon(r, Draw.CHEVRON_LEFT, cx + 2, y + 5, Theme.TEXT_MUTED);
-        r.text(label, cx + 11, y + 5, Theme.TEXT, false);
-        Draw.icon(r, Draw.CHEVRON_RIGHT, right - 10, y + 5, Theme.TEXT_MUTED);
-        hit(x, y, right, y + SET_H, b -> e.cycle(b == 1 ? -1 : 1));
+        Draw.round(r, cx, y + 2, right, y + SET_H - 2, 2, hover || open ? Theme.CARD_HOVER : Theme.CARD);
+        if (open) Draw.roundOutline(r, cx, y + 2, right, y + SET_H - 2, Colors.withAlpha(accent, 0xC0));
+        r.text(label, cx + 6, y + 5, Theme.TEXT, false);
+        Draw.icon(r, Draw.CHEVRON_DOWN, right - 11, y + 5, Theme.TEXT_MUTED);
+        hit(cx, y + 2, right, y + SET_H - 2, b -> openEnum = openEnum == e ? null : e);
+        if (open) {
+            ddEnum = e;
+            ddX1 = cx;
+            ddX2 = right;
+            ddY1 = y + 2;
+            ddY2 = y + SET_H - 2;
+        }
+    }
+
+    /** The open dropdown list, drawn above everything else in the panel (below the button, above it if there is no room). */
+    private void renderDropdown(Renderer r, int mx, int my, int accent) {
+        if (ddEnum == null || openEnum != ddEnum) {
+            openEnum = null;
+            return;
+        }
+        Enum<?>[] values = ddEnum.values();
+        float rowH = SET_H - 4, pad = 2;
+        float h = values.length * rowH + pad * 2;
+        float top = ddY2 + 2;
+        if (top + h > drawerY2) top = Math.max(drawerY1, ddY1 - 2 - h);
+        float x1 = ddX1, x2 = ddX2;
+        // Clicks anywhere else close the list (and are swallowed)
+        hit(0, 0, 100000, 100000, b -> openEnum = null);
+        Draw.round(r, x1 - 1, top - 1, x2 + 1, top + h + 1, 3, 0x70000000);
+        Draw.round(r, x1, top, x2, top + h, 3, 0xFF1A1D27);
+        Draw.roundOutline(r, x1, top, x2, top + h, Theme.LINE_STRONG);
+        float ry = top + pad;
+        for (Enum<?> v : values) {
+            boolean sel = ddEnum.get() == v;
+            boolean hv = inside(mx, my, x1, ry, x2, ry + rowH);
+            if (sel) Draw.round(r, x1 + 2, ry, x2 - 2, ry + rowH, 2, Colors.withAlpha(accent, 0xD0));
+            else if (hv) Draw.round(r, x1 + 2, ry, x2 - 2, ry + rowH, 2, Theme.CARD_HOVER);
+            r.text(EnumSetting.label(v), x1 + 7, ry + 3, sel ? 0xFF101114 : hv ? Theme.TEXT : Theme.TEXT_DIM, false);
+            final Enum<?> value = v;
+            final EnumSetting<?> setting = ddEnum;
+            hit(x1, ry, x2, ry + rowH, b -> {
+                selectEnum(setting, value);
+                openEnum = null;
+            });
+            ry += rowH;
+        }
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -978,6 +1028,10 @@ public final class ClickGuiScreen implements UiScreen {
         }
         if ("key.keyboard.f".equals(key) && TextEdit.ctrl(core.platform())) {
             searchFocused = true;
+            return true;
+        }
+        if (Keys.ESCAPE.equals(key) && openEnum != null) {
+            openEnum = null;
             return true;
         }
         if (Keys.ESCAPE.equals(key) && drawerOpen()) {

@@ -36,7 +36,7 @@ AIO is its own implementation; it does not contain the code of those mods.
 - **Inventory**: item browser with recipes and uses, mouse tweaks, sorting, tool saver, auto tool/sword.
 - **Chat**: timestamps, long history, copy, resizable chat, chat heads, name alerts.
 - **Performance**: entity culling, particle control, XP orb clumping, more FPS options.
-- **Menu**: search, profiles, config export/import, rainbow or custom accent colour.
+- **Menu**: search, profiles, config export/import, rainbow or custom accent colour, language selection (English, Deutsch, Español, Français).
 
 ## Install
 
