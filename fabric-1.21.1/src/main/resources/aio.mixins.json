@@ -8,6 +8,7 @@
     "EntityRendererCullMixin",
     "AbstractContainerScreenAccessor",
     "CameraMixin",
+    "ZoomFovMixin",
     "ChatComponentMixin",
     "EntityMixin",
     "FoodDataAccessor",

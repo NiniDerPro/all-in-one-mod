@@ -36,6 +36,10 @@ public final class ClientSettingsModule extends Module {
     public final BooleanSetting telemetry;
     /** Whether the first-start notice about the statistics was already dismissed (hidden). */
     public final BooleanSetting telemetryNoticeSeen;
+    /** Look for a newer release on GitHub at start and show a notice (never installs anything). */
+    public final BooleanSetting updateCheck;
+    /** Version the user chose to skip (hidden). */
+    public final StringSetting skippedUpdate;
     public final BooleanSetting hudHintSeen;
 
     public ClientSettingsModule() {
@@ -51,6 +55,9 @@ public final class ClientSettingsModule extends Module {
         telemetry = add(new BooleanSetting("telemetry", "Send anonymous usage statistics", false));
         telemetryNoticeSeen = add(new BooleanSetting("telemetryNoticeSeen", "Stats notice seen", false));
         telemetryNoticeSeen.hidden();
+        updateCheck = add(new BooleanSetting("updateCheck", "Check for updates (contacts GitHub)", true));
+        skippedUpdate = add(new StringSetting("skippedUpdate", "Skipped update", "", 32));
+        skippedUpdate.hidden();
         hudHintSeen = add(new BooleanSetting("hudHintSeen", "HUD hint seen", false));
         hudHintSeen.hidden();
         preferOtherMods = add(new BooleanSetting("preferOtherMods", "Defer to other mods", true));

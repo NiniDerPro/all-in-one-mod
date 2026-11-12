@@ -27,7 +27,7 @@ public final class HookStatus {
             Map.entry("AtmosphericFogMixin", "nofog"), Map.entry("LavaFogMixin", "nofog"), Map.entry("WaterFogMixin", "nofog"),
             Map.entry("BlockEntityCullMixin", "entityculling"), Map.entry("EntityRendererCullMixin", "entityculling"),
             Map.entry("ClientLevelTickMixin", "entityculling"),
-            Map.entry("CameraMixin#aio$zoom", "zoom"), Map.entry("CameraMixin#aio$zoomHand", "zoom"),
+            Map.entry("ZoomFovMixin", "zoom"),
             Map.entry("CameraMixin#aio$freelookYaw", "freelook"), Map.entry("CameraMixin#aio$freelookPitch", "freelook"),
             Map.entry("ChatComponentMixin", "chat"),
             Map.entry("ClientLevelParticlesMixin", "particlelimit"), Map.entry("ParticleEngineMixin", "particlelimit"),

@@ -20,21 +20,6 @@ import org.spongepowered.asm.mixin.injection.At;
  */
 @Mixin(Camera.class)
 public abstract class CameraMixin {
-    @ModifyReturnValue(method = "calculateFov", at = @At("RETURN"))
-    private float aio$zoom(float fov) {
-        AioCore core = AioCore.get();
-        float result = core == null ? fov : (float) (fov * core.module(ZoomModule.class).fovMultiplier());
-        FabricHooks.lastFov = result; // real FOV for the waypoint markers
-        return result;
-    }
-
-    /** The hand moves out of the picture when zooming (like the field of view). */
-    @ModifyReturnValue(method = "calculateHudFov", at = @At("RETURN"), require = 0)
-    private float aio$zoomHand(float fov) {
-        AioCore core = AioCore.get();
-        return core == null ? fov : (float) (fov * core.module(ZoomModule.class).currentMultiplier());
-    }
-
     // Unverified for 26.3: if Camera no longer reads the rotation via getViewYRot/getViewXRot,
     // this does not apply (require = 0 then prevents a crash, freelook then just does not turn the player).
     @WrapOperation(method = "*", require = 0,
