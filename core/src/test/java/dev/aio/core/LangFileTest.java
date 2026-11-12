@@ -28,7 +28,18 @@ import static org.junit.jupiter.api.Assertions.*;
  * Regenerate with {@code -Daio.writeLang=true}.
  */
 class LangFileTest {
-    private static final Path FILE = Path.of("../fabric-26.3/src/main/resources/assets/aio/lang/en_us.json");
+    /** The Fabric adapter folder of this branch (fabric-<minecraft version>), found next to the core. */
+    private static final Path ADAPTER = adapterDir();
+    private static final Path FILE = ADAPTER.resolve("src/main/resources/assets/aio/lang/en_us.json");
+
+    private static Path adapterDir() {
+        try (var dirs = Files.list(Path.of(".."))) {
+            return dirs.filter(d -> d.getFileName().toString().startsWith("fabric-") && Files.isDirectory(d.resolve("src/main")))
+                    .sorted().findFirst().orElse(Path.of("../fabric-missing"));
+        } catch (java.io.IOException e) {
+            return Path.of("../fabric-missing");
+        }
+    }
     private static final Pattern CALL = Pattern.compile("Lang\\.tr\\(\"([a-z0-9_.]+)\",\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
 
     @TempDir Path dir;
@@ -41,7 +52,7 @@ class LangFileTest {
             Files.writeString(FILE, json, StandardCharsets.UTF_8);
             return;
         }
-        assertTrue(Files.exists(FILE), "en_us.json fehlt: mit -Daio.writeLang=true erzeugen");
+        assertTrue(Files.exists(FILE), "en_us.json is missing: generate it with -Daio.writeLang=true");
         JsonObject actual = JsonParser.parseString(Files.readString(FILE, StandardCharsets.UTF_8)).getAsJsonObject();
         for (Map.Entry<String, String> e : expected.entrySet()) {
             assertTrue(actual.has(e.getKey()), "Missing in en_us.json: " + e.getKey() + " (regenerate with -Daio.writeLang=true)");
@@ -69,7 +80,7 @@ class LangFileTest {
                 }
             }
         }
-        for (Path root : new Path[]{Path.of("src/main/java"), Path.of("../fabric-26.3/src/main/java")}) {
+        for (Path root : new Path[]{Path.of("src/main/java"), ADAPTER.resolve("src/main/java")}) {
             if (!Files.isDirectory(root)) continue;
             try (Stream<Path> files = Files.walk(root)) {
                 for (Path f : (Iterable<Path>) files.filter(p -> p.toString().endsWith(".java"))::iterator) {
