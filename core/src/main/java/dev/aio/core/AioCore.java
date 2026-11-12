@@ -65,6 +65,8 @@ import dev.aio.core.modules.render.LightOverlayModule;
 import dev.aio.core.modules.render.NametagsModule;
 import dev.aio.core.modules.render.NoFogModule;
 import dev.aio.core.modules.render.NoHurtcamModule;
+import dev.aio.core.modules.render.NoSpeedFovModule;
+import dev.aio.core.modules.render.NoViewBobbingModule;
 import dev.aio.core.modules.render.NoPumpkinModule;
 import dev.aio.core.modules.render.SmallItemsModule;
 import dev.aio.core.modules.render.ZoomModule;
@@ -177,6 +179,8 @@ public final class AioCore {
         modules.register(new NoFogModule());
         modules.register(new FreecamModule());
         modules.register(new NoHurtcamModule());
+        modules.register(new NoViewBobbingModule());
+        modules.register(new NoSpeedFovModule());
         modules.register(new NoPumpkinModule());
         modules.register(new BlockOutlineModule());
         // Inventar
