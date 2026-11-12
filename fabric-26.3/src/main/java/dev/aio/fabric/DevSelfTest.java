@@ -29,6 +29,7 @@ final class DevSelfTest {
 
     private static List<Step> steps;
     private static int index, waited, stuck;
+    private static net.minecraft.world.phys.Vec3 fcStart;
 
     static void tick(AioCore core, Minecraft mc) {
         if (DIR.isEmpty()) return;
@@ -83,6 +84,14 @@ final class DevSelfTest {
                     runCommands(mc);
                     AioFabricClient.LOGGER.info("[aio] Selftest ready for input");
                     index = Integer.MAX_VALUE; // skip the rest, input comes from outside
+                }),
+                new Step(any, 5, () -> { Freecam.set(true); fcStart = Freecam.camera() == null ? null : Freecam.camera().position(); mc.options.keyUp.setDown(true); }),
+                new Step(any, 60, () -> {
+                    var cam = Freecam.camera();
+                    AioFabricClient.LOGGER.info("[aio] Selftest freecam: active={} start={} now={} moved={}", Freecam.active(), fcStart,
+                            cam == null ? null : cam.position(), cam != null && fcStart != null && cam.position().distanceTo(fcStart) > 0.5);
+                    mc.options.keyUp.setDown(false);
+                    Freecam.set(false);
                 }),
                 new Step(any, 5, () -> mc.pauseGame(false)),
                 new Step(any, 30, () -> shot(mc, dir, "06_pause.png")),
