@@ -16,12 +16,12 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(GameRenderer.class)
 public abstract class ZoomFovMixin {
     @ModifyReturnValue(method = "getFov", at = @At("RETURN"))
-    private double aio$zoomFov(double fov, Camera camera, float partialTick, boolean useFovSetting) {
+    private float aio$zoomFov(float fov, Camera camera, float partialTick, boolean useFovSetting) {
         AioCore core = AioCore.get();
         if (core == null) return fov;
         ZoomModule zoom = core.module(ZoomModule.class);
-        if (!useFovSetting) return (double) (fov * zoom.currentMultiplier());
-        double result = (double) (fov * zoom.fovMultiplier());
+        if (!useFovSetting) return (float) (fov * zoom.currentMultiplier());
+        float result = (float) (fov * zoom.fovMultiplier());
         FabricHooks.lastFov = (float) result; // real FOV for the waypoint markers
         return result;
     }

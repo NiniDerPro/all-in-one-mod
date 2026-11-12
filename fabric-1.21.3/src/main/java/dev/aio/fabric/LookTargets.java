@@ -53,7 +53,7 @@ final class LookTargets {
         HitResult hit = client.hitResult;
         if (p != null && maxDistance > 0 && (hit == null || hit.getType() == HitResult.Type.MISS)) {
             // look farther than the reach (blocks only, like binoculars for the look-at info)
-            hit = p.pick(maxDistance, client.getTimer().getGameTimeDeltaPartialTick(false), false);
+            hit = p.pick(maxDistance, client.getDeltaTracker().getGameTimeDeltaPartialTick(false), false);
         }
         if (p == null || client.level == null || hit == null || hit.getType() == HitResult.Type.MISS) return null;
 

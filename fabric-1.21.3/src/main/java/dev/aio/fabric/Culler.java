@@ -218,7 +218,7 @@ public final class Culler {
 
     private static boolean occludes(Level lvl, BlockPos pos) {
         BlockState state = lvl.getBlockState(pos);
-        if (state.isSolidRender(level, pos)) return true;
+        if (state.isSolidRender()) return true;
         return leavesSolid && state.getBlock() instanceof LeavesBlock;
     }
 

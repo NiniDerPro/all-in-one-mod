@@ -5,7 +5,7 @@ import dev.aio.fabric.Freecam;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.player.Input;
+import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.player.KeyboardInput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -45,7 +45,7 @@ public class FreeCamera extends AbstractClientPlayer {
 
     @Override
     public void tick() {
-        keyboardInput.tick(false, 1.0F);
+        getInput().tick(false, 1.0F);
         applyInput();
         doMotion();
         super.tick();
@@ -166,7 +166,7 @@ public class FreeCamera extends AbstractClientPlayer {
     }
 
     protected void applyInput() {
-        Vec2 moveVector = new Vec2(getInput().leftImpulse, getInput().forwardImpulse);
+        Vec2 moveVector = getInput().getMoveVector();
         if (moveVector.lengthSquared() != 0.0F) moveVector = moveVector.scale(0.98F);
         this.xxa = moveVector.x;
         this.zza = moveVector.y;
@@ -178,19 +178,19 @@ public class FreeCamera extends AbstractClientPlayer {
         this.yBob = this.yBob + (this.getYRot() - this.yBob) * 0.5F;
     }
 
-    private Input getInput() {
+    private ClientInput getInput() {
         return keyboardInput;
     }
 
-    public boolean isForwardKeyDown() { return getInput().up; }
+    public boolean isForwardKeyDown() { return getInput().keyPresses.forward(); }
 
-    public boolean isBackwardKeyDown() { return getInput().down; }
+    public boolean isBackwardKeyDown() { return getInput().keyPresses.backward(); }
 
-    public boolean isRightKeyDown() { return getInput().right; }
+    public boolean isRightKeyDown() { return getInput().keyPresses.right(); }
 
-    public boolean isLeftKeyDown() { return getInput().left; }
+    public boolean isLeftKeyDown() { return getInput().keyPresses.left(); }
 
-    public boolean isJumpKeyDown() { return getInput().jumping; }
+    public boolean isJumpKeyDown() { return getInput().keyPresses.jump(); }
 
-    public boolean isSneakKeyDown() { return getInput().shiftKeyDown; }
+    public boolean isSneakKeyDown() { return getInput().keyPresses.shift(); }
 }

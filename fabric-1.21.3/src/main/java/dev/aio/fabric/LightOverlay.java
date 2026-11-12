@@ -97,8 +97,8 @@ final class LightOverlay {
         BlockPos center = mc.player.blockPosition();
         int radius = m.radius();
         int csx = SectionPos.blockToSectionCoord(center.getX()), csz = SectionPos.blockToSectionCoord(center.getZ());
-        int syMin = Math.max(level.getMinSection(), SectionPos.blockToSectionCoord(center.getY() - BELOW));
-        int syMax = Math.min(level.getMaxSection(), SectionPos.blockToSectionCoord(center.getY() + ABOVE));
+        int syMin = Math.max(level.getMinSectionY(), SectionPos.blockToSectionCoord(center.getY() - BELOW));
+        int syMax = Math.min(level.getMaxSectionY(), SectionPos.blockToSectionCoord(center.getY() + ABOVE));
         int rc = (radius >> 4) + 1;
 
         // 1. Recompute changed sections in range immediately

@@ -100,7 +100,7 @@ public final class FabricRenderer implements Renderer {
             for (int j = 0; j < h; j++) {
                 for (int i = 0; i < w; i++) {
                     int c = argb[j * w + i];
-                    px.setPixelRGBA(i, j, (c & 0xFF00FF00) | ((c >> 16) & 0xFF) | ((c & 0xFF) << 16));
+                    px.setPixel(i, j, c);
                 }
             }
             img.tex.upload();
@@ -111,7 +111,7 @@ public final class FabricRenderer implements Renderer {
         pose.pushPose();
         pose.translate(x, y, 0);
         pose.scale(dw / w, dh / h, 1f);
-        g.blit(img.id, 0, 0, 0f, 0f, w, h, w, h);
+        g.blit(net.minecraft.client.renderer.RenderType::guiTextured, img.id, 0, 0, 0f, 0f, w, h, w, h);
         pose.popPose();
     }
 
@@ -122,7 +122,7 @@ public final class FabricRenderer implements Renderer {
         PoseStack pose = g.pose();
         pose.pushPose();
         pose.translate(x, y, 0);
-        g.blitSprite(sprite, 0, 0, width, height);
+        g.blitSprite(net.minecraft.client.renderer.RenderType::guiTextured, sprite, 0, 0, width, height);
         pose.popPose();
     }
 
@@ -131,9 +131,7 @@ public final class FabricRenderer implements Renderer {
         PoseStack pose = g.pose();
         pose.pushPose();
         pose.translate(x, y, 0);
-        g.setColor(((argb >> 16) & 0xFF) / 255f, ((argb >> 8) & 0xFF) / 255f, (argb & 0xFF) / 255f, ((argb >>> 24) & 0xFF) / 255f);
-        g.blitSprite(sprite, 0, 0, width, height);
-        g.setColor(1f, 1f, 1f, 1f);
+        g.blitSprite(net.minecraft.client.renderer.RenderType::guiTextured, sprite, 0, 0, width, height, argb);
         pose.popPose();
     }
 

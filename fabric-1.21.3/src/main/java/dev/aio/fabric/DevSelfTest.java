@@ -113,9 +113,9 @@ final class DevSelfTest {
                     mc.player.getAbilities().flying = true;
                     boolean was = m.isEnabled();
                     m.setEnabled(true);
-                    float on = mc.player.getFieldOfViewModifier();
+                    float on = mc.player.getFieldOfViewModifier(false, 1f);
                     m.setEnabled(false);
-                    float off = mc.player.getFieldOfViewModifier();
+                    float off = mc.player.getFieldOfViewModifier(false, 1f);
                     m.setEnabled(was);
                     AioFabricClient.LOGGER.info("[aio] Selftest speedfov: with module={} without module={} (module on = {})", on, off, m.isActive());
                     mc.player.getAbilities().flying = false;

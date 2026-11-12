@@ -5,7 +5,8 @@ import dev.aio.core.modules.render.FreecamModule;
 import dev.aio.fabric.freecam.FreeCamera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.Input;
+import net.minecraft.client.player.ClientInput;
+import net.minecraft.world.entity.player.Input;
 
 /**
  * Freecam modelled on the Freecam mod (MIT, see freecam/NOTICE.md): an own
@@ -21,8 +22,8 @@ public final class Freecam {
     private static boolean disableNextTick;
     private static FreeCamera freeCamera;
     private static CameraType rememberedF5;
-    private static Input playerInput;
-    private static Input dummyPlayerInput;
+    private static ClientInput playerInput;
+    private static ClientInput dummyPlayerInput;
 
     // ---- Settings from the AIO module ----
 
@@ -102,9 +103,9 @@ public final class Freecam {
     }
 
     /** Empty input for the player; sneaking stays so that you do not fall off edges. */
-    private static Input updateDummyInput() {
-        Input input = new Input();
-        input.shiftKeyDown = playerInput.shiftKeyDown;
+    private static ClientInput updateDummyInput() {
+        ClientInput input = new ClientInput();
+        input.keyPresses = new Input(false, false, false, false, false, playerInput.keyPresses.shift(), false);
         return dummyPlayerInput = input;
     }
 
