@@ -16,7 +16,8 @@ public abstract class ClientLevelTickMixin {
     private void aio$tickCull(Entity entity, CallbackInfo ci) {
         if (!Culler.skipTick(entity)) return;
         entity.setOldPosAndRot();
-        entity.getInterpolation().interpolate();
+        var interpolation = entity.getInterpolation(); // null for entity types without position interpolation
+        if (interpolation != null) interpolation.interpolate();
         entity.tickCount++;
         if (entity instanceof LivingEntity living && living.hurtTime > 0) living.hurtTime--;
         ci.cancel();
