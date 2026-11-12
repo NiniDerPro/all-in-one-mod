@@ -178,6 +178,17 @@ public class FreeCamera extends AbstractClientPlayer {
         this.yBob = this.yBob + (this.getYRot() - this.yBob) * 0.5F;
     }
 
+    // The camera simulates its own movement on the client (like a local player)
+    @Override
+    public boolean canSimulateMovement() {
+        return true;
+    }
+
+    @Override
+    protected boolean isLocalClientAuthoritative() {
+        return true;
+    }
+
     private ClientInput getInput() {
         return keyboardInput;
     }
