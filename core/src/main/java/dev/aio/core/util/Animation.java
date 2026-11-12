@@ -9,7 +9,7 @@ public final class Animation {
     private long lastNanos = -1;
 
     /**
-     * @param target     0 oder 1
+     * @param target     0 or 1
      * @param durationMs duration for a complete transition; 0 = immediate
      * @return aktueller Wert in 0..1
      */

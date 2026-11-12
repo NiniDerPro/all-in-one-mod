@@ -15,11 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * HUD-Editor wie in einem Grafikprogramm.
+ * HUD editor like in a graphics program.
  *
  * <ul>
  *   <li>Left click selects an element, dragging moves it (snaps to edges and other
- *       Elementen ein, Shift = frei).</li>
+ *       elements, Shift = free).</li>
  *   <li>The selected element has a frame with eight handles: dragging at edges and corners
  *       changes width and height independently, Shift on a corner keeps the aspect ratio.</li>
  *   <li>Right click opens the settings, R/Del or the button at the top resets the selection.</li>
@@ -36,7 +36,7 @@ public final class HudEditorScreen implements UiScreen {
     private static final float GRIP = 4f;
     private static final float MIN_PX = 6f;
 
-    /** Kanten eines Griffs als Bitmaske. */
+    /** Edges of a handle as a bit mask. */
     private static final int LEFT = 1, RIGHT = 2, TOP = 4, BOTTOM = 8;
 
     private final AioCore core;
@@ -397,7 +397,7 @@ public final class HudEditorScreen implements UiScreen {
         }
         if (t instanceof HudTarget ht) {
             if (doubleClick && ht.owner().separated()) {
-                // Doppelklick: alle Teile desselben Moduls
+                // Double click: all parts of the same module
                 group.clear();
                 group.addAll(ht.owner().visibleParts(true));
                 if (group.size() < 2) group.clear();
@@ -475,7 +475,7 @@ public final class HudEditorScreen implements UiScreen {
     private void finishMarquee(Renderer r, double mx, double my) {
         float x1 = Math.min(marqueeX, (float) mx), y1 = Math.min(marqueeY, (float) my);
         float x2 = Math.max(marqueeX, (float) mx), y2 = Math.max(marqueeY, (float) my);
-        if (x2 - x1 < 2 && y2 - y1 < 2) return; // nur geklickt
+        if (x2 - x1 < 2 && y2 - y1 < 2) return; // only clicked
         for (HudTarget t : targets()) {
             float[] b = bounds(r, t);
             boolean hit = b[0] < x2 && b[0] + b[2] > x1 && b[1] < y2 && b[1] + b[3] > y1;

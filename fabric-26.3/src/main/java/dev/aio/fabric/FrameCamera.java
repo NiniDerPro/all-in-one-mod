@@ -14,7 +14,7 @@ final class FrameCamera {
      * The camera with which the game draws this frame. In 26.3 the camera is determined first,
      * then the HUD, and only afterwards the world is drawn: the camera state at the HUD
      * is therefore already that of this frame. The matrix is built exactly like when drawing the world
-     * (Projektion × Laufwackeln × Blickrichtung), daher bleiben Marker fest auf ihrem Punkt.
+     * (projection × view bobbing × viewing direction), so markers stay fixed on their point.
      */
     static CameraView current(Minecraft mc, double fov) {
         try {

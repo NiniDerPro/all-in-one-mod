@@ -73,7 +73,7 @@ final class StatsNotice {
             return mx >= b[0] && mx <= b[2] && my >= b[1] && my <= b[3]; // do not pass clicks in the banner through
         }
         core.clientSettings().telemetryNoticeSeen.set(true);
-        core.clientSettings().telemetry.set(inAio); // Okay = an, Nein danke = aus
+        core.clientSettings().telemetry.set(inAio); // Okay = on, No thanks = off
         core.config().save();
         return true;
     }

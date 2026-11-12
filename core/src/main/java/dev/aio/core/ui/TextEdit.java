@@ -53,7 +53,7 @@ public final class TextEdit {
         return all ? typed : text + typed;
     }
 
-    /** Markierungshintergrund hinter dem sichtbaren Text. */
+    /** Selection background behind the visible text. */
     public static void drawSelection(Renderer r, float x, float y, String visible) {
         if (visible.isEmpty()) return;
         r.fill(x - 1, y - 1, x + r.textWidth(visible) + 1, y + r.fontHeight(), 0xFF3355CC);

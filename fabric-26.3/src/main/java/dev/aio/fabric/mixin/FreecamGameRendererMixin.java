@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 // Adapted from Freecam (MIT), see dev/aio/fabric/freecam/NOTICE.md
 @Mixin(GameRenderer.class)
 public class FreecamGameRendererMixin {
-    /** Hand in der Freecam ausblenden (Einstellung "Show hand"). */
+    /** Hide the hand in the freecam (setting "Show hand"). */
     @Inject(method = "renderItemInHand", at = @At("HEAD"), cancellable = true)
     private void aio$freecamHand(CallbackInfo ci) {
         if (Freecam.active() && Freecam.hideHand()) ci.cancel();

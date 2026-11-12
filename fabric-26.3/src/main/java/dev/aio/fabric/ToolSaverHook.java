@@ -9,7 +9,7 @@ import net.minecraft.world.item.ItemStack;
 public final class ToolSaverHook {
     private ToolSaverHook() {}
 
-    /** true = Benutzung verhindern (und Bescheid geben). */
+    /** true = prevent use (and notify). */
     public static boolean block(ItemStack stack) {
         AioCore core = AioCore.get();
         ToolSaverModule m = core == null ? null : core.module(ToolSaverModule.class);

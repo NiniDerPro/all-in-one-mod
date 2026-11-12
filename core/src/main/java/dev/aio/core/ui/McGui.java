@@ -80,7 +80,7 @@ public final class McGui {
         }
     }
 
-    /** Knopf mit Pfeil. */
+    /** Button with arrow. */
     public static boolean arrowButton(Renderer r, float x1, float y1, float x2, float y2, boolean right, int mx, int my, boolean enabled) {
         boolean hover = button(r, x1, y1, x2, y2, mx, my, enabled);
         arrow(r, (x1 + x2) / 2f, (y1 + y2) / 2f, right, enabled ? 0xFFFFFFFF : 0xFFA0A0A0);

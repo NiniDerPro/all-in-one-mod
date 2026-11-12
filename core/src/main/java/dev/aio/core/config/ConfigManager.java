@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
- * JSON-Config pro Modul, organisiert in Profilen.
+ * JSON config per module, organised in profiles.
  *
  * <pre>
  * &lt;configDir&gt;/client.json                     aktives Profil
@@ -229,7 +229,7 @@ public final class ConfigManager {
     /**
      * Imports an exported profile as a new profile and switches to it.
      *
-     * @return Name des neuen Profils
+     * @return name of the new profile
      * @throws IllegalArgumentException on invalid content
      */
     public String importProfile(String json) {

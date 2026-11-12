@@ -7,8 +7,8 @@ import java.util.regex.Pattern;
 
 /**
  * Recognises waypoints shared in chat. Supports the text format that Xaero's Minimap
- * beim Teilen verschickt:
- * {@code xaero-waypoint:Name:N:X:Y:Z:Farbe:false:0:Internal-overworld-waypoints}
+ * sent when sharing:
+ * {@code xaero-waypoint:Name:N:X:Y:Z:Colour:false:0:Internal-overworld-waypoints}
  * (Y can be {@code ~}, a colon in the name is written as {@code ^col^}). Nothing here is
  * taken from other mods, it only follows the visible text format.
  */

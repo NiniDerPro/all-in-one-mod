@@ -16,7 +16,7 @@ public final class Compass {
         return wrap((float) Math.toDegrees(Math.atan2(dx, -dz)));
     }
 
-    /** Winkeldifferenz -180..180 (positiv = Ziel liegt rechts). */
+    /** Angle difference -180..180 (positive = target is to the right). */
     public static float delta(float from, float to) {
         float d = wrap(to - from);
         return d > 180 ? d - 360 : d;

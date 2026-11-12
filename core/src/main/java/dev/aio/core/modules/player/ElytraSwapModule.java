@@ -52,7 +52,7 @@ public final class ElytraSwapModule extends Module {
 
     /**
      * Which slot should go to the chest slot: {source, chest slot} or null.
-     * Elytra getragen → beste Brustplatte; Brustplatte oder nichts getragen → Elytra.
+     * Elytra worn → best chestplate; chestplate or nothing worn → elytra.
      */
     public static int[] plan(List<ContainerView.Slot> slots) {
         ContainerView.Slot chest = null;
@@ -62,7 +62,7 @@ public final class ElytraSwapModule extends Module {
         if (chest == null) return null;
         ItemRef worn = chest.item();
         boolean wearingElytra = !worn.isEmpty() && ELYTRA.equals(worn.id());
-        if (!worn.isEmpty() && !wearingElytra && !isChestplate(worn)) return null; // fremdes Item: nicht anfassen
+        if (!worn.isEmpty() && !wearingElytra && !isChestplate(worn)) return null; // foreign item: do not touch
 
         ContainerView.Slot best = null;
         int bestScore = -1;

@@ -62,7 +62,7 @@ public final class FlexChatModule extends Module {
 
     // ---- Dimensions like vanilla ----
 
-    /** Breite der Chatbox in GUI-Pixeln (Vanilla: 40 + 280 · Breite). */
+    /** Width of the chat box in GUI pixels (vanilla: 40 + 280 · width). */
     public float boxWidth() { return (float) Math.floor(40 + 280 * width.get()); }
 
     /** Line height in GUI pixels before the font size (vanilla: 9 · (1 + line spacing)). */
@@ -94,7 +94,7 @@ public final class FlexChatModule extends Module {
         scale.reset();
     }
 
-    // ---- Vorschau im HUD-Editor ----
+    // ---- Preview in the HUD editor ----
 
     private static final String[] SAMPLE = {
             "<Steve> Hi! Who wants to come to the Nether?",
@@ -120,7 +120,7 @@ public final class FlexChatModule extends Module {
         int lines = visibleLines();
         double textOpacity = option(VanillaOption.CHAT_OPACITY, 1.0);
         double bgOpacity = option(VanillaOption.TEXT_BACKGROUND_OPACITY, 0.5);
-        // Vanilla: Text-Deckkraft 0.1..1, Hintergrund nach Einstellung
+        // Vanilla: text opacity 0.1..1, background by setting
         int textA = (int) (255 * (textOpacity * 0.9 + 0.1) * fade);
         int bgA = (int) (255 * bgOpacity * fade);
         ChatModule custom = core == null ? null : core.module(ChatModule.class);
@@ -147,7 +147,7 @@ public final class FlexChatModule extends Module {
         return Double.isNaN(v) ? fallback : v;
     }
 
-    /** Text an Wortgrenzen umbrechen wie Vanilla. */
+    /** Wrap text at word boundaries like vanilla. */
     private static void wrap(Renderer r, String text, int maxW, List<String> out) {
         String rest = text;
         while (!rest.isEmpty()) {

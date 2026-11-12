@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 // Adapted from Freecam (MIT), see dev/aio/fabric/freecam/NOTICE.md
 @Mixin(Hud.class)
 public class FreecamHudMixin {
-    /** Herzen, Hunger, Hotbar usw. zeigen weiter den echten Spieler. */
+    /** Hearts, hunger, hotbar etc. keep showing the real player. */
     @ModifyReturnValue(method = "getCameraPlayer", at = @At("RETURN"))
     private Player aio$freecamHudPlayer(Player original) {
         return Freecam.active() ? Minecraft.getInstance().player : original;

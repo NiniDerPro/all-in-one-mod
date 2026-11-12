@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Verdeckte bzw. weit entfernte Block-Entities (Truhen, Schilder, Banner, …) nicht zeichnen. */
+/** Do not draw hidden or distant block entities (chests, signs, banners, …). */
 @Mixin(BlockEntityRenderDispatcher.class)
 public abstract class BlockEntityCullMixin {
     @Inject(method = "tryExtractRenderState", at = @At("HEAD"), cancellable = true, require = 0)

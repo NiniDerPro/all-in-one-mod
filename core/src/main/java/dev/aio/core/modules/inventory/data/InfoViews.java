@@ -47,11 +47,11 @@ public final class InfoViews {
         this.info = info;
     }
 
-    /** Woher kommt das Item? */
+    /** Where does the item come from? */
     public List<RecipeView> sources(ItemRef item) {
         List<RecipeView> out = new ArrayList<>();
         String id = item.id();
-        // Beute und Drops
+        // Loot and drops
         List<RecipeView.Row> rows = new ArrayList<>();
         for (WorldInfo.Source s : info.sourcesOf(id)) {
             rows.add(new RecipeView.Row(sourceIcon(s.table()), sourceName(s.table()) + " · " + chance(s.drop()) + countSuffix(s.drop())));
@@ -68,7 +68,7 @@ public final class InfoViews {
             if (oreNotes.isEmpty()) oreNotes.add(biomeSummary(ore));
         }
         page(out, "Generation", item, oreNotes, ores);
-        // Spawns (Spawn-Ei → Biome und Strukturen)
+        // Spawns (spawn egg → biomes and structures)
         String entity = entityOfEgg(id);
         if (entity != null) {
             List<RecipeView.Row> spawnRows = new ArrayList<>();
@@ -106,7 +106,7 @@ public final class InfoViews {
             TradeData.Trade tr = t.trade();
             if (tr.wants().item().equals(id) || tr.additionalWants().item().equals(id)) out.add(tradeView(t));
         }
-        // Piglin-Tausch mit Gold
+        // Piglin bartering with gold
         if (id.equals("minecraft:gold_ingot")) {
             page(out, "Piglin Bartering", p.item("minecraft:piglin_head", 1), List.of("One gold ingot gives one of these:"),
                     dropRows(info.drops(WorldInfo.BARTERING)));

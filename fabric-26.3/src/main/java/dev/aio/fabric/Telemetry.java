@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
  * anonymous usage statistics" on (off by default, opt-in via the notice on the first
  * start) and {@link #ENDPOINT} is set. Details and the complete field list:
  * {@code docs/TELEMETRY.md}. Only technical numbers are sent, never name, UUID, IP, server,
- * Koordinaten oder Chat.
+ * coordinates or chat.
  */
 final class Telemetry {
     private Telemetry() {}
@@ -120,7 +120,7 @@ final class Telemetry {
         use.put("sessionMinutes", (System.currentTimeMillis() - startedMs) / 60_000);
         p.put("usage", use);
 
-        // Module: aktive plus grobe Nutzungsdauer je Modul
+        // Modules: active ones plus rough usage time per module
         List<String> active = new ArrayList<>();
         core.modules().all().forEach(m -> {
             if (m.canToggle() && m.isActive()) active.add(m.id());

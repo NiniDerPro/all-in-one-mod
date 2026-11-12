@@ -123,7 +123,7 @@ public final class Culler {
             try {
                 vis = compute(lvl, from, e.getValue());
             } catch (Throwable t) {
-                vis = true; // im Zweifel zeigen
+                vis = true; // when in doubt show
             }
             if (!vis) culled++;
             results.put(e.getKey(), (tick << 1) | (vis ? 1 : 0));

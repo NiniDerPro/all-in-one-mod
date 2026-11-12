@@ -185,7 +185,7 @@ public final class WaypointsModule extends HudElement {
         return out;
     }
 
-    /** Sichtbare Wegpunkte in dieser Welt und Dimension. */
+    /** Visible waypoints in this world and dimension. */
     public List<Waypoint> visibleHere() {
         List<Waypoint> out = new ArrayList<>();
         String world = platform().worldKey(), dim = platform().dimension();
@@ -271,7 +271,7 @@ public final class WaypointsModule extends HudElement {
      * <ul>
      *   <li>In the picture a small dot (or optionally an icon with the initial letter as in Xaero).</li>
      *   <li>If you aim at it (or "Always show names"), the label fades in smoothly: name in
-     *       der Wegpunktfarbe, Entfernung dahinter in Grau.</li>
+     *       the waypoint colour, distance behind it in grey.</li>
      *   <li>The aimed marker gets a bit bigger, near markers (< 4 blocks) fade out.</li>
      *   <li>Outside the picture a small arrow at the edge pointing in the direction.</li>
      * </ul>
@@ -289,7 +289,7 @@ public final class WaypointsModule extends HudElement {
         float w = r.screenWidth(), h = r.screenHeight(), cx = w / 2f, cy = h / 2f;
         double max = maxDistance.get();
 
-        // 1. Projektion und angezielten Marker bestimmen
+        // 1. Determine projection and aimed marker
         record M(Waypoint wp, float x, float y, boolean edge, double dist) {}
         List<M> ms = new ArrayList<>();
         M hovered = null;
@@ -351,7 +351,7 @@ public final class WaypointsModule extends HudElement {
         r.translate(x, y);
         if (hovered) r.scale(1.3f);
         if (markerStyle.get() == MarkerStyle.ICON) {
-            // Quadrat mit Anfangsbuchstaben
+            // Square with initial letter
             String letter = wp.death() ? "✖" : wp.name().isEmpty() ? "?" : wp.name().substring(0, 1).toUpperCase(Locale.ROOT);
             int s = 5;
             r.fill(-s - 1, -s - 1, s + 1, s + 1, alpha(0xC0000000, a));
@@ -388,7 +388,7 @@ public final class WaypointsModule extends HudElement {
         r.pop();
     }
 
-    /** Raute aus Pixelzeilen um (0, 0), Radius s. */
+    /** Diamond from pixel rows around (0, 0), radius s. */
     private static void diamond(Renderer r, int s, int color) {
         for (int dy = -s; dy < s; dy++) {
             int half = s - (dy < 0 ? -dy - 1 : dy);

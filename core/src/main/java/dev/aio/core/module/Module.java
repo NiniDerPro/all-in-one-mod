@@ -48,7 +48,7 @@ public abstract class Module {
 
     /**
      * @param gameplayAffecting true for modules that may count as an advantage on servers
-     *                          (Freelook, Zoom, Fullbright, Toggle Sprint). Diese sperrt der
+     *                          (Freelook, Zoom, Fullbright, Toggle Sprint). The server blocks these
      *                          server compatibility mode.
      */
     protected Module(String id, String name, String description, Category category, boolean gameplayAffecting) {

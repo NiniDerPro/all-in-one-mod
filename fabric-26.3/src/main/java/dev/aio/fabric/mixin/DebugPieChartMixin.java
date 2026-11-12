@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 /**
  * Vanilla draws the pie chart in the F3 screen as soon as data is there. Minecraft delivers it
  * also when only our Profiler Chart needs it: then in the F3 screen only draw if F3+1
- * wirklich an ist.
+ * really on.
  */
 @Mixin(DebugScreenOverlay.class)
 public abstract class DebugPieChartMixin {

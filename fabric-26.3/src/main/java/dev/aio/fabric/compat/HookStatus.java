@@ -17,9 +17,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class HookStatus {
     private HookStatus() {}
 
-    /** Mixins, deren Einbau begonnen hat. */
+    /** Mixins whose application has begun. */
     static final Set<String> started = ConcurrentHashMap.newKeySet();
-    /** Mixins, deren Einbau fertig wurde. */
+    /** Mixins whose application has finished. */
     static final Set<String> finished = ConcurrentHashMap.newKeySet();
 
     /** Which module a hook belongs to. Key: "Mixin#handler" or just "Mixin" for all hooks. */
@@ -52,7 +52,7 @@ public final class HookStatus {
             Map.entry("MultiPlayerGameModeMixin#aio$attack", "autoweapon"),
             Map.entry("MultiPlayerGameModeMixin", "freecam"));
 
-    /** Modul eines Eingriffs, null = Grundfunktion ohne eigenes Modul (Tastatur/Maus). */
+    /** Module of a hook, null = basic function without its own module (keyboard/mouse). */
     static String moduleOf(String mixin, String handler) {
         String m = MODULE.get(mixin + "#" + handler);
         if (m != null) return m;

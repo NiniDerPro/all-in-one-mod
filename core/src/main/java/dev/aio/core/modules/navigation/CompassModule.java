@@ -130,7 +130,7 @@ public final class CompassModule extends HudElement {
         int rad = radius.intValue();
         float cx = PADDING + rad, cy = PADDING + rad;
         float h = heading();
-        // Hintergrundscheibe aus Zeilen
+        // Background disc made of rows
         if (background.on()) {
             for (int dy = -rad; dy <= rad; dy++) {
                 float half = (float) Math.sqrt(rad * rad - dy * dy);

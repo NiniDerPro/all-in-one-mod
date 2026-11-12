@@ -43,7 +43,7 @@ class MenuInteractionTest {
         gui.render(r, x, y, 0);
     }
 
-    /** Animationen ablaufen lassen (im Spiel etwa 0,2 s). */
+    /** Let animations run out (about 0.2 s in the game). */
     private static void settle(ClickGuiScreen gui, FakeRenderer r) throws InterruptedException {
         for (int i = 0; i < 8; i++) {
             gui.render(r, 400, 150, 0);
@@ -56,7 +56,7 @@ class MenuInteractionTest {
         FakeRenderer r = new FakeRenderer();
         gui.render(r, 0, 0, 0);
         Map<String, Boolean> before = states();
-        // erste Zeile, linke Spalte: Schalter sitzt rechts in der Zeile
+        // first row, left column: the switch sits on the right of the row
         boolean changed = false;
         for (int x = 200; x < 238 && !changed; x += 2) {
             click(gui, r, x, 74);

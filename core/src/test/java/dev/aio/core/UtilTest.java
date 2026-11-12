@@ -35,7 +35,7 @@ class UtilTest {
         bus.post(new Events.MouseButton(0, 1, true));  // click in the menu does not count
         assertEquals(5, t.leftCps());
         assertEquals(1, t.rightCps());
-        now[0] = 1_000_000_001L; // erster Klick (t=0) ist jetzt > 1 s alt
+        now[0] = 1_000_000_001L; // first click (t=0) is now > 1 s old
         assertEquals(4, t.leftCps());
         now[0] += 2_000_000_000L;
         assertEquals(0, t.leftCps());

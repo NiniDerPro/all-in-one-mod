@@ -21,7 +21,7 @@ class NametagScaleTest {
     @Test void farTagsHiddenBehindNearOnesAreDropped() {
         var near = at(100, 100, 60);
         var behind = at(105, 102, 60);   // fast deckungsgleich, weiter weg
-        var beside = at(200, 100, 60);   // daneben, bleibt
+        var beside = at(200, 100, 60);   // next to it, stays
         var kept = NametagsModule.declutter(java.util.List.of(near, behind, beside));
         assertEquals(java.util.List.of(near, beside), kept);
     }

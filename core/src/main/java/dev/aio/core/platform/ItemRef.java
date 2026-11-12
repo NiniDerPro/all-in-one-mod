@@ -33,14 +33,14 @@ public interface ItemRef {
 
     default int maxStackSize() { return 64; }
 
-    /** Gleiches Item mit gleichen Komponenten (stapelbar). */
+    /** Same item with the same components (stackable). */
     default boolean sameItemAs(ItemRef other) {
         return other != null && !isEmpty() && !other.isEmpty() && id().equals(other.id()) && name().equals(other.name());
     }
 
     default boolean isDamageable() { return maxDamage() > 0; }
 
-    /** Verzauberung mit Stufe; {@code curse} = Fluch (rot anzeigen). */
+    /** Enchantment with level; {@code curse} = curse (show in red). */
     record Enchant(String name, int level, boolean curse) {}
 
     default List<Enchant> enchantments() { return List.of(); }

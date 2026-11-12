@@ -35,7 +35,7 @@ class EventBusTest {
         bus.post(new Ping(0));
         assertEquals(21, count[0]);
         b.cancel();
-        b.cancel(); // doppelt ist harmlos
+        b.cancel(); // twice is harmless
         assertFalse(bus.hasListeners(Ping.class));
     }
 

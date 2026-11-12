@@ -60,7 +60,7 @@ public final class ItemListModule extends Module {
         t.start();
     }
 
-    /** Rezepte bzw. Verwendungen samt Handel, Beute, Berufen, Spawns, Erzen und Verzierungen. */
+    /** Recipes or uses including trades, loot, professions, spawns, ores and trims. */
     public List<RecipeView> recipesFor(ItemRef item, boolean usages) {
         List<RecipeView> out = new ArrayList<>(platform().recipes(item, usages));
         out.addAll(platform().trimViews(item));

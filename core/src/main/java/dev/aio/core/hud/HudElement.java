@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Gemeinsame Basis aller HUD-Elemente: Position, Skalierung, Farbe, Hintergrund, Schatten, Sichtbarkeit.
+ * Shared base of all HUD elements: position, scale, colour, background, shadow, visibility.
  *
  * <p>The position is stored as a fraction 0..1 of the free space
  * ({@code x * (screen width - element width)}). An element at the right edge therefore stays
@@ -69,7 +69,7 @@ public abstract class HudElement extends Module implements HudTarget {
         placed.hidden();
     }
 
-    // ---- Einzeln verschiebbare Teile ----
+    // ---- Individually movable parts ----
 
     private final List<HudPart> parts = new ArrayList<>();
     private BooleanSetting separate;
@@ -152,9 +152,9 @@ public abstract class HudElement extends Module implements HudTarget {
         if (backgroundColor.argb() == 0x6F000000) backgroundColor.reset();
     }
 
-    // ---- Inhalt (von Unterklassen) ----
+    // ---- Content (from subclasses) ----
 
-    /** Breite ohne Skalierung, inklusive Innenabstand. */
+    /** Width without scaling, including padding. */
     public abstract int width(Renderer r);
 
     /** Height without scaling, including padding. */
@@ -289,7 +289,7 @@ public abstract class HudElement extends Module implements HudTarget {
 
     protected int textColor() { return textColor.argb(); }
 
-    /** Zeichnet Text im eingestellten Farbmodus (fest, Regenbogen, Verlauf). */
+    /** Draws text in the chosen colour mode (fixed, rainbow, gradient). */
     protected void drawText(Renderer r, String text, float x, float y) {
         ColoredText.draw(r, text, x, y, colorMode.get(), textColor.argb(), secondColor.argb(),
                 colorSpeed.floatValue(), shadow.on(), (float) (posX.get() * 300 + posY.get() * 120));

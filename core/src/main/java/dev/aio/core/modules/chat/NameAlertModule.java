@@ -56,7 +56,7 @@ public final class NameAlertModule extends Module {
      * Recognises own messages with server chat formats too: at the start rank prefixes in
      * brackets may appear ("[VIP] ", "[Admin] [Lv 5] "), then comes the own name, followed by
      * a separator (":", ">", "»", "|", "→") or a space (join/system messages via
-     * einen selbst, z. B. "Steve joined the game").
+     * one itself, e.g. "Steve joined the game").
      */
     static boolean isOwnMessage(String text, String name) {
         if (name == null || name.isEmpty()) return false;

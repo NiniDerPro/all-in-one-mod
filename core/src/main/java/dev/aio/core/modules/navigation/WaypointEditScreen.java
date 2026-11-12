@@ -289,7 +289,7 @@ public final class WaypointEditScreen implements UiScreen {
     @Override public boolean charTyped(String text) {
         if (text == null || text.isEmpty() || text.codePointAt(0) < 32) return false;
         if (System.currentTimeMillis() - openedAt < 150) return true;
-        if (focus > 0 && !text.matches("[-0-9]+")) return true; // Koordinaten: nur Zahlen
+        if (focus > 0 && !text.matches("[-0-9]+")) return true; // coordinates: digits only
         fields[focus] = clean(focus, TextEdit.type(fields[focus], selectAll, text));
         selectAll = false;
         error = null;

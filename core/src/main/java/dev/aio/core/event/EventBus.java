@@ -14,7 +14,7 @@ import java.util.function.Consumer;
  *   <li>Dispatch only via the exact event class (no hierarchy search, no reflection scan).</li>
  *   <li>Copy-on-write arrays: {@link #post} iterates without locks and without allocation.</li>
  *   <li>Without listeners a {@link #post} costs only a map lookup. That is why
- *       deaktivierte Module ihre Listener komplett aus.</li>
+ *       disabled modules detach their listeners completely.</li>
  *   <li>An exception in one listener is logged and does not abort the others.</li>
  * </ul>
  */

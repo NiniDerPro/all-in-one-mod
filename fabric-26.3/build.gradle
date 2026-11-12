@@ -40,7 +40,7 @@ processResources {
     }
 }
 
-// Der Kern wird direkt ins Mod-Jar gepackt.
+// The core is packed directly into the mod jar.
 jar {
     from(project(':core').sourceSets.main.output)
 }

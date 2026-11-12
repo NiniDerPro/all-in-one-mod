@@ -208,7 +208,7 @@ public final class ArmorHudModule extends HudElement {
         else r.item(sampleItems[i], x, y, false);
     }
 
-    /** {@code color} -1 = Farbmodus des Elements nutzen. */
+    /** {@code color} -1 = use the colour mode of the element. */
     private void drawLabel(Renderer r, String text, float x, float y, int cell, boolean vertical, int color) {
         float tx = vertical ? x + ICON + 2 : x + (cell - 2) / 2f - r.textWidth(text) / 2f;
         float ty = vertical ? y + (ICON - r.fontHeight()) / 2f + 1 : y + ICON + 1;
@@ -216,7 +216,7 @@ public final class ArmorHudModule extends HudElement {
         else r.text(text, tx, ty, color, shadow());
     }
 
-    // ---- Einzelne Teile ----
+    // ---- Individual parts ----
 
     private int indexOf(HudPart part) {
         for (int i = 0; i < parts.length; i++) if (parts[i] == part) return i;

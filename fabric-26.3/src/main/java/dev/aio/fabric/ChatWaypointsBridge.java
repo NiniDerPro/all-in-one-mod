@@ -11,7 +11,7 @@ public final class ChatWaypointsBridge {
         try {
             return ChatWaypoints.rewrite(core, message);
         } catch (RuntimeException e) {
-            return message; // nie den Chat kaputt machen
+            return message; // never break the chat
         }
     }
 }

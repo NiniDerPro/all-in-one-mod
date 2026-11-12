@@ -92,7 +92,7 @@ class FeaturesTest {
     }
 
     @Test void projectionCenterAndSides() {
-        // Blick nach +Z (Yaw 0): Punkt geradeaus = Bildmitte
+        // Looking towards +Z (yaw 0): point straight ahead = screen centre
         Projection.Point p = Projection.project(0, 0, 10, 0, 0, 0, 0, 0, 70, 400, 200);
         assertTrue(p.onScreen());
         assertEquals(200, p.x(), 0.01);
@@ -101,7 +101,7 @@ class FeaturesTest {
         assertTrue(Projection.project(-3, 0, 10, 0, 0, 0, 0, 0, 70, 400, 200).x() > 200);
         // oben = kleineres y
         assertTrue(Projection.project(0, 3, 10, 0, 0, 0, 0, 0, 70, 400, 200).y() < 100);
-        // hinter der Kamera
+        // behind the camera
         assertTrue(Projection.project(0, 0, -10, 0, 0, 0, 0, 0, 70, 400, 200).behind());
     }
 

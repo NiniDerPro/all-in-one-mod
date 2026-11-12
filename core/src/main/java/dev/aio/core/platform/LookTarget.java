@@ -8,7 +8,7 @@ import java.util.List;
  *
  * @param name        angezeigter Name, z. B. "Grasblock"
  * @param source      name of the mod the target comes from, e.g. "Minecraft"
- * @param icon        Item-Icon (bei Wesen meist leer)
+ * @param icon        item icon (usually empty for entities)
  * @param correctTool true = matching tool in hand, false = no drop without a matching tool, null = neutral
  * @param toolType    required tool type ("Pickaxe", ...) or null
  * @param growth      growth 0..1 for plants, otherwise NaN
@@ -23,7 +23,7 @@ public record LookTarget(Kind kind, String name, String source, ItemRef icon, Bo
     public enum Kind { BLOCK, ENTITY }
 
     /**
-     * Eine Zeile "Bezeichnung: Wert".
+     * One row "label: value".
      *
      * @param highlight highlight the value (green), e.g. "Honey: 5/5" = ready to harvest
      */

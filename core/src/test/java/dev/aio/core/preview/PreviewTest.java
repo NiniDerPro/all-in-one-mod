@@ -88,7 +88,7 @@ class PreviewTest {
         var particles = (dev.aio.core.modules.performance.ParticleLimitModule) core.modules().get("particlelimit");
         render(new dev.aio.core.modules.performance.ParticleScreen(core, particles), new File(outDir, "particles.png"), 300, 120, true);
 
-        // HUD im Spiel
+        // HUD in the game
         for (String id : new String[]{"fps", "cps", "coordinates", "armorhud", "keystrokes", "potions", "datetime", "compass"}) {
             Module m = core.modules().get(id);
             if (m != null) m.setEnabled(true);

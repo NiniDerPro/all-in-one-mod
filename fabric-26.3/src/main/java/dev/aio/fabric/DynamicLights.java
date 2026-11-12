@@ -40,7 +40,7 @@ public final class DynamicLights {
 
     // ---- Abfrage (beliebiger Thread) ----
 
-    /** Dynamisches Blocklicht an einer Position (0 = keins). */
+    /** Dynamic block light at a position (0 = none). */
     public static int at(double x, double y, double z) {
         Source[] s = sources;
         if (!enabled || s.length == 0) return 0;
@@ -62,7 +62,7 @@ public final class DynamicLights {
 
     public static boolean lightsEntities() { return enabled && entities; }
 
-    // ---- Leuchtkraft von Items ----
+    // ---- Light emission of items ----
 
     public static int luminance(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return 0;

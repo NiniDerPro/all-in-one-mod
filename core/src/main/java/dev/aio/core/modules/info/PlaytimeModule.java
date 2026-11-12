@@ -55,7 +55,7 @@ public final class PlaytimeModule extends TextHudElement {
         return (label.on() ? "Playtime: " : "") + format(statTicks + ticksSinceStat);
     }
 
-    /** "2 T 3 Std 14 Min", "3 Std 5 Min" oder "12 Min". */
+    /** "2 d 3 h 14 min", "3 h 5 min" or "12 min". */
     public static String format(long ticks) {
         long minutesTotal = ticks / 20 / 60;
         long days = minutesTotal / (60 * 24);

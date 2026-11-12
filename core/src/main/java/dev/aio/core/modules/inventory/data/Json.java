@@ -26,7 +26,7 @@ final class Json {
     }
 
     /**
-     * Zahl oder Provider: {@code 3}, {@code {"type":"uniform","min":1,"max":3}},
+     * Number or provider: {@code 3}, {@code {"type":"uniform","min":1,"max":3}},
      * {@code {"min_inclusive":..,"max_inclusive":..}}, {@code {"type":"binomial","n":3,"p":0.5}}.
      */
     static Range range(JsonElement e, Range fallback) {

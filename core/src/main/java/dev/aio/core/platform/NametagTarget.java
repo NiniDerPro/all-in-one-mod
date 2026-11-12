@@ -7,7 +7,7 @@ import java.util.List;
  *
  * @param items     for players: main hand, helmet, chest, legs, feet, offhand (empty ones as {@link ItemRef#EMPTY})
  * @param count     for items on the ground: stack size
- * @param fuseTicks bei TNT: verbleibende Ticks
+ * @param fuseTicks for TNT: remaining ticks
  */
 public record NametagTarget(Kind kind, double x, double y, double z, double distance, String name, int nameColor,
                             float health, float maxHealth, float absorption, int ping, String gameMode,

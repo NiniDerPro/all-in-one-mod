@@ -11,7 +11,7 @@ import dev.aio.core.setting.NumberSetting;
  * Red = block light 0, monsters can spawn here. Green = lit by torches or similar, safe.
  * Sunlight is ignored (at night/in caves only block light counts). Only real
  * spawn surfaces are shown (solid ground, two blocks free above), which keeps it tidy
- * und schnell.
+ * and fast.
  */
 public final class LightOverlayModule extends Module {
     private final NumberSetting radius;

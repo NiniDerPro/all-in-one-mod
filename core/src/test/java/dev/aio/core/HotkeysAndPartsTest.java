@@ -99,7 +99,7 @@ class HotkeysAndPartsTest {
         var dlg = new WaypointEditScreen(core, wm, null);
         dlg.render(new FakeRenderer(), 0, 0, 0);
         try { Thread.sleep(200); } catch (InterruptedException ignored) {}
-        dlg.charTyped("H"); // Name ist anfangs markiert → ersetzt
+        dlg.charTyped("H"); // name is selected at first → replaced
         dlg.charTyped("i");
         dlg.keyPressed("key.keyboard.tab");
         dlg.charTyped("1");

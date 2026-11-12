@@ -44,7 +44,7 @@ public final class FoodHud {
     private static final Identifier HEART_HALF = Identifier.withDefaultNamespace("hud/heart/half");
     private static final Identifier HEART_HALF_HC = Identifier.withDefaultNamespace("hud/heart/hardcore_half");
 
-    // ---- Blinken (pro Client-Tick) ----
+    // ---- Blinking (per client tick) ----
     private static float unclampedFlash, flash;
     private static int flashDir = 1;
 
@@ -100,7 +100,7 @@ public final class FoodHud {
 
     private static int foodX(int i) { return -(i * 8) - 9; }
 
-    // ---- Essen in der Hand ----
+    // ---- Food in hand ----
 
     private record Held(FoodProperties food, boolean rotten) {}
 
@@ -112,7 +112,7 @@ public final class FoodHud {
         return null;
     }
 
-    /** Essen, das Hunger verursacht (Vanilla: verrottetes Fleisch, rohes Huhn, Kugelfisch). */
+    /** Food that causes hunger (vanilla: rotten flesh, raw chicken, pufferfish). */
     static boolean isRotten(ItemStack s) {
         return s.is(Items.ROTTEN_FLESH) || s.is(Items.CHICKEN) || s.is(Items.PUFFERFISH);
     }

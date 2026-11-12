@@ -10,6 +10,6 @@ public final class FabricHooks {
     /** Set as soon as the freelook camera hook has run once (= applies in this version). */
     public static volatile boolean cameraHookSeen;
 
-    /** Zuletzt berechnetes Welt-Sichtfeld (inkl. Sprinten, Effekten, Zoom), 0 = noch unbekannt. */
+    /** Last computed world field of view (incl. sprinting, effects, zoom), 0 = not known yet. */
     public static volatile float lastFov;
 }

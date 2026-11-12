@@ -11,7 +11,7 @@ import java.util.Set;
 
 /**
  * Trades from the data packs (data-driven since 26.x): {@code trade_set/*} picks from a list
- * oder einem Tag ({@code tags/villager_trade/*}) einzelne Trades ({@code villager_trade/*}).
+ * or a tag ({@code tags/villager_trade/*}) single trades ({@code villager_trade/*}).
  */
 public final class TradeData {
     /** An item with count (range). */

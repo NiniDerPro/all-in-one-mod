@@ -16,7 +16,7 @@ public final class Colors {
         return withAlpha(c, Math.round(alpha(c) * Math.max(0f, Math.min(1f, factor))));
     }
 
-    /** Lineare Interpolation pro Kanal, t in 0..1. */
+    /** Linear interpolation per channel, t in 0..1. */
     public static int lerp(int from, int to, float t) {
         t = Math.max(0f, Math.min(1f, t));
         int a = Math.round(alpha(from) + (alpha(to) - alpha(from)) * t);

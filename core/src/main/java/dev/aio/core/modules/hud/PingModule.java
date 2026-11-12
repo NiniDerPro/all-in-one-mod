@@ -3,7 +3,7 @@ package dev.aio.core.modules.hud;
 import dev.aio.core.hud.TextHudElement;
 import dev.aio.core.module.Category;
 
-/** Latenz zum Server laut Spielerliste. */
+/** Latency to the server according to the player list. */
 public final class PingModule extends TextHudElement {
     public PingModule() {
         super("ping", "Ping", "Latency to the server", Category.QOL, false, 0.0, 0.18);

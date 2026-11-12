@@ -54,7 +54,7 @@ final class ScreenHooks {
                         .build();
                 Screens.getWidgets(screen).add(open);
             }
-            // Einmaliger Statistik-Hinweis oben im Titelbildschirm
+            // One-time statistics notice at the top of the title screen
             if (screen instanceof TitleScreen && StatsNotice.shouldShow(core)) {
                 ScreenEvents.afterExtract(screen).register((s, graphics, mx, my, delta) -> {
                     renderer.begin(graphics);
@@ -63,7 +63,7 @@ final class ScreenHooks {
                 ScreenMouseEvents.allowMouseClick(screen).register((s, event) ->
                         !StatsNotice.mouseClicked(core, event.x(), event.y(), s.width));
             }
-            // Handelsfenster: Angebote des angeschauten Dorfbewohners merken (Dorfbewohner-Info)
+            // Trade window: remember offers of the villager being looked at (villager info)
             if (screen instanceof MerchantScreen merchant) {
                 Entity target = client.hitResult instanceof EntityHitResult ehr ? ehr.getEntity() : null;
                 if (target instanceof AbstractVillager) {

@@ -96,7 +96,7 @@ final class DevSelfTest {
                 }));
     }
 
-    /** "Create" im Welt-Erstellen-Bildschirm (private Methode, daher per Reflection). */
+    /** "Create" in the create-world screen (private method, hence via reflection). */
     private static void pressCreate(Minecraft mc) {
         try {
             var m = CreateWorldScreen.class.getDeclaredMethod("onCreate");
@@ -140,7 +140,7 @@ final class DevSelfTest {
                 for (String c : cmds.split(";")) {
                     if (c.isBlank()) continue;
                     if (c.strip().equals("lan")) { // open the world to LAN (port 25565), for a second client
-                        server.setUsesAuthentication(false); // offline: zweiter Test-Client ohne Mojang-Login
+                        server.setUsesAuthentication(false); // offline: second test client without Mojang login
                         boolean ok = server.publishServer(net.minecraft.server.MinecraftServer.MultiplayerScope.LAN, true, 25565);
                         AioFabricClient.LOGGER.info("[aio] Selftest LAN published: {}", ok);
                         continue;

@@ -24,7 +24,7 @@ public final class Draw {
         }
     }
 
-    /** 1-Pixel-Rahmen mit abgerundeten Ecken. */
+    /** 1-pixel frame with rounded corners. */
     public static void roundOutline(Renderer r, float x1, float y1, float x2, float y2, int color) {
         r.fill(x1 + 1, y1, x2 - 1, y1 + 1, color);
         r.fill(x1 + 1, y2 - 1, x2 - 1, y2, color);

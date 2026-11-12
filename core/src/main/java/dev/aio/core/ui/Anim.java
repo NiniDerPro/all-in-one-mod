@@ -9,7 +9,7 @@ public final class Anim {
     private long last = System.nanoTime();
     private float dt;
 
-    /** Einmal pro Frame aufrufen. */
+    /** Call once per frame. */
     public void frame() {
         long now = System.nanoTime();
         dt = Math.min(0.1f, (now - last) / 1e9f);

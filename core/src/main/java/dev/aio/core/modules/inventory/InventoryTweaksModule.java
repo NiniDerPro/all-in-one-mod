@@ -72,7 +72,7 @@ public final class InventoryTweaksModule extends Module {
     /** Middle click over a slot: sort its area. */
     public boolean onMiddleClick(ContainerView c, int slotIndex, boolean creative) {
         if (!isActive() || !middleSort.on() || c == null || slotIndex < 0 || conflict()) return false;
-        if (creative && !c.isPlayerOnly()) return false; // Mittelklick = Item kopieren im Kreativmodus
+        if (creative && !c.isPlayerOnly()) return false; // middle click = copy item in creative mode
         Slot s = InventoryOps.slot(c, slotIndex);
         if (s == null) return false;
         return InventoryOps.sort(c, InventoryOps.sameRegion(c, s));

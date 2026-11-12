@@ -115,7 +115,7 @@ public final class FabricPlatform implements Platform {
         if (raw == InputConstants.MOUSE_BUTTON_LEFT) return 0;
         if (raw == InputConstants.MOUSE_BUTTON_RIGHT) return 1;
         if (raw == InputConstants.MOUSE_BUTTON_MIDDLE) return 2;
-        return raw < 3 ? 3 + raw : raw; // Seitentasten: nie mit 0..2 verwechseln
+        return raw < 3 ? 3 + raw : raw; // side buttons: never confuse with 0..2
     }
 
     private LocalPlayer player() { return client.player; }
@@ -184,7 +184,7 @@ public final class FabricPlatform implements Platform {
         return list;
     }
 
-    /** "minecraft:speed" -> "minecraft:mob_effect/speed" (Sprite im GUI-Atlas). */
+    /** "minecraft:speed" -> "minecraft:mob_effect/speed" (sprite in the GUI atlas). */
     private static String effectSprite(String id) {
         int colon = id.indexOf(':');
         return colon < 0 ? "minecraft:mob_effect/" + id : id.substring(0, colon) + ":mob_effect/" + id.substring(colon + 1);

@@ -44,7 +44,7 @@ final class BlockOutlineRenderer {
                 for (AABB box : edges) box(p, buffer, box, line);
             });
             pose.popPose();
-            return false; // Vanilla-Linie nicht zeichnen
+            return false; // do not draw the vanilla line
         });
     }
 

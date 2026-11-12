@@ -61,7 +61,7 @@ public final class Stats {
         save();
     }
 
-    /** Jeden Client-Tick aufrufen: Spielzeit und Modulzeiten fortschreiben. */
+    /** Call every client tick: advance play time and module times. */
     public void tick() {
         long now = clock.getAsLong();
         long delta = now - lastTickMs;

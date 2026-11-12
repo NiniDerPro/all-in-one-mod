@@ -13,7 +13,7 @@ import java.util.Map;
 public final class ModConflicts {
     private ModConflicts() {}
 
-    /** AIO-Modul → Mod-IDs mit derselben Funktion. */
+    /** AIO module → mod ids with the same function. */
     private static final Map<String, List<String>> TABLE = Map.ofEntries(
             Map.entry("waypoints", List.of("xaerominimap", "xaerominimapfair", "journeymap", "voxelmap")),
             Map.entry("deathpoint", List.of("xaerominimap", "xaerominimapfair", "journeymap", "voxelmap")),

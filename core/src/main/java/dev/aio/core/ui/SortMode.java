@@ -37,7 +37,7 @@ public enum SortMode implements EnumSetting.Named {
         List<Module> out = new ArrayList<>();
         for (Module m : modules) {
             String hay = (m.name() + " " + m.description() + " " + m.category().displayName()).toLowerCase(Locale.ROOT);
-            // "nofog" findet auch "No Fog": Leerzeichen ignorieren, ID mitsuchen
+            // "nofog" also finds "No Fog": ignore spaces, search the id too
             String compact = hay.replace(" ", "") + " " + m.id();
             boolean all = true;
             for (String w : words) if (!hay.contains(w) && !compact.contains(w)) { all = false; break; }

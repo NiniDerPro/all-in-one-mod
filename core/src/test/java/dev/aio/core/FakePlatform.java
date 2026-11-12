@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Test-Plattform ohne Minecraft. */
+/** Test platform without Minecraft. */
 public class FakePlatform implements Platform {
     public boolean inWorld = true;
     public boolean singleplayer = true;

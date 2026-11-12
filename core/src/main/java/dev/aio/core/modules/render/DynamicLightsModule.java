@@ -9,7 +9,7 @@ import dev.aio.core.setting.NumberSetting;
 /**
  * Dynamic Lights: glowing items (torch, lantern, glowstone, lava bucket, …) in the hand, lying on the
  * ground and burning entities light up the surroundings without a
- * Block gesetzt wird. Rein optisch.
+ * block is placed. Purely visual.
  */
 public final class DynamicLightsModule extends Module {
     public enum Mode implements EnumSetting.Named {

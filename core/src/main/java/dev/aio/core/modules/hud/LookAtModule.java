@@ -33,7 +33,7 @@ public final class LookAtModule extends HudElement {
 
     /**
      * One line of text. {@code hearts} marks the heart row that is drawn separately.
-     * {@code value} wird optional hinter {@code text} in eigener Farbe gezeichnet ("Honig: " + "5/5").
+     * {@code value} is optionally drawn behind {@code text} in its own colour ("Honey: " + "5/5").
      */
     private record Line(String text, int color, boolean hearts, String value, int valueColor) {
         Line(String text, int color, boolean hearts) { this(text, color, hearts, "", 0); }
@@ -41,7 +41,7 @@ public final class LookAtModule extends HudElement {
         String full() { return text + value; }
     }
 
-    // Farben des klassischen Tooltips
+    // Colours of the classic tooltip
     static final int BG = 0xF0100010;
     static final int BORDER_TOP = 0x505000FF;
     static final int BORDER_BOTTOM = 0x5028007F;

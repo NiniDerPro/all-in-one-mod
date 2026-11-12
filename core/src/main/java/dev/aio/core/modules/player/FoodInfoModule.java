@@ -49,7 +49,7 @@ public final class FoodInfoModule extends Module {
 
     public boolean showValues() { return isActive() && values.on(); }
 
-    /** Blinken der Vorschau: sanft pulsierend. */
+    /** Blinking of the preview: gently pulsing. */
     private static float pulse() {
         double t = (System.currentTimeMillis() % 1500) / 1500.0;
         return (float) (0.35 + 0.45 * (0.5 + 0.5 * Math.sin(t * Math.PI * 2)));
@@ -142,7 +142,7 @@ public final class FoodInfoModule extends Module {
     public void renderOverHealth(Renderer r, FoodState s, float left, float top) {
         if (!isActive() || !s.visible() || !preview.on() || !healthPreview.on()) return;
         if (s.heldNutrition() <= 0 || !s.heldCanEat()) return;
-        if (s.maxHealth() + s.absorption() > 20) return; // mehrere Herzreihen: nicht sauber vorhersagbar
+        if (s.maxHealth() + s.absorption() > 20) return; // several heart rows: cannot be predicted cleanly
         int newFood = FoodMath.foodAfter(s.food(), s.heldNutrition());
         float newSat = FoodMath.saturationAfter(s.food(), s.saturation(), s.heldNutrition(), s.heldSaturation());
         float gain = FoodMath.healthIncrement(newFood, newSat, s.exhaustion());

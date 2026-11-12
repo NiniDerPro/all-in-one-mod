@@ -67,7 +67,7 @@ public interface Platform {
 
     String playerName();
 
-    /** Zeit der Oberwelt-Uhr in Ticks (Tag = 24000). */
+    /** Time of the overworld clock in ticks (day = 24000). */
     long dayTime();
 
     /** "overworld", "the_nether", "the_end" or the id of another dimension. */
@@ -81,7 +81,7 @@ public interface Platform {
 
     boolean isDead();
 
-    /** Spielzeit laut Statistik in Ticks, -1 wenn unbekannt. */
+    /** Play time according to the statistics in ticks, -1 if unknown. */
     long playTimeTicks();
 
     /** Requests current statistics from the server (like the statistics menu). */
@@ -199,7 +199,7 @@ public interface Platform {
     /** Sets the pressed state of a vanilla key, e.g. for Toggle Sprint. */
     void setGameKeyPressed(GameKey key, boolean pressed);
 
-    /** Lesbarer, lokalisierter Name einer Taste. */
+    /** Readable, localised name of a key. */
     String keyName(String key);
 
     // ---- Data for the item browser (trades, loot, world generation) ----
@@ -237,7 +237,7 @@ public interface Platform {
      */
     default String applyFpsBoost(Set<String> tweaks, String saved) { return null; }
 
-    /** FPS-Boost aus: Ursprungswerte wiederherstellen. */
+    /** FPS boost off: restore original values. */
     default void restoreFpsBoost(String saved) {}
 
     /** Switch freecam on/off (camera detaches from the player). */

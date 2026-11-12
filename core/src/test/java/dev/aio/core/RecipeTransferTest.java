@@ -15,14 +15,14 @@ import static org.junit.jupiter.api.Assertions.*;
 class RecipeTransferTest {
     private static ItemRef ref(String id) { return new FakeContainer.Stack(id, 1, 64); }
 
-    /** Werkbank: Slots 0-8 = Raster, danach 36 Spielerslots. */
+    /** Crafting table: slots 0-8 = grid, then 36 player slots. */
     private static FakeContainer craftingTable() {
         FakeContainer c = new FakeContainer(9);
         c.grid = new ContainerView.Grid(Set.of(RecipeKind.CRAFTING), 3, 3, new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8});
         return c;
     }
 
-    /** Spielerinventar mit 2×2: Slots 0-3 = Raster. */
+    /** Player inventory with 2×2: slots 0-3 = grid. */
     private static FakeContainer inventory2x2() {
         FakeContainer c = new FakeContainer(4);
         c.grid = new ContainerView.Grid(Set.of(RecipeKind.CRAFTING), 2, 2, new int[]{0, 1, 2, 3});
@@ -41,7 +41,7 @@ class RecipeTransferTest {
         return new RecipeView("Crafting", 2, 2, List.of(p, p, p, p), ref("crafting_table"), ItemRef.EMPTY, RecipeKind.CRAFTING);
     }
 
-    /** Ofen: 3×3 Bruchstein mit leerer Mitte. */
+    /** Furnace: 3×3 cobblestone with an empty middle. */
     private static RecipeView furnace() {
         List<ItemRef> s = List.of(ref("cobblestone"));
         return new RecipeView("Crafting", 3, 3, List.of(s, s, s, s, List.of(), s, s, s, s), ref("furnace"), ItemRef.EMPTY, RecipeKind.CRAFTING);
@@ -119,7 +119,7 @@ class RecipeTransferTest {
 
     @Test void clearsOldGridContentFirst() {
         FakeContainer c = inventory2x2();
-        c.set(0, "dirt", 3); // altes Zeug im Raster
+        c.set(0, "dirt", 3); // old stuff in the grid
         c.set(10, "oak_planks", 4);
         assertEquals(1, RecipeTransfer.transfer(c, table(), false));
         assertEquals(3, c.total("dirt"), "dirt back into the inventory, not lost");

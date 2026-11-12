@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-/** Eine einzelne, persistierbare Einstellung eines Moduls. */
+/** A single, persistable setting of a module. */
 public abstract class Setting<T> {
     private final String id;
     private final String name;

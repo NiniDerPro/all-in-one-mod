@@ -46,7 +46,7 @@ public interface Renderer {
      */
     default void image(String key, int[] argb, int w, int h, int version, float x, float y, float dw, float dh) {}
 
-    /** Sprite mit Farbe/Transparenz (ARGB-Multiplikator). */
+    /** Sprite with colour/transparency (ARGB multiplier). */
     default void sprite(String id, float x, float y, int width, int height, int argb) { sprite(id, x, y, width, height); }
 
     void push();
@@ -84,7 +84,7 @@ public interface Renderer {
         return text.substring(0, end) + ellipsis;
     }
 
-    /** Vertikaler Farbverlauf (zeilenweise aus fill zusammengesetzt). */
+    /** Vertical colour gradient (composed of fill row by row). */
     default void fillGradient(float x1, float y1, float x2, float y2, int top, int bottom) {
         float h = y2 - y1;
         if (h <= 0) return;

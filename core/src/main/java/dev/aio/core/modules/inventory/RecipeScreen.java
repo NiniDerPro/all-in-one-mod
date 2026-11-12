@@ -153,7 +153,7 @@ public final class RecipeScreen implements UiScreen {
         McGui.panel(r, px, py, px + W, py + ph);
         renderCatalysts(r, recs, px, py, mx, my);
 
-        // Kopf: Kategorie und Seite
+        // Header: category and page
         float hx1 = px + 8, hx2 = px + W - 8;
         String catName = categories.isEmpty() ? (view.usages ? Lang.tr("aio.ui.recipe.uses", "Uses") : Lang.tr("aio.ui.recipe.recipes", "Recipes")) : categories.get(category);
         headerRow(r, hx1, py + 8, hx2, catName, categories.size() > 1, mx, my,

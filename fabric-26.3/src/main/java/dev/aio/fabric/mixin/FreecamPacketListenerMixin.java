@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 // Adapted from Freecam (MIT), see dev/aio/fabric/freecam/NOTICE.md
 @Mixin(ClientPacketListener.class)
 public class FreecamPacketListenerMixin {
-    /** Respawn oder Dimensionswechsel: ausschalten. */
+    /** Respawn or dimension change: switch off. */
     @Inject(method = "handleRespawn", at = @At("TAIL"))
     private void aio$freecamRespawn(CallbackInfo ci) {
         Freecam.set(false);

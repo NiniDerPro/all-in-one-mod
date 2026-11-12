@@ -36,7 +36,7 @@ public final class ShulkerTooltipHook {
         });
     }
 
-    /** Belegte Slots einer Kiste. */
+    /** Occupied slots of a chest. */
     static int stackCount(ItemContainerContents contents) {
         if (contents == null) return 0;
         NonNullList<ItemStack> items = NonNullList.withSize(27, ItemStack.EMPTY);

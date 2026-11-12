@@ -5,8 +5,8 @@ package dev.aio.core.platform;
  *
  * @param id         unique id (translation key of the binding)
  * @param name       Anzeigename
- * @param category   Anzeigename der Kategorie
- * @param key        MC-Tastenname, z. B. {@code key.keyboard.w}, leer = nicht belegt
+ * @param category   display name of the category
+ * @param key        MC key name, e.g. {@code key.keyboard.w}, empty = unbound
  * @param defaultKey Standardtaste
  */
 public record KeyBinding(String id, String name, String category, String key, String defaultKey) {

@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * An entry in the recipe view: a recipe, a trade, a loot list, ...
  *
- * @param type    Anzeigename der Art, z. B. "Werkbank", "Handel", "Beute"
+ * @param type    display name of the kind, e.g. "Crafting table", "Trade", "Loot"
  * @param width   grid width (0 = no grid, list only)
  * @param slots   per input slot the possible items (empty = empty slot); several are cycled through
  * @param result  Ergebnis (EMPTY = keins)
@@ -19,7 +19,7 @@ import java.util.List;
 public record RecipeView(String type, int width, int height, List<List<ItemRef>> slots, ItemRef result, ItemRef station,
                          RecipeKind kind, List<String> notes, List<Row> rows, List<ItemRef> results, boolean combos) {
 
-    /** Zeile einer Liste. */
+    /** Row of a list. */
     public record Row(ItemRef icon, String label) {}
 
     public RecipeView(String type, int width, int height, List<List<ItemRef>> slots, ItemRef result, ItemRef station,
@@ -31,12 +31,12 @@ public record RecipeView(String type, int width, int height, List<List<ItemRef>>
         this(type, width, height, slots, result, station, RecipeKind.OTHER);
     }
 
-    /** Raster → Ergebnis mit Textzeilen (z. B. Handel). */
+    /** Grid → result with text lines (e.g. trade). */
     public static RecipeView withNotes(String type, List<List<ItemRef>> slots, ItemRef result, ItemRef station, List<String> notes) {
         return new RecipeView(type, Math.max(1, slots.size()), 1, slots, result, station, RecipeKind.OTHER, notes, List.of(), List.of(), false);
     }
 
-    /** Reine Liste (z. B. "Droppt von", "Spawnt in"). */
+    /** Plain list (e.g. "Dropped by", "Spawns in"). */
     public static RecipeView list(String type, ItemRef station, List<String> notes, List<Row> rows) {
         return new RecipeView(type, 0, 0, List.of(), ItemRef.EMPTY, station, RecipeKind.OTHER, notes, rows, List.of(), false);
     }

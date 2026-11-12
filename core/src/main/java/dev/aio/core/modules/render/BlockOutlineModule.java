@@ -31,7 +31,7 @@ public final class BlockOutlineModule extends Module {
         fillColor.visibleWhen(fill::on);
     }
 
-    /** Aktuelle Linienfarbe (ARGB), animiert bei Regenbogen/Verlauf. */
+    /** Current line colour (ARGB), animated for rainbow/gradient. */
     public int lineColor() {
         return ColoredText.color(colorMode.get(), lineColor.argb(), secondColor.argb(), 0.3f, 0);
     }

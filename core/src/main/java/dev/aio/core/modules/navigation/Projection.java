@@ -39,7 +39,7 @@ public final class Projection {
         double yaw = Math.toRadians(yawDeg), pitch = Math.toRadians(pitchDeg);
         // Blickrichtung
         double fx = -Math.sin(yaw) * Math.cos(pitch), fy = -Math.sin(pitch), fz = Math.cos(yaw) * Math.cos(pitch);
-        // Rechts (Bildschirm) und Oben
+        // Right (screen) and up
         double rx = -Math.cos(yaw), ry = 0, rz = -Math.sin(yaw);
         double ux = ry * fz - rz * fy, uy = rz * fx - rx * fz, uz = rx * fy - ry * fx;
 

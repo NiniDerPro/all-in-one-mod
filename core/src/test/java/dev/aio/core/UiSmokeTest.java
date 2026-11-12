@@ -150,7 +150,7 @@ class UiSmokeTest {
         assertEquals(h, fps.scaledHeight(r), 0.01, "height unchanged");
         assertEquals(x, fps.screenX(r), 0.6, "linke Kante bleibt");
 
-        // Obere linke Ecke: beide Achsen, rechte untere Ecke bleibt stehen
+        // Top left corner: both axes, bottom right corner stays put
         x = fps.screenX(r); y = fps.screenY(r); w = fps.scaledWidth(r); h = fps.scaledHeight(r);
         assertTrue(editor.mouseClicked(x, y, 0));
         editor.mouseDragged(x - 10, y - 15, 0, 0, 0);

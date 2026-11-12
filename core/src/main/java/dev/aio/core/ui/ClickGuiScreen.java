@@ -50,7 +50,7 @@ public final class ClickGuiScreen implements UiScreen {
 
     private final AioCore core;
     private final Anim anim = new Anim();
-    /** null = alle Kategorien. */
+    /** null = all categories. */
     private Category category;
     private String search = "";
     private boolean searchFocused, searchAll, editAll;
@@ -290,7 +290,7 @@ public final class ClickGuiScreen implements UiScreen {
         }
         float tx = x + 10;
         float right = x + w - 6;
-        // Schalter, davor Taste
+        // Switch, key in front
         if (m.canToggle()) {
             right -= 18;
             Draw.toggle(r, right, y + 9, on, problem ? Theme.WARNING : accent, false);
@@ -1011,7 +1011,7 @@ public final class ClickGuiScreen implements UiScreen {
             return true;
         }
         if (listening != null) return false;
-        // Einfach lostippen: landet in der Suche
+        // Just start typing: ends up in the search
         if (!searchFocused && cp > 32) searchFocused = true;
         if (searchFocused && cp >= 32) {
             setSearch(TextEdit.type(search, searchAll, text));

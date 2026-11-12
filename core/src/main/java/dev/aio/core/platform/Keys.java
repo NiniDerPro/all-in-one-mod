@@ -3,7 +3,7 @@ package dev.aio.core.platform;
 /**
  * Keys are identified by their Minecraft names (e.g. {@code key.keyboard.right.shift},
  * {@code key.mouse.left}). These names are stable across MC versions and input backends (GLFW, SDL)
- * hinweg stabil, numerische Codes nicht.
+ * are stable, numeric codes are not.
  */
 public final class Keys {
     private Keys() {}
@@ -24,7 +24,7 @@ public final class Keys {
 
     private static final String MOUSE_PREFIX = "key.mouse.";
 
-    /** Name einer Maustaste (0 = links, 1 = rechts, 2 = Mitte, 3+ = Seitentasten). */
+    /** Name of a mouse button (0 = left, 1 = right, 2 = middle, 3+ = side buttons). */
     public static String mouse(int button) {
         return switch (button) {
             case 0 -> "key.mouse.left";

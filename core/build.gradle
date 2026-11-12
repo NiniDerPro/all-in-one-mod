@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    // Gson liefert Minecraft zur Laufzeit selbst mit.
+    // Gson is provided by Minecraft itself at runtime.
     compileOnly 'com.google.code.gson:gson:2.10.1'
 
     testImplementation 'com.google.code.gson:gson:2.10.1'
@@ -34,7 +34,7 @@ test {
     useJUnitPlatform()
     // ./gradlew :core:test -Paio.coreOnly=true -Daio.writeLang=true  schreibt en_us.json neu
     systemProperty 'aio.writeLang', System.getProperty('aio.writeLang', 'false')
-    // Design-Vorschau als PNG: -Daio.preview=<Ordner>
+    // Design preview as PNG: -Daio.preview=<folder>
     systemProperty 'aio.preview', System.getProperty('aio.preview', '')
     systemProperty 'java.awt.headless', 'true'
 }

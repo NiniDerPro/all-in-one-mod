@@ -128,7 +128,7 @@ class LookAtModuleTest {
         AioCore core = newCore(p);
         LookAtModule m = core.module(LookAtModule.class);
         FakeRenderer r = new FakeRenderer();
-        m.render(r, true); // Vorschau ohne Ziel
+        m.render(r, true); // preview without target
         assertEquals(0, r.depth);
 
         p.lookTarget = LookTarget.entity("Zombie", "Minecraft", ItemRef.EMPTY, 15, 20, 0, 0, 0, 0);

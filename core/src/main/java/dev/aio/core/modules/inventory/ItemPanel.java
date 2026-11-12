@@ -27,7 +27,7 @@ public final class ItemPanel {
     private boolean allSelected;
     private int page;
 
-    // Layout des letzten Frames
+    // Layout of the last frame
     private float x1, y1, x2, y2;
     private int cols, rows;
     private ItemRef hovered;
@@ -67,7 +67,7 @@ public final class ItemPanel {
 
     /**
      * In the style of well-known item lists: paging buttons with page number at the top, below the grid,
-     * unten Suchfeld und Einstellungs-Knopf.
+     * search field and settings button at the bottom.
      *
      * @param left left edge of the free area (right of the inventory or the effects)
      */
@@ -106,7 +106,7 @@ public final class ItemPanel {
             r.item(it, cx + 1, cy + 1, false);
         }
 
-        // Suchfeld und Einstellungen
+        // Search field and settings
         float fx2 = x2 - BAR - 2;
         McGui.textField(r, x1, searchY, fx2, searchY + BAR, focused);
         String shown = query.isEmpty() && !focused ? "Search… (@mod)" : query;
@@ -159,7 +159,7 @@ public final class ItemPanel {
             if (mx >= x2 - BAR && mx <= x2) { page++; return true; }
         }
         if (mx >= x2 - BAR && mx <= x2 && my >= searchY && my <= searchY + BAR) {
-            core.openClickGui(module); // Einstellungen der Item-Liste
+            core.openClickGui(module); // settings of the item list
             return true;
         }
         if (inGrid(mx, my) && hovered != null) {
@@ -183,7 +183,7 @@ public final class ItemPanel {
                 focused = false;
                 allSelected = false;
             } else if (ctrl && "key.keyboard.a".equals(key)) {
-                allSelected = !query.isEmpty(); // Strg+A: alles markieren
+                allSelected = !query.isEmpty(); // Ctrl+A: select all
             } else if (Keys.BACKSPACE.equals(key) || Keys.DELETE.equals(key)) {
                 if (allSelected) setQuery("");
                 else if (Keys.BACKSPACE.equals(key) && !query.isEmpty()) setQuery(query.substring(0, query.length() - 1));
@@ -212,7 +212,7 @@ public final class ItemPanel {
     public boolean charTyped(String text) {
         if (!focused || text.isEmpty() || text.codePointAt(0) < 32) return false;
         if (allSelected) {
-            setQuery(text); // markierter Text wird ersetzt
+            setQuery(text); // selected text is replaced
             allSelected = false;
         } else if (query.length() < 64) {
             setQuery(query + text);

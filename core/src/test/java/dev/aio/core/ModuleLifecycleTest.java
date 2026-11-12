@@ -127,7 +127,7 @@ class ModuleLifecycleTest {
         p.heldKeys.add(Keys.LEFT_ALT);
         core.bus().post(new Events.Key(Keys.LEFT_ALT, 1, false));
         assertTrue(fl.isEngaged());
-        p.heldKeys.remove(Keys.LEFT_ALT); // losgelassen, aber Event nie angekommen
+        p.heldKeys.remove(Keys.LEFT_ALT); // released, but the event never arrived
         core.bus().post(Events.Tick.INSTANCE);
         assertFalse(fl.isEngaged());
         assertEquals(Perspective.FIRST_PERSON, p.perspective);

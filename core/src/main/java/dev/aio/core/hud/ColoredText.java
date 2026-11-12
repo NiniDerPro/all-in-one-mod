@@ -88,14 +88,14 @@ public final class ColoredText {
         return (primary & 0xFF000000) | (Colors.lerp(primary, 0xFF000000, 0.42f) & 0xFFFFFF);
     }
 
-    /** Zerlegung eines Textes in Abschnitte (Wert/Beschriftung) mit x-Versatz, zwischengespeichert. */
+    /** Splitting of a text into sections (value/label) with x offset, cached. */
     private record Segments(String[] parts, float[] offsets, boolean[] values) {}
 
     private static final java.util.Map<String, Segments> SEGMENTS = new java.util.LinkedHashMap<>(64, 0.75f, true) {
         @Override protected boolean removeEldestEntry(java.util.Map.Entry<String, Segments> e) { return size() > 256; }
     };
 
-    /** Werte hell, Beschriftungen gedimmt; in Abschnitten gleicher Farbe gezeichnet. */
+    /** Values bright, labels dimmed; drawn in sections of the same colour. */
     private static void drawClean(Renderer r, String text, float x, float y, int primary, boolean shadow) {
         checkFont(r);
         Segments seg = SEGMENTS.get(text);
