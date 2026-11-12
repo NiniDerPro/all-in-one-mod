@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: ['26.*', main]
+    branches: ['26.*', '1.*', main]
   pull_request:
 
 permissions:
@@ -37,7 +37,7 @@ jobs:
 
       # Publish the jar itself as a release asset (no zip): one release per version, e.g. v0.2.2-mc26.3
       - name: Release with jar
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/26.')
+        if: github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/26.') || startsWith(github.ref, 'refs/heads/1.'))
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
