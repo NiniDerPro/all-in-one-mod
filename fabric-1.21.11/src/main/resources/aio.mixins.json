@@ -16,6 +16,7 @@
     "AbstractContainerScreenAccessor",
     "AtmosphericFogMixin",
     "CameraMixin",
+    "SpeedFovMixin",
     "ZoomFovMixin",
     "ChatComponentMixin",
     "ChatHeadsDrawMixin",

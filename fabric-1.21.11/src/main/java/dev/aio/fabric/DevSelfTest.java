@@ -107,6 +107,18 @@ final class DevSelfTest {
                     AioFabricClient.LOGGER.info("[aio] Selftest zoom: active={} engaged={} fovBase={} fovNow={} mult={}", z.isActive(), z.isEngaged(), fovBase, FabricHooks.lastFov, z.currentMultiplier());
                     InputState.update(zoomKey(core), 0); core.bus().post(new dev.aio.core.event.Events.Key(zoomKey(core), 0, false));
                 }),
+                new Step(any, 5, () -> {
+                    var m = core.module(dev.aio.core.modules.render.NoSpeedFovModule.class);
+                    mc.player.setSprinting(true);
+                    mc.player.getAbilities().flying = true;
+                    float on = mc.player.getFieldOfViewModifier(false, 1f);
+                    m.setEnabled(false);
+                    float off = mc.player.getFieldOfViewModifier(false, 1f);
+                    m.setEnabled(true);
+                    AioFabricClient.LOGGER.info("[aio] Selftest speedfov: with module={} without module={} (module on = {})", on, off, m.isActive());
+                    mc.player.getAbilities().flying = false;
+                    mc.player.setSprinting(false);
+                }),
                 new Step(any, 5, () -> mc.pauseGame(false)),
                 new Step(any, 30, () -> shot(mc, dir, "06_pause.png")),
                 new Step(any, 5, () -> core.openClickGui(null)),
