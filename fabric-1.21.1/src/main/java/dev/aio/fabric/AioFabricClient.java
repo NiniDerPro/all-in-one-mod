@@ -52,7 +52,7 @@ public final class AioFabricClient implements ClientModInitializer {
         FabricPlatform platform = new FabricPlatform(client);
         AioCore core = AioCore.init(platform, FabricLoader.getInstance().getConfigDir().resolve("aio"));
         // Features whose hooks are not ported to this Minecraft version yet are switched off with a reason
-        for (String id : new String[]{"chatheads", "dynamiclights", "fullbright", "nohurtcam", "blockoutline", "lightoverlay", "foodinfo", "shieldindicator",
+        for (String id : new String[]{"chatheads", "dynamiclights", "fullbright", "blockoutline", "lightoverlay", "foodinfo", "shieldindicator",
                 "nofog", "smallitems", "piechart", "villagerinfo", "nopumpkin", "dynamicfps", "xpclumps"}) {
             var m = core.modules().get(id);
             if (m != null) m.setUnavailable("Not available on this Minecraft version yet");
