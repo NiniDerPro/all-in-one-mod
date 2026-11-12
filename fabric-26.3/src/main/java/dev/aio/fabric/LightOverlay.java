@@ -31,26 +31,26 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Light Level Overlay, zwischengespeichert pro Chunk-Abschnitt (16³ Blöcke).
+ * Light Level Overlay, cached per chunk section (16³ blocks).
  * <ul>
- *   <li>Jeder Abschnitt wird einmal ausgewertet. Meldet Minecraft eine Änderung darin (Block
- *       gesetzt/abgebaut oder Licht geändert), wird genau dieser Abschnitt im nächsten Tick neu
- *       berechnet – eine Fackel färbt die Umgebung also sofort grün.</li>
- *   <li>Neue Abschnitte werden vom Spieler aus nach außen ergänzt, mit Zeitbudget pro Tick.</li>
- *   <li>Gezeichnet wird alles in einem Aufruf; die Liste wird nur bei Änderungen neu aufgebaut.</li>
+ *   <li>Each section is evaluated once. If Minecraft reports a change in it (block
+ *       placed/broken or light changed), exactly this section is recomputed on the next tick
+ *       – so a torch turns the surroundings green immediately.</li>
+ *   <li>New sections are added outwards from the player, with a time budget per tick.</li>
+ *   <li>Everything is drawn in one call; the list is only rebuilt on changes.</li>
  * </ul>
  */
 final class LightOverlay {
     private LightOverlay() {}
 
-    /** Zeitbudget für das Auswerten neuer Abschnitte pro Tick (geänderte gehen immer vor). */
+    /** Time budget for evaluating new sections per tick (changed ones always go first). */
     private static final long BUDGET_NANOS = 3_000_000;
-    /** Höhenbereich um den Spieler, in dem Oberflächen gezeigt werden. */
+    /** Height range around the player in which surfaces are shown. */
     private static final int BELOW = 24, ABOVE = 12;
 
-    /** Abschnitt → Einträge (lx | ly << 4 | lz << 8 | lit << 12) der Böden im Abschnitt. */
+    /** Section → entries (lx | ly << 4 | lz << 8 | lit << 12) of the floors in the section. */
     private static final Map<Long, int[]> CACHE = new HashMap<>();
-    /** Von Minecraft gemeldete Änderungen (kann von mehreren Stellen kommen). */
+    /** Changes reported by Minecraft (can come from several places). */
     private static final Set<Long> DIRTY = ConcurrentHashMap.newKeySet();
     private static ClientLevel cachedLevel;
     private static boolean listDirty = true;
@@ -60,11 +60,11 @@ final class LightOverlay {
     private static int[] quads = new int[0];
     private static int quadCount;
 
-    /** Aufgerufen, wenn Minecraft einen Abschnitt neu zeichnen will (Block- oder Lichtänderung). */
+    /** Called when Minecraft wants to redraw a section (block or light change). */
     static void onSectionDirty(int sx, int sy, int sz) {
         if (cachedLevel == null) return;
         DIRTY.add(SectionPos.asLong(sx, sy, sz));
-        DIRTY.add(SectionPos.asLong(sx, sy - 1, sz)); // Böden ganz oben im Abschnitt darunter hängen davon ab
+        DIRTY.add(SectionPos.asLong(sx, sy - 1, sz)); // floors at the very top of the section below depend on it
     }
 
     static void register(AioCore core, Minecraft mc) {
@@ -92,13 +92,13 @@ final class LightOverlay {
     }
 
     private static void quad(PoseStack.Pose pose, VertexConsumer v, int x, int y, int z, int c) {
-        float y1 = y + 0.005f; // knapp über der Oberfläche, kein Flimmern
+        float y1 = y + 0.005f; // just above the surface, no flicker
         float a = 0.06f, x0 = x + a, z0 = z + a, x1 = x + 1 - a, z1 = z + 1 - a;
         v.addVertex(pose, x0, y1, z0).setColor(c);
         v.addVertex(pose, x0, y1, z1).setColor(c);
         v.addVertex(pose, x1, y1, z1).setColor(c);
         v.addVertex(pose, x1, y1, z0).setColor(c);
-        // Rückseite, falls die Füllung einseitig gezeichnet wird
+        // Back side, in case the fill is drawn single-sided
         v.addVertex(pose, x0, y1, z0).setColor(c);
         v.addVertex(pose, x1, y1, z0).setColor(c);
         v.addVertex(pose, x1, y1, z1).setColor(c);
@@ -123,7 +123,7 @@ final class LightOverlay {
         int syMax = Math.min(level.getMaxSectionY(), SectionPos.blockToSectionCoord(center.getY() + ABOVE));
         int rc = (radius >> 4) + 1;
 
-        // 1. Geänderte Abschnitte in Reichweite sofort neu berechnen
+        // 1. Recompute changed sections in range immediately
         if (!DIRTY.isEmpty()) {
             for (Iterator<Long> it = DIRTY.iterator(); it.hasNext(); ) {
                 long key = it.next();
@@ -135,7 +135,7 @@ final class LightOverlay {
             }
         }
 
-        // 2. Fehlende Abschnitte von innen nach außen ergänzen (Zeitbudget)
+        // 2. Add missing sections from the inside out (time budget)
         long start = System.nanoTime();
         outer:
         for (int ring = 0; ring <= rc; ring++) {
@@ -215,7 +215,7 @@ final class LightOverlay {
         quadCount = out.length / 4;
     }
 
-    /** Alle Spawn-Böden eines Abschnitts mit Blocklicht-Status. */
+    /** All spawn floors of a section with block light status. */
     private static int[] scan(ClientLevel level, int sx, int sy, int sz) {
         LevelChunk chunk = level.getChunkSource().getChunk(sx, sz, ChunkStatus.FULL, false);
         if (chunk == null) return new int[0];

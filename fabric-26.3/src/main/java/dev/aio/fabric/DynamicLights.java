@@ -20,21 +20,21 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Dynamic Lights. Pro Update werden die Lichtquellen gesammelt und als unveränderliche Liste
- * veröffentlicht (die Chunk-Bau-Threads lesen sie gleichzeitig). Hat sich eine Quelle um einen
- * Block bewegt oder ihre Stärke geändert, werden nur die Chunk-Abschnitte in ihrer Reichweite neu
- * gebaut – alte und neue Position.
+ * Dynamic Lights. On every update the light sources are collected and published as an immutable list
+ * (the chunk build threads read it concurrently). If a source moved by a
+ * block or its strength changed, only the chunk sections in its range are rebuilt
+ * – old and new position.
  */
 public final class DynamicLights {
     private DynamicLights() {}
 
-    /** Eine Lichtquelle: Mittelpunkt und Stärke 1..15. */
+    /** A light source: centre and strength 1..15. */
     private record Source(double x, double y, double z, int level, long key) {}
 
     private static volatile Source[] sources = new Source[0];
     private static volatile boolean enabled;
     private static volatile boolean entities;
-    /** Zuletzt gebaute Quellen (Block + Stärke), um nur bei Änderung neu zu bauen. */
+    /** Last built sources (block + strength), to rebuild only on change. */
     private static Map<Integer, long[]> last = new HashMap<>();
     private static int tickCounter;
 
@@ -110,7 +110,7 @@ public final class DynamicLights {
         }
         Source[] next = list.toArray(new Source[0]);
 
-        // Nur geänderte Quellen neu bauen
+        // Only rebuild changed sources
         Map<Integer, long[]> now = new HashMap<>();
         for (Source s : next) {
             long block = BlockPos.asLong((int) Math.floor(s.x), (int) Math.floor(s.y), (int) Math.floor(s.z));
@@ -120,7 +120,7 @@ public final class DynamicLights {
             if (prev == null) {
                 dirty(level, s.x, s.y, s.z, s.level);
             } else if (prev[0] != block || prev[1] != s.level) {
-                // alte und neue Reichweite als ein gemeinsamer Bereich (meist fast deckungsgleich)
+                // old and new range as one common area (usually almost identical)
                 BlockPos p = BlockPos.of(prev[0]);
                 int r = Math.max(s.level, (int) prev[1]);
                 dirtyRange(level, Math.min(p.getX(), s.x) - r, Math.min(p.getY(), s.y) - r, Math.min(p.getZ(), s.z) - r,
@@ -149,7 +149,7 @@ public final class DynamicLights {
         list.add(new Source(e.getX(), e.getEyeY() - 0.2, e.getZ(), lum, e.getId()));
     }
 
-    /** Chunk-Abschnitte in Reichweite einer Quelle neu bauen lassen. */
+    /** Have the chunk sections in range of a source rebuilt. */
     private static void dirty(ClientLevel level, double x, double y, double z, int lum) {
         int r = Math.max(1, lum);
         dirtyRange(level, x - r, y - r, z - r, x + r, y + r, z + r);

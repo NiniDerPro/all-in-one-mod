@@ -12,8 +12,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Weltgenerierung aus den Datenpaketen: welche Mobs in welchen Biomen und Strukturen spawnen und
- * wo welche Erze entstehen (mit Höhenbereich und Häufigkeit).
+ * World generation from the data packs: which mobs spawn in which biomes and structures and
+ * where which ores generate (with height range and frequency).
  */
 public final class WorldGenData {
     public enum Dimension { OVERWORLD(-64, 319), NETHER(0, 255), END(0, 255);
@@ -21,10 +21,10 @@ public final class WorldGenData {
         Dimension(int minY, int maxY) { this.minY = minY; this.maxY = maxY; }
     }
 
-    /** Spawn eines Mobs in einem Biom oder einer Struktur. */
+    /** Spawn of a mob in a biome or structure. */
     public record Spawn(String place, boolean structure, String category, int weight, double minCount, double maxCount) {}
 
-    /** Ein Erzvorkommen (eine platzierte Feature). */
+    /** An ore deposit (one placed feature). */
     public record Ore(String feature, int minY, int maxY, String shape, double perChunk, List<String> biomes, Dimension dimension) {}
 
     private final Map<String, List<Spawn>> spawns = new HashMap<>();
@@ -34,7 +34,7 @@ public final class WorldGenData {
     /**
      * @param biomes     worldgen/biome
      * @param placed     worldgen/placed_feature
-     * @param features   worldgen/feature (26.x) bzw. worldgen/configured_feature (älter)
+     * @param features   worldgen/feature (26.x) or worldgen/configured_feature (older)
      * @param biomeTags  tags/worldgen/biome
      * @param structures worldgen/structure
      */
@@ -94,7 +94,7 @@ public final class WorldGenData {
                     default -> { }
                 }
             }
-            // Trapez-Verteilungen reichen oft unter/über die Welt hinaus: auf den echten Bereich begrenzen
+            // Trapezoid distributions often reach below/above the world: limit to the real range
             minY = Math.max(dim.minY, minY);
             maxY = Math.min(dim.maxY, maxY);
             Ore ore = new Ore(e.getKey(), minY, maxY, shape, perChunk, List.copyOf(e.getValue()), dim);
@@ -114,7 +114,7 @@ public final class WorldGenData {
         }
     }
 
-    /** Spawns eines Bioms: 26.x unter attributes → natural_mob_spawns, älter unter "spawners". */
+    /** Spawns of a biome: 26.x under attributes → natural_mob_spawns, older under "spawners". */
     private static JsonObject spawnTable(JsonObject biome) {
         JsonObject attr = Json.obj(Json.obj(biome, "attributes"), "minecraft:gameplay/natural_mob_spawns");
         if (attr != null) {
@@ -147,7 +147,7 @@ public final class WorldGenData {
         }
     }
 
-    /** Blöcke, die eine Erz-Feature setzt (ore, scattered_ore; 26.x direkt, älter unter "config"). */
+    /** Blocks that an ore feature places (ore, scattered_ore; 26.x directly, older under "config"). */
     private static List<String> oreTargets(JsonObject feature) {
         if (feature == null) return List.of();
         String type = Json.id(Json.str(feature, "type"));

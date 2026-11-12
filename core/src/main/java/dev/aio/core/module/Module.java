@@ -18,11 +18,11 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 /**
- * Basisklasse für jedes Feature.
+ * Base class for every feature.
  *
- * <p>Ein Modul meldet seine Listener im Konstruktor über {@link #on} an. Am Bus hängen
- * sie aber nur, solange das Modul <b>aktiv</b> ist, also eingeschaltet und nicht vom
- * Server-Kompatibilitätsmodus gesperrt. Ausgeschaltete Module kosten dadurch nichts.
+ * <p>A module registers its listeners in the constructor via {@link #on}. They are only attached to
+ * the bus while the module is <b>active</b>, i.e. switched on and not blocked by the
+ * server compatibility mode. Switched-off modules therefore cost nothing.
  */
 public abstract class Module {
     private record ListenerDecl<E>(Class<E> type, Consumer<E> handler, int priority) {
@@ -47,9 +47,9 @@ public abstract class Module {
     protected AioCore core;
 
     /**
-     * @param gameplayAffecting true für Module, die auf Servern als Vorteil gelten können
+     * @param gameplayAffecting true for modules that may count as an advantage on servers
      *                          (Freelook, Zoom, Fullbright, Toggle Sprint). Diese sperrt der
-     *                          Server-Kompatibilitätsmodus.
+     *                          server compatibility mode.
      */
     protected Module(String id, String name, String description, Category category, boolean gameplayAffecting) {
         this.id = id;
@@ -61,7 +61,7 @@ public abstract class Module {
         if (!canToggle()) toggleKey.hidden();
     }
 
-    // ---- Registrierung (im Konstruktor von Unterklassen) ----
+    // ---- Registration (in the constructor of subclasses) ----
 
     protected <S extends Setting<?>> S add(S setting) {
         for (Setting<?> s : settings) {
@@ -85,20 +85,20 @@ public abstract class Module {
 
     // ---- Lebenszyklus ----
 
-    /** Wird von der Registry aufgerufen. */
+    /** Called by the registry. */
     public final void attach(AioCore core) {
         this.core = core;
         onAttach();
         updateActive();
     }
 
-    /** Einmal nach dem Registrieren, bevor das Modul aktiv werden kann. */
+    /** Once after registering, before the module can become active. */
     protected void onAttach() {}
 
-    /** Wird aufgerufen, wenn das Modul aktiv wird (Listener hängen dann schon). */
+    /** Called when the module becomes active (listeners are already attached then). */
     protected void onActivate() {}
 
-    /** Wird aufgerufen, wenn das Modul inaktiv wird (Listener sind dann schon weg). */
+    /** Called when the module becomes inactive (listeners are already gone then). */
     protected void onDeactivate() {}
 
     public void setEnabled(boolean value) {
@@ -111,13 +111,13 @@ public abstract class Module {
 
     public void toggle() { setEnabled(!enabled); }
 
-    /** Grund, warum das Modul gerade nicht laufen kann (andere Mod übernimmt / Eingriff fehlt), sonst null. */
+    /** Reason why the module cannot run right now (another mod takes over / hook missing), otherwise null. */
     private String unavailable;
 
     /**
-     * Macht das Modul unabhängig vom Ein/Aus-Schalter unwirksam, z. B. weil eine andere Mod dieselbe
-     * Funktion hat oder die nötige Stelle im Spiel von einer anderen Mod verändert wurde.
-     * {@code null} hebt das wieder auf. Der gespeicherte Ein/Aus-Zustand bleibt unberührt.
+     * Makes the module ineffective independent of the on/off switch, e.g. because another mod has the same
+     * feature or the needed place in the game was changed by another mod.
+     * {@code null} undoes that. The stored on/off state stays untouched.
      */
     public void setUnavailable(String reason) {
         if (Objects.equals(unavailable, reason)) return;
@@ -142,8 +142,8 @@ public abstract class Module {
             try {
                 onActivate();
             } catch (RuntimeException e) {
-                // Ein fehlerhaftes Modul darf nie das Spiel abbrechen: Modul wieder aushängen.
-                Log.error("Modul " + id + " konnte nicht aktiviert werden", e);
+                // A faulty module must never abort the game: detach the module again.
+                Log.error("Module " + id + " could not be activated", e);
                 active = false;
                 for (Subscription s : subscriptions) s.cancel();
                 subscriptions.clear();
@@ -154,7 +154,7 @@ public abstract class Module {
             try {
                 onDeactivate();
             } catch (RuntimeException e) {
-                Log.error("Modul " + id + " konnte nicht sauber deaktiviert werden", e);
+                Log.error("Module " + id + " could not be deactivated cleanly", e);
             }
         }
     }
@@ -182,25 +182,25 @@ public abstract class Module {
 
     public boolean isGameplayAffecting() { return gameplayAffecting; }
 
-    /** Vom Spieler gewünschter Zustand (wird gespeichert). */
+    /** State wanted by the player (is stored). */
     public boolean isEnabled() { return enabled; }
 
-    /** Vom Kompatibilitätsmodus gesperrt. */
+    /** Blocked by the compatibility mode. */
     public boolean isBlocked() { return blocked; }
 
-    /** Tatsächlich laufend: eingeschaltet und nicht gesperrt. */
+    /** Actually running: switched on and not blocked. */
     public boolean isActive() { return active; }
 
-    /** Module wie die Client-Einstellungen lassen sich nicht ausschalten. */
+    /** Modules like the client settings cannot be switched off. */
     public boolean canToggle() { return true; }
 
-    /** Bei der einmaligen Umstellung auf neue Standards (siehe ConfigManager.DEFAULTS_VERSION). */
+    /** On the one-time switch to new defaults (see ConfigManager.DEFAULTS_VERSION). */
     public void applyNewDefaults() {}
 
-    /** Nach dem Laden der Config aufgerufen, z. B. um alte Standardwerte umzustellen. */
+    /** Called after loading the config, e.g. to migrate old default values. */
     public void afterLoad() {}
 
-    /** Nach dem Laden: gespeichertes Ein/Aus einmalig anpassen (z. B. wenn sich der Standard geändert hat). */
+    /** After loading: adjust the stored on/off once (e.g. when the default changed). */
     public boolean adjustLoadedEnabled(boolean enabled) { return enabled; }
 
     public KeybindSetting toggleKey() { return toggleKey; }
@@ -212,22 +212,22 @@ public abstract class Module {
         return null;
     }
 
-    /** Ob das Modul standardmäßig eingeschaltet ist, wenn noch keine Config existiert. */
+    /** Whether the module is on by default when no config exists yet. */
     public boolean enabledByDefault() { return !canToggle() || DEFAULT_ON.contains(id); }
 
-    /** Module, die bei einer neuen Installation an sind (alles andere ist aus). */
+    /** Modules that are on in a new installation (everything else is off). */
     public static final Set<String> DEFAULT_ON = Set.of(
             "armorhud", "lookat", "flexchat", "helditeminfo", "dynamicfps", "elytraswap", "entityculling", "foodinfo",
             "freelook", "fullbright", "itemlist", "invtweaks", "coordinates", "namealert", "shulkerpreview",
             "keybinds", "xpclumps", "zoom", "potions");
 
-    /** Setzt alles auf Standard (ohne Speichern auszulösen, das übernimmt der Aufrufer). */
+    /** Resets everything to default (without triggering a save, the caller does that). */
     public void resetToDefaults() {
         resetSettings();
         setEnabled(enabledByDefault());
     }
 
-    /** Setzt nur die Einstellungen zurück, der Ein/Aus-Zustand bleibt. */
+    /** Only resets the settings, the on/off state stays. */
     public void resetSettings() {
         for (Setting<?> s : settings) s.reset();
     }

@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Was der Spieler gerade ansieht, aufbereitet für die Block-Info. */
+/** What the player is currently looking at, prepared for the block info. */
 final class LookTargets {
     private final Minecraft client;
 
@@ -41,7 +41,7 @@ final class LookTargets {
 
     private final Map<String, String> modNames = new ConcurrentHashMap<>();
 
-    /** Anzeigename einer Mod zu einem Namespace ("minecraft" -> "Minecraft"). */
+    /** Display name of a mod for a namespace ("minecraft" -> "Minecraft"). */
     private String modName(String namespace) {
         return modNames.computeIfAbsent(namespace, ns -> FabricLoader.getInstance().getModContainer(ns)
                 .map(c -> c.getMetadata().getName())
@@ -52,7 +52,7 @@ final class LookTargets {
         LocalPlayer p = client.player;
         HitResult hit = client.hitResult;
         if (p != null && maxDistance > 0 && (hit == null || hit.getType() == HitResult.Type.MISS)) {
-            // weiter als die Reichweite schauen (nur Blöcke, wie ein Fernglas für die Blick-Info)
+            // look farther than the reach (blocks only, like binoculars for the look-at info)
             hit = p.pick(maxDistance, client.getDeltaTracker().getGameTimeDeltaPartialTick(false), false);
         }
         if (p == null || client.level == null || hit == null || hit.getType() == HitResult.Type.MISS) return null;
@@ -81,9 +81,9 @@ final class LookTargets {
             String tool = toolType(state);
             Boolean correct = null;
             if (state.requiresCorrectToolForDrops()) {
-                correct = p.hasCorrectToolForDrops(state); // ohne passendes Werkzeug kein Drop
+                correct = p.hasCorrectToolForDrops(state); // no drop without a matching tool
             } else if (tool != null && p.getMainHandItem().getDestroySpeed(state) > 1f) {
-                correct = Boolean.TRUE; // passendes Werkzeug in der Hand (abbaubar ist es auch ohne)
+                correct = Boolean.TRUE; // matching tool in hand (it can be broken without one too)
             }
 
             return LookTarget.block(state.getBlock().getName().getString(), source, icon, correct, tool, growth(state),
@@ -96,8 +96,8 @@ final class LookTargets {
     private final Map<BlockState, ItemRef> toolIconCache = new HashMap<>();
 
     /**
-     * Werkzeug-Symbol für die Blick-Info: das schwächste Werkzeug der passenden Art, mit dem der Block
-     * droppt (Stein → Holzspitzhacke, Diamanterz → Eisenspitzhacke). Ohne Werkzeugart: kein Symbol.
+     * Tool icon for the look-at info: the weakest tool of the matching kind with which the block
+     * drops (stone → wooden pickaxe, diamond ore → iron pickaxe). Without a tool kind: no icon.
      */
     private ItemRef toolIcon(BlockState state) {
         ItemRef cached = toolIconCache.get(state);
@@ -121,7 +121,7 @@ final class LookTargets {
         return result;
     }
 
-    /** Wachstum 0..1, nur für Pflanzen, die wirklich wachsen (nicht Zuckerrohr, Kaktus, Feuer, ...). */
+    /** Growth 0..1, only for plants that really grow (not sugar cane, cactus, fire, ...). */
     private static float growth(BlockState state) {
         var block = state.getBlock();
         if (block instanceof CropBlock crop) {

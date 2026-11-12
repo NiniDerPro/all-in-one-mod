@@ -12,19 +12,19 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 
 /**
- * Nur für die Entwicklung (Start mit {@code -Daio.selftest=<Ordner>}): öffnet nacheinander die
- * wichtigsten Oberflächen im Titelmenü und in einer Testwelt, macht von jeder einen echten
- * Screenshot und beendet den Client. Ohne die Eigenschaft passiert nichts.
+ * Development only (start with {@code -Daio.selftest=<folder>}): opens the most important
+ * screens one after another in the title menu and in a test world, takes a real
+ * screenshot of each and quits the client. Without the property nothing happens.
  */
 final class DevSelfTest {
     private DevSelfTest() {}
 
     private static final String DIR = System.getProperty("aio.selftest", "");
-    /** Mit {@code -Daio.selftest.interactive=true}: nach dem Laden der Welt offen bleiben und Änderungen protokollieren. */
+    /** With {@code -Daio.selftest.interactive=true}: stay open after loading the world and log changes. */
     private static final boolean INTERACTIVE = Boolean.getBoolean("aio.selftest.interactive");
     private static final java.util.Map<String, String> lastState = new java.util.HashMap<>();
 
-    /** Ein Schritt: wartet, bis {@code ready} gilt, und führt dann nach {@code delay} Ticks {@code run} aus. */
+    /** A step: waits until {@code ready} holds, then runs {@code run} after {@code delay} ticks. */
     private record Step(BooleanSupplier ready, int delay, Runnable run) {}
 
     private static List<Step> steps;
@@ -65,7 +65,7 @@ final class DevSelfTest {
         BooleanSupplier any = () -> true;
         BooleanSupplier inWorld = () -> mc.level != null && mc.player != null && mc.gui.screen() == null && mc.gui.overlay() == null;
         return List.of(
-                // Beim ersten Start kommt erst das Accessibility-Onboarding: direkt zum Titel.
+                // On the first start the accessibility onboarding comes first: go straight to the title.
                 new Step(booted, 40, () -> { if (!(mc.gui.screen() instanceof TitleScreen)) mc.gui.setScreen(new TitleScreen()); }),
                 new Step(any, 40, () -> shot(mc, dir, "01_title.png")),
                 new Step(any, 5, () -> core.openClickGui(null)),
@@ -82,7 +82,7 @@ final class DevSelfTest {
                     logChanges(core, mc);
                     runCommands(mc);
                     AioFabricClient.LOGGER.info("[aio] Selftest ready for input");
-                    index = Integer.MAX_VALUE; // Rest überspringen, Eingaben kommen von außen
+                    index = Integer.MAX_VALUE; // skip the rest, input comes from outside
                 }),
                 new Step(any, 5, () -> mc.pauseGame(false)),
                 new Step(any, 30, () -> shot(mc, dir, "06_pause.png")),
@@ -107,10 +107,10 @@ final class DevSelfTest {
         }
     }
 
-    /** {@code -Daio.selftest.cmds=a;b;c}: Befehle als Server-Operator ausführen (z. B. Mobs für Nametags). */
+    /** {@code -Daio.selftest.cmds=a;b;c}: run commands as server operator (e.g. mobs for nametags). */
     private static void runCommands(Minecraft mc) {
         String raw = System.getProperty("aio.selftest.cmds", "");
-        if (raw.startsWith("@")) { // @Datei: ein Befehl pro Zeile (für Befehle mit Anführungszeichen)
+        if (raw.startsWith("@")) { // @file: one command per line (for commands with quotation marks)
             try {
                 raw = String.join(";", java.nio.file.Files.readAllLines(java.nio.file.Path.of(raw.substring(1))));
             } catch (java.io.IOException e) {
@@ -118,7 +118,7 @@ final class DevSelfTest {
                 return;
             }
         }
-        // "wait" trennt Etappen; jede weitere Etappe läuft 5 s später (z. B. nach einem Dimensionswechsel)
+        // "wait" separates stages; every further stage runs 5 s later (e.g. after a dimension change)
         String[] stages = raw.split(";\\s*wait\\s*(;|$)");
         for (int i = 0; i < stages.length; i++) PENDING.add(new Stage(i * 100, stages[i]));
         stageTicks = 0;
@@ -139,7 +139,7 @@ final class DevSelfTest {
             server.executeIfPossible(() -> {
                 for (String c : cmds.split(";")) {
                     if (c.isBlank()) continue;
-                    if (c.strip().equals("lan")) { // Welt im LAN öffnen (Port 25565), für einen zweiten Client
+                    if (c.strip().equals("lan")) { // open the world to LAN (port 25565), for a second client
                         server.setUsesAuthentication(false); // offline: zweiter Test-Client ohne Mojang-Login
                         boolean ok = server.publishServer(net.minecraft.server.MinecraftServer.MultiplayerScope.LAN, true, 25565);
                         AioFabricClient.LOGGER.info("[aio] Selftest LAN published: {}", ok);
@@ -152,7 +152,7 @@ final class DevSelfTest {
         }
     }
 
-    /** Schreibt jede Änderung an Modulen, Einstellungen, Profil und offenem Screen ins Log. */
+    /** Writes every change to modules, settings, profile and open screen to the log. */
     private static void logChanges(AioCore core, Minecraft mc) {
         java.util.Map<String, String> now = new java.util.LinkedHashMap<>();
         now.put("screen", mc.gui.screen() == null ? "none" : mc.gui.screen() instanceof AioScreen a

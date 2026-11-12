@@ -3,7 +3,7 @@ package dev.aio.core.setting;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 
-/** ARGB-Farbe. Wird als Hex-String {@code #AARRGGBB} gespeichert. */
+/** ARGB colour. Saved as hex string {@code #AARRGGBB}. */
 public class ColorSetting extends Setting<Integer> {
     public ColorSetting(String id, String name, int defaultArgb) {
         super(id, name, defaultArgb);
@@ -28,7 +28,7 @@ public class ColorSetting extends Setting<Integer> {
             if (s.length() == 6) s = "FF" + s;
             if (s.length() == 8) set((int) Long.parseLong(s, 16));
         } catch (NumberFormatException ignored) {
-            // ungültige Farbe: Wert behalten
+            // invalid colour: keep the value
         }
     }
 }

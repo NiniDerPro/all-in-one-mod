@@ -4,10 +4,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Regeln für AIO-Hotkeys: Ein Hotkey zählt nur allein. Wird dazu noch eine "Kombi-Taste" gehalten
- * (F1–F25, Strg, Alt, Windows/Cmd, Tab), passiert nichts – F3+F4 löst also F4 nicht aus.
- * Ist der Hotkey selbst Strg/Alt/Windows, wird er erst beim Loslassen ausgelöst und nur, wenn
- * dazwischen keine andere Taste kam und das Fenster noch den Fokus hat (Alt+Tab löst Alt nicht aus).
+ * Rules for AIO hotkeys: a hotkey only counts alone. If a "combo key" is also held
+ * (F1–F25, Ctrl, Alt, Windows/Cmd, Tab), nothing happens – so F3+F4 does not trigger F4.
+ * If the hotkey itself is Ctrl/Alt/Windows, it only fires on release and only if
+ * no other key came in between and the window still has focus (Alt+Tab does not trigger Alt).
  */
 public final class Hotkeys {
     private static final Set<String> COMBO = new HashSet<>();
@@ -29,27 +29,27 @@ public final class Hotkeys {
 
     public static boolean isModifier(String key) { return MODIFIER.contains(key); }
 
-    /** Ob außer {@code key} gerade eine Kombi-Taste gehalten wird. */
+    /** Whether a combo key other than {@code key} is currently held. */
     public static boolean otherComboHeld(Platform p, String key) {
         for (String k : COMBO) if (!k.equals(key) && p.isKeyDown(k)) return true;
         return false;
     }
 
     /**
-     * Merkt sich einen gedrückten Modifier-Hotkey bis zum Loslassen. Jede andere Taste dazwischen
-     * oder ein Fokusverlust bricht ab.
+     * Remembers a pressed modifier hotkey until release. Any other key in between
+     * or a loss of focus aborts.
      */
     public static final class Tap {
         private String pending;
 
-        /** Vor der Auswertung jedes Tastendrucks aufrufen: andere Taste = Abbruch. */
+        /** Call before evaluating every key press: other key = abort. */
         public void pressed(String key) {
             if (pending != null && !pending.equals(key)) pending = null;
         }
 
         public void arm(String key) { pending = key; }
 
-        /** true = der gemerkte Modifier wurde allein getippt und soll jetzt auslösen. */
+        /** true = the remembered modifier was tapped alone and should fire now. */
         public boolean released(String key, boolean focused) {
             if (pending == null || !pending.equals(key)) return false;
             pending = null;

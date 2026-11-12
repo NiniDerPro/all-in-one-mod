@@ -7,8 +7,8 @@ import dev.aio.core.platform.GameKey;
 import dev.aio.core.setting.BooleanSetting;
 
 /**
- * Wechselt beim Abbauen automatisch zum besten Werkzeug in der Hotbar (Spitzhacke für Stein,
- * Schaufel für Erde, ...) und auf Wunsch danach zurück.
+ * Automatically switches to the best tool in the hotbar when breaking (pickaxe for stone,
+ * shovel for dirt, ...) and optionally back afterwards.
  */
 public final class AutoToolModule extends Module {
     private final BooleanSetting restore;

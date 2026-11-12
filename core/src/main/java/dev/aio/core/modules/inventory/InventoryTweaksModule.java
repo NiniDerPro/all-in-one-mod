@@ -12,7 +12,7 @@ import java.util.Set;
 
 /**
  * Maus-Tweaks: Mausrad verschiebt einzelne Items zwischen Inventaren, Shift + Ziehen
- * schiebt alle überfahrenen Stacks, Mittelklick sortiert.
+ * moves all stacks it is dragged over, middle click sorts.
  */
 public final class InventoryTweaksModule extends Module {
     private final BooleanSetting wheel;
@@ -30,7 +30,7 @@ public final class InventoryTweaksModule extends Module {
     }
 
 
-    /** Mods mit denselben Inventar-Gesten: dann hier nichts tun, sonst passiert alles doppelt. */
+    /** Mods with the same inventory gestures: do nothing here then, otherwise everything happens twice. */
     private static final String[] CONFLICTS = {"mousetweaks", "mousewheelie", "inventoryprofilesnext"};
 
     private boolean conflict() {
@@ -38,7 +38,7 @@ public final class InventoryTweaksModule extends Module {
         return false;
     }
 
-    /** Mausrad über einem Slot. Runter = ein Item rüber, hoch = eins zurückholen; mit Shift der ganze Stack. */
+    /** Mouse wheel over a slot. Down = move one item over, up = fetch one back; with Shift the whole stack. */
     public boolean onScroll(ContainerView c, int slotIndex, double amount, boolean shift) {
         if (!isActive() || !wheel.on() || c == null || slotIndex < 0 || amount == 0 || conflict()) return false;
         boolean push = invertWheel.on() ? amount > 0 : amount < 0;
@@ -51,7 +51,7 @@ public final class InventoryTweaksModule extends Module {
         return push ? InventoryOps.pushOne(c, slotIndex) : InventoryOps.pullOne(c, slotIndex);
     }
 
-    /** Linke Maustaste mit Shift über einen weiteren Slot gezogen. */
+    /** Left mouse button with Shift dragged over another slot. */
     public boolean onDrag(ContainerView c, int slotIndex, boolean shift) {
         if (!isActive() || !shiftDrag.on() || !shift || c == null || slotIndex < 0 || conflict()) return false;
         if (!c.cursor().isEmpty() || !dragged.add(slotIndex)) return false;
@@ -61,7 +61,7 @@ public final class InventoryTweaksModule extends Module {
         return true;
     }
 
-    /** Beim Klick mit Shift auf den ersten Slot merken, damit er beim Ziehen nicht doppelt zählt. */
+    /** On Shift+click on the first slot remember it so that it is not counted twice when dragging. */
     public void onDragStart(int slotIndex) {
         dragged.clear();
         if (slotIndex >= 0) dragged.add(slotIndex);
@@ -69,7 +69,7 @@ public final class InventoryTweaksModule extends Module {
 
     public void onRelease() { dragged.clear(); }
 
-    /** Mittelklick über einem Slot: dessen Bereich sortieren. */
+    /** Middle click over a slot: sort its area. */
     public boolean onMiddleClick(ContainerView c, int slotIndex, boolean creative) {
         if (!isActive() || !middleSort.on() || c == null || slotIndex < 0 || conflict()) return false;
         if (creative && !c.isPlayerOnly()) return false; // Mittelklick = Item kopieren im Kreativmodus

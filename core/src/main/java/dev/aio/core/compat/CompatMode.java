@@ -3,9 +3,9 @@ package dev.aio.core.compat;
 import dev.aio.core.setting.EnumSetting;
 
 public enum CompatMode implements EnumSetting.Named {
-    /** Nie sperren. Nur für Singleplayer oder Server, die alles erlauben. */
+    /** Never block. Only for singleplayer or servers that allow everything. */
     OFF("Off"),
-    /** Auf Multiplayer-Servern sperren, außer der Server steht auf der Erlaubt-Liste. */
+    /** Block on multiplayer servers unless the server is on the allow list. */
     AUTO("Auto"),
     /** Immer sperren. */
     ALWAYS("Always");

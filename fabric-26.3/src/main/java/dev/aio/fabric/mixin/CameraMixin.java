@@ -15,8 +15,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
 /**
- * Kamera: Zoom verkleinert das Sichtfeld der Welt (nicht das der Hand), Freelook ersetzt
- * die Blickrichtung des Spielers, aus der die Kamera ihre Rotation berechnet.
+ * Camera: zoom shrinks the field of view of the world (not that of the hand), freelook replaces
+ * the player's viewing direction from which the camera computes its rotation.
  */
 @Mixin(Camera.class)
 public abstract class CameraMixin {
@@ -24,23 +24,23 @@ public abstract class CameraMixin {
     private float aio$zoom(float fov) {
         AioCore core = AioCore.get();
         float result = core == null ? fov : (float) (fov * core.module(ZoomModule.class).fovMultiplier());
-        FabricHooks.lastFov = result; // echtes FOV für die Wegpunkt-Marker
+        FabricHooks.lastFov = result; // real FOV for the waypoint markers
         return result;
     }
 
-    /** Die Hand rückt beim Zoomen mit aus dem Bild (wie das Sichtfeld). */
+    /** The hand moves out of the picture when zooming (like the field of view). */
     @ModifyReturnValue(method = "calculateHudFov", at = @At("RETURN"), require = 0)
     private float aio$zoomHand(float fov) {
         AioCore core = AioCore.get();
         return core == null ? fov : (float) (fov * core.module(ZoomModule.class).currentMultiplier());
     }
 
-    // Unverifiziert für 26.3: Falls Camera die Rotation nicht mehr über getViewYRot/getViewXRot liest,
-    // greift das nicht (require = 0 verhindert dann einen Absturz, Freelook dreht dann nur den Spieler nicht).
+    // Unverified for 26.3: if Camera no longer reads the rotation via getViewYRot/getViewXRot,
+    // this does not apply (require = 0 then prevents a crash, freelook then just does not turn the player).
     @WrapOperation(method = "*", require = 0,
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getViewYRot(F)F"))
     private float aio$freelookYaw(Entity entity, float partialTick, Operation<Float> original) {
-        FabricHooks.cameraHookSeen = true; // Hook greift: Freelook darf die Maus übernehmen
+        FabricHooks.cameraHookSeen = true; // hook applies: freelook may take over the mouse
         FreelookModule f = aio$freelook(entity);
         return f != null ? f.cameraYaw() : original.call(entity, partialTick);
     }

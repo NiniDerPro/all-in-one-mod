@@ -19,12 +19,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Rezeptansicht im Stil bekannter Item-Listen: oben Reiter je Kategorie (Werkbank, Ofen, Handel,
- * Beute, …), links die Stationen, darunter Kategorie- und Seitenleiste mit Pfeilen und so viele
- * Rezepte pro Seite, wie hineinpassen. Jedes Rezept hat seinen Kasten und, wo möglich, einen
- * "+"-Knopf zum Übertragen.
+ * Recipe view in the style of well-known item lists: tabs per category at the top (crafting table, furnace, trades,
+ * loot, …), the stations on the left, below them category and page bar with arrows and as many
+ * recipes per page as fit. Each recipe has its box and, where possible, a
+ * "+" button for transferring.
  *
- * <p>Klick auf eine Zutat: deren Rezepte, Rechtsklick: Verwendungen; Rücktaste geht zurück.
+ * <p>Click on an ingredient: its recipes, right click: uses; backspace goes back.
  */
 public final class RecipeScreen implements UiScreen {
     private static final int SLOT = 18;
@@ -39,15 +39,15 @@ public final class RecipeScreen implements UiScreen {
     private final AioCore core;
     private final ArrayDeque<View> history = new ArrayDeque<>();
     private View view;
-    /** Rezepte gruppiert nach Kategorie (Reihenfolge wie geliefert). */
+    /** Recipes grouped by category (order as delivered). */
     private List<String> categories = List.of();
     private Map<String, List<RecipeView>> byCategory = Map.of();
     private int category;
     private int page;
-    /** Beim Öffnen fehlten noch die Welt-Infos: sobald sie da sind, neu laden. */
+    /** The world info was still missing when opening: reload as soon as it is there. */
     private boolean pendingInfo;
 
-    // Klickflächen des letzten Frames
+    // Click areas of the last frame
     private record Hit(float x1, float y1, float x2, float y2, Runnable action) {
         boolean in(double x, double y) { return x >= x1 && x < x2 && y >= y1 && y < y2; }
     }
@@ -56,7 +56,7 @@ public final class RecipeScreen implements UiScreen {
     private final List<Hit> hits = new ArrayList<>();
     private final List<ItemHit> itemHits = new ArrayList<>();
     private final List<ComboHit> comboHits = new ArrayList<>();
-    /** Auswahl je Slot bei Kombinations-Ansichten (Verzierungen), pro Rezept. */
+    /** Selection per slot for combination views (trims), per recipe. */
     private final Map<RecipeView, int[]> selections = new IdentityHashMap<>();
     private ItemRef hoveredItem;
     private String tooltip;
@@ -114,9 +114,9 @@ public final class RecipeScreen implements UiScreen {
         }
         int sw = r.screenWidth(), sh = r.screenHeight();
         lastRenderer = r;
-        // Wie bekannte Item-Listen: keine Abdunklung, die Welt bleibt sichtbar
+        // Like well-known item lists: no dimming, the world stays visible
         ItemPanel panel = itemPanel();
-        // mittig wie gewohnt; reicht der Platz rechts nicht für die Item-Liste, nach links rücken
+        // centred as usual; if there is not enough room on the right for the item list, move left
         float panelW = panel != null ? 8 * 18 + 8 : 0;
         float px = (sw - W) / 2f;
         if (px + W + 4 > sw - panelW) px = Math.max(30, sw - panelW - W - 4);
@@ -124,7 +124,7 @@ public final class RecipeScreen implements UiScreen {
         List<RecipeView> recs = categories.isEmpty() ? List.of() : byCategory.get(categories.get(category));
         float boxW = W - 16;
 
-        // Seiten bilden: so viele Rezepte, wie in die Höhe passen
+        // Build pages: as many recipes as fit in the height
         float headerH = 8 + ROW_H * 2 + 4 + 6;
         float avail = maxH - headerH - 8;
         List<List<RecipeView>> pages = new ArrayList<>();
@@ -175,11 +175,11 @@ public final class RecipeScreen implements UiScreen {
             y += bh + 4;
         }
 
-        // Kopfzeile über dem Fenster: welches Item, zurück
+        // Header above the window: which item, back
         String head = (view.usages ? Lang.tr("aio.ui.recipe.uses_2", "Uses: ") : Lang.tr("aio.ui.recipe.recipes_2", "Recipes: ")) + view.item.name();
         r.text(r.trim(head, W - 60), px + 2, py - TAB_H - 12, 0xFFFFFFFF, true);
         {
-            // Zurück: zur vorherigen Rezeptansicht, sonst zurück ins Inventar
+            // Back: to the previous recipe view, otherwise back to the inventory
             String back = Lang.tr("aio.ui.recipe.back", "◀ Back");
             float bw = r.textWidth(back) + 8, bx2 = px + W, bx1 = bx2 - bw, by1 = py - TAB_H - 15, by2 = by1 + 13;
             boolean hover = mx >= bx1 && mx <= bx2 && my >= by1 && my <= by2;
@@ -189,7 +189,7 @@ public final class RecipeScreen implements UiScreen {
         }
         if (pendingInfo && !recs.isEmpty()) r.text(Lang.tr("aio.ui.recipe.loading", "loading…"), px + W - 30, py + ph + 3, 0xFFB0B0B0, true);
 
-        // Item-Liste rechts daneben (suchen, R/U, Klick öffnet Rezepte)
+        // Item list next to it (search, R/U, click opens recipes)
         if (panel != null) panel.render(r, mx, my, px + W + 4);
 
         if (panel == null || panel.hovered() == null) renderTooltip(r, mx, my);
@@ -202,7 +202,7 @@ public final class RecipeScreen implements UiScreen {
         return list == null ? null : list.panel();
     }
 
-    /** Reiter oben: je Kategorie das Symbol ihrer Station (bzw. des ersten Ergebnisses). */
+    /** Tabs at the top: per category the icon of its station (or of the first result). */
     private void renderTabs(Renderer r, float px, float py, int mx, int my) {
         int max = Math.max(1, W / TAB_W);
         int first = Math.max(0, Math.min(category - max / 2, categories.size() - max));
@@ -211,7 +211,7 @@ public final class RecipeScreen implements UiScreen {
             boolean sel = i == category;
             float ty1 = py - TAB_H + (sel ? 0 : 3);
             McGui.panel(r, tx, ty1, tx + TAB_W - 1, py + (sel ? 3 : 0));
-            if (sel) r.fill(tx + 3, py - 1, tx + TAB_W - 4, py + 3, McGui.BG); // fließt ins Fenster über
+            if (sel) r.fill(tx + 3, py - 1, tx + TAB_W - 4, py + 3, McGui.BG); // flows into the window
             ItemRef icon = tabIcon(categories.get(i));
             if (icon != null && !icon.isEmpty()) r.item(icon, tx + (TAB_W - 1 - 16) / 2f, ty1 + 4, false);
             final int idx = i;
@@ -230,7 +230,7 @@ public final class RecipeScreen implements UiScreen {
         return null;
     }
 
-    /** Links am Fenster: die Stationen der Kategorie (Werkbank, Ofen, …). */
+    /** On the left of the window: the stations of the category (crafting table, furnace, …). */
     private void renderCatalysts(Renderer r, List<RecipeView> recs, float px, float py, int mx, int my) {
         List<ItemRef> stations = new ArrayList<>();
         for (RecipeView rec : recs) {
@@ -265,7 +265,7 @@ public final class RecipeScreen implements UiScreen {
         }
     }
 
-    /** Höhe des Kastens eines Rezepts. */
+    /** Height of a recipe's box. */
     private float boxHeight(Renderer r, RecipeView rec) {
         float notes = rec.notes().size() * LINE + (rec.combos() ? LINE : 0);
         if (rec.isList()) return BOX_PAD * 2 + notes + (notes > 0 ? 2 : 0) + rec.rows().size() * (SLOT + 1);
@@ -286,9 +286,9 @@ public final class RecipeScreen implements UiScreen {
         float gx = x + BOX_PAD + 6, gy = y + BOX_PAD + (gridH - gh * SLOT) / 2f;
         long tick = System.currentTimeMillis() / 1000;
         boolean freeze = core.platform().isKeyDown(Keys.LEFT_SHIFT) || core.platform().isKeyDown(Keys.RIGHT_SHIFT);
-        if (freeze) tick = 0; // Shift hält wechselnde Zutaten an
+        if (freeze) tick = 0; // Shift stops changing ingredients
 
-        // fehlende Zutaten für "+" rot markieren
+        // mark missing ingredients red for "+"
         ContainerView container = core.platform().container();
         boolean transferable = rec.kind() != RecipeKind.OTHER;
         RecipeTransfer.Status status = transferable ? RecipeTransfer.check(container, rec) : RecipeTransfer.Status.WRONG_STATION;
@@ -327,7 +327,7 @@ public final class RecipeScreen implements UiScreen {
         }
         if (rec.combos()) r.text(r.trim(Lang.tr("aio.ui.recipe.click_change_armor_material", "Click: change armor/material"), w - 2 * BOX_PAD), x + BOX_PAD, ny, 0xFF606060, false);
 
-        // "+" unten rechts (Übertragen ins offene Inventar)
+        // "+" at the bottom right (transfer into the open inventory)
         if (transferable) {
             float bx2 = x + w - 3, by2 = y + h - 3, bx1 = bx2 - 12, by1 = by2 - 12;
             boolean ok = status == RecipeTransfer.Status.OK;
@@ -346,7 +346,7 @@ public final class RecipeScreen implements UiScreen {
         }
     }
 
-    /** Liste aus Symbol und Text (Beute, Spawns, Berufe, …). */
+    /** List of icon and text (loot, spawns, professions, …). */
     private void renderList(Renderer r, RecipeView rec, float x, float y, float w, int mx, int my) {
         for (String note : rec.notes()) {
             r.text(r.trim(note, w), x, y, McGui.TEXT_DARK, false);
@@ -386,7 +386,7 @@ public final class RecipeScreen implements UiScreen {
         };
     }
 
-    /** Ergebnis-Index aus der Auswahl: gemischte Basis über alle Slots mit mehreren Möglichkeiten. */
+    /** Result index from the selection: mixed base over all slots with several options. */
     private static int comboIndex(RecipeView rec, int[] sel) {
         int idx = 0;
         for (int i = 0; i < rec.slots().size(); i++) {
@@ -400,14 +400,14 @@ public final class RecipeScreen implements UiScreen {
     // Eingabe
     // =====================================================================
 
-    /** Eine Ansicht zurück, oder (ganz am Anfang) Fenster schließen → zurück ins Inventar. */
+    /** One view back, or (at the very start) close the window → back to the inventory. */
     private void goBack() {
         if (!history.isEmpty()) setView(history.pop(), true);
         else core.platform().closeScreen();
     }
 
     @Override public boolean mouseClicked(double mx, double my, int button) {
-        if (button == 3) { // Maus-Seitentaste "Zurück"
+        if (button == 3) { // mouse side button "Back"
             goBack();
             return true;
         }

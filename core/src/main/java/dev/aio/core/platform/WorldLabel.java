@@ -2,8 +2,8 @@ package dev.aio.core.platform;
 
 import java.util.List;
 
-/** Text über einem Objekt in der Welt (z. B. Handelsangebote über einem Dorfbewohner). */
+/** Text above an object in the world (e.g. trade offers above a villager). */
 public record WorldLabel(double x, double y, double z, double distance, List<Line> lines) {
-    /** Eine Zeile mit Farbe; {@code book} = Verzauberungsbuch-Angebot. */
+    /** One line with colour; {@code book} = enchanted book offer. */
     public record Line(String text, int color, boolean book) {}
 }

@@ -11,12 +11,12 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * FPS-Boost: stellt die teuersten Vanilla-Einstellungen auf schnell, ohne dass das Spiel schlechter
- * wirkt. Am meisten bringt Biom-Blending aus: Beim Fliegen (gerade durch Höhlen) baut Minecraft
- * ständig Chunk-Abschnitte neu, und das Mischen der Biomfarben ist dabei der größte Brocken.
- * Ausschalten stellt die vorherigen Werte wieder her.
+ * FPS boost: sets the most expensive vanilla settings to fast without the game looking worse.
+ * Biome blending off brings the most: when flying (especially through caves) Minecraft
+ * constantly rebuilds chunk sections, and blending the biome colours is the biggest part of that.
+ * Switching off restores the previous values.
  *
- * <p>Die Diagnose schreibt alle 30 Sekunden ins Log, wie viel Zeit AIO selbst pro Frame braucht.
+ * <p>The diagnostics write to the log every 30 seconds how much time AIO itself needs per frame.
  */
 public final class FpsBoostModule extends Module {
     public static final String BIOME_BLEND = "biomeBlend", SHADOWS = "shadows", CLOUDS = "clouds", CHUNK_UPDATES = "chunkUpdates",
@@ -27,7 +27,7 @@ public final class FpsBoostModule extends Module {
     private final BooleanSetting biomeBlend, shadows, clouds, chunkUpdates, transparency, fadeIn, smoothLight;
     private final BooleanSetting weather, vignette, menuBlur, solidLeaves, mipmaps, entityDistance;
     private final BooleanSetting diagnose;
-    /** Ursprüngliche Vanilla-Werte (vom Adapter kodiert), damit Ausschalten sie zurückholt. */
+    /** Original vanilla values (encoded by the adapter) so that switching off restores them. */
     private final StringSetting saved;
 
     public FpsBoostModule() {
@@ -52,7 +52,7 @@ public final class FpsBoostModule extends Module {
                 weather, vignette, menuBlur, solidLeaves, mipmaps, entityDistance}) {
             s.onChange(v -> { if (isActive()) apply(); });
         }
-        // Optionen gibt es erst, wenn das Spiel geladen ist: beim Betreten einer Welt (erneut) anwenden
+        // Options only exist once the game is loaded: apply (again) when entering a world
         on(Events.ServerJoin.class, e -> apply());
     }
 

@@ -8,7 +8,7 @@ import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-/** Dynamic Lights: Mobs und Spieler in der Nähe einer Lichtquelle heller zeichnen. */
+/** Dynamic Lights: draw mobs and players near a light source brighter. */
 @Mixin(EntityRenderer.class)
 public abstract class DynamicLightsEntityMixin {
     @ModifyReturnValue(method = "getBlockLightLevel", at = @At("RETURN"))

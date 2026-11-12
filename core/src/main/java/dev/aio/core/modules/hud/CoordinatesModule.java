@@ -8,7 +8,7 @@ import dev.aio.core.setting.NumberSetting;
 
 import java.util.Locale;
 
-/** Koordinaten, optional mit Blickrichtung und Biom. */
+/** Coordinates, optionally with facing direction and biome. */
 public final class CoordinatesModule extends TextHudElement {
     private static final String[] DIRECTIONS = {"S", "SW", "W", "NW", "N", "NE", "O", "SE"};
 
@@ -33,7 +33,7 @@ public final class CoordinatesModule extends TextHudElement {
         return sb.toString();
     }
 
-    /** Yaw 0 = Süden (MC-Konvention). */
+    /** Yaw 0 = south (MC convention). */
     static String direction(float yaw) {
         int idx = Math.floorMod(Math.round(yaw / 45f), 8);
         return DIRECTIONS[idx];

@@ -4,7 +4,7 @@ import dev.aio.core.module.Category;
 import dev.aio.core.module.Module;
 import dev.aio.core.setting.BooleanSetting;
 
-/** Entfernt Nebel: klare Sicht unter Wasser und in Lava, dazu der Nebel in der Ferne (auch Nether und End). */
+/** Removes fog: clear view under water and in lava, plus the distant fog (also nether and end). */
 public final class NoFogModule extends Module {
     private final BooleanSetting water;
     private final BooleanSetting lava;
@@ -21,7 +21,7 @@ public final class NoFogModule extends Module {
 
     private final BooleanSetting distanceDefaultOn;
 
-    /** Früher war der Fernnebel standardmäßig an; einmalig auf den neuen Standard setzen. */
+    /** The distant fog used to be on by default; set to the new default once. */
     @Override public void afterLoad() {
         super.afterLoad();
         if (!distanceDefaultOn.on()) {

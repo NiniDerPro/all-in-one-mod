@@ -1,6 +1,6 @@
 package dev.aio.core.event;
 
-/** Handle einer Bus-Registrierung. {@link #cancel()} hängt den Listener wieder aus. */
+/** Handle of a bus registration. {@link #cancel()} detaches the listener again. */
 @FunctionalInterface
 public interface Subscription {
     void cancel();

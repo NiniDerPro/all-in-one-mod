@@ -18,19 +18,19 @@ import java.util.UUID;
 import java.util.function.LongSupplier;
 
 /**
- * Private Nutzungsstatistik, die nur lokal in {@code config/aio/stats.json} liegt. Keine Anzeige im
- * Spiel, nichts wird von hier verschickt. Zählt die Spielzeit mit der Mod, wie lange und wie oft
- * jedes Modul aktiv war, die Zahl der Starts, den höchsten gleichzeitigen Modulstand und bietet
- * {@link #add} für beliebige weitere Zähler (für später).
+ * Private usage statistics that only live locally in {@code config/aio/stats.json}. No display in the
+ * game, nothing is sent from here. Counts the play time with the mod, how long and how often
+ * each module was active, the number of starts, the highest simultaneous module count and offers
+ * {@link #add} for any further counters (for later).
  *
- * <p>Die anonyme Online-Statistik (bStats) liest diese Werte nur aus; das Senden passiert
- * ausschließlich im Fabric-Teil und nur, wenn der Nutzer es eingeschaltet lässt.
+ * <p>The anonymous online statistics only read these values; sending happens
+ * exclusively in the Fabric part and only if the user leaves it switched on.
  */
 public final class Stats {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final String FILE = "stats.json";
     private static final long SAVE_INTERVAL_MS = 60_000;
-    /** Große Sprünge (Pause, Standby, Fenster lange weg) nicht als Spielzeit zählen. */
+    /** Do not count large jumps (pause, standby, window away for long) as play time. */
     private static final long MAX_DELTA_MS = 10_000;
 
     private final ConfigManager config;
@@ -48,7 +48,7 @@ public final class Stats {
         this.clock = clock;
     }
 
-    /** Beim Start: laden, Installations-ID sichern, als neuen Start zählen. */
+    /** On start: load, secure the installation id, count as a new start. */
     public void start() {
         load();
         if (data.installId == null || data.installId.isBlank()) data.installId = UUID.randomUUID().toString();
@@ -80,7 +80,7 @@ public final class Stats {
         if (now - lastSaveMs >= SAVE_INTERVAL_MS) save();
     }
 
-    /** Beliebigen Zähler erhöhen (z. B. "menuOpens", "waypointsCreated"); für künftige Statistiken. */
+    /** Increase any counter (e.g. "menuOpens", "waypointsCreated"); for future statistics. */
     public void add(String counter, long amount) {
         data.counters.merge(counter, amount, Long::sum);
     }
@@ -101,7 +101,7 @@ public final class Stats {
     /** Momentan aktive, abschaltbare Module. */
     public int activeModuleCount() { return activeModuleIds().size(); }
 
-    /** Nach Nutzungszeit absteigend sortierte Modul-IDs (für "meist genutzt"). */
+    /** Module ids sorted by usage time, descending (for "most used"). */
     public Map<String, Long> moduleMillis() { return new TreeMap<>(data.moduleMillis); }
 
     private Set<String> activeModuleIds() {
@@ -120,7 +120,7 @@ public final class Stats {
                 data.fillNulls();
             }
         } catch (JsonSyntaxException e) {
-            Log.error("stats.json ist defekt, beginne neu", e);
+            Log.error("stats.json is broken, starting fresh", e);
         }
     }
 
@@ -129,7 +129,7 @@ public final class Stats {
         config.writeText(FILE, GSON.toJson(data));
     }
 
-    /** Auf Platte gespeicherter Stand. Neue Felder einfach ergänzen (alte Dateien füllen Standard). */
+    /** State saved on disk. Simply add new fields (old files fill the default). */
     private static final class Data {
         String installId;
         long firstStartMillis;

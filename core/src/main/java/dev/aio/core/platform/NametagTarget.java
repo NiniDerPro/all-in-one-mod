@@ -3,10 +3,10 @@ package dev.aio.core.platform;
 import java.util.List;
 
 /**
- * Ein Objekt mit Namensschild: Punkt über dem Kopf und was angezeigt wird.
+ * An object with a nametag: point above the head and what is shown.
  *
- * @param items     bei Spielern: Haupthand, Helm, Brust, Beine, Füße, Zweithand (leere als {@link ItemRef#EMPTY})
- * @param count     bei Items am Boden: Stapelgröße
+ * @param items     for players: main hand, helmet, chest, legs, feet, offhand (empty ones as {@link ItemRef#EMPTY})
+ * @param count     for items on the ground: stack size
  * @param fuseTicks bei TNT: verbleibende Ticks
  */
 public record NametagTarget(Kind kind, double x, double y, double z, double distance, String name, int nameColor,

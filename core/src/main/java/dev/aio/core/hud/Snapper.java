@@ -3,8 +3,8 @@ package dev.aio.core.hud;
 import java.util.List;
 
 /**
- * Einrasten beim Verschieben im HUD-Editor: Kanten und Mitten des gezogenen Elements rasten an
- * Bildschirmrändern, der Bildschirmmitte und Kanten/Mitten anderer Elemente ein.
+ * Snapping while moving in the HUD editor: edges and centres of the dragged element snap to
+ * screen edges, the screen centre and edges/centres of other elements.
  */
 public final class Snapper {
     public record Rect(float x, float y, float w, float h) {
@@ -14,7 +14,7 @@ public final class Snapper {
         float cy() { return y + h / 2f; }
     }
 
-    /** Ergebnis: neue Position und optional die Hilfslinien (NaN = keine). */
+    /** Result: new position and optionally the guide lines (NaN = none). */
     public record Result(float x, float y, float guideX, float guideY) {
         public boolean hasGuideX() { return !Float.isNaN(guideX); }
         public boolean hasGuideY() { return !Float.isNaN(guideY); }

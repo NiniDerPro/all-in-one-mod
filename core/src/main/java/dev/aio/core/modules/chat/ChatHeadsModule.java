@@ -5,9 +5,9 @@ import dev.aio.core.module.Module;
 import dev.aio.core.setting.BooleanSetting;
 
 /**
- * Chat Heads: der Kopf des Absenders vor Chatnachrichten. Der Absender ist ein Spieler aus der
- * Tab-Liste, dessen Name früh in der Nachricht steht ({@code <Name>}, {@code Name:} oder einfach als
- * Wort) – so klappt es auch mit Server-Chatformaten mit Rang davor.
+ * Chat Heads: the sender's head in front of chat messages. The sender is a player from the
+ * tab list whose name appears early in the message ({@code <Name>}, {@code Name:} or simply as a
+ * word) – so it also works with server chat formats with a rank in front.
  */
 public final class ChatHeadsModule extends Module {
     private final BooleanSetting systemMessages;
@@ -18,7 +18,7 @@ public final class ChatHeadsModule extends Module {
         systemMessages.onChange(v -> platform().refreshChat());
     }
 
-    /** Auch bei Nachrichten, die der Server schickt (Chat-Plugins senden Spielerchat oft so). */
+    /** Also for messages sent by the server (chat plugins often send player chat that way). */
     public boolean includeSystemMessages() { return systemMessages.on(); }
 
     @Override protected void onActivate() { platform().refreshChat(); }
@@ -26,8 +26,8 @@ public final class ChatHeadsModule extends Module {
     @Override protected void onDeactivate() { platform().refreshChat(); }
 
     /**
-     * Absender in einer Nachricht: der Name, der am weitesten vorne als ganzes Wort vorkommt; nur in
-     * den ersten 48 Zeichen, damit eine Erwähnung mitten im Satz nicht zählt.
+     * Sender in a message: the name that appears furthest forward as a whole word; only in
+     * the first 48 characters, so that a mention in the middle of a sentence does not count.
      */
     public static String findSender(String text, Iterable<String> names) {
         String best = null;

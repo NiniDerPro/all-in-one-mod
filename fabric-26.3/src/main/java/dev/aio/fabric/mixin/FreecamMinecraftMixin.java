@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-// Aus Freecam (MIT) übernommen, siehe dev/aio/fabric/freecam/NOTICE.md
+// Adapted from Freecam (MIT), see dev/aio/fabric/freecam/NOTICE.md
 @Mixin(Minecraft.class)
 public class FreecamMinecraftMixin {
     @Inject(method = "startAttack", at = @At("HEAD"), cancellable = true)
@@ -26,7 +26,7 @@ public class FreecamMinecraftMixin {
         if (Freecam.active() && Freecam.preventInteractions()) ci.cancel();
     }
 
-    /** Beim Verlassen der Welt ausschalten. */
+    /** Switch off when leaving the world. */
     @Inject(method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;ZZ)V", at = @At("HEAD"))
     private void aio$freecamDisconnect(CallbackInfo ci) {
         Freecam.set(false);

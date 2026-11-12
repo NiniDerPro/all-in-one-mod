@@ -12,8 +12,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Setzt die Vanilla-Optionen für den FPS-Boost und merkt sich die Ursprungswerte
- * ("schlüssel=wert;…"), damit Ausschalten sie zurückholt.
+ * Sets the vanilla options for the FPS boost and remembers the original values
+ * ("key=value;…") so that switching off restores them.
  */
 final class FpsBoost {
     private FpsBoost() {}
@@ -114,7 +114,7 @@ final class FpsBoost {
             try {
                 option(o, key).set(parse(key, value));
             } catch (RuntimeException e) {
-                AioFabricClient.LOGGER.warn("FPS-Boost: {} nicht zurücksetzbar: {}", key, e.toString());
+                AioFabricClient.LOGGER.warn("FPS boost: {} could not be reset: {}", key, e.toString());
             }
         });
         o.save();

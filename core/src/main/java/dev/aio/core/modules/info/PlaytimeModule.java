@@ -6,8 +6,8 @@ import dev.aio.core.module.Category;
 import dev.aio.core.setting.BooleanSetting;
 
 /**
- * Gesamte Spielzeit in dieser Welt laut Statistik. Die Statistik wird beim Betreten und
- * dann jede Minute angefragt (wie das Statistik-Menü); dazwischen wird lokal weitergezählt.
+ * Total play time in this world according to the statistics. The statistics are requested on entering and
+ * then every minute (like the statistics menu); in between it keeps counting locally.
  */
 public final class PlaytimeModule extends TextHudElement {
     private static final int REQUEST_INTERVAL = 20 * 60;
@@ -32,7 +32,7 @@ public final class PlaytimeModule extends TextHudElement {
     private void reset() {
         statTicks = -1;
         ticksSinceStat = 0;
-        requestTimer = 40; // kurz nach dem Betreten anfragen
+        requestTimer = 40; // request shortly after entering
     }
 
     private void tick() {

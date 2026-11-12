@@ -44,7 +44,7 @@ class LangFileTest {
         assertTrue(Files.exists(FILE), "en_us.json fehlt: mit -Daio.writeLang=true erzeugen");
         JsonObject actual = JsonParser.parseString(Files.readString(FILE, StandardCharsets.UTF_8)).getAsJsonObject();
         for (Map.Entry<String, String> e : expected.entrySet()) {
-            assertTrue(actual.has(e.getKey()), "Fehlt in en_us.json: " + e.getKey() + " (mit -Daio.writeLang=true neu erzeugen)");
+            assertTrue(actual.has(e.getKey()), "Missing in en_us.json: " + e.getKey() + " (regenerate with -Daio.writeLang=true)");
             assertEquals(e.getValue(), actual.get(e.getKey()).getAsString(), "Veraltet in en_us.json: " + e.getKey());
         }
         for (String key : actual.keySet()) assertTrue(expected.containsKey(key), "Nicht mehr benutzt: " + key);
@@ -83,7 +83,7 @@ class LangFileTest {
 
     private static void put(Map<String, String> map, String key, String value) {
         String old = map.putIfAbsent(key, value);
-        assertTrue(old == null || old.equals(value), "Schlüssel " + key + " mit zwei Texten: \"" + old + "\" / \"" + value + "\"");
+        assertTrue(old == null || old.equals(value), "Key " + key + " with two texts: \"" + old + "\" / \"" + value + "\"");
     }
 
     private static String unescape(String s) {

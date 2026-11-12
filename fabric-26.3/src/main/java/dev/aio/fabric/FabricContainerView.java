@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Offenes Inventar für Maus-Tweaks und Sortieren. Bei Menüs mit Sonderslots (Werkbank, Ofen, ...)
- * werden nur die Spielerslots einbezogen, damit nie aus Versehen ein Ergebnisslot geklickt wird.
+ * Open inventory for mouse tweaks and sorting. For menus with special slots (crafting table, furnace, ...)
+ * only the player slots are included so that a result slot is never clicked by accident.
  */
 final class FabricContainerView implements ContainerView {
     private final Minecraft client;
@@ -40,7 +40,7 @@ final class FabricContainerView implements ContainerView {
         this.grid = gridOf(menu);
     }
 
-    /** Eingabeslots nach den festen Slot-Reihenfolgen der Vanilla-Menüs. */
+    /** Input slots according to the fixed slot orders of the vanilla menus. */
     private static Grid gridOf(AbstractContainerMenu menu) {
         if (menu instanceof InventoryMenu) return new Grid(Set.of(RecipeKind.CRAFTING), 2, 2, new int[]{1, 2, 3, 4});
         if (menu instanceof CraftingMenu) return new Grid(Set.of(RecipeKind.CRAFTING), 3, 3, new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9});
@@ -63,7 +63,7 @@ final class FabricContainerView implements ContainerView {
         List<ContainerView.Slot> out = new ArrayList<>(menu.slots.size());
         for (net.minecraft.world.inventory.Slot s : menu.slots) {
             boolean player = s.container instanceof Inventory;
-            // Ergebnisslots nie, Rasterslots immer (für Rezept-Übertragung), sonst nur echte Truhen
+            // Never result slots, always grid slots (for recipe transfer), otherwise only real chests
             if (!player && !storage && !isGridSlot(s.index)) continue;
             out.add(new ContainerView.Slot(s.index, FabricItemRef.of(s.getItem()), player, s.getContainerSlot()));
         }
@@ -80,7 +80,7 @@ final class FabricContainerView implements ContainerView {
 
     @Override public boolean isPlayerOnly() { return menu instanceof InventoryMenu; }
 
-    /** Vanilla Quick Craft (Ziehen mit links): Start, ein Paket pro Slot, Ende. */
+    /** Vanilla quick craft (drag with left): start, one packet per slot, end. */
     @Override public void dragSplit(int[] slots) {
         if (client.gameMode == null || client.player == null || slots.length == 0) return;
         int id = menu.containerId;
@@ -89,6 +89,6 @@ final class FabricContainerView implements ContainerView {
         client.gameMode.handleContainerInput(id, -999, quickcraftMask(2, 0), ContainerInput.QUICK_CRAFT, client.player);
     }
 
-    /** Wie {@code AbstractContainerMenu.getQuickcraftMask}: Phase (0 Start, 1 Slot, 2 Ende) + Art (0 = gleichmäßig). */
+    /** Like {@code AbstractContainerMenu.getQuickcraftMask}: phase (0 start, 1 slot, 2 end) + kind (0 = evenly). */
     private static int quickcraftMask(int phase, int type) { return (phase & 3) | ((type & 3) << 2); }
 }

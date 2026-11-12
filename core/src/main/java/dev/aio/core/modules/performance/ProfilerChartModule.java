@@ -9,19 +9,19 @@ import dev.aio.core.platform.Renderer;
 import dev.aio.core.setting.StringSetting;
 
 /**
- * Das Profiler-Kreisdiagramm aus F3+1 als eigenes HUD-Element: ohne F3, frei verschieb- und
- * skalierbar. Solange das Modul läuft, sammelt Minecraft die Profiler-Daten (kostet etwas Leistung).
- * Ist F3 offen, zeigt Minecraft das Original und dieses Element pausiert, damit nichts doppelt ist.
- * Die Ebene, die man dort mit F3+1 und den Zahlentasten auswählt, übernimmt das Element und merkt
- * sie sich auch über einen Neustart hinweg.
+ * The profiler pie chart from F3+1 as its own HUD element: without F3, freely movable and
+ * scalable. While the module runs, Minecraft collects the profiler data (costs some performance).
+ * If F3 is open, Minecraft shows the original and this element pauses so that nothing is doubled.
+ * The level selected there with F3+1 and the number keys is taken over by the element, which remembers
+ * it across a restart too.
  */
 public final class ProfilerChartModule extends HudElement {
-    /** Breite des Vanilla-Diagramms; die Höhe hängt von der Zahl der Einträge ab (9 px je Zeile). */
+    /** Width of the vanilla chart; the height depends on the number of entries (9 px per row). */
     public static final int W = 270;
 
     static int heightFor(int entries) { return 160 + 9 * entries; }
 
-    /** Gewählte Ebene aus F3+1 ("root", "root.gameRenderer", ...). */
+    /** Selected level from F3+1 ("root", "root.gameRenderer", ...). */
     private final StringSetting path;
 
     public ProfilerChartModule() {
@@ -33,7 +33,7 @@ public final class ProfilerChartModule extends HudElement {
         on(Events.Tick.class, e -> syncPath());
     }
 
-    /** Bei offenem F3 die dort gewählte Ebene übernehmen, sonst die gespeicherte ins Diagramm setzen. */
+    /** With F3 open take over the level selected there, otherwise put the saved one into the chart. */
     private void syncPath() {
         if (platform().debugScreenOpen()) {
             String now = platform().profilerChartPath();
@@ -62,6 +62,6 @@ public final class ProfilerChartModule extends HudElement {
         }
     }
 
-    /** Ob Minecraft die Profiler-Daten sammeln soll. */
+    /** Whether Minecraft should collect the profiler data. */
     public boolean collecting() { return isActive(); }
 }

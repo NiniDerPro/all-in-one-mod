@@ -33,7 +33,7 @@ public class NumberSetting extends Setting<Double> {
 
     public int intValue() { return (int) Math.round(value); }
 
-    /** Setzt den Wert über einen Anteil 0..1, z. B. von einem Slider. */
+    /** Sets the value via a fraction 0..1, e.g. from a slider. */
     public void setFraction(double fraction) {
         set(min + (max - min) * Math.max(0, Math.min(1, fraction)));
     }
@@ -50,7 +50,7 @@ public class NumberSetting extends Setting<Double> {
         if (v == null || v.isNaN() || v.isInfinite()) return null;
         double clamped = Math.max(min, Math.min(max, v));
         if (step > 0) clamped = min + Math.round((clamped - min) / step) * step;
-        // Rundungsfehler bei Kommaschritten glätten
+        // smooth out rounding errors for decimal steps
         clamped = Math.round(clamped * 1e6) / 1e6;
         return Math.max(min, Math.min(max, clamped));
     }

@@ -1,8 +1,8 @@
 package dev.aio.core.platform;
 
 /**
- * Tasten werden über ihre Minecraft-Namen identifiziert (z. B. {@code key.keyboard.right.shift},
- * {@code key.mouse.left}). Diese Namen sind über MC-Versionen und Eingabe-Backends (GLFW, SDL)
+ * Keys are identified by their Minecraft names (e.g. {@code key.keyboard.right.shift},
+ * {@code key.mouse.left}). These names are stable across MC versions and input backends (GLFW, SDL)
  * hinweg stabil, numerische Codes nicht.
  */
 public final class Keys {
@@ -36,7 +36,7 @@ public final class Keys {
 
     public static boolean isMouse(String key) { return key != null && key.startsWith(MOUSE_PREFIX); }
 
-    /** Maustaste zu einem Namen oder -1. */
+    /** Mouse button for a name or -1. */
     public static int mouseButton(String key) {
         if (!isMouse(key)) return -1;
         String rest = key.substring(MOUSE_PREFIX.length());

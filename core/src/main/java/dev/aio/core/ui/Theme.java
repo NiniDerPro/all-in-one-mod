@@ -5,21 +5,21 @@ import dev.aio.core.platform.Renderer;
 import dev.aio.core.util.Colors;
 
 /**
- * Farben der Oberfläche: dunkles Graphit mit leicht bläulichem Stich, Text in drei Abstufungen,
- * eine Akzentfarbe (in den Client-Einstellungen wählbar) nur für Aktives und Fokus.
+ * Colours of the interface: dark graphite with a slightly bluish tint, text in three shades,
+ * one accent colour (selectable in the client settings) only for active things and focus.
  */
 public final class Theme {
     private Theme() {}
 
     public static final int OVERLAY = 0xA0050608;
-    /** Flächen von hinten nach vorne. */
+    /** Areas from back to front. */
     public static final int PANEL = 0xF20E1015;
     public static final int SIDEBAR = 0xF2090A0E;
     public static final int SURFACE = 0xFF151820;
     public static final int CARD = 0xFF181B24;
     public static final int CARD_HOVER = 0xFF20242F;
     public static final int CARD_DISABLED = 0xFF12141A;
-    /** Feine Linien und Ränder. */
+    /** Fine lines and borders. */
     public static final int LINE = 0x14FFFFFF;
     public static final int LINE_STRONG = 0x26FFFFFF;
     public static final int TEXT = 0xFFECEEF3;
@@ -37,13 +37,13 @@ public final class Theme {
         return accent(core, 0);
     }
 
-    /** Akzentfarbe; mit "Rainbow accent" ein langsam wandernder Regenbogen (Versatz für Verläufe). */
+    /** Accent colour; with "Rainbow accent" a slowly moving rainbow (offset for gradients). */
     public static int accent(AioCore core, float offset) {
         if (core.clientSettings().rainbowAccent.on()) return Colors.chroma(offset, 0.15f, 255);
         return core.clientSettings().accent.argb() | 0xFF000000;
     }
 
-    /** Dünne Leiste in der Akzentfarbe (bei Regenbogen als Verlauf). */
+    /** Thin bar in the accent colour (as a gradient with rainbow). */
     public static void accentBar(Renderer r, AioCore core, float x1, float y1, float x2, float y2) {
         if (!core.clientSettings().rainbowAccent.on()) {
             r.fill(x1, y1, x2, y2, accent(core));

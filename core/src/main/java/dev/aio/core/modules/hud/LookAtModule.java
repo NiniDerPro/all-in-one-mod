@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Blick-Info: Tooltip oben in der Mitte mit dem Block oder Wesen
- * unter dem Fadenkreuz. Zeigt Icon, Name, Werkzeug, Wachstum, Leben, Rüstung und die Mod.
+ * Look-at info: tooltip at the top centre with the block or entity
+ * under the crosshair. Shows icon, name, tool, growth, health, armor and the mod.
  *
  */
 public final class LookAtModule extends HudElement {
@@ -32,7 +32,7 @@ public final class LookAtModule extends HudElement {
     }
 
     /**
-     * Eine Textzeile. {@code hearts} markiert die Herzzeile, die gesondert gezeichnet wird.
+     * One line of text. {@code hearts} marks the heart row that is drawn separately.
      * {@code value} wird optional hinter {@code text} in eigener Farbe gezeichnet ("Honig: " + "5/5").
      */
     private record Line(String text, int color, boolean hearts, String value, int valueColor) {
@@ -104,7 +104,7 @@ public final class LookAtModule extends HudElement {
         setTarget(t);
     }
 
-    /** Baut Name und Zeilen neu, aber nur wenn sich der sichtbare Zustand geändert hat. */
+    /** Rebuilds name and rows, but only when the visible state changed. */
     void setTarget(LookTarget t) {
         target = t;
         if (t == null) {
@@ -118,8 +118,8 @@ public final class LookAtModule extends HudElement {
         }
         List<Line> next = new ArrayList<>(5);
         if (t.kind() == LookTarget.Kind.BLOCK) {
-            if (showTool.on() && t.toolType() != null && t.toolIcon().isEmpty()) { // ohne Symbol als Text
-                // ✔ passendes Werkzeug in der Hand, ✘ ohne Werkzeug kein Drop, sonst neutral
+            if (showTool.on() && t.toolType() != null && t.toolIcon().isEmpty()) { // without icon as text
+                // ✔ matching tool in hand, ✘ no drop without a tool, otherwise neutral
                 if (t.correctTool() == null) next.add(new Line(t.toolType(), INFO, false));
                 else if (t.correctTool()) next.add(new Line("✔ " + t.toolType(), GOOD, false));
                 else next.add(new Line("✘ " + t.toolType(), BAD, false));
@@ -192,7 +192,7 @@ public final class LookAtModule extends HudElement {
         return demo;
     }
 
-    /** Platz für das Werkzeug-Symbol (12 px, wie ein kleines Item) rechts neben dem Namen. */
+    /** Room for the tool icon (12 px, like a small item) to the right of the name. */
     private int toolWidth(boolean preview) {
         if (!showTool.on()) return 0;
         if (previewing(preview)) return 5 + TOOL;
@@ -210,7 +210,7 @@ public final class LookAtModule extends HudElement {
     }
 
     @Override public int width(Renderer r) {
-        // Breite für Vorschau und echtes Ziel kann sich unterscheiden; gecacht wird nur das echte Ziel.
+        // Width for preview and real target can differ; only the real target is cached.
         boolean preview = target == null;
         if (!preview && cachedW >= 0) return cachedW;
         int w = r.textWidth(shownName(preview)) + toolWidth(preview);
@@ -265,7 +265,7 @@ public final class LookAtModule extends HudElement {
     private void drawTooltipBox(Renderer r, int w, int h) {
         if (!background.on()) return;
         int bg = backgroundColor.argb();
-        // Hintergrund mit abgeschrägten Ecken wie beim Vanilla-Tooltip
+        // Background with bevelled corners like the vanilla tooltip
         r.fill(1, 0, w - 1, h, bg);
         r.fill(0, 1, 1, h - 1, bg);
         r.fill(w - 1, 1, w, h - 1, bg);
@@ -285,8 +285,8 @@ public final class LookAtModule extends HudElement {
     }
 
     /**
-     * Werkzeug: kleines Item-Symbol rechts in der Namenszeile, darunter ✔ (grün, passt)
-     * oder ✕ (rot, ohne dieses Werkzeug kein Drop).
+     * Tool: small item icon at the right of the name row, below it ✔ (green, fits)
+     * or ✕ (red, no drop without this tool).
      */
     private void drawTool(Renderer r, float x, float y, boolean preview) {
         r.push();
@@ -304,7 +304,7 @@ public final class LookAtModule extends HudElement {
         r.pop();
     }
 
-    /** Herzen mit den Original-Sprites aus dem Vanilla-HUD. */
+    /** Hearts with the original sprites from the vanilla HUD. */
     private void drawHearts(Renderer r, float x, float y) {
         float hp = Math.max(0, target.health());
         int n = (int) Math.ceil(target.maxHealth() / 2f);
@@ -319,7 +319,7 @@ public final class LookAtModule extends HudElement {
 
     private static final int HEART_STEP = 8;
 
-    // Für Tests
+    // For tests
     String targetName() { return name; }
 
     List<String> lineTexts() {
@@ -328,7 +328,7 @@ public final class LookAtModule extends HudElement {
         return out;
     }
 
-    /** Für Tests: ob das Item-Icon gezeigt würde. */
+    /** For tests: whether the item icon would be shown. */
     boolean iconShown() { return hasIcon(false); }
 
     ItemRef icon() { return target == null ? null : target.icon(); }

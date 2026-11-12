@@ -6,14 +6,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Erkennt Wegpunkte, die im Chat geteilt werden. Unterstützt das Textformat, das Xaero's Minimap
+ * Recognises waypoints shared in chat. Supports the text format that Xaero's Minimap
  * beim Teilen verschickt:
  * {@code xaero-waypoint:Name:N:X:Y:Z:Farbe:false:0:Internal-overworld-waypoints}
- * (Y kann {@code ~} sein, im Namen steht ein Doppelpunkt als {@code ^col^}). Nichts hier ist
- * von anderen Mods übernommen, es folgt nur dem sichtbaren Textformat.
+ * (Y can be {@code ~}, a colon in the name is written as {@code ^col^}). Nothing here is
+ * taken from other mods, it only follows the visible text format.
  */
 public final class SharedWaypoint {
-    /** Farben der 16 Minecraft-Farbcodes, wie Xaero sie als Index 0-15 verschickt. */
+    /** Colours of the 16 Minecraft colour codes, as Xaero sends them as index 0-15. */
     private static final int[] COLORS = {
             0x000000, 0x0000AA, 0x00AA00, 0x00AAAA, 0xAA0000, 0xAA00AA, 0xFFAA00, 0xAAAAAA,
             0x555555, 0x5555FF, 0x55FF55, 0x55FFFF, 0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF};
@@ -21,7 +21,7 @@ public final class SharedWaypoint {
     private static final Pattern XAERO = Pattern.compile("xaero[-_]waypoint:([^\\s]+)");
 
     public record Found(String name, int x, Integer y, int z, int color, String dimension) {
-        /** Kurzform für den Klick-Befehl: name|x|y|z|farbe|dimension (y leer = aktuelle Höhe). */
+        /** Short form for the click command: name|x|y|z|colour|dimension (y empty = current height). */
         public String payload() {
             return name.replace("|", " ") + "|" + x + "|" + (y == null ? "" : y) + "|" + z + "|" + Integer.toHexString(color) + "|" + (dimension == null ? "" : dimension);
         }
@@ -38,7 +38,7 @@ public final class SharedWaypoint {
         }
     }
 
-    /** Ein Treffer samt Textstelle, damit die Nachricht umgeschrieben werden kann. */
+    /** A hit including the text position so that the message can be rewritten. */
     public record Match(Found waypoint, int start, int end) {}
 
     public static List<Match> find(String text) {
@@ -54,7 +54,7 @@ public final class SharedWaypoint {
 
     private SharedWaypoint() {}
 
-    /** Alle Wegpunkte in einer Chatnachricht (meist null oder einer). */
+    /** All waypoints in a chat message (usually null or one). */
     public static List<Found> parse(String text) {
         List<Found> out = new ArrayList<>();
         if (text == null) return out;

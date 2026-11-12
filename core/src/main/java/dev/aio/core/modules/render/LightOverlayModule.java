@@ -7,10 +7,10 @@ import dev.aio.core.setting.ColorSetting;
 import dev.aio.core.setting.NumberSetting;
 
 /**
- * Light Level Overlay: färbt die Oberseite von Blöcken, auf denen Monster stehen könnten.
- * Rot = Blocklicht 0, hier können Monster spawnen. Grün = durch Fackeln o. Ä. beleuchtet, sicher.
- * Sonnenlicht wird ignoriert (nachts/in Höhlen zählt nur Blocklicht). Es werden nur echte
- * Spawn-Oberflächen gezeigt (fester Boden, darüber zwei Blöcke frei), das hält es übersichtlich
+ * Light Level Overlay: colours the top of blocks on which monsters could stand.
+ * Red = block light 0, monsters can spawn here. Green = lit by torches or similar, safe.
+ * Sunlight is ignored (at night/in caves only block light counts). Only real
+ * spawn surfaces are shown (solid ground, two blocks free above), which keeps it tidy
  * und schnell.
  */
 public final class LightOverlayModule extends Module {
@@ -34,7 +34,7 @@ public final class LightOverlayModule extends Module {
 
     public int radius() { return radius.intValue(); }
 
-    /** Einmalig: der frühere Standard 16 wird zum neuen Standard 64. */
+    /** Once: the former default 16 becomes the new default 64. */
     @Override public void afterLoad() {
         if (!radiusMigrated.on()) {
             if (radius.intValue() == 16) radius.reset();

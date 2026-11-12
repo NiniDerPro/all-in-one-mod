@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
-/** Partikel ohne eigene Partikelart: Block-Splitter beim Zerbrechen und Abbauen, Feuerwerk. */
+/** Particles without their own particle type: block splinters on breaking and mining, fireworks. */
 @Mixin(ClientLevel.class)
 public abstract class ClientLevelParticlesMixin {
     @Unique
@@ -32,8 +32,8 @@ public abstract class ClientLevelParticlesMixin {
     }
 
     /**
-     * Nur die Splitter beim Abbauen, nicht den Klopf-Sound: In 26.3 spielt addBreakingBlockEffects
-     * erst den Sound und ruft dann addBreakingParticles auf, darum wird nur Letzteres abgebrochen.
+     * Only the splinters when mining, not the knock sound: in 26.3 addBreakingBlockEffects plays
+     * the sound first and then calls addBreakingParticles, so only the latter is cancelled.
      */
     @Inject(method = "addBreakingParticles", at = @At("HEAD"), cancellable = true)
     private void aio$blockCrack(BlockPos pos, Direction side, BlockState state, CallbackInfo ci) {

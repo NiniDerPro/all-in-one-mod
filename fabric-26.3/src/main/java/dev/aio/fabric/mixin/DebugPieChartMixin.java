@@ -9,8 +9,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 /**
- * Vanilla zeichnet im F3-Bildschirm das Kreisdiagramm, sobald Daten da sind. Die liefert Minecraft
- * auch, wenn nur unser Profiler Chart sie braucht: dann im F3-Bildschirm nur zeichnen, wenn F3+1
+ * Vanilla draws the pie chart in the F3 screen as soon as data is there. Minecraft delivers it
+ * also when only our Profiler Chart needs it: then in the F3 screen only draw if F3+1
  * wirklich an ist.
  */
 @Mixin(DebugScreenOverlay.class)

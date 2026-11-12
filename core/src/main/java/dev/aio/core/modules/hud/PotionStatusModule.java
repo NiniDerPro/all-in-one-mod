@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/** Aktive Trank-Effekte mit Stufe und Restzeit. */
+/** Active potion effects with level and remaining time. */
 public final class PotionStatusModule extends HudElement {
     private static final String[] ROMAN = {"I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"};
     private static final int ICON = 10;
@@ -37,7 +37,7 @@ public final class PotionStatusModule extends HudElement {
         List<String> nextSprites = new ArrayList<>();
         if (platform().inWorld()) {
             List<EffectInfo> sorted = new ArrayList<>(platform().effects());
-            // stabil wie im Vanilla-Inventar: gute vor schlechten, dann nach Name
+            // stable like in the vanilla inventory: good before bad, then by name
             sorted.sort(Comparator.comparing((EffectInfo e) -> !e.beneficial()).thenComparing(EffectInfo::name));
             for (EffectInfo e : sorted) {
                 nextLines.add(e.name() + " " + roman(e.amplifier()) + "  " + formatDuration(e));

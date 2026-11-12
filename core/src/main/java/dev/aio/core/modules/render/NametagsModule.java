@@ -19,9 +19,9 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Nametags: eigene Namensschilder über Spielern (Leben, Ping, Spielmodus, Entfernung, Ausrüstung
- * mit Verzauberungen und Haltbarkeit), Items am Boden (Name und Anzahl), Mobs (Leben) und TNT
- * (Zündzeit). Sichtbar auch durch Wände, ersetzt die Vanilla-Schilder der gewählten Objekte.
+ * Nametags: own nametags above players (health, ping, game mode, distance, equipment
+ * with enchantments and durability), items on the ground (name and count), mobs (health) and TNT
+ * (fuse time). Visible through walls too, replaces the vanilla tags of the chosen objects.
  */
 public final class NametagsModule extends HudElement {
     public enum Durability implements EnumSetting.Named {
@@ -37,15 +37,15 @@ public final class NametagsModule extends HudElement {
     private static final int ICON = 16;
 
     /**
-     * Größe nach Entfernung: bis 4 Blöcke voll, dann weich kleiner (8 → 66 %, ab etwa 12 → 50 %).
-     * Kleiner wird die Minecraft-Schrift unleserlich; gegen Überlappen sorgt {@link #declutter}.
+     * Size by distance: up to 4 blocks full, then smoothly smaller (8 → 66 %, from about 12 → 50 %).
+     * The Minecraft font becomes unreadable when smaller; {@link #declutter} prevents overlapping.
      */
     static float distanceScale(double distance) {
         if (distance <= 4) return 1f;
         return (float) Math.max(0.5, Math.pow(4.0 / distance, 0.6));
     }
 
-    /** Ein Tag auf dem Bildschirm: Ziel, Ankerpunkt, Größe und grobe Fläche der Namenszeile. */
+    /** One tag on the screen: target, anchor point, size and rough area of the name row. */
     record Placed(NametagTarget target, float x, float y, float scale, float x1, float y1, float x2, float y2) {
         float area() { return (x2 - x1) * (y2 - y1); }
 
@@ -56,8 +56,8 @@ public final class NametagsModule extends HudElement {
     }
 
     /**
-     * Von nah nach fern: ein Tag, der zu mehr als 40 % hinter einem näheren läge, wird weggelassen.
-     * So bleibt bei Gruppen in der Ferne lesbar, wer vorne steht, statt eines Knäuels aus Tags.
+     * From near to far: a tag that would lie more than 40 % behind a nearer one is dropped.
+     * That way in groups far away it stays readable who stands in front, instead of a tangle of tags.
      */
     static List<Placed> declutter(List<Placed> nearToFar) {
         List<Placed> kept = new ArrayList<>();
@@ -114,7 +114,7 @@ public final class NametagsModule extends HudElement {
 
     @Override public boolean hasContent() { return platform().inWorld() && !platform().isScreenOpen(); }
 
-    /** Ob die Vanilla-Namensschilder dieser Art ausgeblendet werden (dieses Modul zeigt eigene). */
+    /** Whether the vanilla nametags of this kind are hidden (this module shows its own). */
     public boolean replaces(NametagTarget.Kind kind) {
         if (!isActive()) return false;
         return switch (kind) {
@@ -130,7 +130,7 @@ public final class NametagsModule extends HudElement {
         List<NametagTarget> list = new ArrayList<>(platform().nametagTargets(range.get(), partialTick,
                 players.on(), mobs.on(), items.on(), tnt.on(), throughWalls.on()));
         if (list.isEmpty()) return;
-        // die nächsten zuerst auswählen, dann von hinten nach vorne zeichnen
+        // select the nearest first, then draw from back to front
         list.sort((a, b) -> Double.compare(a.distance(), b.distance()));
         if (list.size() > maxCount.intValue()) list = list.subList(0, maxCount.intValue());
         CameraView cam = platform().camera(partialTick);
@@ -146,7 +146,7 @@ public final class NametagsModule extends HudElement {
             placed.add(new Placed(t, pt.x(), pt.y(), scale, pt.x() - half, pt.y() - (fh + 3) * scale, pt.x() + half, pt.y()));
         }
         List<Placed> kept = declutter(placed);
-        for (int i = kept.size() - 1; i >= 0; i--) { // von hinten nach vorne zeichnen
+        for (int i = kept.size() - 1; i >= 0; i--) { // draw from back to front
             Placed p = kept.get(i);
             NametagTarget t = p.target();
             r.push();
@@ -164,12 +164,12 @@ public final class NametagsModule extends HudElement {
 
     // ---- Zeilen ----
 
-    /** Ein farbiges Textstück. */
+    /** A coloured piece of text. */
     private record Part(String text, int color) {}
 
     private static final int GRAY = 0xFFAAAAAA, GOLD = 0xFFFFB02E;
 
-    /** Zeichnet eine Zeile zentriert, Unterkante bei y; gibt die Oberkante zurück. */
+    /** Draws a row centred, bottom edge at y; returns the top edge. */
     private float line(Renderer r, List<Part> parts, float y) {
         int gap = 4;
         int width = 0;
@@ -214,7 +214,7 @@ public final class NametagsModule extends HudElement {
         if (gear.on()) drawGear(r, t.items(), top - 2);
     }
 
-    /** Ausrüstung über der Namenszeile: Icons, Haltbarkeit darunter, Verzauberungen darüber. */
+    /** Equipment above the name row: icons, durability below, enchantments above. */
     private void drawGear(Renderer r, List<ItemRef> list, float bottom) {
         List<ItemRef> shown = new ArrayList<>();
         for (ItemRef it : list) if (!skipEmpty.on() || !it.isEmpty()) shown.add(it);
@@ -251,7 +251,7 @@ public final class NametagsModule extends HudElement {
         return e.level() > 1 ? s + e.level() : s;
     }
 
-    /** Kleiner Text (halbe Größe), zentriert. */
+    /** Small text (half size), centred. */
     private static void small(Renderer r, String text, float cx, float y, int color) {
         r.push();
         r.translate(cx, y);
@@ -266,7 +266,7 @@ public final class NametagsModule extends HudElement {
         if (health.on()) parts.add(new Part(number(t.health()) + " ❤", healthColor(t.health(), t.maxHealth())));
         if (distance.on()) parts.add(new Part(Math.round(t.distance()) + "m", GRAY));
         float top = line(r, parts, 0);
-        if (gear.on()) drawGear(r, t.items(), top - 2); // nur, wenn der Mob etwas trägt
+        if (gear.on()) drawGear(r, t.items(), top - 2); // only if the mob wears something
     }
 
     private void drawItem(Renderer r, NametagTarget t) {

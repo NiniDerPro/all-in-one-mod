@@ -1,6 +1,6 @@
 package dev.aio.fabric;
 
-/** Öffentlicher Einstieg für den Mixin (LightOverlay selbst bleibt paketintern). */
+/** Public entry point for the mixin (LightOverlay itself stays package-private). */
 public final class LightOverlayHook {
     private LightOverlayHook() {}
 

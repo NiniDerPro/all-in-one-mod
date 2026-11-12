@@ -5,7 +5,7 @@ import net.minecraft.util.profiling.ProfileResults;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-/** Gewählte Ebene im F3+1-Diagramm lesen und setzen (Profiler Chart merkt sie sich). */
+/** Read and set the selected level in the F3+1 chart (Profiler Chart remembers it). */
 @Mixin(ProfilerPieChart.class)
 public interface ProfilerPieChartAccessor {
     @Accessor("profilerTreePath") String aio$getPath();

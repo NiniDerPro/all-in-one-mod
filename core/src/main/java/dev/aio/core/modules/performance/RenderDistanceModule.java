@@ -6,8 +6,8 @@ import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.NumberSetting;
 
 /**
- * Render-Reichweite: Entities und Block-Entities (Truhen, Banner, Schilder, Köpfe, …) nur bis zu
- * einer Entfernung zeichnen. Schildertexte haben eine eigene, kürzere Reichweite.
+ * Render distance: draw entities and block entities (chests, banners, signs, heads, …) only up to
+ * a distance. Sign texts have their own, shorter range.
  */
 public final class RenderDistanceModule extends Module {
     private final NumberSetting entityDistance;

@@ -11,9 +11,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 /**
- * No Hurtcam: überspringt das Kamerawackeln bei Schaden. Signatur nach dem Vorbild von
- * {@code bobView(CameraRenderState, PoseStack)} (belegt); require = 0, damit ein abweichender
- * Name nur die Funktion kostet, nicht den Start.
+ * No Hurtcam: skips the camera shake on damage. Signature of
+ * {@code bobView(CameraRenderState, PoseStack)} (confirmed); require = 0 so that a deviating
+ * name only costs the feature, not the start.
  */
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin {

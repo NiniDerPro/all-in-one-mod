@@ -11,7 +11,7 @@ import dev.aio.core.setting.EnumSetting;
 import dev.aio.core.setting.NumberSetting;
 import dev.aio.core.ui.Draw;
 
-/** Kompass als Leiste oben (wie in Battle-Royale-Spielen) oder als runde Kompassrose. */
+/** Compass as a bar at the top (like in battle royale games) or as a round compass rose. */
 public final class CompassModule extends HudElement {
     public enum Style implements EnumSetting.Named {
         BAR("Bar"), ROUND("Round");
@@ -48,7 +48,7 @@ public final class CompassModule extends HudElement {
 
     @Override protected ColorMode defaultColorMode() { return ColorMode.STATIC; }
 
-    /** Aktueller Kurs der Kamera (bei Freelook die Kamerarichtung). */
+    /** Current bearing of the camera (with freelook the camera direction). */
     private float heading() {
         FreelookModule fl = core.module(FreelookModule.class);
         float yaw = fl != null && fl.isEngaged() ? fl.cameraYaw() : platform().playerYaw();
@@ -73,7 +73,7 @@ public final class CompassModule extends HudElement {
     private void renderBar(Renderer r) {
         int w = barWidth.intValue();
         int barH = barHeight.intValue();
-        // Schrift bleibt immer gleich groß; nur der Platz für die Striche darunter wächst mit der Höhe
+        // The font always stays the same size; only the room for the ticks below grows with the height
         int textY = barH >= 20 ? 3 : 2;
         int tickSpace = Math.max(2, barH - textY - 10);
         if (background.on()) Draw.round(r, 0, 0, w, barH, 2, backgroundColor.argb());
@@ -145,7 +145,7 @@ public final class CompassModule extends HudElement {
             float s = a % 45 == 0 ? 1.5f : 0.5f;
             r.fill(x - s, y - s, x + s, y + s, 0xA0FFFFFF);
         }
-        // Richtungen (drehen sich mit, oben = Blickrichtung)
+        // Directions (rotate along, top = viewing direction)
         for (int a = 0; a < 360; a += 45) {
             String label = Compass.label(a);
             double ang = Math.toRadians(a - h);
@@ -164,7 +164,7 @@ public final class CompassModule extends HudElement {
                 r.text(label, x - r.textWidth(label) / 2f, y - 4, color, shadow());
             }
         }
-        // Wegpunkte als Punkte am Rand
+        // Waypoints as dots at the edge
         if (showWaypoints.on()) {
             WaypointsModule wp = core.module(WaypointsModule.class);
             if (wp != null) {
@@ -177,7 +177,7 @@ public final class CompassModule extends HudElement {
                 }
             }
         }
-        // Nadel (Blickrichtung zeigt immer nach oben)
+        // Needle (viewing direction always points up)
         r.fill(cx - 0.5f, cy - rad + 3, cx + 0.5f, cy, 0xFFFFFFFF);
         r.fill(cx - 1, cy - 1, cx + 1, cy + 1, 0xFFFFFFFF);
         if (showDegrees.on()) {

@@ -19,8 +19,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Tool Saver: fast kaputte Werkzeuge/Waffen nicht mehr benutzen (Weiterabbauen und Benutzen).
- * Abbau-Start und Schlag prüft {@link MultiPlayerGameModeMixin} direkt nach Auto Tool / Auto Weapon.
+ * Tool Saver: no longer use nearly broken tools/weapons (continuing to mine and using).
+ * Start of mining and hitting is checked by {@link MultiPlayerGameModeMixin} right after Auto Tool / Auto Weapon.
  */
 @Mixin(value = MultiPlayerGameMode.class, priority = 1100)
 public abstract class ToolSaverMixin {

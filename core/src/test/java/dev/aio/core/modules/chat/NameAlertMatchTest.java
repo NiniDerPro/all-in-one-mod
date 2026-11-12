@@ -14,7 +14,7 @@ class NameAlertMatchTest {
         assertEquals("Steve", NameAlertModule.match("all the Steves", w, false));
         assertEquals("Steve", NameAlertModule.match("@Steve look", w, false));
         assertNull(NameAlertModule.match("Stevenson is here", w, false));
-        assertNull(NameAlertModule.match("steve here", w, true), "nur mit @");
+        assertNull(NameAlertModule.match("steve here", w, true), "only with @");
     }
 
     @Test void ownMessagesAreRecognized() {

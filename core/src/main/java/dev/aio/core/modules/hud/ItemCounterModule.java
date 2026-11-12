@@ -5,7 +5,7 @@ import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.setting.BooleanSetting;
 
-/** Zählt ein Item im Inventar und zeigt es mit Icon, z. B. Totems oder Pfeile. */
+/** Counts an item in the inventory and shows it with an icon, e.g. totems or arrows. */
 public class ItemCounterModule extends HudElement {
     private final String query;
     private final String iconId;

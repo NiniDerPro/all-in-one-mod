@@ -12,14 +12,14 @@ import dev.aio.core.setting.KeybindSetting;
 import java.util.List;
 
 /**
- * Tauscht per Taste Elytra und Brustplatte: Wer die Brustplatte trägt, bekommt die Elytra aus dem
- * Inventar angezogen und umgekehrt. Bei mehreren Brustplatten gewinnt die stärkste.
+ * Swaps elytra and chestplate with a key: whoever wears the chestplate gets the elytra from the
+ * inventory put on and vice versa. With several chestplates the strongest wins.
  */
 public final class ElytraSwapModule extends Module {
-    /** Inventar-Index des Brust-Slots (Vanilla: 36 Füße, 37 Beine, 38 Brust, 39 Kopf). */
+    /** Inventory index of the chest slot (vanilla: 36 feet, 37 legs, 38 chest, 39 head). */
     public static final int CHEST_INVENTORY_SLOT = 38;
     private static final String ELYTRA = "minecraft:elytra";
-    /** Reihenfolge von schwach nach stark, unbekannte Brustplatten zählen wie Eisen. */
+    /** Order from weak to strong, unknown chestplates count like iron. */
     private static final String[] TIERS = {"leather", "copper", "golden", "chainmail", "iron", "diamond", "netherite"};
 
     private final KeybindSetting key;
@@ -28,13 +28,13 @@ public final class ElytraSwapModule extends Module {
         super("elytraswap", "Elytra Swapper", "Swap between elytra and chestplate with a key", Category.PVP, false);
         key = add(new KeybindSetting("key", "Key", "key.keyboard.grave.accent"));
         on(Events.Key.class, e -> {
-            // auch im offenen Spielerinventar (dort prüft swap(), dass nur das eigene Inventar offen ist)
+            // also in the open player inventory (swap() checks there that only the own inventory is open)
             if (e.isPress() && key.triggeredBy(platform(), e.key()) && (!e.screenOpen() || platform().containerScreenOpen())) swap();
         });
     }
 
 
-    /** Führt den Tausch aus. @return Meldung für den Spieler oder null bei Erfolg */
+    /** Performs the swap. @return message for the player or null on success */
     public String swap() {
         ContainerView c = platform().container();
         if (c == null || !c.isPlayerOnly() || !c.cursor().isEmpty()) return null;
@@ -43,7 +43,7 @@ public final class ElytraSwapModule extends Module {
             platform().notify(Lang.tr("aio.ui.elytra_swap.no_elytra_or_chestplate_in", "No elytra or chestplate in your inventory"));
             return "nothing to swap";
         }
-        // Aufnehmen, auf den Brust-Slot legen (tauscht), alten Gegenstand zurücklegen
+        // Pick up, put on the chest slot (swaps), put the old item back
         c.click(plan[0], 0, ContainerView.Click.PICKUP);
         c.click(plan[1], 0, ContainerView.Click.PICKUP);
         c.click(plan[0], 0, ContainerView.Click.PICKUP);
@@ -51,7 +51,7 @@ public final class ElytraSwapModule extends Module {
     }
 
     /**
-     * Welcher Slot auf den Brust-Slot soll: {Quelle, Brust-Slot} oder null.
+     * Which slot should go to the chest slot: {source, chest slot} or null.
      * Elytra getragen → beste Brustplatte; Brustplatte oder nichts getragen → Elytra.
      */
     public static int[] plan(List<ContainerView.Slot> slots) {
@@ -66,7 +66,7 @@ public final class ElytraSwapModule extends Module {
 
         ContainerView.Slot best = null;
         int bestScore = -1;
-        // Hauptinventar vor der Hotbar, damit nichts aus der Hand verschwindet, wenn es anders geht
+        // Main inventory before the hotbar so that nothing disappears from the hand if it can be done differently
         for (int pass = 0; pass < 3 && best == null; pass++) {
             for (ContainerView.Slot s : slots) {
                 if (!s.playerInventory() || s.item().isEmpty() || s == chest) continue;

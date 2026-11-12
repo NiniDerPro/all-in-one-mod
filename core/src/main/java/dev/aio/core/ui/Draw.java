@@ -3,11 +3,11 @@ package dev.aio.core.ui;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.util.Colors;
 
-/** Formen aus Rechtecken: abgerundete Flächen, Rahmen, Pixel-Icons. */
+/** Shapes made of rectangles: rounded areas, frames, pixel icons. */
 public final class Draw {
     private Draw() {}
 
-    /** Fläche mit abgerundeten Ecken (Radius 1–3 Pixel). */
+    /** Area with rounded corners (radius 1–3 pixels). */
     public static void round(Renderer r, float x1, float y1, float x2, float y2, int radius, int color) {
         if ((color >>> 24) == 0) return;
         if (radius <= 0 || x2 - x1 < radius * 2 || y2 - y1 < radius * 2) {
@@ -16,7 +16,7 @@ public final class Draw {
         }
         r.fill(x1 + radius, y1, x2 - radius, y2, color);
         for (int i = 0; i < radius; i++) {
-            // je Spalte am Rand etwas weniger hoch
+            // per column slightly less tall at the edge
             float inset = radius - (float) Math.sqrt(radius * radius - (radius - i - 0.5) * (radius - i - 0.5));
             inset = Math.round(inset);
             r.fill(x1 + i, y1 + inset, x1 + i + 1, y2 - inset, color);
@@ -32,7 +32,7 @@ public final class Draw {
         r.fill(x2 - 1, y1 + 1, x2, y2 - 1, color);
     }
 
-    /** Schalter (18×10): Knopf gleitet mit {@code t} 0..1 von links nach rechts. */
+    /** Switch (18×10): knob glides with {@code t} 0..1 from left to right. */
     public static void toggle(Renderer r, float x, float y, float t, int onColor, boolean dim) {
         int track = Colors.lerp(Theme.TRACK, onColor, t);
         if (dim) track = Colors.withAlpha(track, 0x90);
@@ -41,7 +41,7 @@ public final class Draw {
         round(r, kx, y + 1, kx + 8, y + 9, 2, 0xFFFFFFFF);
     }
 
-    /** Taste als Kappe, z. B. "F4". Gibt die Breite zurück. */
+    /** Key as a cap, e.g. "F4". Returns the width. */
     public static float keycap(Renderer r, String label, float x, float y, int textColor) {
         float w = r.textWidth(label) + 8;
         round(r, x, y, x + w, y + 11, 2, 0xFF242936);
@@ -179,7 +179,7 @@ public final class Draw {
         }
     }
 
-    /** Fetter Text (wie Minecraft: zweimal um einen Pixel versetzt). */
+    /** Bold text (like Minecraft: twice offset by one pixel). */
     public static void bold(Renderer r, String text, float x, float y, int color) {
         r.text(text, x, y, color, false);
         r.text(text, x + 1, y, color, false);

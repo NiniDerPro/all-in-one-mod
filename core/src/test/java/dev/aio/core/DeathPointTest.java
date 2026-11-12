@@ -12,7 +12,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Todespunkt wird immer gespeichert, aber nur bei eingeschaltetem Modul angezeigt. */
+/** Death point is always saved, but only shown when the module is switched on. */
 class DeathPointTest {
     @TempDir Path dir;
 
@@ -32,12 +32,12 @@ class DeathPointTest {
         platform.x = 500; // weit weg vom Todespunkt
         core.bus().post(Events.Tick.INSTANCE);
 
-        assertTrue(waypoints.inThisWorld().stream().anyMatch(Waypoint::death), "Tod wird auch bei ausgeschaltetem Modul gespeichert");
-        assertTrue(waypoints.shownHere().stream().noneMatch(Waypoint::death), "aber nicht angezeigt");
-        assertTrue(platform.messages.stream().noneMatch(m -> m.contains("Died")), "und keine Chatmeldung");
+        assertTrue(waypoints.inThisWorld().stream().anyMatch(Waypoint::death), "death is saved even with the module off");
+        assertTrue(waypoints.shownHere().stream().noneMatch(Waypoint::death), "but not shown");
+        assertTrue(platform.messages.stream().noneMatch(m -> m.contains("Died")), "and no chat message");
 
         death.setEnabled(true);
-        assertTrue(waypoints.shownHere().stream().anyMatch(Waypoint::death), "nach dem Einschalten erscheint der frühere Todespunkt");
+        assertTrue(waypoints.shownHere().stream().anyMatch(Waypoint::death), "after switching on the earlier death point appears");
     }
 
     @Test void keepsTheLastThreeDeaths() {
@@ -52,14 +52,14 @@ class DeathPointTest {
             platform.dead = true;
             core.bus().post(Events.Tick.INSTANCE);
             platform.dead = false;
-            platform.x = 5000; // weit weg, damit nichts als "erreicht" gilt
+            platform.x = 5000; // far away so that nothing counts as "reached"
             core.bus().post(Events.Tick.INSTANCE);
         }
         var deaths = waypoints.inThisWorld().stream().filter(Waypoint::death).toList();
-        assertEquals(3, deaths.size(), "der neueste und zwei alte");
+        assertEquals(3, deaths.size(), "the newest and two old ones");
         assertEquals("Death", deaths.get(2).name());
         assertEquals(300, deaths.get(2).x());
         assertEquals("Old death", deaths.get(0).name());
-        assertEquals(100, deaths.get(0).x(), "der älteste (x = 0) ist weggefallen");
+        assertEquals(100, deaths.get(0).x(), "the oldest (x = 0) was dropped");
     }
 }

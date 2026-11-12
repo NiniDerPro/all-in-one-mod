@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Setzt beim Tod automatisch einen Wegpunkt und entfernt ihn, sobald man wieder dort ist.
- * Der Punkt wird immer gespeichert, auch wenn das Modul aus ist; angezeigt wird er nur, solange es an
- * ist. So erscheint nach dem Einschalten auch ein Tod von vorher.
+ * Automatically sets a waypoint on death and removes it as soon as you are there again.
+ * The point is always saved, even when the module is off; it is only shown while the module is
+ * on. That way a death from before also appears after switching on.
  */
 public final class DeathPointModule extends Module {
     private final NumberSetting arriveDistance;
@@ -26,7 +26,7 @@ public final class DeathPointModule extends Module {
         super("deathpoint", "Death Waypoint", "Marks where you died (works without Waypoints), removed when you get there", Category.QOL, false);
         arriveDistance = add(new NumberSetting("arrive", "Remove within", 4, 1, 20, 1, " blocks"));
         chatMessage = add(new BooleanSetting("message", "Announce coordinates", true));
-        // Funktioniert auch ohne das Waypoints-Modul: dann zeichnet dieses Modul den Todespunkt selbst
+        // Also works without the Waypoints module: then this module draws the death point itself
         on(Events.RenderHud.class, e -> {
             WaypointsModule wp = waypoints();
             if (wp != null && !wp.isActive()) wp.drawMarkers(e.renderer, e.tickDelta);
@@ -34,7 +34,7 @@ public final class DeathPointModule extends Module {
     }
 
 
-    /** Den Tod immer mitbekommen, nicht nur bei eingeschaltetem Modul. */
+    /** Always notice the death, not only when the module is switched on. */
     @Override protected void onAttach() {
         core.bus().subscribe(Events.Tick.class, e -> tick(), 0);
     }
@@ -49,14 +49,14 @@ public final class DeathPointModule extends Module {
         if (!dead && isActive()) checkArrival();
     }
 
-    /** Wie viele Todespunkte pro Welt bleiben: der neueste und die zwei davor. */
+    /** How many death points stay per world: the newest and the two before it. */
     static final int KEEP = 3;
     static final int OLD_COLOR = 0xAA5555;
 
     private void onDeath() {
         WaypointsModule wp = waypoints();
         if (wp == null) return;
-        // Der neueste heißt "Death", die zwei davor "Old death" (blasser); ältere fallen weg
+        // The newest is called "Death", the two before "Old death" (paler); older ones are dropped
         List<Waypoint> deaths = new ArrayList<>();
         for (Waypoint w : wp.inThisWorld()) if (w.death()) deaths.add(w);
         while (deaths.size() >= KEEP) wp.remove(deaths.removeFirst());

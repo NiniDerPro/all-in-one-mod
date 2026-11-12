@@ -4,8 +4,8 @@ import dev.aio.core.module.Category;
 import dev.aio.core.module.Module;
 
 /**
- * Ersetzt die Vanilla-Tastenbelegung (Optionen → Steuerung → Tastenbelegung) durch eine Ansicht
- * mit Suche, Konfliktfilter, freien Tasten und "Alle zurücksetzen". Enthält auch die AIO-Tasten.
+ * Replaces the vanilla key binding screen (Options → Controls → Key Binds) with a view
+ * with search, conflict filter, free keys and "Reset all". Also contains the AIO keys.
  */
 public final class KeyBindsModule extends Module {
     public KeyBindsModule() {
@@ -13,7 +13,7 @@ public final class KeyBindsModule extends Module {
     }
 
 
-    /** Für den Adapter: soll die Vanilla-Tastenbelegung ersetzt werden? */
+    /** For the adapter: should the vanilla key binding screen be replaced? */
     public boolean replacesVanilla() { return isActive(); }
 
     public void open() { platform().openScreen(new KeyBindsScreen(core)); }

@@ -12,8 +12,8 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Baut die zusätzlichen Seiten des Item-Browsers: Beute/Drops, Handel, Berufe, Piglin-Tausch,
- * Erzvorkommen und Spawns. Woher etwas kommt = "Rezepte" (R), wofür es gebraucht wird = "Verwendung" (U).
+ * Builds the additional pages of the item browser: loot/drops, trades, professions, piglin bartering,
+ * ore deposits and spawns. Where something comes from = "Recipes" (R), what it is needed for = "Uses" (U).
  */
 public final class InfoViews {
     private static final int ROWS_PER_PAGE = 7;
@@ -21,7 +21,7 @@ public final class InfoViews {
     private static final String VILLAGER_EGG = "minecraft:villager_spawn_egg";
     private static final String WANDERING_EGG = "minecraft:wandering_trader_spawn_egg";
 
-    /** Deutsche Namen für Vanilla-Strukturen und -Truhen (Minecraft übersetzt sie nicht). */
+    /** Display names for vanilla structures and chests (Minecraft does not translate them). */
     private static final Map<String, String> PLACES = new LinkedHashMap<>();
 
     static {
@@ -57,7 +57,7 @@ public final class InfoViews {
             rows.add(new RecipeView.Row(sourceIcon(s.table()), sourceName(s.table()) + " · " + chance(s.drop()) + countSuffix(s.drop())));
         }
         page(out, "Loot & Drops", p.item("minecraft:chest", 1), List.of(), rows);
-        // Handel, der das Item gibt
+        // Trade that gives the item
         for (WorldInfo.TradeEntry t : info.trades()) if (t.trade().gives().item().equals(id)) out.add(tradeView(t));
         // Erzvorkommen
         List<RecipeView.Row> ores = new ArrayList<>();
@@ -86,11 +86,11 @@ public final class InfoViews {
         return out;
     }
 
-    /** Wofür wird das Item gebraucht? */
+    /** What is the item needed for? */
     public List<RecipeView> usages(ItemRef item) {
         List<RecipeView> out = new ArrayList<>();
         String id = item.id();
-        // Arbeitsblock → Beruf (wie JEP) und dessen Handel
+        // Workstation block → profession (like JEP) and its trades
         for (Profession prof : info.professions()) {
             if (!prof.jobBlock().equals(id)) continue;
             out.add(RecipeView.withNotes("Profession", List.of(List.of(item)), p.item(VILLAGER_EGG, 1), item,
@@ -101,7 +101,7 @@ public final class InfoViews {
         if (id.equals(WANDERING_EGG)) {
             for (WorldInfo.TradeEntry t : info.trades()) if (t.profession() == null) out.add(tradeView(t));
         }
-        // Handel, der das Item verlangt
+        // Trade that asks for the item
         for (WorldInfo.TradeEntry t : info.trades()) {
             TradeData.Trade tr = t.trade();
             if (tr.wants().item().equals(id) || tr.additionalWants().item().equals(id)) out.add(tradeView(t));
@@ -111,7 +111,7 @@ public final class InfoViews {
             page(out, "Piglin Bartering", p.item("minecraft:piglin_head", 1), List.of("One gold ingot gives one of these:"),
                     dropRows(info.drops(WorldInfo.BARTERING)));
         }
-        // Spawn-Ei → was der Mob droppt
+        // Spawn egg → what the mob drops
         String entity = entityOfEgg(id);
         if (entity != null) {
             String table = entity.replace(":", ":entities/");
@@ -126,7 +126,7 @@ public final class InfoViews {
             if (prof.jobBlock().isEmpty()) continue;
             ItemRef block = p.item(prof.jobBlock(), 1);
             String ns = prof.id().contains(":") ? prof.id().substring(0, prof.id().indexOf(':')) : "minecraft";
-            String mod = ns.equals("minecraft") ? "" : " [" + ns + "]"; // Berufe aus Mods mit Mod-ID
+            String mod = ns.equals("minecraft") ? "" : " [" + ns + "]"; // professions from mods with mod id
             rows.add(new RecipeView.Row(block, prof.name() + mod + " · " + block.name()));
         }
         List<RecipeView> out = new ArrayList<>();
@@ -172,7 +172,7 @@ public final class InfoViews {
         return p.item(s.item(), count);
     }
 
-    /** Liste in Seiten zu je {@link #ROWS_PER_PAGE} Zeilen aufteilen. */
+    /** Split a list into pages of {@link #ROWS_PER_PAGE} rows each. */
     private static void page(List<RecipeView> out, String type, ItemRef icon, List<String> notes, List<RecipeView.Row> rows) {
         for (int i = 0; i < rows.size(); i += ROWS_PER_PAGE) {
             out.add(RecipeView.list(type, icon, notes, rows.subList(i, Math.min(rows.size(), i + ROWS_PER_PAGE))));
@@ -219,7 +219,7 @@ public final class InfoViews {
         return Json.pretty(path);
     }
 
-    /** Struktur-/Truhenname: bekannte Vanilla-Namen auf Deutsch, sonst aus der ID. */
+    /** Structure/chest name: known vanilla names as display names, otherwise from the id. */
     String placeName(String id) {
         String path = Json.lastPath(id.replace('/', '_'));
         for (Map.Entry<String, String> e : PLACES.entrySet()) {

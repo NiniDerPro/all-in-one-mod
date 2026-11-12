@@ -7,7 +7,7 @@ import com.google.gson.JsonPrimitive;
 
 import java.util.Locale;
 
-/** Auswahl aus einer Enum. Die Enum kann {@link Named} implementieren, um einen Anzeigenamen zu liefern. */
+/** Choice from an enum. The enum may implement {@link Named} to provide a display name. */
 public class EnumSetting<E extends Enum<E>> extends Setting<E> {
     public interface Named {
         String displayName();

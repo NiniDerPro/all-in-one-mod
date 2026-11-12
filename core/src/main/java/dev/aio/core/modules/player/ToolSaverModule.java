@@ -15,9 +15,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Tool Saver: Werkzeuge und Waffen mit wenig Haltbarkeit werden geschützt. Wahlweise lassen sie
- * sich nicht mehr benutzen (Abbauen, Schlagen, Benutzen) und/oder es kommt ein Warnton.
- * Rüstung lässt sich nicht "nicht benutzen", dafür gibt es nur die Warnung.
+ * Tool Saver: tools and weapons with little durability are protected. Optionally they can
+ * no longer be used (breaking, hitting, using) and/or a warning sound plays.
+ * Armor cannot be "not used", so there is only the warning.
  */
 public final class ToolSaverModule extends Module {
     public enum Unit implements EnumSetting.Named {
@@ -53,7 +53,7 @@ public final class ToolSaverModule extends Module {
     private final EnumSetting<Sound> sound;
     private final NumberSetting volume;
     private final BooleanSetting armor;
-    /** Items, für die schon gewarnt wurde (ID + Name + Schaden), damit es nicht dauernd piept. */
+    /** Items that were already warned about (id + name + damage), so that it does not beep constantly. */
     private final Set<String> warned = new HashSet<>();
     private long lastBlockedNotice;
     private boolean wasHeld;
@@ -74,7 +74,7 @@ public final class ToolSaverModule extends Module {
         on(Events.Tick.class, e -> tick());
     }
 
-    /** Ist das Item im geschützten Bereich? */
+    /** Is the item in the protected range? */
     public boolean isLow(ItemRef item) {
         if (item == null || item.isEmpty() || !item.isDamageable()) return false;
         int left = item.durability();
@@ -82,15 +82,15 @@ public final class ToolSaverModule extends Module {
         return left <= threshold.intValue();
     }
 
-    /** Soll die Benutzung dieses Items gerade verhindert werden? */
+    /** Should the use of this item be prevented right now? */
     public boolean shouldBlock(ItemRef item) {
         if (!isActive() || !block.on() || !isLow(item)) return false;
         return !(sneakOverride.on() && platform().isGameKeyDown(GameKey.SNEAK));
     }
 
     /**
-     * Wurde blockiert: bei jedem neuen Versuch (erneut klicken) Nachricht und Ton. Beim Gedrückthalten
-     * fragt Minecraft jeden Tick erneut an, das zählt als derselbe Versuch.
+     * Was blocked: on every new attempt (clicking again) message and sound. When holding down
+     * Minecraft asks again every tick, which counts as the same attempt.
      */
     public void onBlocked(ItemRef item) {
         long now = System.currentTimeMillis();
@@ -111,7 +111,7 @@ public final class ToolSaverModule extends Module {
         if (armor.on()) for (ItemRef a : platform().armor()) check(a, false);
     }
 
-    /** Beim Unterschreiten der Grenze einmal warnen. */
+    /** Warn once when the limit is undershot. */
     private void check(ItemRef item, boolean tool) {
         if (item == null || item.isEmpty() || !item.isDamageable()) return;
         String key = item.id() + "|" + item.name();

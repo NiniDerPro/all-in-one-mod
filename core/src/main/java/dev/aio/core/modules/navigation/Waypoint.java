@@ -3,9 +3,9 @@ package dev.aio.core.modules.navigation;
 /**
  * Ein Wegpunkt.
  *
- * @param world     Welt-Schlüssel (Server oder Singleplayer-Welt)
+ * @param world     world key (server or singleplayer world)
  * @param dimension z. B. "overworld"
- * @param death     automatisch beim Tod gesetzt; verschwindet, wenn man ankommt
+ * @param death     set automatically on death; disappears when you arrive
  */
 public record Waypoint(String name, int x, int y, int z, String world, String dimension, int color, boolean visible, boolean death) {
     public Waypoint withVisible(boolean v) { return new Waypoint(name, x, y, z, world, dimension, color, v, death); }

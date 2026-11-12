@@ -11,14 +11,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Flex Chat: Größe des Chats frei ziehen, im offenen Chat (T) an der oberen/rechten Kante oder im
- * HUD-Editor. Die Werte sind die Vanilla-Optionen (Breite, Höhe, Textgröße, Zeilenabstand), das
- * Modul übernimmt sie beim Start und schreibt nur, was man ändert.
+ * Flex Chat: drag the chat size freely, in the open chat (T) at the top/right edge or in the
+ * HUD editor. The values are the vanilla options (width, height, text size, line spacing), the
+ * module takes them over at start and only writes what you change.
  */
 public final class FlexChatModule extends Module {
     private final NumberSetting width, heightFocused, heightUnfocused, scale, lineSpacing;
     private boolean applying;
-    /** Ob die Vanilla-Werte schon übernommen wurden (beim Spielstart gibt es sie noch nicht). */
+    /** Whether the vanilla values were already taken over (they do not exist yet at game start). */
     private boolean synced;
 
     public FlexChatModule() {
@@ -39,9 +39,9 @@ public final class FlexChatModule extends Module {
         return s;
     }
 
-    /** Aktuelle Vanilla-Werte übernehmen, damit das Modul nichts überschreibt. */
+    /** Take over the current vanilla values so that the module does not overwrite anything. */
     private void readFromVanilla() {
-        if (Double.isNaN(platform().option(VanillaOption.CHAT_WIDTH))) return; // noch nicht geladen, später erneut
+        if (Double.isNaN(platform().option(VanillaOption.CHAT_WIDTH))) return; // not loaded yet, try again later
         applying = true;
         try {
             width.set(platform().option(VanillaOption.CHAT_WIDTH));
@@ -60,25 +60,25 @@ public final class FlexChatModule extends Module {
         readFromVanilla();
     }
 
-    // ---- Maße wie Vanilla ----
+    // ---- Dimensions like vanilla ----
 
     /** Breite der Chatbox in GUI-Pixeln (Vanilla: 40 + 280 · Breite). */
     public float boxWidth() { return (float) Math.floor(40 + 280 * width.get()); }
 
-    /** Zeilenhöhe in GUI-Pixeln vor der Schriftgröße (Vanilla: 9 · (1 + Zeilenabstand)). */
+    /** Line height in GUI pixels before the font size (vanilla: 9 · (1 + line spacing)). */
     public int lineHeight() { return (int) (9 * (1 + lineSpacing.get())); }
 
-    /** Sichtbare Zeilen im offenen Chat (Vanilla: (20 + 160 · Höhe) / Zeilenhöhe). */
+    /** Visible lines in the open chat (vanilla: (20 + 160 · height) / line height). */
     public int visibleLines() { return Math.max(1, (int) Math.floor(20 + 160 * heightFocused.get() + 1e-6) / Math.max(1, lineHeight())); }
 
-    /** Höhe der offenen Chatbox in GUI-Pixeln (Zeilen · Zeilenhöhe · Schriftgröße). */
+    /** Height of the open chat box in GUI pixels (lines · line height · font size). */
     public float boxHeight() { return (float) (visibleLines() * lineHeight() * Math.max(0.1, scale.get())); }
 
-    /** Setzt Breite/Höhe aus Pixeln (beim Ziehen am Rand im HUD-Editor oder im Chat). */
+    /** Sets width/height from pixels (when dragging at the edge in the HUD editor or in chat). */
     public void resizeTo(float pxWidth, float pxHeight) {
         double s = Math.max(0.1, scale.get());
         width.set((pxWidth - 40) / 280.0);
-        // Die Höhe zählt in ganzen Zeilen (wie Vanilla); etwas Luft gegen Rundung auf 0,01.
+        // The height counts in whole lines (like vanilla); some slack against rounding to 0.01.
         int lineH = Math.max(1, lineHeight());
         int lines = Math.max(1, Math.round(pxHeight / (float) s / lineH));
         if (lines != visibleLines()) heightFocused.set((lines * lineH - 20 + 0.9) / 160);
@@ -86,7 +86,7 @@ public final class FlexChatModule extends Module {
 
     public NumberSetting scaleSetting() { return scale; }
 
-    /** Chatgröße auf die Vanilla-Standardwerte zurücksetzen (HUD-Editor). */
+    /** Reset the chat size to the vanilla default values (HUD editor). */
     public void resetBox() {
         width.reset();
         heightFocused.reset();
@@ -110,8 +110,8 @@ public final class FlexChatModule extends Module {
     public void renderPreview(Renderer r, float x, float bottom) { renderPreview(r, x, bottom, 1f); }
 
     /**
-     * Beispielnachrichten so, wie Minecraft den Chat mit den aktuellen Einstellungen zeigen würde
-     * (Schriftgröße, Breite, Zeilenabstand, Deckkraft); {@code fade} blendet zusätzlich ab.
+     * Sample messages as Minecraft would show the chat with the current settings
+     * (font size, width, line spacing, opacity); {@code fade} additionally fades it out.
      */
     public void renderPreview(Renderer r, float x, float bottom, float fade) {
         float s = (float) Math.max(0.1, scale.get());

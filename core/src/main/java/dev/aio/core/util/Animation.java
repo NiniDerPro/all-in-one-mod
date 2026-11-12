@@ -1,8 +1,8 @@
 package dev.aio.core.util;
 
 /**
- * Zeitbasierter Übergang von 0 nach 1 und zurück (framerate-unabhängig).
- * Wird z. B. für das sanfte Einfärben der Keystrokes genutzt.
+ * Time-based transition from 0 to 1 and back (frame-rate independent).
+ * Used e.g. for the smooth colouring of the keystrokes.
  */
 public final class Animation {
     private float value;
@@ -10,7 +10,7 @@ public final class Animation {
 
     /**
      * @param target     0 oder 1
-     * @param durationMs Dauer für einen kompletten Übergang; 0 = sofort
+     * @param durationMs duration for a complete transition; 0 = immediate
      * @return aktueller Wert in 0..1
      */
     public float update(float target, float durationMs, long nowNanos) {

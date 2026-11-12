@@ -10,13 +10,13 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Inventar-Aktionen, die nur echte Klicks verwenden (wie ein Spieler sie machen würde).
- * Funktioniert dadurch auf jedem Server ohne Server-Mod.
+ * Inventory actions that only use real clicks (as a player would make them).
+ * That way it works on every server without a server mod.
  */
 public final class InventoryOps {
     private InventoryOps() {}
 
-    /** Der "andere" Bereich zu einem Slot: Truhe ↔ Spielerinventar, im Spielerinventar Hotbar ↔ Hauptinventar. */
+    /** The "other" area for a slot: chest ↔ player inventory, in the player inventory hotbar ↔ main inventory. */
     public static List<Slot> otherRegion(ContainerView c, Slot from) {
         List<Slot> out = new ArrayList<>();
         for (Slot s : c.slots()) {
@@ -27,12 +27,12 @@ public final class InventoryOps {
                 out.add(s);
             }
         }
-        // im Spielerinventar zuerst das Hauptinventar, dann die Hotbar füllen
+        // in the player inventory fill the main inventory first, then the hotbar
         out.sort(Comparator.comparingInt(s -> s.hotbar() ? 1 : 0));
         return out;
     }
 
-    /** Alle Slots im selben Bereich (für das Sortieren). */
+    /** All slots in the same area (for sorting). */
     public static List<Slot> sameRegion(ContainerView c, Slot of) {
         List<Slot> out = new ArrayList<>();
         for (Slot s : c.slots()) {
@@ -51,7 +51,7 @@ public final class InventoryOps {
         return null;
     }
 
-    /** Verschiebt genau ein Item vom Slot in den anderen Bereich. */
+    /** Moves exactly one item from the slot to the other area. */
     public static boolean pushOne(ContainerView c, int index) {
         Slot src = slot(c, index);
         if (src == null || src.item().isEmpty() || !c.cursor().isEmpty()) return false;
@@ -63,7 +63,7 @@ public final class InventoryOps {
         return true;
     }
 
-    /** Holt genau ein passendes Item aus dem anderen Bereich in diesen Slot. */
+    /** Fetches exactly one matching item from the other area into this slot. */
     public static boolean pullOne(ContainerView c, int index) {
         Slot dst = slot(c, index);
         if (dst == null || dst.item().isEmpty() || !c.cursor().isEmpty()) return false;
@@ -88,7 +88,7 @@ public final class InventoryOps {
         return null;
     }
 
-    /** Sortiert einen Bereich: gleiche Stacks zusammenlegen, dann nach Item ordnen. */
+    /** Sorts an area: merge equal stacks, then order by item. */
     public static boolean sort(ContainerView c, List<Slot> region) {
         if (region.isEmpty() || !c.cursor().isEmpty()) return false;
         merge(c, region);
@@ -113,7 +113,7 @@ public final class InventoryOps {
         }
     }
 
-    /** Sortierschlüssel: ID, Name, dann größere Stacks zuerst. */
+    /** Sort key: id, name, then larger stacks first. */
     static final Comparator<ItemRef> ORDER = Comparator
             .comparing(ItemRef::id)
             .thenComparing(ItemRef::name)
@@ -150,7 +150,7 @@ public final class InventoryOps {
         return !a.isEmpty() && a.sameItemAs(b) && a.count() == b.count();
     }
 
-    /** Liest den aktuellen Stand eines Slots (nach vorherigen Klicks). */
+    /** Reads the current state of a slot (after previous clicks). */
     private static Slot fresh(ContainerView c, Slot s) {
         Slot now = slot(c, s.index());
         return now != null ? now : s;

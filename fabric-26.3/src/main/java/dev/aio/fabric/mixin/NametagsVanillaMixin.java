@@ -9,7 +9,7 @@ import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-/** Nametags: Vanilla-Namensschild ausblenden, wo das Modul ein eigenes zeigt. */
+/** Nametags: hide the vanilla nametag where the module shows its own. */
 @Mixin(EntityRenderer.class)
 public abstract class NametagsVanillaMixin {
     @WrapOperation(method = "extractNameTags(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/client/renderer/entity/state/EntityRenderState;FDD)V",

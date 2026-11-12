@@ -5,7 +5,7 @@ import dev.aio.core.i18n.Lang;
 import java.util.Locale;
 import java.util.Map;
 
-/** Kategorien im Menü, jeweils mit Farbe und Item-Symbol. */
+/** Categories in the menu, each with colour and item icon. */
 public enum Category {
     HUD("HUD", 0xFF4FC3FF, "minecraft:item_frame"),
     QOL("QoL", 0xFF8BE24C, "minecraft:name_tag"),
@@ -30,13 +30,13 @@ public enum Category {
 
     public String key() { return "aio.category." + name().toLowerCase(Locale.ROOT); }
 
-    /** Eigene Farbe der Kategorie für Menü und Karten. */
+    /** Own colour of the category for menu and cards. */
     public int color() { return color; }
 
-    /** Item-ID des Symbols in der Seitenleiste. */
+    /** Item id of the icon in the sidebar. */
     public String icon() { return icon; }
 
-    /** Feste Zuordnung Modul → Kategorie (eine Stelle für die ganze Aufteilung). */
+    /** Fixed mapping module → category (one place for the whole split). */
     private static final Map<String, Category> BY_MODULE = Map.ofEntries(
             // HUD: reine Anzeigen
             Map.entry("fps", HUD), Map.entry("armorhud", HUD), Map.entry("potions", HUD), Map.entry("coordinates", HUD),
@@ -55,6 +55,6 @@ public enum Category {
             Map.entry("blockoutline", VISUALS), Map.entry("zoom", VISUALS), Map.entry("freelook", VISUALS),
             Map.entry("freecam", VISUALS));
 
-    /** Kategorie für ein Modul: feste Zuordnung, sonst die im Modul angegebene. */
+    /** Category for a module: fixed mapping, otherwise the one given in the module. */
     public static Category of(String moduleId, Category fallback) { return BY_MODULE.getOrDefault(moduleId, fallback); }
 }

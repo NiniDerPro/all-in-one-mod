@@ -7,8 +7,8 @@ import dev.aio.core.setting.EnumSetting;
 import dev.aio.core.setting.NumberSetting;
 
 /**
- * Dynamic Lights: leuchtende Items (Fackel, Laterne, Glowstone, Lava-Eimer, …) in der Hand, am
- * Boden liegende leuchtende Items und brennende Entities beleuchten die Umgebung, ohne dass ein
+ * Dynamic Lights: glowing items (torch, lantern, glowstone, lava bucket, …) in the hand, lying on the
+ * ground and burning entities light up the surroundings without a
  * Block gesetzt wird. Rein optisch.
  */
 public final class DynamicLightsModule extends Module {

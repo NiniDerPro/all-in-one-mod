@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-// Aus Freecam (MIT) übernommen, siehe dev/aio/fabric/freecam/NOTICE.md
+// Adapted from Freecam (MIT), see dev/aio/fabric/freecam/NOTICE.md
 @Mixin(LocalPlayer.class)
 public class FreecamLocalPlayerMixin {
     @Inject(method = "isControlledCamera", at = @At("HEAD"), cancellable = true, require = 0)

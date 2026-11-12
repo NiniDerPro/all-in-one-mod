@@ -54,7 +54,7 @@ class ConfigTest {
         AioCore core = newCore();
         assertTrue(core.module(FpsModule.class).isEnabled());
         assertEquals(HudElement.MAX_SCALE, ((NumberSetting) core.module(FpsModule.class).setting("scale")).get());
-        assertEquals(HudElement.MAX_SCALE, ((NumberSetting) core.module(FpsModule.class).setting("scaleY")).get(), "alte Größe gilt auch für die Höhe");
+        assertEquals(HudElement.MAX_SCALE, ((NumberSetting) core.module(FpsModule.class).setting("scaleY")).get(), "old size also applies to the height");
         assertEquals(0xFFFFFFFF, core.module(FpsModule.class).setting("textColor").get());
     }
 
@@ -77,7 +77,7 @@ class ConfigTest {
         core.module(FpsModule.class).setEnabled(true);
         String pvp = cfg.createProfile("pvp");
         assertEquals("pvp", pvp);
-        assertTrue(core.module(FpsModule.class).isEnabled(), "neues Profil ist eine Kopie");
+        assertTrue(core.module(FpsModule.class).isEnabled(), "new profile is a copy");
         core.module(FpsModule.class).setEnabled(false);
 
         cfg.switchProfile("default");
@@ -87,7 +87,7 @@ class ConfigTest {
 
         assertEquals("pvp-2", cfg.createProfile("pvp"));
         assertTrue(cfg.profiles().containsAll(List.of("default", "pvp", "pvp-2")));
-        assertFalse(cfg.deleteProfile("pvp-2"), "aktives Profil nicht löschbar");
+        assertFalse(cfg.deleteProfile("pvp-2"), "active profile cannot be deleted");
         cfg.switchProfile("default");
         assertTrue(cfg.deleteProfile("pvp-2"));
         assertFalse(cfg.profiles().contains("pvp-2"));
@@ -121,7 +121,7 @@ class ConfigTest {
         assertThrows(IllegalArgumentException.class, () -> core.config().importProfile("hallo"));
         assertThrows(IllegalArgumentException.class, () -> core.config().importProfile("{\"foo\":1}"));
         assertThrows(IllegalArgumentException.class, () -> core.config().importProfile(null));
-        // Name mit gefährlichen Zeichen wird bereinigt
+        // Name with dangerous characters is sanitised
         String evil = json.replace("\"name\": \"default\"", "\"name\": \"../../x\"");
         assertEquals("x", core.config().importProfile(evil));
     }

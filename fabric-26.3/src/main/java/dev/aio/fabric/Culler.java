@@ -24,12 +24,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Sichtbarkeit für Entity-Culling. Strahlen vom Auge zu Punkten der Hitbox; ist jeder Strahl durch
- * einen undurchsichtigen Vollblock versperrt, gilt das Objekt als verdeckt.
+ * Visibility for entity culling. Rays from the eye to points of the hitbox; if every ray is blocked by
+ * an opaque full block, the object counts as hidden.
  *
- * <p>Die Rechnung läuft in einem eigenen Thread: Das Spiel fragt nur das letzte Ergebnis ab und
- * meldet veraltete Objekte zur Neuberechnung an. Neue Objekte gelten bis zur ersten Prüfung als
- * sichtbar (kein Aufblitzen-Lassen von Lücken, höchstens kurz zu viel gezeichnet).
+ * <p>The computation runs in its own thread: the game only queries the last result and
+ * registers outdated objects for recomputation. New objects count as visible until the first check
+ * (no flashing gaps, at worst briefly drawn too much).
  */
 public final class Culler {
     private Culler() {}
@@ -37,28 +37,28 @@ public final class Culler {
     /** Ergebnis: (Tick << 1) | sichtbar. */
     private static final Map<Long, Long> ENTITIES = new ConcurrentHashMap<>();
     private static final Map<Long, Long> BLOCKS = new ConcurrentHashMap<>();
-    /** Anfragen an den Prüf-Thread: Schlüssel → Hitbox. */
+    /** Requests to the check thread: key → hitbox. */
     private static final Map<Long, AABB> PENDING_ENTITIES = new ConcurrentHashMap<>();
     private static final Map<Long, AABB> PENDING_BLOCKS = new ConcurrentHashMap<>();
     private static final Map<EntityType<?>, String> TYPE_IDS = new ConcurrentHashMap<>();
     private static final Map<BlockEntityType<?>, String> BE_TYPE_IDS = new ConcurrentHashMap<>();
 
     private static volatile long tick;
-    /** Stand für den Prüf-Thread (vom Spiel-Thread jeden Tick gesetzt). */
+    /** State for the check thread (set by the game thread every tick). */
     private static volatile Vec3 eye;
     private static volatile Level level;
     private static volatile boolean firstPerson = true;
     private static volatile boolean leavesSolid;
     private static volatile double traceDistance = 64;
 
-    /** Gemessene Zeit im Prüf-Thread und Zähler (für die Diagnose). */
+    /** Measured time in the check thread and counter (for the diagnostics). */
     public static volatile long nanos;
     public static volatile int culledEntities, culledBlockEntities;
 
     private static final int REFRESH_TICKS = 2;
     private static Thread worker;
 
-    /** Jeden Client-Tick vom Spiel-Thread: Stand für den Prüf-Thread aktualisieren, Altes aufräumen. */
+    /** Every client tick from the game thread: update the state for the check thread, clean up old things. */
     public static void tick() {
         tick++;
         Minecraft mc = Minecraft.getInstance();
@@ -88,7 +88,7 @@ public final class Culler {
         worker.start();
     }
 
-    /** Prüf-Thread: Anfragen abarbeiten, sonst kurz schlafen. */
+    /** Check thread: process requests, otherwise sleep briefly. */
     private static void run() {
         while (true) {
             try {
@@ -109,7 +109,7 @@ public final class Culler {
             } catch (InterruptedException e) {
                 return;
             } catch (Throwable t) {
-                // Welt wurde gerade umgebaut o. Ä.: beim nächsten Durchlauf erneut
+                // World was just rebuilt or similar: again on the next pass
             }
         }
     }
@@ -143,7 +143,7 @@ public final class Culler {
         return m != null && m.isActive() ? m : null;
     }
 
-    /** Soll die Entity gezeichnet werden? (Entfernung und Verdeckung) */
+    /** Should the entity be drawn? (distance and occlusion) */
     public static boolean shouldRenderEntity(Entity e) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || e == mc.player || e == mc.getCameraEntity()) return true;
@@ -164,7 +164,7 @@ public final class Culler {
         return m.isEntityException(id);
     }
 
-    /** Soll die Entity nur vereinfacht ticken? (zuletzt als verdeckt erkannt) */
+    /** Should the entity only tick in a simplified way? (last recognised as hidden) */
     public static boolean skipTick(Entity e) {
         EntityCullingModule m = module();
         if (m == null || !m.cullTicks()) return false;
@@ -174,7 +174,7 @@ public final class Culler {
         return v != null && (v & 1) == 0 && tick - (v >>> 1) <= REFRESH_TICKS + 2;
     }
 
-    /** Soll die Block-Entity gezeichnet werden? */
+    /** Should the block entity be drawn? */
     public static boolean shouldRenderBlockEntity(BlockEntity be) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return true;
@@ -191,7 +191,7 @@ public final class Culler {
         return visible(BLOCKS, PENDING_BLOCKS, pos.asLong(), new AABB(pos));
     }
 
-    /** Letztes Ergebnis; veraltet oder unbekannt → beim Prüf-Thread anfragen. */
+    /** Last result; outdated or unknown → ask the check thread. */
     private static boolean visible(Map<Long, Long> results, Map<Long, AABB> pending, long key, AABB box) {
         Long v = results.get(key);
         if (v == null || tick - (v >>> 1) >= REFRESH_TICKS + (key & 1)) pending.put(key, box);
@@ -201,7 +201,7 @@ public final class Culler {
     private static boolean compute(Level lvl, Vec3 from, AABB box) {
         Vec3 center = box.getCenter();
         double dist = from.distanceTo(center);
-        if (dist < 4 || dist > traceDistance) return true; // nah: immer zeigen; weit: nicht prüfen
+        if (dist < 4 || dist > traceDistance) return true; // near: always show; far: do not check
         if (!firstPerson && dist < 10) return true;
         if (box.contains(from)) return true;
         AABB b = box.inflate(0.05);
@@ -222,7 +222,7 @@ public final class Culler {
         return leavesSolid && state.getBlock() instanceof LeavesBlock;
     }
 
-    /** Strahl durch das Blockraster (Schritt für Schritt von Block zu Block); frei, wenn kein Vollblock im Weg ist. */
+    /** Ray through the block grid (step by step from block to block); free if no full block is in the way. */
     private static boolean clear(Level lvl, BlockPos.MutableBlockPos cursor, double x0, double y0, double z0, double x1, double y1, double z1) {
         int x = floor(x0), y = floor(y0), z = floor(z0);
         int ex = floor(x1), ey = floor(y1), ez = floor(z1);

@@ -1,6 +1,6 @@
 package dev.aio.core.modules.info;
 
-/** Umrechnung der Minecraft-Tageszeit. Tick 0 = 6:00 Uhr, ein Tag hat 24000 Ticks. */
+/** Conversion of the Minecraft time of day. Tick 0 = 6:00, a day has 24000 ticks. */
 public final class WorldTime {
     private WorldTime() {}
 
@@ -16,7 +16,7 @@ public final class WorldTime {
         return (int) ((t % 1000) * 60 / 1000);
     }
 
-    /** Nacht: Monster können spawnen (ca. 19:12 bis 4:48). */
+    /** Night: monsters can spawn (about 19:12 to 4:48). */
     public static boolean isNight(long dayTime) {
         long t = Math.floorMod(dayTime, 24000L);
         return t >= 13188 && t <= 22812;

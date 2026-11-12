@@ -5,7 +5,7 @@ import net.minecraft.world.entity.Pose;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-/** Position und Blickrichtung der Freecam. Aus Freecam (MIT) übernommen, siehe NOTICE.md. */
+/** Position and viewing direction of the freecam. Adapted from Freecam (MIT), see NOTICE.md. */
 public class FreecamPosition {
     public double x;
     public double y;

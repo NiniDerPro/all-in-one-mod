@@ -11,12 +11,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Wertet eine Loot Table (JSON) aus: Welche Items fallen mit welcher Wahrscheinlichkeit und in
- * welcher Anzahl? Näherung wie bei Beute-Anzeigen üblich: pro Pool Gewicht/Gesamtgewicht je Wurf,
- * Würfe gemittelt, Zufalls-Bedingungen multipliziert, verschachtelte Tabellen anteilig.
+ * Evaluates a loot table (JSON): which items drop with what probability and in
+ * what quantity? Approximation as usual for loot displays: per pool weight/total weight per roll,
+ * rolls averaged, random conditions multiplied, nested tables proportionally.
  */
 public final class LootAnalyzer {
-    /** Ein mögliches Item. {@code chance} = Wahrscheinlichkeit für mindestens eins (0..1). */
+    /** One possible item. {@code chance} = probability for at least one (0..1). */
     public record Drop(String item, double chance, double min, double max, boolean conditional) {
         public String countText() {
             Json.Range r = new Json.Range(min, max, (min + max) / 2);
@@ -26,7 +26,7 @@ public final class LootAnalyzer {
 
     private final Map<String, JsonElement> tables;
 
-    /** @param tables alle Loot Tables nach ID ("minecraft:chests/desert_pyramid") */
+    /** @param tables all loot tables by id ("minecraft:chests/desert_pyramid") */
     public LootAnalyzer(Map<String, JsonElement> tables) { this.tables = tables; }
 
     public List<Drop> analyze(String tableId) {
@@ -62,7 +62,7 @@ public final class LootAnalyzer {
                 String type = Json.id(Json.str(e, "type"));
                 Cond own = conditions(e);
                 Cond c = own.and(poolCond);
-                // Pool-Bedingung gilt für den ganzen Pool, Eintrags-Bedingung je Wurf
+                // Pool condition applies to the whole pool, entry condition per roll
                 double perRoll = w.weight / total * own.chance;
                 double p1 = poolCond.chance * (1 - Math.pow(1 - Math.min(1, perRoll), Math.max(rolls, 0))) * scale;
                 if (type.equals("minecraft:item")) {
@@ -88,7 +88,7 @@ public final class LootAnalyzer {
 
     private record Weighted(JsonObject entry, double weight) {}
 
-    /** Zusammengesetzte Einträge (alternatives, group, sequence) in ihre Kinder auflösen. */
+    /** Resolve composite entries (alternatives, group, sequence) into their children. */
     private static void flatten(List<JsonElement> list, List<Weighted> out, int depth) {
         for (JsonElement el : list) {
             JsonObject e = Json.obj(el);
@@ -107,7 +107,7 @@ public final class LootAnalyzer {
         }
     }
 
-    /** Funktionen/Modifikatoren: 26.3 "modifier" (Typ in "type"), älter "functions" (Typ in "function"). */
+    /** Functions/modifiers: 26.3 "modifier" (type in "type"), older "functions" (type in "function"). */
     private static List<JsonElement> modifiers(JsonObject o) {
         List<JsonElement> out = new ArrayList<>(Json.list(o, "modifier"));
         out.addAll(Json.list(o, "functions"));
@@ -119,7 +119,7 @@ public final class LootAnalyzer {
         return Json.id(t.isEmpty() ? Json.str(o, legacyKey) : t);
     }
 
-    /** Anzahl aus set_count (ohne "add"). */
+    /** Count from set_count (without "add"). */
     private static Json.Range count(JsonObject entry) {
         Json.Range r = Json.Range.ONE;
         for (JsonElement f : modifiers(entry)) {
@@ -132,14 +132,14 @@ public final class LootAnalyzer {
         return r;
     }
 
-    /** Zufalls-Chance der Bedingungen; {@code other} = es gibt weitere Bedingungen (z. B. "vom Spieler getötet"). */
+    /** Random chance of the conditions; {@code other} = there are further conditions (e.g. "killed by player"). */
     private record Cond(double chance, boolean other) {
         Cond and(Cond o) { return new Cond(chance * o.chance, other || o.other); }
     }
 
     private static final Cond ALWAYS = new Cond(1, false);
 
-    /** Bedingungen: 26.3 "condition" (einzeln oder Liste), älter "conditions". */
+    /** Conditions: 26.3 "condition" (single or list), older "conditions". */
     private static Cond conditions(JsonObject o) {
         Cond c = ALWAYS;
         for (JsonElement el : Json.list(o, "condition")) c = c.and(condition(el, 0));
@@ -149,7 +149,7 @@ public final class LootAnalyzer {
 
     private static Cond condition(JsonElement el, int depth) {
         JsonObject c = Json.obj(el);
-        if (c == null || depth > 5) return new Cond(1, true); // Verweis auf ein Prädikat: unbekannt
+        if (c == null || depth > 5) return new Cond(1, true); // reference to a predicate: unknown
         String type = typeOf(c, "condition");
         switch (type) {
             case "minecraft:random_chance":
@@ -158,7 +158,7 @@ public final class LootAnalyzer {
             case "minecraft:random_chance_with_looting":
                 return new Cond(Json.range(c.has("unenchanted_chance") ? c.get("unenchanted_chance") : c.get("chance"), Json.Range.ONE).avg(), false);
             case "minecraft:survives_explosion":
-                return ALWAYS; // immer erfüllt, wenn nichts explodiert
+                return ALWAYS; // always fulfilled when nothing explodes
             case "minecraft:all_of": {
                 Cond r = ALWAYS;
                 for (JsonElement t : Json.list(c, "terms")) r = r.and(condition(t, depth + 1));

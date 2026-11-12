@@ -9,16 +9,16 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-// Aus Freecam (MIT) übernommen, siehe dev/aio/fabric/freecam/NOTICE.md
+// Adapted from Freecam (MIT), see dev/aio/fabric/freecam/NOTICE.md
 @Mixin(Entity.class)
 public class FreecamEntityMixin {
-    /** Die Kamera schiebt nichts und wird nicht geschoben. */
+    /** The camera pushes nothing and is not pushed. */
     @Inject(method = "push(Lnet/minecraft/world/entity/Entity;)V", at = @At("HEAD"), cancellable = true)
     private void aio$freecamPush(Entity other, CallbackInfo ci) {
         if (Freecam.active() && (other == Freecam.camera() || (Object) this == Freecam.camera())) ci.cancel();
     }
 
-    /** Blickrichtung des Spielers folgt der Kamera (für Fadenkreuz-Ziel, Blockrahmen usw.). */
+    /** The player's viewing direction follows the camera (for crosshair target, block outline etc.). */
     @Inject(method = "getViewXRot", at = @At("HEAD"), cancellable = true)
     private void aio$freecamViewX(float partialTick, CallbackInfoReturnable<Float> cir) {
         if (Freecam.active() && Freecam.camera() != null && (Object) this == Minecraft.getInstance().player) {

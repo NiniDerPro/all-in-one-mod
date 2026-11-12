@@ -9,12 +9,12 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Auswertung von Loot Tables, Handel und Weltgenerierung im 26.3-Format (wie die Vanilla-Daten). */
+/** Evaluation of loot tables, trades and world generation in the 26.3 format (like the vanilla data). */
 class DataTest {
     private static JsonElement j(String s) { return JsonParser.parseString(s); }
 
     @Test void lootTableNewFormat() {
-        // wie entities/zombie: Pool 1 immer (0–2 Fleisch), Pool 2 nur vom Spieler mit 2,5 %
+        // like entities/zombie: pool 1 always (0–2 flesh), pool 2 only from the player with 2.5 %
         Map<String, JsonElement> tables = Map.of("minecraft:entities/zombie", j("""
                 {"type":"minecraft:entity","pools":[
                   {"rolls":1,"entries":[{"type":"minecraft:item","name":"minecraft:rotten_flesh",
@@ -29,7 +29,7 @@ class DataTest {
         assertEquals("0–2", flesh.countText());
         LootAnalyzer.Drop iron = drops.stream().filter(d -> d.item().equals("minecraft:iron_ingot")).findFirst().orElseThrow();
         assertEquals(0.0125, iron.chance(), 1e-9, "2,5 % Pool-Chance, halbes Gewicht");
-        assertTrue(iron.conditional(), "nur vom Spieler getötet");
+        assertTrue(iron.conditional(), "only when killed by the player");
     }
 
     @Test void chestWithWeightsRollsAndNestedTable() {
@@ -43,11 +43,11 @@ class DataTest {
                 {"pools":[{"rolls":1,"entries":[{"type":"minecraft:item","name":"minecraft:emerald",
                    "functions":[{"function":"minecraft:set_count","count":3}]}]}]}"""));
         List<LootAnalyzer.Drop> drops = new LootAnalyzer(tables).analyze("minecraft:chests/test");
-        double expected = 1 - Math.pow(1 - 0.2, 3); // 3 Würfe im Schnitt, 1/5 Gewicht
+        double expected = 1 - Math.pow(1 - 0.2, 3); // 3 rolls on average, 1/5 weight
         assertEquals(expected, drops.stream().filter(d -> d.item().equals("minecraft:diamond")).findFirst().orElseThrow().chance(), 1e-9);
         LootAnalyzer.Drop emerald = drops.stream().filter(d -> d.item().equals("minecraft:emerald")).findFirst().orElseThrow();
         assertEquals(expected, emerald.chance(), 1e-9, "verschachtelte Tabelle anteilig");
-        assertEquals("3", emerald.countText(), "altes Format (functions) geht auch");
+        assertEquals("3", emerald.countText(), "old format (functions) works too");
     }
 
     @Test void tradesResolveTagsAndCounts() {
@@ -65,7 +65,7 @@ class DataTest {
         TradeData.Trade coal = set.trades().get(0);
         assertEquals("minecraft:coal", coal.wants().item());
         assertEquals("10–15", coal.wants().countText());
-        assertEquals(0, coal.wants().iconCount(), "Bereich: keine feste Zahl am Symbol");
+        assertEquals(0, coal.wants().iconCount(), "range: no fixed number on the icon");
         assertEquals(4, set.trades().get(1).wants().iconCount());
     }
 
@@ -97,7 +97,7 @@ class DataTest {
         assertEquals(3, blaze.maxCount());
         WorldGenData.Ore iron = wg.oresOf("minecraft:iron_ore").get(0);
         assertEquals(80, iron.minY());
-        assertEquals(319, iron.maxY(), "auf die Welthöhe begrenzt");
+        assertEquals(319, iron.maxY(), "limited to the world height");
         assertEquals(90, iron.perChunk());
         WorldGenData.Ore quartz = wg.oresOf("minecraft:nether_quartz_ore").get(0);
         assertEquals(WorldGenData.Dimension.NETHER, quartz.dimension());

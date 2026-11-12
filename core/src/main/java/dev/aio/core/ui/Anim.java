@@ -3,7 +3,7 @@ package dev.aio.core.ui;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Weiche Übergänge: Werte gleiten zeitbasiert zu ihrem Ziel (unabhängig von den FPS). */
+/** Smooth transitions: values glide to their target time-based (independent of the FPS). */
 public final class Anim {
     private final Map<Object, Float> values = new HashMap<>();
     private long last = System.nanoTime();
@@ -16,7 +16,7 @@ public final class Anim {
         last = now;
     }
 
-    /** Nähert den Wert unter {@code key} dem Ziel an; {@code speed} ≈ 1/Sekunden bis fast am Ziel. */
+    /** Moves the value under {@code key} towards the target; {@code speed} ≈ 1/seconds until almost at the target. */
     public float to(Object key, float target, float speed) {
         Float v = values.get(key);
         if (v == null) {

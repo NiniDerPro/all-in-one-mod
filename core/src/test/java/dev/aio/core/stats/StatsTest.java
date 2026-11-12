@@ -12,7 +12,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Lokale Statistik: zählt Spielzeit und Modulzeiten, bleibt über Neustarts erhalten, bleibt lokal. */
+/** Local statistics: counts play time and module times, survives restarts, stays local. */
 class StatsTest {
     @TempDir Path dir;
 
@@ -40,23 +40,23 @@ class StatsTest {
         core.module(core.modules().get("zoom").getClass()).setEnabled(true);
         clock[0] += 5_000;
         s.tick();
-        assertTrue(s.totalPlayMillis() >= 5_000, "Spielzeit läuft mit der Uhr");
+        assertTrue(s.totalPlayMillis() >= 5_000, "play time runs with the clock");
         assertTrue(s.moduleMillis().getOrDefault("zoom", 0L) >= 5_000, "aktives Modul sammelt Zeit");
         assertTrue(s.peakActiveModules() >= 1);
         s.flush();
 
-        // Großer Sprung (Standby) zählt nicht als Spielzeit
+        // Large jump (standby) does not count as play time
         long before = s.totalPlayMillis();
         clock[0] += 60_000;
         s.tick();
-        assertEquals(before, s.totalPlayMillis(), "Riesensprung wird nicht als Spielzeit gezählt");
+        assertEquals(before, s.totalPlayMillis(), "huge jump is not counted as play time");
 
-        // Neustart: gleiche Installations-ID, Zeit bleibt erhalten, Start zählt hoch
+        // Restart: same installation id, time is kept, start count goes up
         Stats s2 = freshStats(clock, sdir);
         s2.start();
         assertEquals(id, s2.installId(), "Installations-ID bleibt");
         assertEquals(2, s2.launches());
-        assertTrue(s2.totalPlayMillis() >= 5_000, "Spielzeit bleibt über Neustart");
+        assertTrue(s2.totalPlayMillis() >= 5_000, "play time survives a restart");
     }
 
     @Test void customCountersAccumulate() throws Exception {

@@ -7,11 +7,11 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 
-/** Shulker-Inhalt als 9×3-Raster im Tooltip. */
+/** Shulker contents as a 9×3 grid in the tooltip. */
 final class ShulkerTooltip {
     private ShulkerTooltip() {}
 
-    /** Daten-Seite (wird von {@code ItemStack.getTooltipImage} geliefert). */
+    /** Data side (delivered by {@code ItemStack.getTooltipImage}). */
     record Data(NonNullList<ItemStack> items, int color) implements TooltipComponent {}
 
     /** Zeichen-Seite. */

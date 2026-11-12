@@ -21,7 +21,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Zeichnet alle Screens und HUD-Elemente mit einem Fake-Renderer und klickt sie durch. */
+/** Draws all screens and HUD elements with a fake renderer and clicks through them. */
 class UiSmokeTest {
     @TempDir Path dir;
 
@@ -34,7 +34,7 @@ class UiSmokeTest {
 
     @Test void allHudElementsRenderInGameAndPreview() {
         FakePlatform p = new FakePlatform();
-        p.effects.add(new EffectInfo("Stärke", 1, 1800, false, true));
+        p.effects.add(new EffectInfo("Strength", 1, 1800, false, true));
         AioCore core = newCore(p);
         for (Module m : core.modules().all()) m.setEnabled(true);
         FakeRenderer r = new FakeRenderer();
@@ -55,12 +55,12 @@ class UiSmokeTest {
         FpsModule fps = core.module(FpsModule.class);
         fps.setEnabled(true);
         FakeRenderer r = new FakeRenderer();
-        ColoredText.clearCache(); // Schriftprüfung jetzt, nicht zufällig mitten in der Messung
+        ColoredText.clearCache(); // font check now, not randomly in the middle of the measurement
         fps.update();
         fps.render(r, false);
         int calls = r.widthCalls;
         for (int i = 0; i < 100; i++) fps.render(r, false);
-        assertEquals(calls, r.widthCalls, "keine Neuberechnung pro Frame");
+        assertEquals(calls, r.widthCalls, "no recalculation per frame");
         p.fps = 60;
         fps.update();
         fps.render(r, false);
@@ -72,7 +72,7 @@ class UiSmokeTest {
         AioCore core = newCore(p);
         ClickGuiScreen gui = new ClickGuiScreen(core, null);
         FakeRenderer r = new FakeRenderer();
-        // Alle Kategorien und alle Moduleinstellungen öffnen und über das ganze Panel klicken.
+        // Open all categories and all module settings and click across the whole panel.
         for (Category c : Category.values()) {
             for (Module m : core.modules().byCategory(c)) {
                 ClickGuiScreen g = new ClickGuiScreen(core, m);
@@ -113,14 +113,14 @@ class UiSmokeTest {
         assertTrue(fps.screenX(r) > 100, "Element wurde verschoben");
 
         double before = fps.scaleSetting().get();
-        assertFalse(editor.mouseScrolled(fps.screenX(r) + 2, fps.screenY(r) + 2, 1), "Mausrad ändert nichts");
+        assertFalse(editor.mouseScrolled(fps.screenX(r) + 2, fps.screenY(r) + 2, 1), "mouse wheel changes nothing");
         assertEquals(before, fps.scaleSetting().get());
 
         editor.onClose();
         assertFalse(core.hud().isEditorOpen());
     }
 
-    /** Element im Editor auswählen (Linksklick in die Mitte) und loslassen. */
+    /** Select an element in the editor (left click in the middle) and release. */
     private static void select(HudEditorScreen editor, FakeRenderer r, HudElement el) {
         float cx = el.screenX(r) + el.scaledWidth(r) / 2f, cy = el.screenY(r) + el.scaledHeight(r) / 2f;
         assertTrue(editor.mouseClicked(cx, cy, 0));
@@ -140,14 +140,14 @@ class UiSmokeTest {
         fps.setScreenPos(r, 100, 100);
         select(editor, r, fps);
 
-        // Rechte Kante: nur die Breite wächst, linke Kante bleibt stehen
+        // Right edge: only the width grows, left edge stays put
         float x = fps.screenX(r), y = fps.screenY(r), w = fps.scaledWidth(r), h = fps.scaledHeight(r);
         float ex = x + w, ey = y + h / 2f;
         assertTrue(editor.mouseClicked(ex, ey, 0));
         editor.mouseDragged(ex + 20, ey + 30, 0, 0, 0);
         editor.mouseReleased(ex + 20, ey + 30, 0);
         assertEquals(w + 20, fps.scaledWidth(r), 0.6);
-        assertEquals(h, fps.scaledHeight(r), 0.01, "Höhe unverändert");
+        assertEquals(h, fps.scaledHeight(r), 0.01, "height unchanged");
         assertEquals(x, fps.screenX(r), 0.6, "linke Kante bleibt");
 
         // Obere linke Ecke: beide Achsen, rechte untere Ecke bleibt stehen
@@ -160,7 +160,7 @@ class UiSmokeTest {
         assertEquals(x + w, fps.screenX(r) + fps.scaledWidth(r), 0.6, "rechte Kante bleibt");
         assertEquals(y + h, fps.screenY(r) + fps.scaledHeight(r), 0.6, "untere Kante bleibt");
 
-        // Shift an der Ecke behält das Seitenverhältnis
+        // Shift at the corner keeps the aspect ratio
         p.heldKeys.add(Keys.LEFT_SHIFT);
         x = fps.screenX(r); y = fps.screenY(r); w = fps.scaledWidth(r); h = fps.scaledHeight(r);
         assertTrue(editor.mouseClicked(x + w, y + h, 0));
@@ -169,7 +169,7 @@ class UiSmokeTest {
         assertEquals(w / h, fps.scaledWidth(r) / fps.scaledHeight(r), 0.05);
         p.heldKeys.clear();
 
-        // Zurücksetzen über R
+        // Reset via R
         assertTrue(editor.keyPressed(Keys.R));
         assertEquals(1.0, fps.scaleX(), 1e-6);
         assertEquals(1.0, fps.scaleY(), 1e-6);
@@ -188,9 +188,9 @@ class UiSmokeTest {
         float cx = fps.screenX(r) + 3, cy = fps.screenY(r) + 3;
         editor.mouseClicked(cx, cy, 0);
         editor.mouseReleased(cx, cy, 0);
-        assertFalse(p.screen instanceof ClickGuiScreen, "Linksklick öffnet keine Einstellungen");
+        assertFalse(p.screen instanceof ClickGuiScreen, "left click does not open settings");
         editor.mouseClicked(cx, cy, 1);
-        assertTrue(p.screen instanceof ClickGuiScreen, "Rechtsklick öffnet die Einstellungen");
+        assertTrue(p.screen instanceof ClickGuiScreen, "right click opens the settings");
     }
 
     @Test void chatCanBeSelectedResizedAndReset() {
@@ -204,7 +204,7 @@ class UiSmokeTest {
         editor.render(r, 0, 0, 0);
         float bottom = r.height - 40;
         float w = chat.boxWidth(), h = chat.boxHeight();
-        // Auswählen
+        // Select
         assertTrue(editor.mouseClicked(10, bottom - 5, 0));
         editor.mouseReleased(10, bottom - 5, 0);
         editor.render(r, 10, (int) bottom - 5, 0);
@@ -214,7 +214,7 @@ class UiSmokeTest {
         editor.mouseReleased(2 + w - 50, bottom - h / 2f, 0);
         assertEquals(w - 50, chat.boxWidth(), 1.0);
         assertEquals(h, chat.boxHeight(), 0.01);
-        // Zurücksetzen
+        // Reset
         assertTrue(editor.keyPressed(Keys.R));
         assertEquals(1.0, chat.setting("width").get());
     }

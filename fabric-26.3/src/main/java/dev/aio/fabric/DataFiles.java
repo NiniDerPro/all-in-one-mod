@@ -20,8 +20,8 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 /**
- * JSON-Dateien aus Datenpaketen für den Item-Browser. Im Einzelspieler vom eigenen Server (also mit
- * Datenpaketen und Mods), sonst aus dem Vanilla-Datenpaket im Spiel-Jar (Server schicken diese Daten nicht).
+ * JSON files from data packs for the item browser. In singleplayer from the own server (i.e. with
+ * data packs and mods), otherwise from the vanilla data pack in the game jar (servers do not send this data).
  */
 final class DataFiles {
     private DataFiles() {}
@@ -46,18 +46,18 @@ final class DataFiles {
             try (Reader reader = e.getValue().openAsReader()) {
                 out.put(id, JsonParser.parseReader(reader));
             } catch (Exception ex) {
-                // kaputte Datei überspringen
+                // skip broken file
             }
         }
         return out;
     }
 
-    /** Vanilla-Daten aus dem Spiel-Jar ({@code data/minecraft/<dir>/**.json}). */
+    /** Vanilla data from the game jar ({@code data/minecraft/<dir>/**.json}). */
     private static Map<String, JsonElement> fromJar(String dir) {
         Map<String, JsonElement> out = new HashMap<>();
         String base = "data/minecraft/" + dir;
         try {
-            // Ein sicher vorhandener Eintrag zeigt, wo das Datenpaket liegt
+            // An entry that certainly exists shows where the data pack is
             URL marker = Minecraft.class.getClassLoader().getResource("data/minecraft/recipe/stick.json");
             if (marker == null) return out;
             URI uri = marker.toURI();
@@ -81,7 +81,7 @@ final class DataFiles {
                             try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
                                 out.put("minecraft:" + rel.substring(0, rel.length() - 5), JsonParser.parseReader(reader));
                             } catch (Exception ex) {
-                                // überspringen
+                                // skip
                             }
                         }
                     }

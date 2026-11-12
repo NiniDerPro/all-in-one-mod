@@ -25,9 +25,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Auto Tool / Auto Sword: Events direkt vor dem Abbauen bzw. Schlagen. Ein hier gewählter
- * Hotbar-Slot wird von Vanilla ({@code ensureHasSentCarriedItem}) noch vor der Aktion an den Server
- * geschickt, der Schlag zählt also schon mit der neuen Waffe.
+ * Auto Tool / Auto Sword: events directly before breaking or hitting. A hotbar slot
+ * chosen here is sent to the server by vanilla ({@code ensureHasSentCarriedItem}) before the action,
+ * so the hit already counts with the new weapon.
  */
 @Mixin(MultiPlayerGameMode.class)
 public abstract class MultiPlayerGameModeMixin {
@@ -35,7 +35,7 @@ public abstract class MultiPlayerGameModeMixin {
     private void aio$startBreak(BlockPos pos, Direction face, CallbackInfoReturnable<Boolean> cir) {
         AioCore core = AioCore.get();
         if (core != null) core.bus().post(new Events.StartBreak(pos.getX(), pos.getY(), pos.getZ()));
-        // Tool Saver erst nach Auto Tool: sieht schon das eingewechselte Werkzeug
+        // Tool Saver only after Auto Tool: already sees the swapped-in tool
         var p = Minecraft.getInstance().player;
         if (p != null && ToolSaverHook.block(p.getMainHandItem())) cir.setReturnValue(false);
     }
@@ -51,7 +51,7 @@ public abstract class MultiPlayerGameModeMixin {
         ShieldIndicator.onAttack(player, target);
     }
 
-    // ---- Freecam: keine Interaktion aus der Kamera heraus ----
+    // ---- Freecam: no interaction from the camera ----
 
     @Inject(method = "startDestroyBlock", at = @At("HEAD"), cancellable = true)
     private void aio$freecamBreak(BlockPos pos, Direction face, CallbackInfoReturnable<Boolean> cir) {

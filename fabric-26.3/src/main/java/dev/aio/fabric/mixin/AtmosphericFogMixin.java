@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** NoFog: kein Nebel am Rand der Sichtweite, in Oberwelt, Nether und End (alle laufen hierüber). */
+/** NoFog: no fog at the edge of the view distance, in overworld, nether and end (all go through here). */
 @Mixin(AtmosphericFogEnvironment.class)
 public abstract class AtmosphericFogMixin {
     @Inject(method = "setupFog", at = @At("TAIL"))

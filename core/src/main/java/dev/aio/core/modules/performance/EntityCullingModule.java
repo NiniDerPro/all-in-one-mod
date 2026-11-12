@@ -11,10 +11,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Entity-Culling: Mobs, Items, Truhen, Schilder & Co., die hinter Wänden verborgen sind, werden
- * nicht gezeichnet. Die Sichtlinien durch feste Blöcke werden in einem eigenen Thread berechnet,
- * das Spiel wartet nie darauf. Verdeckte Entities bekommen auf dem Client nur einen vereinfachten
- * Tick. Ausnahmen für große Bosse und Strahlen, Laub optional als fest.
+ * Entity culling: mobs, items, chests, signs & co. that are hidden behind walls are
+ * not drawn. The lines of sight through solid blocks are computed in a separate thread,
+ * the game never waits for it. Hidden entities only get a simplified
+ * tick on the client. Exceptions for big bosses and beams, leaves optionally as solid.
  */
 public final class EntityCullingModule extends Module {
     private final BooleanSetting entities;

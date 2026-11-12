@@ -12,14 +12,14 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Alles, was der Item-Browser über die Welt weiß: Beute (Truhen, Mobs, Angeln, Piglin-Tausch, …),
- * Handel je Beruf, Spawns und Erzvorkommen. Wird einmal pro Welt im Hintergrund geladen.
+ * Everything the item browser knows about the world: loot (chests, mobs, fishing, piglin bartering, …),
+ * trades per profession, spawns and ore deposits. Loaded once per world in the background.
  */
 public final class WorldInfo {
-    /** Woher ein Item kommt: Loot Table und Chance. */
+    /** Where an item comes from: loot table and chance. */
     public record Source(String table, LootAnalyzer.Drop drop) {}
 
-    /** Ein Handel samt Herkunft. {@code profession} null = wandernder Händler. */
+    /** A trade including its origin. {@code profession} null = wandering trader. */
     public record TradeEntry(Profession profession, int level, String rarity, TradeData.Trade trade) {}
 
     public static final String BARTERING = "minecraft:gameplay/piglin_bartering";
@@ -36,7 +36,7 @@ public final class WorldInfo {
         Map<String, JsonElement> loot = p.dataFiles("loot_table");
         LootAnalyzer analyzer = new LootAnalyzer(loot);
         for (String table : loot.keySet()) {
-            // Blöcke droppen sich meist selbst: das zeigt jede Rezeptansicht ohnehin nicht sinnvoll an
+            // Blocks mostly drop themselves: no recipe view shows that usefully anyway
             if (table.contains(":blocks/")) continue;
             List<LootAnalyzer.Drop> drops = analyzer.analyze(table);
             if (drops.isEmpty()) continue;
@@ -65,7 +65,7 @@ public final class WorldInfo {
         loadMillis = System.currentTimeMillis() - start;
     }
 
-    /** Lädt alles (blockiert, für den Hintergrund-Thread). */
+    /** Loads everything (blocking, for the background thread). */
     public static WorldInfo load(Platform p) { return new WorldInfo(p); }
 
     public long loadMillis() { return loadMillis; }

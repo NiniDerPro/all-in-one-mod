@@ -9,10 +9,10 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Alles, was der Kern über das Spiel wissen oder darin ändern muss.
+ * Everything the core needs to know about the game or change in it.
  *
- * <p>Das ist die Versions-Abstraktionsschicht: Für eine neue MC-Version wird nur diese
- * Schnittstelle (plus {@link Renderer}, {@link ItemRef} und eine Handvoll Mixins) neu implementiert.
+ * <p>This is the version abstraction layer: for a new MC version only this
+ * interface (plus {@link Renderer}, {@link ItemRef} and a handful of mixins) is implemented anew.
  */
 public interface Platform {
     // ---- Zustand ----
@@ -20,7 +20,7 @@ public interface Platform {
 
     boolean isSingleplayer();
 
-    /** Serveradresse (z. B. {@code play.example.net}) oder null im Singleplayer/Menü. */
+    /** Server address (e.g. {@code play.example.net}) or null in singleplayer/menu. */
     String serverAddress();
 
     int fps();
@@ -35,7 +35,7 @@ public interface Platform {
 
     String biome();
 
-    /** Rüstung von Kopf bis Füße, immer 4 Einträge. */
+    /** Armor from head to feet, always 4 entries. */
     List<ItemRef> armor();
 
     ItemRef mainHand();
@@ -45,24 +45,24 @@ public interface Platform {
     List<EffectInfo> effects();
 
     /**
-     * Block oder Wesen, das der Spieler ansieht, null wenn nichts.
+     * Block or entity the player is looking at, null if nothing.
      *
-     * @param maxDistance 0 = wie das Vanilla-Fadenkreuz (Reichweite), sonst weiter (nur Blöcke)
+     * @param maxDistance 0 = like the vanilla crosshair (reach), otherwise farther (blocks only)
      */
     LookTarget lookTarget(double maxDistance);
 
-    /** Ob das Fadenkreuz gerade auf einem Lebewesen liegt (für Auto Sword). */
+    /** Whether the crosshair is currently on a living entity (for Auto Sword). */
     boolean crosshairOnLiving();
 
-    /** Ob eine andere Mod geladen ist (z. B. "jei"), um doppelte Funktionen abzuschalten. */
+    /** Whether another mod is loaded (e.g. "jei"), to switch off duplicate features. */
     boolean isModLoaded(String modId);
 
-    /** Ob der Kamera-Hook für Freelook in dieser MC-Version greift. Sonst darf Freelook die Maus nicht abfangen. */
+    /** Whether the camera hook for freelook applies in this MC version. Otherwise freelook must not intercept the mouse. */
     boolean freelookSupported();
 
     // ---- Welt ----
 
-    /** Eindeutiger Schlüssel der aktuellen Welt (Serveradresse oder Singleplayer-Weltname). */
+    /** Unique key of the current world (server address or singleplayer world name). */
     String worldKey();
 
     String playerName();
@@ -70,12 +70,12 @@ public interface Platform {
     /** Zeit der Oberwelt-Uhr in Ticks (Tag = 24000). */
     long dayTime();
 
-    /** "overworld", "the_nether", "the_end" oder die ID einer anderen Dimension. */
+    /** "overworld", "the_nether", "the_end" or the id of another dimension. */
     String dimension();
 
     /**
-     * Die tatsächliche Kamera für Bildschirm-Projektionen (Wegpunkt-Marker): interpoliert,
-     * mit 3.-Person-Abstand, Freelook-Richtung und dem echten Sichtfeld (Sprinten, Zoom, ...).
+     * The actual camera for screen projections (waypoint markers): interpolated,
+     * with third-person distance, freelook direction and the real field of view (sprinting, zoom, ...).
      */
     CameraView camera(float partialTick);
 
@@ -84,18 +84,18 @@ public interface Platform {
     /** Spielzeit laut Statistik in Ticks, -1 wenn unbekannt. */
     long playTimeTicks();
 
-    /** Fordert aktuelle Statistiken vom Server an (wie das Statistik-Menü). */
+    /** Requests current statistics from the server (like the statistics menu). */
     void requestStats();
 
     ServerInfo serverInfo();
 
-    /** Zählt Items im Inventar: Registry-ID ({@code minecraft:arrow}) oder Tag ({@code #minecraft:arrows}). */
+    /** Counts items in the inventory: registry id ({@code minecraft:arrow}) or tag ({@code #minecraft:arrows}). */
     int countItems(String idOrTag);
 
-    /** Item-Icon zu einer Registry-ID. */
+    /** Item icon for a registry id. */
     ItemRef item(String id);
 
-    /** Ausgewähltes Item in der Hotbar hat sich geändert, Rückgabe: Infozeilen (Verzauberungen o. Ä.). */
+    /** Selected item in the hotbar changed, returns: info lines (enchantments or similar). */
     List<String> heldItemDetails();
 
     // ---- Hotbar ----
@@ -104,29 +104,29 @@ public interface Platform {
 
     void selectSlot(int slot);
 
-    /** Bester Hotbar-Slot zum Abbauen des angesehenen Blocks, -1 wenn keiner besser ist. */
+    /** Best hotbar slot for breaking the viewed block, -1 if none is better. */
     int bestToolSlot();
 
-    /** Bester Hotbar-Slot zum Kämpfen, -1 wenn keine Waffe da ist. */
+    /** Best hotbar slot for fighting, -1 if there is no weapon. */
     int bestWeaponSlot(boolean preferAxe);
 
     // ---- Inventar / Item-Liste ----
 
-    /** Das gerade offene Inventar oder null. */
+    /** The currently open inventory or null. */
     ContainerView container();
 
-    /** Alle Items aus der Registry (für die Item-Liste). */
+    /** All items from the registry (for the item list). */
     List<ItemRef> allItems();
 
-    /** Rezepte, die {@code item} herstellen ({@code usages = true}: die es verwenden). Kann leer sein. */
+    /** Recipes that make {@code item} ({@code usages = true}: those that use it). May be empty. */
     List<RecipeView> recipes(ItemRef item, boolean usages);
 
-    /** Ob Rezepte verfügbar sind (Singleplayer oder vom Server synchronisiert). */
+    /** Whether recipes are available (singleplayer or synced from the server). */
     boolean recipesAvailable();
 
     // ---- Optionen / Sonstiges ----
 
-    /** Wert einer Vanilla-Option oder {@code NaN}, solange die Optionen noch nicht geladen sind (Spielstart). */
+    /** Value of a vanilla option or {@code NaN} while the options are not loaded yet (game start). */
     double option(VanillaOption option);
 
     void setOption(VanillaOption option, double value);
@@ -140,107 +140,107 @@ public interface Platform {
     // ---- Eingabe ----
     boolean isGameKeyDown(GameKey key);
 
-    /** Anzeigename der aktuellen Belegung einer Vanilla-Taste, z. B. "W" oder "LMB". */
+    /** Display name of the current binding of a vanilla key, e.g. "W" or "LMB". */
     String gameKeyName(GameKey key);
 
-    /** Prüft, ob eine Taste oder Maustaste (MC-Tastenname, siehe {@link Keys}) gerade gehalten wird. */
+    /** Checks whether a key or mouse button (MC key name, see {@link Keys}) is currently held. */
     boolean isKeyDown(String key);
 
     /**
-     * Installierte Mods, die dieselbe Funktion wie ein AIO-Modul haben: Modul-ID → Name der Mod.
-     * Diese Mods haben Vorrang, das AIO-Modul bleibt dann aus.
+     * Installed mods that have the same feature as an AIO module: module id → name of the mod.
+     * These mods take priority, the AIO module then stays off.
      */
     default Map<String, String> conflictingMods() { return Map.of(); }
 
     /**
-     * Module, deren Eingriff ins Spiel nicht greift (meist weil eine andere Mod dieselbe Stelle
-     * verändert): Modul-ID → kurze Beschreibung. Wird nach dem Laden der Welt abgefragt.
+     * Modules whose hook into the game does not apply (mostly because another mod changes the same place):
+     * module id → short description. Queried after the world is loaded.
      */
     default Map<String, String> brokenHooks() { return Map.of(); }
 
-    /** Lebewesen für den Health Indicator (interpoliert, ohne den eigenen Spieler). */
+    /** Entities for the Health Indicator (interpolated, without the own player). */
     default List<HealthTarget> healthTargets(double maxDistance, float partialTick, boolean players,
                                                        boolean hostile, boolean passive, boolean throughWalls) {
         return List.of();
     }
 
-    /** Namensschilder für Spieler, Mobs, Items am Boden und TNT (ohne den eigenen Spieler). */
+    /** Nametags for players, mobs, items on the ground and TNT (without the own player). */
     default List<NametagTarget> nametagTargets(double maxDistance, float partialTick, boolean players, boolean mobs,
                                                          boolean items, boolean tnt, boolean throughWalls) {
         return List.of();
     }
 
-    /** Ob der F3-Bildschirm gerade offen ist. */
+    /** Whether the F3 screen is currently open. */
     default boolean debugScreenOpen() { return false; }
 
     /**
-     * Zeichnet das Profiler-Kreisdiagramm (F3+1) ins lokale Rechteck 0..w × 0..h, unten bündig.
-     * @return false, wenn es (noch) keine Daten gibt
+     * Draws the profiler pie chart (F3+1) into the local rectangle 0..w × 0..h, flush at the bottom.
+     * @return false if there is (not yet) any data
      */
     default boolean drawProfilerChart(Renderer r, int w, int h) { return false; }
 
-    /** Ebene im Profiler-Diagramm, die man in F3+1 mit den Zahlentasten wählt (z. B. "root.gameRenderer"). */
+    /** Level in the profiler chart that is selected in F3+1 with the number keys (e.g. "root.gameRenderer"). */
     default String profilerChartPath() { return "root"; }
 
     default void setProfilerChartPath(String path) {}
 
-    /** Chatzeilen neu aufbauen (z. B. wenn Chat Heads ein- oder ausgeschaltet wird). */
+    /** Rebuild chat lines (e.g. when Chat Heads is switched on or off). */
     default void refreshChat() {}
 
-    /** Zahl der Einträge unter dem Kreis (für die Höhe des Diagramms). */
+    /** Number of entries below the circle (for the height of the chart). */
     default int profilerChartEntries() { return 7; }
 
-    /** Ob das Spielfenster den Fokus hat (nach Alt+Tab nicht mehr). */
+    /** Whether the game window has focus (no longer after Alt+Tab). */
     default boolean windowFocused() { return true; }
 
-    /** Ob ein Tastenname der aktuellen Belegung einer Vanilla-Taste entspricht. */
+    /** Whether a key name matches the current binding of a vanilla key. */
     boolean matchesGameKey(GameKey gameKey, String key);
 
-    /** Setzt den gedrückt-Zustand einer Vanilla-Taste, z. B. für Toggle Sprint. */
+    /** Sets the pressed state of a vanilla key, e.g. for Toggle Sprint. */
     void setGameKeyPressed(GameKey key, boolean pressed);
 
     /** Lesbarer, lokalisierter Name einer Taste. */
     String keyName(String key);
 
-    // ---- Daten für den Item-Browser (Handel, Beute, Weltgenerierung) ----
+    // ---- Data for the item browser (trades, loot, world generation) ----
 
     /**
-     * Alle JSON-Dateien eines Datenpaket-Ordners nach ID, z. B. {@code loot_table} →
-     * {@code minecraft:chests/desert_pyramid}. Darf von einem Hintergrund-Thread aufgerufen werden.
+     * All JSON files of a data pack folder by id, e.g. {@code loot_table} →
+     * {@code minecraft:chests/desert_pyramid}. May be called from a background thread.
      */
     default Map<String, JsonElement> dataFiles(String dir) { return Map.of(); }
 
-    /** Item nach ID mit Anzahl; {@link ItemRef#EMPTY}, wenn es das Item nicht gibt. */
+    /** Item by id with count; {@link ItemRef#EMPTY} if the item does not exist. */
     default ItemRef item(String id, int count) { return ItemRef.EMPTY; }
 
-    /** Übersetzung eines Sprachschlüssels oder {@code fallback}. */
+    /** Translation of a language key or {@code fallback}. */
     default String translate(String key, String fallback) { return fallback; }
 
-    /** Dorfbewohner-Berufe mit Arbeitsblock und Trade-Sets. */
+    /** Villager professions with workstation and trade sets. */
     default List<Profession> professions() { return List.of(); }
 
-    /** Vorschau von Rüstungsverzierungen für eine Schmiedevorlage (leer, wenn keine). */
+    /** Preview of armor trims for a smithing template (empty if none). */
     default List<RecipeView> trimViews(ItemRef template) { return List.of(); }
 
     /**
-     * Handelsangebote bekannter Dorfbewohner in der Nähe (bekannt, sobald man ihr Handelsfenster
-     * einmal geöffnet hat), Position über dem Kopf, interpoliert.
+     * Trade offers of known villagers nearby (known once their trade window
+     * was opened once), position above the head, interpolated.
      */
     default List<WorldLabel> villagerLabels(double maxDistance, float partialTick) { return List.of(); }
 
     /**
-     * FPS-Boost: Vanilla-Einstellungen für die gewünschten Optimierungen setzen. Nicht mehr gewünschte
-     * werden auf ihren Ursprungswert zurückgestellt.
+     * FPS boost: apply vanilla settings for the desired optimisations. Ones that are no longer wanted
+     * are reset to their original value.
      *
      * @param saved bisher gespeicherte Ursprungswerte (vom Adapter kodiert)
-     * @return neue Ursprungswerte zum Speichern, null = unverändert (z. B. Optionen noch nicht geladen)
+     * @return new original values to save, null = unchanged (e.g. options not loaded yet)
      */
     default String applyFpsBoost(Set<String> tweaks, String saved) { return null; }
 
     /** FPS-Boost aus: Ursprungswerte wiederherstellen. */
     default void restoreFpsBoost(String saved) {}
 
-    /** Freecam ein-/ausschalten (Kamera löst sich vom Spieler). */
+    /** Switch freecam on/off (camera detaches from the player). */
     default void setFreecam(boolean on) {}
 
     default boolean freecamActive() { return false; }
@@ -248,16 +248,16 @@ public interface Platform {
     /** IDs aller Partikelarten, z. B. {@code minecraft:crit}. */
     default List<String> particleTypes() { return List.of(); }
 
-    /** Ob gerade ein Inventar-/Container-Screen offen ist (nicht Chat, Menü, ...). */
+    /** Whether an inventory/container screen is open (not chat, menu, ...). */
     default boolean containerScreenOpen() { return false; }
 
-    /** Hunger, Sättigung, Leben und das Essen in der Hand (Essens-Info). */
+    /** Hunger, saturation, health and the food in hand (food info). */
     default FoodState foodState() { return FoodState.NONE; }
 
-    /** Alle Tastenbelegungen von Minecraft und Mods (Steuerung). */
+    /** All key bindings of Minecraft and mods (controls). */
     default List<KeyBinding> keyBindings() { return List.of(); }
 
-    /** Belegt eine Minecraft-/Mod-Taste neu und speichert die Optionen. Leer = nicht belegt. */
+    /** Rebinds a Minecraft/mod key and saves the options. Empty = unbound. */
     default void setKeyBinding(String id, String key) {}
 
     // ---- Kamera ----
@@ -272,13 +272,13 @@ public interface Platform {
 
     boolean isScreenOpen();
 
-    /** Ob gerade einer unserer eigenen Screens offen ist. */
+    /** Whether one of our own screens is currently open. */
     boolean isOwnScreenOpen();
 
     String clipboard();
 
     void setClipboard(String text);
 
-    /** Kurze Meldung für den Spieler (z. B. Action-Bar). */
+    /** Short message for the player (e.g. action bar). */
     void notify(String message);
 }

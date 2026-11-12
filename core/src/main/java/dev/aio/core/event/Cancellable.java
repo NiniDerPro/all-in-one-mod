@@ -1,6 +1,6 @@
 package dev.aio.core.event;
 
-/** Basis für Events, die ein Listener abbrechen kann, z. B. Scrollen während Zoom. */
+/** Base for events that a listener can cancel, e.g. scrolling while zooming. */
 public abstract class Cancellable {
     private boolean cancelled;
 

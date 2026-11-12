@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntConsumer;
 
-/** Verwaltung der Wegpunkte dieser Welt: umbenennen, Farbe, ein-/ausblenden, löschen, neu setzen. */
+/** Management of this world's waypoints: rename, colour, show/hide, delete, set new. */
 public final class WaypointScreen implements UiScreen {
     private record Hit(float x1, float y1, float x2, float y2, IntConsumer action) {}
 
@@ -91,7 +91,7 @@ public final class WaypointScreen implements UiScreen {
             String d = WaypointsModule.formatDistance(wp.distanceTo(pos.x(), pos.y(), pos.z()));
             r.text(d, x + w - 104 - r.textWidth(d), y + 7, Theme.TEXT_MUTED, false);
         }
-        // Ein/Aus, Stift (bearbeiten), Mülleimer (löschen mit Rückfrage)
+        // On/off, pencil (edit), trash (delete with confirmation)
         button(r, mx, my, x + w - 98, y + 4, x + w - 58, y + 18, wp.visible() ? Lang.tr("aio.ui.waypoint.on", "On") : Lang.tr("aio.ui.waypoint.off", "Off"), wp.visible(),
                 b -> module.replace(wp, wp.withVisible(!wp.visible())), top, bottom);
         iconButton(r, mx, my, x + w - 54, y + 4, Draw.PENCIL, false, Theme.TEXT,
@@ -107,7 +107,7 @@ public final class WaypointScreen implements UiScreen {
         }, top, bottom);
     }
 
-    /** Quadratischer Knopf (24 × 14) mit Symbol; {@code hot} färbt ihn rot ein (Löschen bestätigen). */
+    /** Square button (24 × 14) with icon; {@code hot} colours it red (confirm delete). */
     private void iconButton(Renderer r, int mx, int my, float x, float y, String[] icon, boolean hot, int color, IntConsumer action, int cy1, int cy2) {
         boolean hover = mx >= x && mx <= x + 24 && my >= y && my <= y + 14;
         Draw.round(r, x, y, x + 24, y + 14, 2, hot ? Theme.DANGER : hover ? 0xFF33333E : 0xFF24242C);

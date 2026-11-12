@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Shield Indicator: färbt das Schildmodell je nach Zustand ein. */
+/** Shield Indicator: tints the shield model depending on the state. */
 @Mixin(ShieldSpecialRenderer.class)
 public abstract class ShieldIndicatorRenderMixin {
     @ModifyReturnValue(method = "extractArgument(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/core/component/DataComponentMap;",
@@ -36,7 +36,7 @@ public abstract class ShieldIndicatorRenderMixin {
         ShieldIndicator.current = -1;
     }
 
-    /** Farbe des Grundmodells (mit Banner-Muster). */
+    /** Colour of the base model (with banner pattern). */
     @ModifyArg(method = "submit(Lnet/minecraft/core/component/DataComponentMap;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;IIZI)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/rendertype/RenderType;IIILnet/minecraft/client/renderer/texture/UvMapping;I)V"),
             index = 6)
@@ -44,7 +44,7 @@ public abstract class ShieldIndicatorRenderMixin {
         return ShieldIndicator.current != -1 ? ShieldIndicator.current : color;
     }
 
-    /** Farbe des Grundmodells (ohne Muster). */
+    /** Colour of the base model (without pattern). */
     @ModifyArg(method = "submit(Lnet/minecraft/core/component/DataComponentMap;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;IIZI)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;IIILnet/minecraft/client/resources/model/sprite/SpriteId;Lnet/minecraft/client/resources/model/sprite/SpriteGetter;I)V"),
             index = 5)

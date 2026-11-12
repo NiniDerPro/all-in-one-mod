@@ -5,13 +5,13 @@ import dev.aio.core.platform.Platform;
 import dev.aio.core.platform.Renderer;
 
 /**
- * Gemeinsame Tastenlogik für einfache Textfelder: Rücktaste/Entf, Strg+A (alles markieren),
- * Strg+C/X/V. Ist alles markiert, ersetzt Tippen oder Einfügen den Text, Rücktaste löscht ihn.
+ * Shared key logic for simple text fields: backspace/delete, Ctrl+A (select all),
+ * Ctrl+C/X/V. When everything is selected, typing or pasting replaces the text, backspace deletes it.
  */
 public final class TextEdit {
     private TextEdit() {}
 
-    /** Neuer Text und ob danach noch alles markiert ist; {@code handled} = Taste verarbeitet. */
+    /** New text and whether everything is still selected afterwards; {@code handled} = key processed. */
     public record Result(String text, boolean allSelected, boolean handled) {}
 
     public static boolean ctrl(Platform p) {
@@ -40,7 +40,7 @@ public final class TextEdit {
             }
             return new Result(text, false, true);
         }
-        // Pfeile/Pos1/Ende heben die Markierung auf
+        // Arrows/Home/End remove the selection
         if ("key.keyboard.left".equals(key) || "key.keyboard.right".equals(key)
                 || "key.keyboard.home".equals(key) || "key.keyboard.end".equals(key)) {
             return new Result(text, false, all);
@@ -48,7 +48,7 @@ public final class TextEdit {
         return new Result(text, all, false);
     }
 
-    /** Getippter Text: ersetzt bei Markierung alles. */
+    /** Typed text: replaces everything when selected. */
     public static String type(String text, boolean all, String typed) {
         return all ? typed : text + typed;
     }

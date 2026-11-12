@@ -16,9 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Tastenbelegung mit Suche: Tippen filtert nach Name, Kategorie oder Taste. Filter für Konflikte,
- * unbelegte und freie Tasten, Sortierung und "Alle zurücksetzen". Klick auf eine Taste und dann
- * die neue Taste (oder Maustaste) drücken; Escape entfernt die Belegung.
+ * Key bindings with search: typing filters by name, category or key. Filters for conflicts,
+ * unbound and free keys, sorting and "Reset all". Click on a key and then press
+ * the new key (or mouse button); Escape removes the binding.
  */
 public final class KeyBindsScreen implements UiScreen {
     private static final int ROW = 14;
@@ -31,11 +31,11 @@ public final class KeyBindsScreen implements UiScreen {
     private KeyBindIndex.Sort sort = KeyBindIndex.Sort.DEFAULT;
     private KeyBinding listening;
     private boolean confirmReset;
-    /** Stand von confirmReset vor dem aktuellen Klick. */
+    /** State of confirmReset before the current click. */
     private boolean armed;
     private float scroll;
 
-    /** Klickflächen des letzten Frames. */
+    /** Click areas of the last frame. */
     private record Hit(float x1, float y1, float x2, float y2, Runnable action) {
         boolean in(double x, double y) { return x >= x1 && x <= x2 && y >= y1 && y <= y2; }
     }
@@ -74,7 +74,7 @@ public final class KeyBindsScreen implements UiScreen {
         String shown = query.isEmpty() ? Lang.tr("aio.ui.key_binds.search_name_category_or_key", "Search: name, category or key…") : query + (caret ? "_" : "");
         r.text(r.trim(shown, sw - 8), sx + 4, sy + 3, query.isEmpty() ? Theme.TEXT_MUTED : Theme.TEXT, false);
 
-        // Filter, Sortierung, Zurücksetzen
+        // Filters, sorting, reset
         float bx = px + 8, by = sy + 18;
         for (KeyBindIndex.Filter f : KeyBindIndex.Filter.values()) {
             bx += button(r, bx, by, f.label, f == filter, mx, my, () -> { filter = f; scroll = 0; }) + 3;
@@ -165,7 +165,7 @@ public final class KeyBindsScreen implements UiScreen {
 
     private boolean visible(float y) { return y + ROW > listTop && y < listBottom; }
 
-    /** Zeichnet einen Knopf und merkt sich die Fläche. @return Breite */
+    /** Draws a button and remembers its area. @return width */
     private float button(Renderer r, float x, float y, String label, boolean active, int mx, int my, Runnable action) {
         float bw = r.textWidth(label) + 10;
         boolean hover = mx >= x && mx <= x + bw && my >= y && my <= y + 13;
@@ -179,7 +179,7 @@ public final class KeyBindsScreen implements UiScreen {
 
     @Override public boolean mouseClicked(double mx, double my, int button) {
         if (listening != null) {
-            // Maustasten belegen (Linksklick nur außerhalb der Liste, sonst wäre Abbrechen unmöglich)
+            // Bind mouse buttons (left click only outside the list, otherwise cancelling would be impossible)
             if (button != 0) {
                 assign(Keys.mouse(button));
                 return true;
@@ -188,7 +188,7 @@ public final class KeyBindsScreen implements UiScreen {
         for (Hit h : hits) {
             if (h.in(mx, my) && button == 0) {
                 armed = confirmReset;
-                confirmReset = false; // nur ein zweiter Klick auf "Reset" bestätigt
+                confirmReset = false; // only a second click on "Reset" confirms
                 h.action.run();
                 return true;
             }
@@ -210,7 +210,7 @@ public final class KeyBindsScreen implements UiScreen {
         return true;
     }
 
-    /** Das Zeichen zur gerade belegten Taste kommt danach noch als charTyped und darf nicht in die Suche. */
+    /** The character for the key just bound still arrives as charTyped and must not go into the search. */
     private boolean swallowChar;
 
     @Override public boolean keyPressed(String key) {

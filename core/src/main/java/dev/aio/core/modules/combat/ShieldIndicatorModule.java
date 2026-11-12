@@ -6,15 +6,15 @@ import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.ColorSetting;
 
 /**
- * Shield Indicator (wie "Shield Statuses"): Das Schild färbt sich je nach Zustand.
+ * Shield Indicator (like "Shield Statuses"): the shield changes colour depending on its state.
  * <ul>
- *   <li>Rot: deaktiviert (von einer Axt getroffen). Beim eigenen Schild blendet die Farbe aus,
- *       während der Cooldown abläuft.</li>
- *   <li>Grün: blockt gerade (Treffer von vorne werden abgewehrt).</li>
- *   <li>Gelb: wird gerade hochgenommen, blockt aber noch nicht.</li>
+ *   <li>Red: disabled (hit by an axe). On the own shield the colour fades out
+ *       while the cooldown runs down.</li>
+ *   <li>Green: currently blocking (hits from the front are blocked).</li>
+ *   <li>Yellow: being raised, but not blocking yet.</li>
  * </ul>
- * Für andere Spieler schickt der Server den Cooldown nicht mit: Trifft man selbst jemanden, der
- * blockt, mit einer Axt, wird "deaktiviert" für 5 Sekunden vorhergesagt.
+ * For other players the server does not send the cooldown: if you yourself hit someone who is
+ * blocking with an axe, "disabled" is predicted for 5 seconds.
  */
 public final class ShieldIndicatorModule extends Module {
     private final BooleanSetting own, others, predict, showRaising;
@@ -46,7 +46,7 @@ public final class ShieldIndicatorModule extends Module {
 
     public int raisingColor() { return raising.argb(); }
 
-    /** Mischt die Farbe mit Weiß: t = 1 volle Farbe, t = 0 normales Schild. */
+    /** Mixes the colour with white: t = 1 full colour, t = 0 normal shield. */
     public static int fade(int argb, float t) {
         t = Math.max(0, Math.min(1, t));
         int r = (int) (255 + (((argb >> 16) & 0xFF) - 255) * t);

@@ -16,12 +16,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-// Aus Freecam (MIT) übernommen, siehe dev/aio/fabric/freecam/NOTICE.md
+// Adapted from Freecam (MIT), see dev/aio/fabric/freecam/NOTICE.md
 @Mixin(LevelExtractor.class)
 public abstract class FreecamLevelExtractorMixin {
     @Shadow protected abstract EntityRenderState extractEntity(Entity e, float g);
 
-    /** Der eigene Spieler wird sonst nicht gezeichnet, wenn er nicht die Kamera ist. */
+    /** The own player would otherwise not be drawn when it is not the camera. */
     @Inject(method = "extractVisibleEntities", at = @At("RETURN"))
     private void aio$freecamShowPlayer(Camera camera, Frustum frustum, DeltaTracker deltaTracker, LevelRenderState renderState, CallbackInfo ci) {
         Minecraft mc = Minecraft.getInstance();

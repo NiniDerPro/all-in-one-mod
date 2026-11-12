@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Vorschau einer Rüstungsverzierung: Schmiedevorlage + Rüstungsteil + Material → verzierte Rüstung.
- * Rüstung und Material lassen sich in der Ansicht per Klick durchschalten; das Ergebnis folgt.
+ * Preview of an armor trim: smithing template + armor piece + material → trimmed armor.
+ * Armor and material can be cycled in the view by click; the result follows.
  */
 final class TrimPreview {
     private static final String SUFFIX = "_armor_trim_smithing_template";
@@ -40,7 +40,7 @@ final class TrimPreview {
                 .get(ResourceKey.create(Registries.TRIM_PATTERN, patternId)).orElse(null);
         if (pattern == null) return List.of();
 
-        // Materialien mit dem passenden Item (Vanilla-Namen: eisen → iron_ingot, lapis → lapis_lazuli, …)
+        // Materials with the matching item (vanilla names: iron → iron_ingot, lapis → lapis_lazuli, …)
         List<Holder<TrimMaterial>> materials = new ArrayList<>();
         List<ItemRef> materialItems = new ArrayList<>();
         access.lookupOrThrow(Registries.TRIM_MATERIAL).listElements().forEach(ref -> {

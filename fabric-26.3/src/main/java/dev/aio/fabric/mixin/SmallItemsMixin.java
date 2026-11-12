@@ -14,7 +14,7 @@ import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-/** Small Shield & Totem: das Item in der Hand kleiner und etwas tiefer zeichnen. */
+/** Small Shield & Totem: draw the item in hand smaller and a bit lower. */
 @Mixin(FirstPersonHandsAndItemsRenderer.class)
 public abstract class SmallItemsMixin {
     @WrapOperation(method = "submitArmWithItem", at = @At(value = "INVOKE",

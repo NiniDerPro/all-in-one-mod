@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Andere Mods mit derselben Funktion wie ein AIO-Modul. Ist eine davon installiert, hat sie
- * Vorrang: das AIO-Modul bleibt aus (abschaltbar über "Prefer other mods" in Client).
+ * Other mods with the same function as an AIO module. If one of them is installed it takes
+ * priority: the AIO module stays off (can be switched off via "Prefer other mods" in Client).
  */
 public final class ModConflicts {
     private ModConflicts() {}
@@ -42,7 +42,7 @@ public final class ModConflicts {
             Map.entry("togglesprint", List.of("togglesprint")),
             Map.entry("elytraswap", List.of("elytraswap", "elytra-swapper")));
 
-    /** Modul-ID → Name der installierten Mod, die Vorrang hat. */
+    /** Module id → name of the installed mod that takes priority. */
     public static Map<String, String> installed() {
         Map<String, String> out = new LinkedHashMap<>();
         FabricLoader loader = FabricLoader.getInstance();

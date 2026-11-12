@@ -31,12 +31,12 @@ import java.util.stream.Stream;
  *
  * <pre>
  * &lt;configDir&gt;/client.json                     aktives Profil
- * &lt;configDir&gt;/profiles/&lt;profil&gt;/&lt;modul&gt;.json   eine Datei pro Modul
+ * &lt;configDir&gt;/profiles/&lt;profile&gt;/&lt;module&gt;.json   one file per module
  * &lt;configDir&gt;/exports/&lt;profil&gt;.json           exportierte Profile
  * </pre>
  *
- * Änderungen werden gesammelt und frühestens {@link #SAVE_DELAY_MS} nach der letzten Änderung
- * geschrieben, damit ein Slider-Zug nicht hunderte Schreibvorgänge auslöst.
+ * Changes are collected and written at the earliest {@link #SAVE_DELAY_MS} after the last change,
+ * so that dragging a slider does not trigger hundreds of writes.
  */
 public final class ConfigManager {
     public static final String DEFAULT_PROFILE = "default";
@@ -66,34 +66,34 @@ public final class ConfigManager {
 
     public String activeProfile() { return activeProfile; }
 
-    /** Basisordner der Config (z. B. für Daten, die nicht zu einem Profil gehören). */
+    /** Base folder of the config (e.g. for data that does not belong to a profile). */
     public Path root() { return root; }
 
-    /** Liest eine Textdatei unter {@link #root()}, null wenn sie fehlt. */
+    /** Reads a text file below {@link #root()}, null if it is missing. */
     public String readText(String fileName) {
         Path f = root.resolve(fileName);
         try {
             return Files.isRegularFile(f) ? Files.readString(f, StandardCharsets.UTF_8) : null;
         } catch (IOException e) {
-            Log.error("Datei " + f + " konnte nicht gelesen werden", e);
+            Log.error("File " + f + " could not be read", e);
             return null;
         }
     }
 
-    /** Schreibt eine Textdatei unter {@link #root()} atomar. */
+    /** Writes a text file below {@link #root()} atomically. */
     public void writeText(String fileName, String content) {
         try {
             writeAtomic(root.resolve(fileName), content);
         } catch (IOException e) {
-            Log.error("Datei " + fileName + " konnte nicht geschrieben werden", e);
+            Log.error("File " + fileName + " could not be written", e);
         }
     }
 
     // ---- Laden / Speichern ----
 
     /**
-     * Version der Standard-Module. Steigt sie, werden beim nächsten Start einmalig alle Module auf
-     * ihren (neuen) Standard gesetzt; danach gelten wieder die eigenen Einstellungen.
+     * Version of the default modules. When it rises, all modules are set once to
+     * their (new) default on the next start; afterwards the user's own settings apply again.
      */
     public static final int DEFAULTS_VERSION = 2;
 
@@ -135,12 +135,12 @@ public final class ConfigManager {
 
     public boolean isDirty() { return dirty; }
 
-    /** Im Tick aufrufen: schreibt, wenn Änderungen lange genug zurückliegen. */
+    /** Call every tick: writes when changes are old enough. */
     public void tick() {
         if (dirty && clock.getAsLong() - lastChange >= SAVE_DELAY_MS) save();
     }
 
-    /** Schreibt sofort (z. B. beim Beenden oder Profilwechsel). */
+    /** Writes immediately (e.g. on exit or profile switch). */
     public void save() {
         dirty = false;
         try {
@@ -152,7 +152,7 @@ public final class ConfigManager {
             client.addProperty("defaultsVersion", DEFAULTS_VERSION);
             writeAtomic(root.resolve("client.json"), GSON.toJson(client));
         } catch (IOException e) {
-            Log.error("Config konnte nicht gespeichert werden", e);
+            Log.error("Config could not be saved", e);
         }
     }
 
@@ -168,7 +168,7 @@ public final class ConfigManager {
                         .filter(ConfigManager::isValidProfileName)
                         .forEach(result::add);
             } catch (IOException e) {
-                Log.error("Profile konnten nicht gelesen werden", e);
+                Log.error("Profiles could not be read", e);
             }
         }
         if (!result.contains(activeProfile)) result.add(activeProfile);
@@ -185,7 +185,7 @@ public final class ConfigManager {
         save();
     }
 
-    /** Legt ein neues Profil als Kopie des aktuellen an und wechselt hinein. */
+    /** Creates a new profile as a copy of the current one and switches to it. */
     public String createProfile(String baseName) {
         String name = uniqueName(baseName);
         save();
@@ -202,12 +202,12 @@ public final class ConfigManager {
             for (Path p : s.sorted(Comparator.reverseOrder()).toList()) Files.deleteIfExists(p);
             return true;
         } catch (IOException e) {
-            Log.error("Profil " + name + " konnte nicht gelöscht werden", e);
+            Log.error("Profile " + name + " could not be deleted", e);
             return false;
         }
     }
 
-    /** Exportiert das aktive Profil als ein JSON-Dokument (und zusätzlich nach exports/). */
+    /** Exports the active profile as one JSON document (and additionally to exports/). */
     public String exportProfile() {
         JsonObject doc = new JsonObject();
         doc.addProperty("aioProfile", EXPORT_FORMAT);
@@ -221,16 +221,16 @@ public final class ConfigManager {
             Files.createDirectories(dir);
             writeAtomic(dir.resolve(activeProfile + ".json"), json);
         } catch (IOException e) {
-            Log.error("Export-Datei konnte nicht geschrieben werden", e);
+            Log.error("Export file could not be written", e);
         }
         return json;
     }
 
     /**
-     * Importiert ein exportiertes Profil als neues Profil und wechselt hinein.
+     * Imports an exported profile as a new profile and switches to it.
      *
      * @return Name des neuen Profils
-     * @throws IllegalArgumentException bei ungültigem Inhalt
+     * @throws IllegalArgumentException on invalid content
      */
     public String importProfile(String json) {
         JsonObject doc;
@@ -278,9 +278,9 @@ public final class ConfigManager {
     }
 
     /**
-     * Übernimmt eine gespeicherte Modul-Config: erst die Einstellungen (Standard + gespeicherte Werte),
-     * dann genau einmal der Ein/Aus-Zustand. So wird ein laut Config ausgeschaltetes Modul nie
-     * zwischendurch aktiviert (das würde z. B. beim Spielstart Code ausführen, der noch nicht darf).
+     * Applies a saved module config: first the settings (default + saved values),
+     * then exactly once the on/off state. This way a module that the config says is off is never
+     * activated in between (which would e.g. run code at game start that is not allowed to yet).
      */
     static void applyModule(Module m, JsonObject obj) {
         m.resetSettings();
@@ -292,18 +292,18 @@ public final class ConfigManager {
                     for (Setting<?> s : m.settings()) {
                         if (settings.has(s.id())) s.fromJson(settings.get(s.id()));
                     }
-                    // Alte Configs kannten nur eine gemeinsame Größe ("scale"): für die Höhe übernehmen
+                    // Old configs only knew one shared size ("scale"): take it over for the height
                     if (m instanceof HudElement el && settings.has("scale") && !settings.has("scaleY")) {
                         el.setting("scaleY").fromJson(settings.get("scale"));
                     }
-                    // Configs von vor der Auto-Platzierung: vorhandene Positionen nicht verschieben
+                    // Configs from before auto placement: do not move existing positions
                     if (m instanceof HudElement el && settings.has("x") && !settings.has("placed")) {
                         el.markPlaced();
                     }
                 }
                 if (obj.has("enabled") && obj.get("enabled").isJsonPrimitive()) enabled = obj.get("enabled").getAsBoolean();
             } catch (RuntimeException e) {
-                Log.error("Ungültige Config für Modul " + m.id() + ", nutze Standardwerte", e);
+                Log.error("Invalid config for module " + m.id() + ", using defaults", e);
                 m.resetSettings();
                 enabled = m.enabledByDefault();
             }
@@ -336,7 +336,7 @@ public final class ConfigManager {
             JsonElement el = JsonParser.parseString(Files.readString(file, StandardCharsets.UTF_8));
             return el.isJsonObject() ? el.getAsJsonObject() : null;
         } catch (IOException | JsonParseException e) {
-            Log.error("Config-Datei " + file + " ist beschädigt, nutze Standardwerte", e);
+            Log.error("Config file " + file + " is damaged, using defaults", e);
             return null;
         }
     }

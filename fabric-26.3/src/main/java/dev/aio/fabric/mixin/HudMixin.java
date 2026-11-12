@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** No Pumpkin Overlay: überspringt nur das Kürbis-Bild, andere Overlays (Pulverschnee, ...) bleiben. */
+/** No Pumpkin Overlay: only skips the pumpkin picture, other overlays (powder snow, ...) stay. */
 @Mixin(Hud.class)
 public abstract class HudMixin {
     @Inject(method = "extractTextureOverlay", at = @At("HEAD"), cancellable = true)

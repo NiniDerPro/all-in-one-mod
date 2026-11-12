@@ -17,8 +17,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Alle Tastenbelegungen (Minecraft, Mods und AIO) mit Suche, Filtern, Sortierung und Konflikten.
- * Ohne Minecraft-Abhängigkeit, damit es testbar ist.
+ * All key bindings (Minecraft, mods and AIO) with search, filters, sorting and conflicts.
+ * Without Minecraft dependency so that it is testable.
  */
 public final class KeyBindIndex {
     public static final String AIO_PREFIX = "aio:";
@@ -33,7 +33,7 @@ public final class KeyBindIndex {
         Sort(String label) { this.label = label; }
     }
 
-    /** Eine Zeile: Belegung plus Anzeigename der Taste. */
+    /** One row: binding plus display name of the key. */
     public record Entry(KeyBinding binding, String keyDisplay, boolean conflict) {}
 
     private final AioCore core;
@@ -42,7 +42,7 @@ public final class KeyBindIndex {
 
     public KeyBindIndex(AioCore core) { this.core = core; }
 
-    /** Liest alle Belegungen neu (nach jeder Änderung). */
+    /** Reads all bindings again (after every change). */
     public void refresh() {
         List<KeyBinding> list = new ArrayList<>(core.platform().keyBindings());
         for (Module m : core.modules().all()) {
@@ -62,7 +62,7 @@ public final class KeyBindIndex {
 
     public boolean conflict(KeyBinding b) { return !b.unbound() && keyUse.getOrDefault(b.key(), 0) > 1; }
 
-    /** Gefilterte und sortierte Einträge; die Suche prüft Name, Kategorie und Taste. */
+    /** Filtered and sorted entries; the search checks name, category and key. */
     public List<Entry> entries(String query, Filter filter, Sort sort) {
         String q = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
         List<Entry> out = new ArrayList<>();
@@ -92,14 +92,14 @@ public final class KeyBindIndex {
                 || display.toLowerCase(Locale.ROOT).startsWith(q);
     }
 
-    /** Tastaturtasten, die keiner Belegung zugeordnet sind. */
+    /** Keyboard keys that are not assigned to any binding. */
     public List<String> freeKeys() {
         List<String> out = new ArrayList<>();
         for (String k : KEYBOARD) if (!keyUse.containsKey(k)) out.add(k);
         return out;
     }
 
-    /** Setzt eine Belegung; AIO-Tasten landen in den Moduleinstellungen. */
+    /** Sets a binding; AIO keys end up in the module settings. */
     public void set(KeyBinding b, String key) {
         String k = key == null ? Keys.NONE : key;
         if (b.id().startsWith(AIO_PREFIX)) {
@@ -117,7 +117,7 @@ public final class KeyBindIndex {
         for (KeyBinding b : new ArrayList<>(bindings)) if (!b.isDefault()) set(b, b.defaultKey());
     }
 
-    /** Übliche Tastaturtasten als MC-Namen (für "Freie Tasten"). */
+    /** Common keyboard keys as MC names (for "Free keys"). */
     public static final List<String> KEYBOARD;
 
     static {

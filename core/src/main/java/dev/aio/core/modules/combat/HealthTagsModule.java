@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Health Indicator: Herzen über Spielern (und auf Wunsch Mobs), wie die HealthIndicator-Mod.
- * Mit den Original-Herzen, Absorption in Gold. Viele Herzen (Bosse) werden als Zahl gezeigt.
+ * Health Indicator: hearts above players (and optionally mobs), like the HealthIndicator mod.
+ * With the original hearts, absorption in gold. Many hearts (bosses) are shown as a number.
  */
 public final class HealthTagsModule extends HudElement {
     public enum Style implements EnumSetting.Named {
@@ -66,7 +66,7 @@ public final class HealthTagsModule extends HudElement {
 
     @Override public void renderOverlay(Renderer r, float partialTick) {
         if (!isActive() || !hasContent()) return;
-        // Zeigen die Nametags schon das Leben von Spielern, hier keine zweite Anzeige darüber
+        // If the nametags already show the health of players, no second display above them here
         NametagsModule tags = core.module(NametagsModule.class);
         boolean playersHere = players.on() && (tags == null || !tags.replaces(NametagTarget.Kind.PLAYER));
         List<HealthTarget> list = new ArrayList<>(platform().healthTargets(distance.get(), partialTick,
@@ -90,7 +90,7 @@ public final class HealthTagsModule extends HudElement {
         }
     }
 
-    /** Zeichnet über dem Punkt (0,0), unten bündig. */
+    /** Draws above the point (0,0), flush at the bottom. */
     private void draw(Renderer r, HealthTarget t) {
         int hearts = (int) Math.ceil(t.maxHealth() / 2f);
         int absHearts = (int) Math.ceil(t.absorption() / 2f);

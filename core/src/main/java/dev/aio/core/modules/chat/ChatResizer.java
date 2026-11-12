@@ -5,7 +5,7 @@ import dev.aio.core.platform.Renderer;
 import dev.aio.core.ui.Theme;
 
 /**
- * Größe des Chats direkt im offenen Chat (T) ändern: an der oberen oder rechten Kante bzw. der
+ * Change the chat size directly in the open chat (T): at the top or right edge or the
  * Ecke oben rechts ziehen. Die Position (unten links) legt Minecraft fest.
  */
 public final class ChatResizer {
@@ -23,7 +23,7 @@ public final class ChatResizer {
         return c != null && c.isActive() ? c : null;
     }
 
-    /** x, y, Breite, Höhe der Chatbox. */
+    /** x, y, width, height of the chat box. */
     private float[] box(Renderer r, FlexChatModule c) {
         float bottom = r.screenHeight() - 40;
         return new float[]{2, bottom - c.boxHeight(), c.boxWidth(), c.boxHeight()};
@@ -42,7 +42,7 @@ public final class ChatResizer {
 
     public boolean isResizing() { return edges != 0; }
 
-    /** Rahmen und Griffe, sobald die Maus an einer Kante ist oder gezogen wird. */
+    /** Frame and handles as soon as the mouse is at an edge or dragging. */
     public void render(Renderer r, int mx, int my) {
         FlexChatModule c = chat();
         if (c == null) return;
@@ -64,7 +64,7 @@ public final class ChatResizer {
         r.fill(x - 2.5f, y - 2.5f, x + 2.5f, y + 2.5f, hot ? Theme.accent(core) : 0xFFFFFFFF);
     }
 
-    /** Linksklick an einer Kante startet das Ziehen. */
+    /** Left click at an edge starts dragging. */
     public boolean mouseClicked(Renderer r, double mx, double my, int button) {
         if (button != 0) return false;
         int e = edgesAt(r, mx, my);

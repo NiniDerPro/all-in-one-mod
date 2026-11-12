@@ -1,6 +1,6 @@
 package dev.aio.core.util;
 
-/** Ringpuffer für Durchschnitt, Minimum und Maximum über die letzten N Werte. */
+/** Ring buffer for average, minimum and maximum over the last N values. */
 public final class RollingStats {
     private int[] values;
     private int size;

@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Dorfbewohner-Info: zeigt über Dorfbewohnern, welche Verzauberungen (z. B. Reparatur) sie als
- * Buch anbieten und zu welchem Preis. Angebote sind bekannt, sobald man das Handelsfenster einmal
- * geöffnet hat (Server schicken sie erst dann).
+ * Villager info: shows above villagers which enchantments (e.g. Mending) they offer as a
+ * book and at what price. Offers are known once the trade window was opened once
+ * (servers only send them then).
  */
 public final class VillagerInfoModule extends HudElement {
     private final BooleanSetting booksOnly;
@@ -55,7 +55,7 @@ public final class VillagerInfoModule extends HudElement {
             if (lines.isEmpty()) continue;
             Projection.Point pt = Projection.project(label.x(), label.y(), label.z(), cam, w, h);
             if (!pt.onScreen()) continue;
-            // Weiter weg etwas kleiner, wie Namensschilder
+            // A bit smaller further away, like nametags
             float scale = (float) Math.max(0.6, Math.min(1.0, 8.0 / Math.max(1, label.distance())));
             int lh = r.fontHeight() + 1;
             float total = lines.size() * lh;
@@ -84,6 +84,6 @@ public final class VillagerInfoModule extends HudElement {
         return out;
     }
 
-    /** Farbe, mit der der Adapter ausverkaufte Angebote kennzeichnet. */
+    /** Colour with which the adapter marks sold-out offers. */
     public static final int SOLD_OUT_COLOR = 0xFF888888;
 }

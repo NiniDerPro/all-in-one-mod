@@ -4,13 +4,13 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Das gerade offene Inventar (Truhe, Spielerinventar, ...) für Maus-Tweaks und Sortieren.
- * Klicks werden wie echte Mausklicks an den Server geschickt; der Client sagt sie sofort voraus,
- * {@link #slots()} zeigt danach den neuen Stand.
+ * The currently open inventory (chest, player inventory, ...) for mouse tweaks and sorting.
+ * Clicks are sent to the server like real mouse clicks; the client predicts them immediately,
+ * {@link #slots()} then shows the new state.
  */
 public interface ContainerView {
     record Slot(int index, ItemRef item, boolean playerInventory, int containerSlot) {
-        /** Hauptinventar des Spielers ohne Hotbar, Rüstung und Zweithand. */
+        /** Main inventory of the player without hotbar, armor and offhand. */
         public boolean playerMain() { return playerInventory && containerSlot >= 9 && containerSlot < 36; }
 
         public boolean hotbar() { return playerInventory && containerSlot >= 0 && containerSlot < 9; }
@@ -26,22 +26,22 @@ public interface ContainerView {
     void click(int slotIndex, int button, Click type);
 
     /**
-     * Verteilt den Stack am Cursor gleichmäßig auf die Slots, wie Ziehen mit gedrückter linker
-     * Maustaste (Vanilla "Quick Craft"). Rest bleibt am Cursor. Wenige Pakete statt vieler Einzelklicks.
+     * Distributes the stack on the cursor evenly over the slots, like dragging with the left
+     * mouse button held (vanilla "quick craft"). The rest stays on the cursor. Few packets instead of many single clicks.
      */
     void dragSplit(int[] slotIndices);
 
-    /** Ob nur das Spielerinventar offen ist (keine Truhe o. Ä.). */
+    /** Whether only the player inventory is open (no chest or similar). */
     boolean isPlayerOnly();
 
     /**
-     * Eingabe-Raster dieses Menüs (2×2 im Inventar, 3×3 Werkbank, Ofen-Eingang, ...).
+     * Input grid of this menu (2×2 in the inventory, 3×3 crafting table, furnace input, ...).
      *
-     * @param kinds  Rezeptarten, die hier hergestellt werden können
-     * @param slots  Menü-Indizes der Eingabeslots, zeilenweise (width × height)
+     * @param kinds  recipe kinds that can be made here
+     * @param slots  menu indices of the input slots, row by row (width × height)
      */
     record Grid(Set<RecipeKind> kinds, int width, int height, int[] slots) {}
 
-    /** Raster oder null, wenn in diesem Menü nichts hergestellt werden kann. */
+    /** Grid or null if nothing can be made in this menu. */
     default Grid grid() { return null; }
 }

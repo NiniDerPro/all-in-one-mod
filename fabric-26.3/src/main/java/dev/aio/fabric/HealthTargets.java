@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Lebewesen in der Nähe für den Health Indicator. Sichtlinie wird nur einmal pro Tick geprüft. */
+/** Entities nearby for the Health Indicator. Line of sight is only checked once per tick. */
 final class HealthTargets {
     private HealthTargets() {}
 
@@ -41,7 +41,7 @@ final class HealthTargets {
             double d2 = feet.distanceToSqr(eye);
             if (d2 > max2) continue;
             if (!throughWalls && !SIGHT.computeIfAbsent(e.getId(), id -> mc.player.hasLineOfSight(e))) continue;
-            // über dem Namensschild (Spieler, benannte Mobs), sonst knapp über dem Kopf
+            // above the nametag (players, named mobs), otherwise just above the head
             boolean nameTag = isPlayer || e.shouldShowName();
             double y = feet.y + e.getBbHeight() + (nameTag ? 0.8 : 0.35);
             out.add(new HealthTarget(feet.x, y, feet.z, Math.sqrt(d2), le.getHealth(), le.getMaxHealth(), le.getAbsorptionAmount(), isPlayer));

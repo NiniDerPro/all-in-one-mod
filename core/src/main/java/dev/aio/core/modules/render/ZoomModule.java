@@ -10,12 +10,12 @@ import dev.aio.core.setting.NumberSetting;
 
 /**
  * Zoom: Taste halten = sofort 3-fach, Mausrad zoomt weiter rein/raus
- * (je ×1,1, 1× bis 50×, ohne den Hotbar-Slot zu wechseln). Die Maus wird so verlangsamt, als würde
- * die Empfindlichkeit durch die Zoomstufe geteilt; die Hand rückt mit aus dem Bild. Jeder neue
- * Druck beginnt wieder bei der Standardstufe.
+ * (each ×1.1, 1× to 50×, without changing the hotbar slot). The mouse is slowed down as if
+ * the sensitivity were divided by the zoom level; the hand moves out of the picture. Every new
+ * press starts again at the default level.
  */
 public final class ZoomModule extends KeyActivatedModule {
-    // Neue IDs, damit alte Werte (4×, sanft) nicht übernommen werden
+    // New ids so that old values (4×, smooth) are not taken over
     private final NumberSetting level;
     private final BooleanSetting smooth;
     private final BooleanSetting scrollAdjust;
@@ -46,13 +46,13 @@ public final class ZoomModule extends KeyActivatedModule {
 
     private void onScroll(Events.MouseScroll e) {
         if (!isEngaged() || e.amount == 0) return;
-        e.cancel(); // beim Zoomen nie den Hotbar-Slot wechseln
+        e.cancel(); // never change the hotbar slot while zooming
         if (!scrollAdjust.on()) return;
         sessionLevel *= e.amount > 0 ? 1.1 : 0.9;
         sessionLevel = Math.max(1, Math.min(50, sessionLevel));
     }
 
-    /** Pro Frame vom Adapter abgefragt: Faktor, mit dem das Sichtfeld multipliziert wird (1 = kein Zoom). */
+    /** Queried by the adapter every frame: factor by which the field of view is multiplied (1 = no zoom). */
     public double fovMultiplier() {
         if (!isActive()) return 1;
         double target = isEngaged() ? sessionLevel : 1;
@@ -68,12 +68,12 @@ public final class ZoomModule extends KeyActivatedModule {
         return 1 / current;
     }
 
-    /** Aktueller FOV-Faktor ohne die Animation weiterzuschalten (1 = kein Zoom). */
+    /** Current FOV factor without advancing the animation (1 = no zoom). */
     public double currentMultiplier() { return isActive() ? 1 / current : 1; }
 
     /**
-     * Faktor für die Mausbewegung. Minecraft rechnet die Empfindlichkeit s als (0,6·s + 0,2)³ um;
-     * geteilt durch die Zoomstufe fühlt sich das an wie beim Teilen der Empfindlichkeits-Option.
+     * Factor for the mouse movement. Minecraft converts the sensitivity s as (0.6·s + 0.2)³;
+     * divided by the zoom level this feels like dividing the sensitivity option.
      */
     public double sensitivityMultiplier() {
         if (!isActive() || !reduceSensitivity.on() || current <= 1) return 1;

@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Light Level Overlay: erfährt sofort, wenn sich Blöcke oder Licht in einem Abschnitt ändern. */
+/** Light Level Overlay: learns immediately when blocks or light change in a section. */
 @Mixin(LevelExtractor.class)
 public abstract class LightOverlayDirtyMixin {
     @Inject(method = "setSectionDirty(IIIZ)V", at = @At("HEAD"))

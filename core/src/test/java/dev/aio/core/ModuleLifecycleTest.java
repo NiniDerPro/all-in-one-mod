@@ -32,8 +32,8 @@ class ModuleLifecycleTest {
         AioCore core = newCore(new FakePlatform());
         CpsModule cps = core.module(CpsModule.class);
         cps.setEnabled(false);
-        assertFalse(core.clicks().isListening(), "ClickTracker darf ohne Nutzer nicht lauschen");
-        // Keystrokes ist standardmäßig aus, CPS jetzt auch -> kein Maus-Listener
+        assertFalse(core.clicks().isListening(), "ClickTracker must not listen without users");
+        // Keystrokes is off by default, CPS too now -> no mouse listener
         int before = core.bus().listenerCount(Events.MouseButton.class);
         cps.setEnabled(true);
         assertTrue(core.clicks().isListening());
@@ -66,7 +66,7 @@ class ModuleLifecycleTest {
         core.bus().post(new Events.ServerJoin("play.example.net:25565"));
         assertTrue(fb.isBlocked());
         assertFalse(fb.isActive());
-        assertTrue(fb.isEnabled(), "Wunsch des Spielers bleibt gespeichert");
+        assertTrue(fb.isEnabled(), "the player's wish stays saved");
         assertTrue(Double.isNaN(fb.gammaOverride()));
         assertTrue(p.messages.stream().anyMatch(m -> m.contains("blocked")));
         assertTrue(core.module(FpsModule.class).isEnabled() || !core.module(FpsModule.class).isBlocked(),
@@ -101,7 +101,7 @@ class ModuleLifecycleTest {
         FakePlatform p = new FakePlatform();
         AioCore core = newCore(p);
         FreelookModule fl = core.module(FreelookModule.class);
-        assertTrue(fl.isActive(), "Freelook ist standardmäßig an (Taste nötig)");
+        assertTrue(fl.isActive(), "Freelook is on by default (key needed)");
         p.yaw = 90;
         p.pitch = 10;
 
@@ -111,7 +111,7 @@ class ModuleLifecycleTest {
         assertEquals(Perspective.THIRD_PERSON_BACK, p.perspective);
         assertTrue(fl.consumeMouse(100, 1000));
         assertEquals(105, fl.cameraYaw(), 1e-4);
-        assertEquals(90, fl.cameraPitch(), 1e-4, "Pitch wird auf 90 begrenzt");
+        assertEquals(90, fl.cameraPitch(), 1e-4, "pitch is limited to 90");
 
         p.heldKeys.remove(Keys.LEFT_ALT);
         core.bus().post(new Events.Key(Keys.LEFT_ALT, 0, false));
@@ -166,11 +166,11 @@ class ModuleLifecycleTest {
         ZoomModule zoom = core.module(ZoomModule.class);
         p.heldKeys.add(Keys.C);
         core.bus().post(new Events.Key(Keys.C, 1, false));
-        assertEquals(1 / 3.0, zoom.fovMultiplier(), 1e-9, "sofort 3×, ohne Übergang");
+        assertEquals(1 / 3.0, zoom.fovMultiplier(), 1e-9, "immediately 3×, without transition");
         core.bus().post(new Events.MouseScroll(1));
         assertEquals(1 / 3.3, zoom.fovMultiplier(), 1e-9);
         assertTrue(zoom.sensitivityMultiplier() < 1);
-        // Loslassen und neu drücken: wieder 3×
+        // release and press again: 3× again
         p.heldKeys.remove(Keys.C);
         core.bus().post(new Events.Key(Keys.C, 0, false));
         assertEquals(1.0, zoom.fovMultiplier(), 1e-9);
@@ -188,7 +188,7 @@ class ModuleLifecycleTest {
         core.bus().post(new Events.Key("key.keyboard.f", 1, false));
         assertEquals(!before, fps.isEnabled());
         assertFalse(p.messages.isEmpty());
-        // Mit offenem Screen keine Keybinds
+        // With an open screen no keybinds
         core.bus().post(new Events.Key("key.keyboard.f", 1, true));
         assertEquals(!before, fps.isEnabled());
     }

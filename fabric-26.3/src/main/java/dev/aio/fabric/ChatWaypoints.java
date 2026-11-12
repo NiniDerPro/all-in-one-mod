@@ -19,9 +19,9 @@ import net.minecraft.network.chat.Style;
 import java.util.List;
 
 /**
- * Geteilte Wegpunkte im Chat: die Rohzeile ("xaero-waypoint:Base:B:100:64:-200:...") wird zu
- * "Steve shared a waypoint: [Base 100, 64, -200]"; ein Klick auf den Teil in Klammern legt den
- * Wegpunkt an. Der Klick läuft über einen Client-Befehl, der nie an den Server geht.
+ * Shared waypoints in chat: the raw line ("xaero-waypoint:Base:B:100:64:-200:...") becomes
+ * "Steve shared a waypoint: [Base 100, 64, -200]"; a click on the part in brackets creates the
+ * waypoint. The click runs via a client command that never goes to the server.
  */
 final class ChatWaypoints {
     private ChatWaypoints() {}
@@ -39,7 +39,7 @@ final class ChatWaypoints {
                         }))));
     }
 
-    /** Schreibt die Nachricht um, wenn sie einen geteilten Wegpunkt enthält; sonst unverändert. */
+    /** Rewrites the message if it contains a shared waypoint; otherwise unchanged. */
     static Component rewrite(AioCore core, Component message) {
         String text = message.getString();
         List<SharedWaypoint.Match> found = SharedWaypoint.find(text);

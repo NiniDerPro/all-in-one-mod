@@ -14,13 +14,13 @@ import dev.aio.core.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Item-Liste rechts in Inventaren mit Suche (@mod) und Rezeptansicht. */
+/** Item list on the right in inventories with search (@mod) and recipe view. */
 public final class ItemListModule extends Module {
     private final NumberSetting maxColumns;
     private ItemPanel panel;
 
     private final BooleanSetting worldInfo;
-    /** Welt-Infos (Beute, Handel, Spawns, Erze); null = noch nicht geladen. */
+    /** World info (loot, trades, spawns, ores); null = not loaded yet. */
     private volatile WorldInfo info;
     private volatile boolean loading;
 
@@ -28,20 +28,20 @@ public final class ItemListModule extends Module {
         super("itemlist", "Item Browser", "All items next to your inventory (also creative), search with @mod, recipes (R/U)", Category.QOL, false);
         maxColumns = add(new NumberSetting("columns", "Max columns", 8, 3, 16, 1));
         worldInfo = add(new BooleanSetting("worldInfo", "Trades, loot, spawns and ores", true));
-        // Neue Welt oder neuer Server: Daten (Datenpakete, Mods) können anders sein
+        // New world or new server: data (data packs, mods) can differ
         on(Events.ServerJoin.class, e -> info = null);
         on(Events.ServerLeave.class, e -> info = null);
     }
 
-    /** Früher 9 Spalten: überdeckt bei GUI-Stufe 3 die Effekte, darum auf die neuen 8 umstellen. */
+    /** Used to be 9 columns: covers the effects at GUI scale 3, so switch to the new 8. */
     @Override public void afterLoad() {
         if (maxColumns.intValue() == 9) maxColumns.reset();
     }
 
-    /** Ob die Welt-Infos noch geladen werden. */
+    /** Whether the world info is still loading. */
     public boolean worldInfoLoading() { return loading; }
 
-    /** Startet das Laden im Hintergrund (einmal pro Welt). */
+    /** Starts loading in the background (once per world). */
     public void ensureWorldInfo() {
         if (!worldInfo.on() || info != null || loading || !platform().inWorld()) return;
         loading = true;
@@ -73,14 +73,14 @@ public final class ItemListModule extends Module {
         return out;
     }
 
-    /** Ob gerade nachgeladen wird und die Ansicht später mehr zeigen kann. */
+    /** Whether it is still loading and the view may show more later. */
     public boolean worldInfoPending() { return worldInfo.on() && info == null; }
 
 
     int maxColumns() { return maxColumns.intValue(); }
 
-    /** Panel für Inventar-Screens, null wenn das Modul aus ist. */
-    /** Mods, die selbst eine Item-Liste mitbringen: dann keine zweite einblenden. */
+    /** Panel for inventory screens, null if the module is off. */
+    /** Mods that bring their own item list: then do not show a second one. */
     private static final String[] CONFLICTS = {"jei", "roughlyenoughitems", "emi"};
 
     public ItemPanel panel() {

@@ -13,8 +13,8 @@ import java.util.Locale;
 import java.util.function.Supplier;
 
 /**
- * Echte Uhrzeit und aktuelles Datum. Uhrzeit 24 h (Standard) oder 12 h, Datum in mehreren Formaten.
- * Uhrzeit und Datum lassen sich im HUD-Editor einzeln verschieben.
+ * Real time and current date. Time 24 h (default) or 12 h, date in several formats.
+ * Time and date can be moved individually in the HUD editor.
  */
 public final class DateTimeModule extends HudElement {
     public enum TimeFormat implements EnumSetting.Named {
@@ -48,7 +48,7 @@ public final class DateTimeModule extends HudElement {
         @Override public String displayName() { return displayName; }
     }
 
-    /** Für Tests ersetzbar. */
+    /** Replaceable for tests. */
     static Supplier<LocalDateTime> clock = LocalDateTime::now;
 
     private final BooleanSetting showTime, showDate, seconds;
@@ -91,7 +91,7 @@ public final class DateTimeModule extends HudElement {
 
     public String dateText() { return date; }
 
-    // ---- Zusammenhängend: eine Zeile "13:37  04.11.2026" ----
+    // ---- Connected: one line "13:37  04.11.2026" ----
 
     private String joined() {
         if (showTime.on() && showDate.on()) return time + "  " + date;
@@ -119,7 +119,7 @@ public final class DateTimeModule extends HudElement {
     @Override protected int partHeight(Renderer r, HudPart part) { return height(r); }
 
     @Override protected float[] partOffset(Renderer r, HudPart part) {
-        // Datum standardmäßig unter der Uhrzeit, rechtsbündig zum Block
+        // Date below the time by default, right-aligned to the block
         if (part == timePart || !showTime.on()) return new float[]{width(r) - partWidth(r, part), 0};
         return new float[]{width(r) - partWidth(r, part), height(r) + 1};
     }

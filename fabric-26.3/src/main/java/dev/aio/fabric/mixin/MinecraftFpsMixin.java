@@ -8,7 +8,7 @@ import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-/** Dynamische FPS: im Hintergrund die Bildrate begrenzen. */
+/** Dynamic FPS: limit the frame rate in the background. */
 @Mixin(FramerateLimitTracker.class)
 public abstract class MinecraftFpsMixin {
     @ModifyReturnValue(method = "getFramerateLimit", at = @At("RETURN"), require = 0)

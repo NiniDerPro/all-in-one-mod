@@ -36,8 +36,8 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.phys.EntityHitResult;
 
 /**
- * Hängt Item-Liste und Maus-Tweaks in Inventar-Screens ein und öffnet "Chat kopieren"
- * per Rechtsklick im Chat. Alles über die Fabric Screen API, ohne eigene Mixins.
+ * Hooks the item list and mouse tweaks into inventory screens and opens "Copy chat"
+ * on right click in chat. All via the Fabric screen API, without own mixins.
  */
 final class ScreenHooks {
     private ScreenHooks() {}
@@ -46,7 +46,7 @@ final class ScreenHooks {
         FabricRenderer renderer = new FabricRenderer(client);
         ScreenEvents.AFTER_INIT.register((mc, screen, w, h) -> {
             if (screen instanceof ChatScreen) hookChat(core, renderer, screen);
-            // Knopf "AIO" oben links im Pause- und Titelmenü öffnet das AIO-Menü
+            // "AIO" button at the top left of the pause and title menu opens the AIO menu
             if ((screen instanceof PauseScreen || screen instanceof TitleScreen) && core.clientSettings().menuButton.on()) {
                 Button open = Button.builder(Component.literal("AIO"), b -> core.openClickGui(null))
                         .bounds(6, 6, 44, 20)
@@ -70,12 +70,12 @@ final class ScreenHooks {
                     ScreenEvents.afterTick(screen).register(s -> VillagerOffers.remember(target, merchant.getMenu().getOffers()));
                 }
             }
-            // Tastenbelegung mit Suche statt der Vanilla-Liste (zurück geht es zur Steuerung)
+            // Key bindings with search instead of the vanilla list (back leads to the controls)
             if (screen instanceof KeyBindsScreen) {
                 KeyBindsModule keys = core.module(KeyBindsModule.class);
                 if (keys != null && keys.replacesVanilla()) keys.open();
             }
-            // Auch im Kreativ-Inventar (dort nur die Item-Liste, die Maus-Tweaks bleiben Vanilla)
+            // Also in the creative inventory (only the item list there, the mouse tweaks stay vanilla)
             if (screen instanceof AbstractContainerScreen<?> acs) {
                 hookContainer(core, client, renderer, acs, screen instanceof CreativeModeInventoryScreen);
             }
@@ -117,9 +117,9 @@ final class ScreenHooks {
     }
 
     /**
-     * Unser Suchfeld ist kein Vanilla-Widget. Seit 26.3 (SDL) kommen getippte Zeichen aber nur an,
-     * solange Minecraft die Texteingabe eingeschaltet hat, und das tut es für ein fokussiertes
-     * Textfeld. Darum hält ein unsichtbares Vanilla-Textfeld den Fokus, solange unser Feld aktiv ist.
+     * Our search field is not a vanilla widget. Since 26.3 (SDL) typed characters only arrive
+     * while Minecraft has text input switched on, and it does that for a focused
+     * text field. So an invisible vanilla text field holds the focus while our field is active.
      */
     private static void syncTextInput(Screen screen, ItemPanel panel, EditBox[] proxy) {
         boolean want = panel != null && panel.isFocused();
@@ -150,7 +150,7 @@ final class ScreenHooks {
             syncTextInput(s, panel, textProxy);
             if (panel == null) return;
             renderer.begin(graphics);
-            // Rechts neben dem Inventar zeigt Minecraft die Effekte: diesen Platz frei lassen (kompakte Breite)
+            // To the right of the inventory Minecraft shows the effects: leave this space free (compact width)
             int effects = core.platform().effects().isEmpty() ? 0 : 34;
             panel.render(renderer, mx, my, acc.aio$leftPos() + acc.aio$imageWidth() + effects);
         });
@@ -189,7 +189,7 @@ final class ScreenHooks {
             if (panel != null && panel.mouseScrolled(mx, my, v)) return false;
             if (creative) return true;
             Slot slot = slotAt(screen, mx, my);
-            // Über Bündeln wählt das Mausrad in Vanilla das Item aus: nicht dazwischenfunken
+            // Over bundles the mouse wheel selects the item in vanilla: do not interfere
             if (slot == null || slot.getItem().has(DataComponents.BUNDLE_CONTENTS)) return true;
             return !tweaks.onScroll(core.platform().container(), slot.index, v, shift());
         });

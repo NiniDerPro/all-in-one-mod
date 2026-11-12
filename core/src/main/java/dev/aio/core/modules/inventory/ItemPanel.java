@@ -9,8 +9,8 @@ import dev.aio.core.ui.McGui;
 import java.util.List;
 
 /**
- * Item-Liste rechts neben Inventaren: Raster aller Items, Suchfeld unten, Blättern per Mausrad.
- * Linksklick (oder R) zeigt Rezepte, Rechtsklick (oder U) zeigt Verwendungen.
+ * Item list to the right of inventories: grid of all items, search field at the bottom, paging with the mouse wheel.
+ * Left click (or R) shows recipes, right click (or U) shows uses.
  */
 public final class ItemPanel {
     private static final int CELL = 18;
@@ -23,7 +23,7 @@ public final class ItemPanel {
     private List<ItemRef> filtered = List.of();
     private String query = "";
     private boolean focused;
-    /** Strg+A: der ganze Suchtext ist markiert, Tippen ersetzt ihn. */
+    /** Ctrl+A: the whole search text is selected, typing replaces it. */
     private boolean allSelected;
     private int page;
 
@@ -61,19 +61,19 @@ public final class ItemPanel {
 
     public ItemRef hovered() { return hovered; }
 
-    /** Höhe der Knöpfe oben und des Suchfelds unten (wie Vanilla-Knöpfe). */
+    /** Height of the buttons at the top and of the search field at the bottom (like vanilla buttons). */
     private static final int BAR = 20;
     private float searchY;
 
     /**
-     * Im Stil bekannter Item-Listen: oben Blättern-Knöpfe mit Seitenzahl, darunter das Raster,
+     * In the style of well-known item lists: paging buttons with page number at the top, below the grid,
      * unten Suchfeld und Einstellungs-Knopf.
      *
-     * @param left linker Rand des freien Bereichs (rechts vom Inventar bzw. den Effekten)
+     * @param left left edge of the free area (right of the inventory or the effects)
      */
     public void render(Renderer r, int mx, int my, float left) {
         ensureItems();
-        module.ensureWorldInfo(); // Handel, Beute & Co. schon im Hintergrund laden, bevor R/U gedrückt wird
+        module.ensureWorldInfo(); // load trades, loot & co. in the background already, before R/U is pressed
         hovered = null;
         int w = r.screenWidth(), h = r.screenHeight();
         x1 = Math.max(left + 4, w - 4 - module.maxColumns() * CELL);
@@ -89,7 +89,7 @@ public final class ItemPanel {
         int pages = Math.max(1, (filtered.size() + perPage - 1) / perPage);
         page = Math.max(0, Math.min(pages - 1, page));
 
-        // Kopf: ◀ 1/16 ▶
+        // Header: ◀ 1/16 ▶
         McGui.arrowButton(r, x1, 4, x1 + BAR, 4 + BAR, false, mx, my, pages > 1);
         McGui.arrowButton(r, x2 - BAR, 4, x2, 4 + BAR, true, mx, my, pages > 1);
         r.centeredText((page + 1) + "/" + pages, (x1 + x2) / 2f, 10, 0xFFFFFFFF, true);
@@ -175,7 +175,7 @@ public final class ItemPanel {
         return true;
     }
 
-    /** @return true, wenn die Taste verbraucht wurde (z. B. beim Tippen im Suchfeld). */
+    /** @return true if the key was consumed (e.g. when typing in the search field). */
     public boolean keyPressed(String key, ItemRef hoveredSlotItem) {
         boolean ctrl = core.platform().isKeyDown(Keys.LEFT_CONTROL) || core.platform().isKeyDown(Keys.RIGHT_CONTROL);
         if (focused) {
@@ -195,7 +195,7 @@ public final class ItemPanel {
                 setQuery(allSelected ? paste : query + paste);
                 allSelected = false;
             }
-            return true; // alle Tasten gehen ins Suchfeld (sonst schließt z. B. E das Inventar)
+            return true; // all keys go into the search field (otherwise e.g. E closes the inventory)
         }
         if (ctrl && "key.keyboard.f".equals(key)) {
             focused = true;
@@ -225,6 +225,6 @@ public final class ItemPanel {
         allSelected = false;
     }
 
-    // Für Tests
+    // For tests
     List<ItemRef> filtered() { return filtered; }
 }

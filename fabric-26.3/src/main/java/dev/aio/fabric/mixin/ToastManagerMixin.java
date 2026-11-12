@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Toasts liegen oben rechts genau über Suche und Knöpfen des AIO-Menüs: solange es offen ist, nicht zeichnen. */
+/** Toasts lie at the top right exactly above search and buttons of the AIO menu: do not draw while it is open. */
 @Mixin(ToastManager.class)
 public abstract class ToastManagerMixin {
     @Inject(method = "extractRenderState", at = @At("HEAD"), cancellable = true)

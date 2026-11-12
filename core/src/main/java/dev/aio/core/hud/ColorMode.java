@@ -7,9 +7,9 @@ public enum ColorMode implements EnumSetting.Named {
     CLEAN("Clean"),
     /** Eine feste Farbe. */
     STATIC("Static"),
-    /** Regenbogen, der als Welle über den Text läuft. */
+    /** Rainbow that runs across the text as a wave. */
     CHROMA("Rainbow"),
-    /** Verlauf zwischen zwei Farben, der hin und her wandert. */
+    /** Gradient between two colours that moves back and forth. */
     GRADIENT("Gradient");
 
     private final String displayName;

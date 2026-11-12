@@ -3,8 +3,8 @@ package dev.aio.core.hud;
 import java.util.List;
 
 /**
- * Sucht für ein neu eingeschaltetes HUD-Element einen freien Platz: so nah wie möglich an seiner
- * Standardposition, ohne andere Elemente zu überdecken.
+ * Finds a free place for a newly switched-on HUD element: as close as possible to its
+ * default position without covering other elements.
  */
 public final class Placer {
     private static final float GAP = 2f;
@@ -12,13 +12,13 @@ public final class Placer {
 
     private Placer() {}
 
-    /** Freie Position (x, y) oder die Wunschposition, wenn nirgends Platz ist. */
+    /** Free position (x, y) or the wanted position if there is no room anywhere. */
     public static float[] findFree(Snapper.Rect wanted, List<Snapper.Rect> others, float screenW, float screenH) {
         if (!overlapsAny(wanted.x(), wanted.y(), wanted.w(), wanted.h(), others)) return new float[]{wanted.x(), wanted.y()};
         float maxX = Math.max(0, screenW - wanted.w()), maxY = Math.max(0, screenH - wanted.h());
         float bestX = wanted.x(), bestY = wanted.y();
         double best = Double.MAX_VALUE;
-        // Kandidaten: Raster über den Bildschirm plus direkt neben jedem anderen Element
+        // Candidates: grid across the screen plus directly next to every other element
         for (float y = 0; y <= maxY; y += STEP) {
             for (float x = 0; x <= maxX; x += STEP) {
                 double d = dist(x, y, wanted);

@@ -6,7 +6,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Letzte Chatnachrichten als reiner Text (für Chat kopieren). */
+/** Last chat messages as plain text (for copying chat). */
 public final class ChatHistory {
     public record Entry(String time, String text) {}
 

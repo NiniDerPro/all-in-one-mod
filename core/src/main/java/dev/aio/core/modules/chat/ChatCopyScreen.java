@@ -13,8 +13,8 @@ import dev.aio.core.util.Colors;
 import java.util.List;
 
 /**
- * Chatverlauf zum Markieren und Kopieren: Zeilen anklicken oder ziehen (Shift erweitert),
- * Strg+C oder "Kopieren" legt sie in die Zwischenablage.
+ * Chat history for selecting and copying: click or drag lines (Shift extends),
+ * Ctrl+C or "Copy" puts them on the clipboard.
  */
 public final class ChatCopyScreen implements UiScreen {
     private static final int LINE = 11;
@@ -142,7 +142,7 @@ public final class ChatCopyScreen implements UiScreen {
         return false;
     }
 
-    /** Markierte Zeilen als Text (ohne Farbcodes). */
+    /** Selected lines as text (without colour codes). */
     String selectionText() {
         if (anchor < 0 || entries.isEmpty()) return "";
         int lo = Math.max(0, Math.min(anchor, focus)), hi = Math.min(entries.size() - 1, Math.max(anchor, focus));
@@ -163,7 +163,7 @@ public final class ChatCopyScreen implements UiScreen {
         statusUntil = System.currentTimeMillis() + 2000;
     }
 
-    // Für Tests
+    // For tests
     void select(int from, int to) {
         anchor = from;
         focus = to;

@@ -23,19 +23,19 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Anonyme Nutzungsstatistik an den eigenen Statistik-Server. Sendet nur, wenn der Nutzer "Send
- * anonymous usage statistics" eingeschaltet hat (standardmäßig aus, Opt-in über den Hinweis beim
- * ersten Start) und {@link #ENDPOINT} gesetzt ist. Details und die komplette Feldliste:
- * {@code docs/TELEMETRY.md}. Gesendet werden nur technische Zahlen, nie Name, UUID, IP, Server,
+ * Anonymous usage statistics to the project's own statistics server. Only sends if the user has switched "Send
+ * anonymous usage statistics" on (off by default, opt-in via the notice on the first
+ * start) and {@link #ENDPOINT} is set. Details and the complete field list:
+ * {@code docs/TELEMETRY.md}. Only technical numbers are sent, never name, UUID, IP, server,
  * Koordinaten oder Chat.
  */
 final class Telemetry {
     private Telemetry() {}
 
     /**
-     * Adresse des Statistik-Servers (HTTPS). Steht bewusst nicht im Quelltext: der Build schreibt sie
-     * aus der Umgebungsvariable {@code AIO_STATS_URL} in die Datei {@code aio_stats_url.txt}. Ohne
-     * diese Variable (z. B. bei eigenen Builds) ist sie leer und es wird nichts gesendet.
+     * Address of the statistics server (HTTPS). Deliberately not in the source code: the build writes it
+     * from the environment variable {@code AIO_STATS_URL} into the file {@code aio_stats_url.txt}. Without
+     * this variable (e.g. in own builds) it is empty and nothing is sent.
      */
     private static final String ENDPOINT = loadEndpoint();
 
@@ -55,7 +55,7 @@ final class Telemetry {
     private static ScheduledExecutorService scheduler;
     private static HttpClient http;
 
-    // Leistung dieser Sitzung (nur Zähler, keine Einzelwerte)
+    // Performance of this session (counters only, no single values)
     private static long fpsSum, fpsCount;
     private static int fpsMin = Integer.MAX_VALUE;
     private static int tickCounter;
@@ -72,7 +72,7 @@ final class Telemetry {
         scheduler.scheduleWithFixedDelay(Telemetry::sendSafely, FIRST_DELAY_S, PERIOD_MIN * 60, TimeUnit.SECONDS);
     }
 
-    /** Jeden Client-Tick: alle 5 Sekunden die FPS in die Sitzungs-Zähler aufnehmen. */
+    /** Every client tick: take the FPS into the session counters every 5 seconds. */
     static void tick(int fps) {
         if (++tickCounter % 100 != 0 || fps <= 0) return;
         fpsSum += fps;
@@ -91,11 +91,11 @@ final class Telemetry {
                     .build();
             http.send(req, HttpResponse.BodyHandlers.discarding());
         } catch (Exception ignored) {
-            // Statistik darf das Spiel nie stören: Fehler werden still verworfen
+            // Statistics must never disturb the game: errors are silently discarded
         }
     }
 
-    /** Alles, was gesendet wird. Nur technische, anonyme Werte. */
+    /** Everything that is sent. Only technical, anonymous values. */
     static Map<String, Object> payload() {
         Map<String, Object> p = new LinkedHashMap<>();
         p.put("schema", 1);
@@ -134,9 +134,9 @@ final class Telemetry {
         modules.put("hours", durations);
         p.put("modules", modules);
 
-        // Kompatibilität und Fehler
+        // Compatibility and errors
         Map<String, Object> compat = new LinkedHashMap<>();
-        compat.put("deferredTo", ModConflicts.installed()); // Modul -> Name der Mod, die Vorrang hat
+        compat.put("deferredTo", ModConflicts.installed()); // module -> name of the mod that takes priority
         compat.put("brokenHooks", new ArrayList<>(HookStatus.broken().keySet()));
         compat.put("missingMixins", HookStatus.missing());
         compat.put("compatMode", core.clientSettings().compatMode.get().name());
@@ -159,7 +159,7 @@ final class Telemetry {
         return "other";
     }
 
-    /** Dauer in grobe Gruppen, damit keine exakten Zeiten übertragen werden. */
+    /** Duration in rough groups so that no exact times are transmitted. */
     private static String bucketHours(long ms) {
         double h = ms / 3_600_000.0;
         if (h < 1) return "<1";

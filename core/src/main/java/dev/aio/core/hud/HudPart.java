@@ -5,9 +5,9 @@ import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.NumberSetting;
 
 /**
- * Einzeln verschiebbarer Teil eines HUD-Elements (z. B. Uhrzeit und Datum, oder ein Rüstungsteil).
- * Eigene Position und Größe, gespeichert als versteckte Einstellungen des Elements. Bis man einen
- * Teil zum ersten Mal verschiebt, sitzt er dort, wo er im zusammenhängenden Element säße.
+ * Individually movable part of a HUD element (e.g. time and date, or an armor part).
+ * Own position and size, stored as hidden settings of the element. Until a
+ * part is moved for the first time, it sits where it would sit in the connected element.
  */
 public final class HudPart implements HudTarget {
     private final HudElement owner;
@@ -38,7 +38,7 @@ public final class HudPart implements HudTarget {
 
     public int height(Renderer r) { return Math.max(1, owner.partHeight(r, this)); }
 
-    /** Noch nie einzeln bewegt: an die Stelle im zusammenhängenden Element setzen. */
+    /** Never moved individually: put it at its place in the connected element. */
     void ensurePlaced(Renderer r) {
         if (placed.on()) return;
         float[] off = owner.partOffset(r, this);
@@ -71,7 +71,7 @@ public final class HudPart implements HudTarget {
         posY.set(HudElement.toFraction(y, r.screenHeight(), scaledHeight(r), owner.partEdgeMargin()));
     }
 
-    /** Steht der Teil fast am linken Rand, ganz an den Rand setzen. */
+    /** If the part is almost at the left edge, put it right at the edge. */
     public void snapLeft(double threshold) {
         if (placed.on() && posX.get() <= threshold) posX.set(0.0);
     }
@@ -82,6 +82,6 @@ public final class HudPart implements HudTarget {
         setScreenPos(r, x, y);
     }
 
-    /** Zurück an die Stelle im zusammenhängenden Element. */
+    /** Back to the place in the connected element. */
     @Override public void resetLayout() { placed.set(false); }
 }

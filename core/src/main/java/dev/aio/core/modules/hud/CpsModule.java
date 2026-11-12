@@ -3,7 +3,7 @@ package dev.aio.core.modules.hud;
 import dev.aio.core.hud.TextHudElement;
 import dev.aio.core.setting.EnumSetting;
 
-/** Klicks pro Sekunde, getrennt für links und rechts. */
+/** Clicks per second, separate for left and right. */
 public final class CpsModule extends TextHudElement {
     public enum Mode implements EnumSetting.Named {
         BOTH("Left | Right"), LEFT("Left only"), RIGHT("Right only");

@@ -15,8 +15,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 
 /**
- * XP bündeln (nur auf dem eigenen Einzelspieler-Server): Kugeln in der Nähe werden zu einer
- * zusammengefasst (Werte addiert, auch unterschiedliche), und berührte Kugeln werden ohne die
+ * XP clumping (only on the own singleplayer server): nearby orbs are merged into one
+ * (values added, also different ones), and touched orbs are picked up without the
  * Vanilla-Pause sofort aufgesammelt.
  */
 @Mixin(ExperienceOrb.class)

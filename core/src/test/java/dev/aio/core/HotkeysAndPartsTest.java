@@ -41,7 +41,7 @@ class HotkeysAndPartsTest {
         core.module(FreecamModule.class).setEnabled(true);
         p.heldKeys.add("key.keyboard.f3");
         core.bus().post(new Events.Key("key.keyboard.f4", 1, false));
-        assertFalse(cam[0], "F3+F4 ist nicht F4");
+        assertFalse(cam[0], "F3+F4 is not F4");
         p.heldKeys.remove("key.keyboard.f3");
         core.bus().post(new Events.Key("key.keyboard.f4", 1, false));
         assertTrue(cam[0], "F4 allein schaltet");
@@ -70,10 +70,10 @@ class HotkeysAndPartsTest {
         assertTrue(dt.separated());
         FakeRenderer r = new FakeRenderer();
         HudPart time = dt.parts().get(0), date = dt.parts().get(1);
-        assertTrue(date.screenY(r) > time.screenY(r), "Datum startet unter der Uhrzeit");
+        assertTrue(date.screenY(r) > time.screenY(r), "date starts below the time");
         date.setScreenPos(r, 10, 10);
         assertEquals(10, date.screenX(r), 0.5);
-        assertNotEquals(10, time.screenX(r), 0.5, "Uhrzeit bleibt, wo sie war");
+        assertNotEquals(10, time.screenX(r), 0.5, "time stays where it was");
         dt.render(r, true);
     }
 
@@ -130,7 +130,7 @@ class HotkeysAndPartsTest {
         broken.put("zoom", "conflict in CameraMixin");
         core.bus().post(new Events.ServerJoin(null));
         for (int i = 0; i < 61; i++) core.bus().post(Events.Tick.INSTANCE);
-        assertFalse(zoom.isActive(), "nur Zoom aus");
+        assertFalse(zoom.isActive(), "only zoom off");
         assertTrue(zoom.isEnabled(), "Einstellung bleibt");
         assertTrue(core.module(FreelookModule.class).isActive() || !core.module(FreelookModule.class).isEnabled());
     }

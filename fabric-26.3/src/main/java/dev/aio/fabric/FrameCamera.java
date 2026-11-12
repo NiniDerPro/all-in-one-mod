@@ -6,14 +6,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 
-/** Kamera des aktuellen Frames, für Marker im HUD, die exakt auf der Welt sitzen sollen. */
+/** Camera of the current frame, for markers in the HUD that should sit exactly on the world. */
 final class FrameCamera {
     private FrameCamera() {}
 
     /**
-     * Die Kamera, mit der das Spiel diesen Frame zeichnet. In 26.3 wird erst die Kamera
-     * ermittelt, dann das HUD, und erst danach die Welt gezeichnet: Der Kamera-Zustand ist beim HUD
-     * also schon der dieses Frames. Die Matrix wird genau wie beim Zeichnen der Welt gebaut
+     * The camera with which the game draws this frame. In 26.3 the camera is determined first,
+     * then the HUD, and only afterwards the world is drawn: the camera state at the HUD
+     * is therefore already that of this frame. The matrix is built exactly like when drawing the world
      * (Projektion × Laufwackeln × Blickrichtung), daher bleiben Marker fest auf ihrem Punkt.
      */
     static CameraView current(Minecraft mc, double fov) {

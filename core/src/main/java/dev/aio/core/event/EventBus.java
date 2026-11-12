@@ -11,15 +11,15 @@ import java.util.function.Consumer;
  * Schlanker, typisierter Event-Bus.
  *
  * <ul>
- *   <li>Dispatch nur über die exakte Event-Klasse (keine Hierarchie-Suche, kein Reflection-Scan).</li>
- *   <li>Copy-on-write-Arrays: {@link #post} iteriert ohne Locks und ohne Allokation.</li>
- *   <li>Ohne Listener kostet ein {@link #post} nur einen Map-Lookup. Darum hängen
+ *   <li>Dispatch only via the exact event class (no hierarchy search, no reflection scan).</li>
+ *   <li>Copy-on-write arrays: {@link #post} iterates without locks and without allocation.</li>
+ *   <li>Without listeners a {@link #post} costs only a map lookup. That is why
  *       deaktivierte Module ihre Listener komplett aus.</li>
- *   <li>Eine Exception in einem Listener wird geloggt und bricht die anderen nicht ab.</li>
+ *   <li>An exception in one listener is logged and does not abort the others.</li>
  * </ul>
  */
 public final class EventBus {
-    /** Höhere Priorität läuft zuerst. */
+    /** Higher priority runs first. */
     public static final int PRIORITY_HIGH = 100;
     public static final int PRIORITY_NORMAL = 0;
     public static final int PRIORITY_LOW = -100;
@@ -73,7 +73,7 @@ public final class EventBus {
             try {
                 ((Consumer<E>) l.handler).accept(event);
             } catch (Throwable t) {
-                Log.error("Listener für " + event.getClass().getSimpleName() + " ist fehlgeschlagen", t);
+                Log.error("Listener for " + event.getClass().getSimpleName() + " failed", t);
             }
         }
         return event;

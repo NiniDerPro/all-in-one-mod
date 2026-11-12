@@ -24,15 +24,15 @@ import java.util.function.DoubleConsumer;
 import java.util.function.IntConsumer;
 
 /**
- * Hauptmenü. Oben eine Leiste mit Kategorien als Reitern, Suche, HUD-Editor und Zahnrad für die
- * Client-Einstellungen; darunter die Module als Liste. Ein Klick auf ein Modul schiebt rechts ein
- * Panel mit seinen Einstellungen herein, die Liste bleibt daneben sichtbar. Unten Profil und Meldungen.
+ * Main menu. At the top a bar with categories as tabs, search, HUD editor and a gear for the
+ * client settings; below the modules as a list. A click on a module slides a
+ * panel with its settings in on the right, the list stays visible next to it. At the bottom profile and messages.
  *
- * <p>Immediate-Mode: jeder Frame zeichnet alles neu und merkt sich die klickbaren Flächen.
+ * <p>Immediate mode: every frame redraws everything and remembers the clickable areas.
  */
 public final class ClickGuiScreen implements UiScreen {
     private static final int TOP = 26, BOTTOM = 18, ROW_H = 28, GAP = 4, SET_H = 18;
-    /** Einstellungen, die bei HUD-Elementen unter "Appearance" gruppiert werden. */
+    /** Settings that are grouped under "Appearance" for HUD elements. */
     private static final Set<String> APPEARANCE = Set.of("scale", "scaleY", "colorMode", "textColor", "secondColor",
             "colorSpeed", "background", "backgroundColor", "shadow");
 
@@ -44,7 +44,7 @@ public final class ClickGuiScreen implements UiScreen {
         void apply(double mx) { setter.accept((mx - x1) / Math.max(1, x2 - x1)); }
     }
 
-    /** Was im Panel rechts gezeigt wird: ein Modul oder die Client-Einstellungen. */
+    /** What is shown in the panel on the right: a module or the client settings. */
     private Module drawer;
     private boolean clientDrawer;
 
@@ -57,12 +57,12 @@ public final class ClickGuiScreen implements UiScreen {
     private float listScroll, listMax, drawerScroll, drawerMax;
 
     private final List<Hit> hits = new ArrayList<>();
-    /** Sichtbare Bereiche der beiden scrollbaren Flächen (für das Beschneiden der Klickflächen). */
+    /** Visible areas of the two scrollable regions (for clipping the click areas). */
     private float listY1, listY2, drawerX1, drawerY1, drawerY2;
     private int clip;
     private SliderDrag slider;
     private KeybindSetting listening;
-    /** Das Zeichen zur gerade belegten Taste kommt danach noch als charTyped und darf nicht in die Suche. */
+    /** The character for the key just bound still arrives as charTyped and must not go into the search. */
     private boolean swallowChar;
     private StringSetting editing;
     private String editBuffer = "";
@@ -74,7 +74,7 @@ public final class ClickGuiScreen implements UiScreen {
     private int statusColor;
     private long statusUntil;
 
-    /** Stand beim letzten Schließen, damit das Menü dort wieder aufgeht (nur für diese Sitzung). */
+    /** State at the last close, so that the menu opens there again (only for this session). */
     private record Memory(AioCore owner, Category category, String search, float listScroll, String drawerId, boolean clientDrawer,
                           float drawerScroll, boolean appearanceOpen) {}
     private static Memory memory;
@@ -109,7 +109,7 @@ public final class ClickGuiScreen implements UiScreen {
 
         int pw = Math.min(w - 24, 540), ph = Math.min(h - 24, 310);
         int px = (w - pw) / 2, py = (h - ph) / 2;
-        // Schatten, Fläche, feiner Rand
+        // Shadow, area, fine border
         Draw.round(r, px - 2, py - 1, px + pw + 2, py + ph + 3, 3, 0x40000000);
         Draw.round(r, px, py, px + pw, py + ph, 3, Theme.PANEL);
         Draw.roundOutline(r, px, py, px + pw, py + ph, Theme.LINE);
@@ -152,7 +152,7 @@ public final class ClickGuiScreen implements UiScreen {
             tabsEnd += tabW[i] + 12;
         }
         float searchW = Math.max(54, Math.min(120, rx - tabsEnd - 6));
-        // Beim Suchen wächst das Feld über die Reiter (die dann ohnehin nicht gelten)
+        // When searching the field grows over the tabs (which do not apply then anyway)
         boolean typing = searchFocused || !search.isEmpty();
         float wanted = typing ? Math.min(rx - x - 4, Math.max(searchW, Math.max(160, r.textWidth(search) + 30))) : searchW;
         searchW = anim.to("searchW", wanted, 14);
@@ -162,7 +162,7 @@ public final class ClickGuiScreen implements UiScreen {
         int selIndex = category == null ? 0 : tabs.indexOf(category) + 1;
         boolean searching = !search.isEmpty();
         for (int i = 0; i <= tabs.size(); i++) {
-            if (tabX[i] + tabW[i] + 4 > searchX) break; // vom Suchfeld überdeckt
+            if (tabX[i] + tabW[i] + 4 > searchX) break; // covered by the search field
             Category c = i == 0 ? null : tabs.get(i - 1);
             String label = i == 0 ? Lang.tr("aio.ui.menu.all", "All") : c.displayName();
             boolean sel = i == selIndex && !searching;
@@ -171,7 +171,7 @@ public final class ClickGuiScreen implements UiScreen {
             r.text(label, tabX[i], py + 10, Colors.lerp(Theme.TEXT_DIM, Theme.TEXT, lit), false);
             hit(tabX[i] - 4, py + 4, tabX[i] + tabW[i] + 4, py + TOP - 2, b -> selectCategory(c));
         }
-        // Markierung unter dem gewählten Reiter gleitet mit
+        // Marker under the selected tab glides along
         if (!searching && tabX[selIndex] + tabW[selIndex] + 4 <= searchX) {
             float ux = anim.to("tabX", tabX[selIndex], 16), uw = anim.to("tabW", tabW[selIndex], 16);
             Draw.round(r, ux, py + TOP - 3, ux + uw, py + TOP - 1, 1, accent);
@@ -233,7 +233,7 @@ public final class ClickGuiScreen implements UiScreen {
 
     private void renderList(Renderer r, int mx, int my, float x, float top, float w, float bottom, int accent) {
         List<Module> list = visibleModules();
-        // Kopfzeile: Titel, Anzahl aktiv, rechts Alle an/aus und Sortierung
+        // Header row: title, number active, on the right all on/off and sorting
         float hy = top + 7;
         String title = !search.isEmpty() ? Lang.tr("aio.ui.menu.results", "Results") : category == null
                 ? Lang.tr("aio.ui.menu.all_modules", "All modules") : category.displayName();
@@ -281,7 +281,7 @@ public final class ClickGuiScreen implements UiScreen {
         float hv = anim.to(m, hover ? 1 : 0, 20);
         Draw.round(r, x, y, x + w, y + ROW_H, 2, Colors.lerp(Theme.CARD, Theme.CARD_HOVER, hv));
         if (selected) Draw.roundOutline(r, x, y, x + w, y + ROW_H, Colors.withAlpha(accent, 0xB0));
-        // Statusleiste links: Akzent wenn an, Warnfarbe bei Problem
+        // Status bar on the left: accent when on, warning colour on problem
         float on = anim.to("on" + m.id(), active ? 1 : 0, 14);
         if (on > 0.01f) {
             int c = problem ? Theme.WARNING : accent;
@@ -309,16 +309,16 @@ public final class ClickGuiScreen implements UiScreen {
                 : m.description();
         float sx = tx;
         if (!problem && (category == null || !search.isEmpty())) {
-            // In "All" und bei der Suche: Kategorie in ihrer Farbe davor
+            // In "All" and when searching: category in its colour in front
             String cat = m.category().displayName();
             r.text(cat, sx, y + 17, Colors.withAlpha(m.category().color(), 0xC0), false);
             sx += r.textWidth(cat) + 5;
         }
         r.text(r.trim(sub, right - sx), sx, y + 17, problem ? Theme.WARNING : Theme.TEXT_MUTED, false);
         if (hover) hint = problem ? sub : m.description();
-        // Zeile öffnet die Einstellungen (Schalter wird später geprüft und gewinnt)
+        // Row opens the settings (switch is checked later and wins)
         hits.add(hits.size() - (m.canToggle() ? 1 : 0), new Hit(x, y, x + w, y + ROW_H, clip, b -> {
-            if (drawer == m && !clientDrawer) closeDrawer(); // zweiter Klick auf dieselbe Zeile schließt
+            if (drawer == m && !clientDrawer) closeDrawer(); // second click on the same row closes
             else openDrawer(m);
         }));
     }
@@ -356,11 +356,11 @@ public final class ClickGuiScreen implements UiScreen {
         drawerX1 = x1;
         drawerY1 = top;
         drawerY2 = bottom;
-        // Schatten nach links, Fläche, Kante
+        // Shadow to the left, area, edge
         for (int i = 0; i < 6; i++) r.fill(x1 - 6 + i, top, x1 - 5 + i, bottom, Colors.withAlpha(0, 6 + i * 8));
         r.fill(x1, top, Math.min(x2, px + pw - 1), bottom, 0xFF12141B);
         r.fill(x1, top, x1 + 1, bottom, Theme.LINE_STRONG);
-        // Klicks im Panel gehen nicht an die Liste darunter
+        // Clicks in the panel do not go to the list below
         hit(x1, top, x2, bottom, b -> {});
         if (!drawerOpen()) return;
 
@@ -380,7 +380,7 @@ public final class ClickGuiScreen implements UiScreen {
     private static float ease(float t) { return 1 - (1 - t) * (1 - t) * (1 - t); }
 
     private float drawerHeader(Renderer r, int mx, int my, String name, String desc, float x, float y, float w, int accent) {
-        // Schließen
+        // Close
         float cx = x + w - 12;
         boolean hover = inside(mx, my, cx - 2, y - 2, cx + 10, y + 10);
         Draw.icon(r, Draw.CLOSE, cx, y, hover ? Theme.TEXT : Theme.TEXT_MUTED);
@@ -396,7 +396,7 @@ public final class ClickGuiScreen implements UiScreen {
 
     private float renderModuleDrawer(Renderer r, int mx, int my, Module m, float x, float y, float w, int accent) {
         y = drawerHeader(r, mx, my, m.name(), m.description(), x, y, w, accent);
-        // Ein/Aus groß, mit Status
+        // On/off large, with status
         if (m.canToggle()) {
             boolean problem = m.isEnabled() && (m.isBlocked() || m.unavailableReason() != null);
             Draw.round(r, x, y, x + w, y + 22, 2, Theme.CARD);
@@ -499,7 +499,7 @@ public final class ClickGuiScreen implements UiScreen {
         }
         y += 22;
 
-        // Alles zurücksetzen
+        // Reset everything
         y = section(r, Lang.tr("aio.ui.menu.danger_zone", "Danger zone"), x, y + 2, w);
         boolean armed = System.currentTimeMillis() - resetAllArmed < 4000;
         boolean hover = inside(mx, my, x, y, x + w, y + 18) && inClip(my);
@@ -566,7 +566,7 @@ public final class ClickGuiScreen implements UiScreen {
         float right = x + w, ty = y + 5;
         boolean hover = inside(mx, my, x, y, right, y + SET_H) && inClip(my);
         if (hover) Draw.round(r, x - 4, y, right + 4, y + SET_H, 2, 0x0CFFFFFF);
-        // Kleine Bedienelemente (Schalter, Taste, Farbe) lassen der Beschriftung fast die ganze Breite
+        // Small controls (switch, key, colour) leave almost the whole width to the label
         float labelW = s instanceof BooleanSetting || s instanceof KeybindSetting ? w - 50
                 : s instanceof ColorSetting ? w - 80 : s instanceof StringSetting ? w * 0.42f : w * 0.5f;
         r.text(r.trim(s.name(), labelW), x, ty, hover ? Theme.TEXT : 0xFFC9CDD8, false);
@@ -603,11 +603,11 @@ public final class ClickGuiScreen implements UiScreen {
                 Draw.keycap(r, v, right - kw, y + 3, k.isBound() ? Theme.TEXT : Theme.TEXT_MUTED);
             }
             hit(right - kw - 2, y, right, y + SET_H, btn -> {
-                if (listening == k && btn >= 2) { // Mittel- und Seitentasten lassen sich belegen
+                if (listening == k && btn >= 2) { // middle and side buttons can be bound
                     k.set(Keys.mouse(btn));
                     listening = null;
                 } else if (btn == 1 && listening != k) {
-                    k.set(Keys.NONE); // Rechtsklick löscht
+                    k.set(Keys.NONE); // right click clears
                 } else {
                     resetFocus();
                     listening = k;
@@ -628,7 +628,7 @@ public final class ClickGuiScreen implements UiScreen {
         for (Enum<?> v : values) total += r.textWidth(EnumSetting.label(v)) + 10;
         float avail = right - (x + r.textWidth(e.name()) + 10);
         if (values.length <= 3 && total <= avail) {
-            // Segmente: alle Werte sichtbar, der gewählte hervorgehoben
+            // Segments: all values visible, the selected one highlighted
             float sx = right - total;
             Draw.round(r, sx - 1, y + 2, right + 1, y + SET_H - 2, 2, Theme.CARD);
             for (Enum<?> v : values) {
@@ -684,7 +684,7 @@ public final class ClickGuiScreen implements UiScreen {
     private float colorControl(Renderer r, int mx, int my, ColorSetting c, float x, float y, float w, int accent) {
         float right = x + w;
         float sw = 22, sx = right - sw;
-        // Schachbrett für Transparenz, darüber die Farbe
+        // Checkerboard for transparency, the colour on top
         Draw.round(r, sx, y + 4, right, y + SET_H - 4, 2, 0xFFBBBBBB);
         r.fill(sx + 2, y + 4, sx + sw / 2, y + SET_H / 2f, 0xFF7A7A7A);
         r.fill(sx + sw / 2, y + SET_H / 2f, right - 2, y + SET_H - 4, 0xFF7A7A7A);
@@ -713,7 +713,7 @@ public final class ClickGuiScreen implements UiScreen {
         return y;
     }
 
-    /** Schieberegler; {@code gradient} färbt die Spur von links nach rechts (Farbwahl). */
+    /** Slider; {@code gradient} colours the track from left to right (colour picker). */
     private void slider(Renderer r, int mx, int my, float x1, float x2, float cy, double fraction, int accent,
                         DoubleConsumer setter, int[] gradient) {
         if (x2 - x1 < 12) return;
@@ -760,7 +760,7 @@ public final class ClickGuiScreen implements UiScreen {
             hit(x, y + 2, x + 11, y + BOTTOM - 2, b -> cycleProfile(1));
         }
 
-        // Ganz rechts: Schließen-Knopf mit rotem Rand; links davon Meldung oder Beschreibung
+        // Far right: close button with red border; to the left of it message or description
         String label = Lang.tr("aio.ui.menu.close", "Close") + "  Esc";
         float bw = 8 + 5 + r.textWidth(label) + 12, bx2 = px + pw - 6, bx1 = bx2 - bw, by1 = y + 2, by2 = y + BOTTOM - 2;
         boolean hv = inside(mx, my, bx1, by1, bx2, by2);
@@ -1021,7 +1021,7 @@ public final class ClickGuiScreen implements UiScreen {
         return false;
     }
 
-    /** Aus dem HUD-Editor (Rechtsklick) geöffnet: ESC führt zurück in den Editor. */
+    /** Opened from the HUD editor (right click): ESC leads back into the editor. */
     @Override public boolean returnsToPrevious() { return true; }
 
     @Override public void onClose() {

@@ -1,12 +1,12 @@
 package dev.aio.core.modules.navigation;
 
-/** Kompass-Mathematik. Kompasskurs: 0 = Norden, 90 = Osten, 180 = Süden, 270 = Westen. */
+/** Compass maths. Compass bearing: 0 = north, 90 = east, 180 = south, 270 = west. */
 public final class Compass {
     private static final String[] LABELS = {"N", "NE", "O", "SE", "S", "SW", "W", "NW"};
 
     private Compass() {}
 
-    /** MC-Yaw (0 = Süden, 90 = Westen) zu Kompasskurs. */
+    /** MC yaw (0 = south, 90 = west) to compass bearing. */
     public static float heading(float yaw) {
         return wrap(yaw + 180f);
     }
@@ -27,7 +27,7 @@ public final class Compass {
         return d < 0 ? d + 360 : d;
     }
 
-    /** Beschriftung für Vielfache von 45°, sonst null. */
+    /** Label for multiples of 45°, otherwise null. */
     public static String label(int degrees) {
         int d = Math.floorMod(degrees, 360);
         return d % 45 == 0 ? LABELS[d / 45] : null;

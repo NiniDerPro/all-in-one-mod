@@ -12,9 +12,9 @@ import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix3x2fStack;
 
 /**
- * Nährwert im Tooltip wie bei AppleSkin (Grafik und Aufbau nach AppleSkin, Public Domain):
- * oben die Hunger-Symbole, darunter die goldenen Sättigungs-Symbole. Mehr als 10 Symbole werden
- * als eins mit "x12" gezeigt.
+ * Nutrition in the tooltip:
+ * hunger icons on top, below them the golden saturation icons. More than 10 icons are
+ * shown as one with "x12".
  */
 public final class FoodTooltip {
     private FoodTooltip() {}
@@ -26,7 +26,7 @@ public final class FoodTooltip {
     private static final Identifier FOOD_HALF_HUNGER = Identifier.withDefaultNamespace("hud/food_half_hunger");
     private static final Identifier FOOD_FULL_HUNGER = Identifier.withDefaultNamespace("hud/food_full_hunger");
 
-    /** Tooltip-Daten für Essen oder null. */
+    /** Tooltip data for food or null. */
     public static TooltipComponent create(ItemStack stack) {
         FoodProperties food = stack.get(DataComponents.FOOD);
         if (food == null || food.nutrition() == 0 && food.saturation() == 0) return null;
@@ -64,7 +64,7 @@ public final class FoodTooltip {
 
         @Override public void extractImage(Font font, int tx, int ty, int totalWidth, int totalHeight, GuiGraphicsExtractor g) {
             int nutrition = data.nutrition();
-            // von rechts nach links, damit die Keulen in die richtige Richtung zeigen
+            // from right to left so that the drumsticks point in the right direction
             int x = tx + (hungerBars - 1) * 9, y = ty;
             for (int i = 0; i < hungerBars * 2; i += 2) {
                 g.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_EMPTY, x, y, 9, 9);

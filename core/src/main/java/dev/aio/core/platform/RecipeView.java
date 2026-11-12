@@ -3,18 +3,18 @@ package dev.aio.core.platform;
 import java.util.List;
 
 /**
- * Ein Eintrag in der Rezeptansicht: ein Rezept, ein Handel, eine Beute-Liste, ...
+ * An entry in the recipe view: a recipe, a trade, a loot list, ...
  *
  * @param type    Anzeigename der Art, z. B. "Werkbank", "Handel", "Beute"
- * @param width   Raster-Breite (0 = kein Raster, nur Liste)
- * @param slots   pro Eingabe-Slot die möglichen Items (leer = leerer Slot); mehrere werden durchgewechselt
+ * @param width   grid width (0 = no grid, list only)
+ * @param slots   per input slot the possible items (empty = empty slot); several are cycled through
  * @param result  Ergebnis (EMPTY = keins)
- * @param kind    Art für das Übertragen ins Inventar ("+")
- * @param notes   Textzeilen unter dem Raster (Stufe, Chance, ...)
- * @param rows    Liste aus Symbol und Text (z. B. Beute mit Chance), wird bei Bedarf geblättert
- * @param results bei {@code combos}: Ergebnis je Kombination der Slot-Auswahl
- * @param combos  Slots wechseln nicht von selbst, sondern per Klick; das Ergebnis folgt der Auswahl
- *                (Index = gemischte Basis über alle Slots mit mehreren Möglichkeiten, erster Slot zuerst)
+ * @param kind    kind for transferring into the inventory ("+")
+ * @param notes   text lines below the grid (level, chance, ...)
+ * @param rows    list of icon and text (e.g. loot with chance), paged when needed
+ * @param results for {@code combos}: result per combination of the slot selection
+ * @param combos  slots do not change on their own but by click; the result follows the selection
+ *                (index = mixed base over all slots with several options, first slot first)
  */
 public record RecipeView(String type, int width, int height, List<List<ItemRef>> slots, ItemRef result, ItemRef station,
                          RecipeKind kind, List<String> notes, List<Row> rows, List<ItemRef> results, boolean combos) {

@@ -2,11 +2,11 @@ package dev.aio.core.hud;
 
 import dev.aio.core.platform.Renderer;
 
-/** Etwas, das im HUD-Editor ausgewählt, verschoben und in der Größe gezogen werden kann. */
+/** Something that can be selected, moved and resized in the HUD editor. */
 public interface HudTarget {
     String name();
 
-    /** Das Modul, zu dem das Ziel gehört (für Einstellungen per Rechtsklick). */
+    /** The module the target belongs to (for settings via right click). */
     HudElement owner();
 
     float screenX(Renderer r);

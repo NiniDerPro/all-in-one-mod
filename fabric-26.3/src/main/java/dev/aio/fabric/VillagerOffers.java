@@ -23,8 +23,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Merkt sich die Handelsangebote von Dorfbewohnern, sobald man ihr Handelsfenster öffnet
- * (vorher kennt der Client sie nicht), für die Anzeige über ihren Köpfen.
+ * Remembers the trade offers of villagers once their trade window is opened
+ * (before that the client does not know them), for the display above their heads.
  */
 final class VillagerOffers {
     private VillagerOffers() {}
@@ -33,7 +33,7 @@ final class VillagerOffers {
 
     static void clear() { OFFERS.clear(); }
 
-    /** Angebote eines Dorfbewohners übernehmen (Handelsfenster offen, Angebote angekommen). */
+    /** Take over the offers of a villager (trade window open, offers arrived). */
     static void remember(Entity villager, MerchantOffers offers) {
         if (villager == null || offers == null || offers.isEmpty()) return;
         List<WorldLabel.Line> lines = new ArrayList<>();

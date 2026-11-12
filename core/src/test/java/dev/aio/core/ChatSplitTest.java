@@ -12,7 +12,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Chat aufgeteilt: Custom Chat (aus), Flex Chat (an), Chat Heads (aus) – jeweils eigene Module. */
+/** Chat split: Custom Chat (off), Flex Chat (on), Chat Heads (off) – each its own module. */
 class ChatSplitTest {
     @TempDir Path dir;
 
@@ -25,9 +25,9 @@ class ChatSplitTest {
 
     @Test void freshInstallDefaults() {
         AioCore core = start();
-        assertFalse(core.module(ChatModule.class).isEnabled(), "Custom Chat standardmäßig aus");
-        assertTrue(core.module(FlexChatModule.class).isEnabled(), "Flex Chat standardmäßig an");
-        assertFalse(core.module(ChatHeadsModule.class).isEnabled(), "Chat Heads standardmäßig aus");
+        assertFalse(core.module(ChatModule.class).isEnabled(), "Custom Chat off by default");
+        assertTrue(core.module(FlexChatModule.class).isEnabled(), "Flex Chat on by default");
+        assertFalse(core.module(ChatHeadsModule.class).isEnabled(), "Chat Heads off by default");
     }
 
     @Test void oldChatSettingIsTurnedOffOnceAndThenRespected() throws Exception {
@@ -42,6 +42,6 @@ class ChatSplitTest {
         core.config().save();
         core.shutdown();
         AioCore again = start();
-        assertTrue(again.module(ChatModule.class).isEnabled(), "danach bleibt die eigene Wahl erhalten");
+        assertTrue(again.module(ChatModule.class).isEnabled(), "afterwards the own choice is kept");
     }
 }

@@ -58,7 +58,7 @@ class MenuSortTest {
         ClickGuiScreen gui = new ClickGuiScreen(core, null);
         FakeRenderer r = new FakeRenderer();
         gui.render(r, 0, 0, 0);
-        // Strg+F fokussiert die Suche, Tippen filtert, Taste "e" schließt nichts
+        // Ctrl+F focuses the search, typing filters, key "e" closes nothing
         p.heldKeys.add("key.keyboard.left.control");
         assertTrue(gui.keyPressed("key.keyboard.f"));
         p.heldKeys.clear();
@@ -67,8 +67,8 @@ class MenuSortTest {
         assertTrue(gui.keyPressed("key.keyboard.e"), "Tasten gehen ins Suchfeld");
         gui.render(r, 0, 0, 0);
         assertTrue(gui.keyPressed("key.keyboard.escape"));
-        assertFalse(gui.keyPressed("key.keyboard.escape"), "zweites Escape schließt das Menü");
-        // Sortierknopf durchklicken über die ganze Kopfzeile
+        assertFalse(gui.keyPressed("key.keyboard.escape"), "second escape closes the menu");
+        // click through the sort button across the whole header row
         SortMode before = core.clientSettings().sortMode.get();
         outer:
         for (int y = 30; y < 60; y += 3) {

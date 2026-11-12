@@ -9,7 +9,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-/** Dynamic Lights: Blocklicht beim Bau der Chunks um dynamisches Licht erhöhen. */
+/** Dynamic Lights: raise block light by dynamic light when building the chunks. */
 @Mixin(LightCoordsUtil.class)
 public abstract class DynamicLightsMixin {
     @ModifyReturnValue(method = "getLightCoords(Lnet/minecraft/util/LightCoordsUtil$BrightnessGetter;Lnet/minecraft/world/level/BlockAndLightGetter;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)I",

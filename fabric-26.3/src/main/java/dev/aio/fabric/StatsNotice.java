@@ -7,8 +7,8 @@ import dev.aio.core.ui.Draw;
 import dev.aio.core.ui.Theme;
 
 /**
- * Einmaliger Hinweis oben im Titelbildschirm, dass AIO anonyme Nutzungsstatistik sendet, Anonyme Statistik ist standardmäßig AUS;
- * "Okay" schaltet sie ein, "No thanks" lässt sie aus. Danach kommt der Hinweis nie wieder. So ist das Senden offengelegt, bleibt aber unaufdringlich.
+ * One-time notice at the top of the title screen that AIO can send anonymous usage statistics.
+ * The statistics are OFF by default; "Okay" switches them on, "No thanks" keeps them off. The notice never comes back afterwards.
  */
 final class StatsNotice {
     private StatsNotice() {}
@@ -25,7 +25,7 @@ final class StatsNotice {
         return new float[]{x, 6, x + w, 6 + HEIGHT};
     }
 
-    /** x1,y1,x2,y2 des AIO-Knopfs und des Schließen-Knopfs. */
+    /** x1,y1,x2,y2 of the accept button and the decline button. */
     private static float[][] buttons(int screenW) {
         float[] b = box(screenW);
         float by = b[3] - 17, bh = 13;
@@ -63,14 +63,14 @@ final class StatsNotice {
         r.text(label, cx - r.textWidth(label) / 2f, bt[1] + 3, primary ? 0xFF0E1015 : Theme.TEXT, false);
     }
 
-    /** Klick behandeln. Gibt true zurück, wenn der Klick verbraucht wurde. */
+    /** Handle a click. Returns true if the click was consumed. */
     static boolean mouseClicked(AioCore core, double mx, double my, int screenW) {
         if (!shouldShow(core)) return false;
         float[][] bt = buttons(screenW);
         boolean inAio = hit(bt[0], mx, my), inOk = hit(bt[1], mx, my);
         if (!inAio && !inOk) {
             float[] b = box(screenW);
-            return mx >= b[0] && mx <= b[2] && my >= b[1] && my <= b[3]; // Klick im Banner nicht durchreichen
+            return mx >= b[0] && mx <= b[2] && my >= b[1] && my <= b[3]; // do not pass clicks in the banner through
         }
         core.clientSettings().telemetryNoticeSeen.set(true);
         core.clientSettings().telemetry.set(inAio); // Okay = an, Nein danke = aus

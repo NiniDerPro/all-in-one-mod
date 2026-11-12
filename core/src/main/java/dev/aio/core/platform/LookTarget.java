@@ -3,19 +3,19 @@ package dev.aio.core.platform;
 import java.util.List;
 
 /**
- * Was der Spieler gerade ansieht (Block oder Wesen unter dem Fadenkreuz).
- * Der Adapter liefert nur Rohdaten, die Darstellung entscheidet der Kern.
+ * What the player is currently looking at (block or entity under the crosshair).
+ * The adapter only delivers raw data, the core decides how it is shown.
  *
  * @param name        angezeigter Name, z. B. "Grasblock"
- * @param source      Name der Mod, aus der das Ziel stammt, z. B. "Minecraft"
+ * @param source      name of the mod the target comes from, e.g. "Minecraft"
  * @param icon        Item-Icon (bei Wesen meist leer)
- * @param correctTool true = passendes Werkzeug in der Hand, false = ohne passendes Werkzeug kein Drop, null = neutral
- * @param toolType    benötigter Werkzeugtyp ("Spitzhacke", ...) oder null
- * @param growth      Wachstum 0..1 bei Pflanzen, sonst NaN
- * @param health      Lebenspunkte bei Wesen, sonst NaN
- * @param armor       Rüstungspunkte bei Wesen, sonst -1
- * @param details     blockspezifische Angaben (Honig im Bienenstock, Füllstand im Komposter, ...).
- *                    Der Adapter liefert nur die, die zur angesehenen Blockart passen.
+ * @param correctTool true = matching tool in hand, false = no drop without a matching tool, null = neutral
+ * @param toolType    required tool type ("Pickaxe", ...) or null
+ * @param growth      growth 0..1 for plants, otherwise NaN
+ * @param health      health points for entities, otherwise NaN
+ * @param armor       armor points for entities, otherwise -1
+ * @param details     block-specific details (honey in a beehive, fill level in a composter, ...).
+ *                    The adapter only delivers those that fit the viewed block type.
  */
 public record LookTarget(Kind kind, String name, String source, ItemRef icon, Boolean correctTool, String toolType,
                          float growth, float health, float maxHealth, int armor, int x, int y, int z,
@@ -25,7 +25,7 @@ public record LookTarget(Kind kind, String name, String source, ItemRef icon, Bo
     /**
      * Eine Zeile "Bezeichnung: Wert".
      *
-     * @param highlight Wert hervorheben (grün), z. B. "Honig: 5/5" = erntebereit
+     * @param highlight highlight the value (green), e.g. "Honey: 5/5" = ready to harvest
      */
     public record Detail(String label, String value, boolean highlight) {
         public static Detail of(String label, String value) { return new Detail(label, value, false); }
@@ -41,7 +41,7 @@ public record LookTarget(Kind kind, String name, String source, ItemRef icon, Bo
         toolIcon = toolIcon == null ? ItemRef.EMPTY : toolIcon;
     }
 
-    /** Mit Werkzeug-Symbol (das schwächste Werkzeug, das den Block abbaut), neben dem Namen. */
+    /** With tool icon (the weakest tool that breaks the block), next to the name. */
     public LookTarget withToolIcon(ItemRef tool) {
         return new LookTarget(kind, name, source, icon, correctTool, toolType, growth, health, maxHealth, armor, x, y, z,
                 details, typeName, tool);
@@ -63,7 +63,7 @@ public record LookTarget(Kind kind, String name, String source, ItemRef icon, Bo
         return entity(name, "", source, icon, health, maxHealth, armor, x, y, z);
     }
 
-    /** @param typeName Art des Wesens ("Zombie"), wichtig wenn {@code name} ein Namensschild ist */
+    /** @param typeName kind of the entity ("Zombie"), important when {@code name} is a name tag */
     public static LookTarget entity(String name, String typeName, String source, ItemRef icon, float health, float maxHealth,
                                     int armor, int x, int y, int z) {
         return new LookTarget(Kind.ENTITY, name, source, icon, null, null, Float.NaN, health, maxHealth, armor, x, y, z,

@@ -4,10 +4,10 @@ import dev.aio.core.module.Category;
 import dev.aio.core.platform.Renderer;
 
 /**
- * HUD-Element mit einer Textzeile. Unterklassen implementieren nur {@link #getText()}.
+ * HUD element with one line of text. Subclasses only implement {@link #getText()}.
  *
- * <p>Der Text wird pro Tick abgefragt (nicht pro Frame). Die Breite wird nur neu
- * gemessen, wenn sich der Text geändert hat.
+ * <p>The text is queried once per tick (not per frame). The width is only measured again
+ * when the text changed.
  */
 public abstract class TextHudElement extends HudElement {
     private String cachedText = "";
@@ -22,10 +22,10 @@ public abstract class TextHudElement extends HudElement {
         super(id, name, description, category, gameplayAffecting, defaultX, defaultY);
     }
 
-    /** Der anzuzeigende Text. Leer heißt: nichts anzeigen. */
+    /** The text to show. Empty means: show nothing. */
     protected abstract String getText();
 
-    /** Platzhalter für den HUD-Editor, wenn {@link #getText()} leer ist. */
+    /** Placeholder for the HUD editor when {@link #getText()} is empty. */
     protected String previewText() { return name(); }
 
     @Override public void update() { setText(getText()); }

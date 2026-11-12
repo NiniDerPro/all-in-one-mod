@@ -17,7 +17,7 @@ import java.io.File;
 import java.nio.file.Path;
 
 /**
- * Design-Vorschau: rendert Menü und HUD als PNG. Läuft nur mit
+ * Design preview: renders menu and HUD as PNG. Only runs with
  * {@code -Daio.preview=<Ordner>}, z. B. {@code ./gradlew :core:test -Paio.coreOnly=true -Daio.preview=/tmp/p --tests '*PreviewTest*'}.
  */
 class PreviewTest {
@@ -26,7 +26,7 @@ class PreviewTest {
     static final File CLIENT_JAR = new File(System.getProperty("aio.clientJar",
             System.getProperty("user.home") + "/.gradle/caches/fabric-loom/26.3/minecraft-client.jar"));
 
-    /** Liefert Items mit ID, damit Icons in der Vorschau erscheinen. */
+    /** Delivers items with an id so that icons appear in the preview. */
     static final class PreviewPlatform extends FakePlatform {
         @Override public ItemRef item(String id) { return new SimpleItem(id, 1); }
     }
@@ -52,7 +52,7 @@ class PreviewTest {
     private static void render(UiScreen screen, File out, int mx, int my, int w, int h) throws Exception {
         screen.onOpen();
         PreviewRenderer r = null;
-        for (int frame = 0; frame < 3; frame++) { // Animationen einschwingen lassen, nur der letzte Frame zählt
+        for (int frame = 0; frame < 3; frame++) { // let animations settle, only the last frame counts
             r = new PreviewRenderer(w, h, 2, CLIENT_JAR);
             r.fakeWorld();
             screen.render(r, mx, my, 0);
@@ -63,7 +63,7 @@ class PreviewTest {
 
     @Test void renderPreviews() throws Exception {
         String target = System.getProperty("aio.preview", "");
-        Assumptions.assumeTrue(!target.isEmpty(), "nur mit -Daio.preview");
+        Assumptions.assumeTrue(!target.isEmpty(), "only with -Daio.preview");
         File outDir = new File(target);
         AioCore core = core();
 

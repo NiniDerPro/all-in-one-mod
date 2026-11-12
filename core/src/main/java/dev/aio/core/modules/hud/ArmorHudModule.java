@@ -13,7 +13,7 @@ import dev.aio.core.util.Colors;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Rüstung und Items in der Hand mit Haltbarkeit als Balken, Zahl oder Prozent. */
+/** Armor and items in hand with durability as bar, number or percent. */
 public final class ArmorHudModule extends HudElement {
     public enum DurabilityMode implements EnumSetting.Named {
         BAR("Bar"), NUMBER("Number"), PERCENT("Percent"), NONE("Off");
@@ -35,7 +35,7 @@ public final class ArmorHudModule extends HudElement {
         @Override public String displayName() { return displayName; }
     }
 
-    /** {@code key} beschreibt den sichtbaren Zustand, damit nur bei echten Änderungen neu gemessen wird. */
+    /** {@code key} describes the visible state so that it is only re-measured on real changes. */
     private record Entry(ItemRef item, String text, int color, String key) {}
 
     private static final int ICON = 16;
@@ -48,12 +48,12 @@ public final class ArmorHudModule extends HudElement {
     private final BooleanSetting colorByDurability;
 
     private List<Entry> entries = List.of();
-    /** Pro Platz (Zweithand, Kopf, Brust, Beine, Füße, Haupthand) der Eintrag oder null. */
+    /** Per slot (offhand, head, chest, legs, feet, main hand) the entry or null. */
     private Entry[] slots = new Entry[6];
     private final HudPart[] parts = new HudPart[6];
     private static final String[][] PARTS = {{"offhand", "Offhand"}, {"head", "Helmet"}, {"chest", "Chestplate"},
             {"legs", Lang.tr("aio.ui.armor_hud.leggings", "Leggings")}, {"feet", Lang.tr("aio.ui.armor_hud.boots", "Boots")}, {"mainhand", Lang.tr("aio.ui.armor_hud.main_hand", "Main hand")}};
-    /** Innenabstand eines einzelnen Teils: so passen die Teile lückenlos untereinander. */
+    /** Padding of a single part: that way the parts fit together without gaps. */
     private static final int PART_PAD = 1;
     private final BooleanSetting edgeMigrated;
     private int cachedW = -1;
@@ -75,12 +75,12 @@ public final class ArmorHudModule extends HudElement {
 
     @Override protected boolean defaultBackground() { return false; }
 
-    /** Ganz an den Rand: ohne Hintergrund liegen die Icons direkt an, mit Hintergrund der Kasten. */
+    /** Right at the edge: without background the icons sit directly there, with background the box. */
     @Override protected float edgeMargin() { return background.on() ? 0 : -(PADDING - 1) * scale.get().floatValue(); }
 
     @Override protected float partEdgeMargin() { return background.on() ? 0 : -PART_PAD; }
 
-    /** Früher hielt alles 3 px Abstand zum Rand; was dort stand, kommt einmalig ganz an den Rand. */
+    /** Everything used to keep 3 px distance to the edge; what stood there moves once right to the edge. */
     @Override public void afterLoad() {
         super.afterLoad();
         if (edgeMigrated.on()) return;
@@ -89,7 +89,7 @@ public final class ArmorHudModule extends HudElement {
         edgeMigrated.set(true);
     }
 
-    /** Neue Standards (links, ohne Zweithand) einmalig auch für bestehende Configs. */
+    /** New defaults (left, without offhand) once also for existing configs. */
     @Override public void applyNewDefaults() {
         posX.reset();
         posY.reset();
@@ -107,7 +107,7 @@ public final class ArmorHudModule extends HudElement {
         List<Entry> next = new ArrayList<>(6);
         Entry[] nextSlots = new Entry[6];
         if (platform().inWorld()) {
-            // Zweithand über der Rüstung, Haupthand darunter
+            // Offhand above the armor, main hand below
             List<ItemRef> armor = platform().armor();
             for (int i = 0; i < 6; i++) {
                 if (i == 0 && !showOffHand.on() || i == 5 && !showMainHand.on()) continue;
@@ -119,7 +119,7 @@ public final class ArmorHudModule extends HudElement {
         }
         slots = nextSlots;
         if (!sameKeys(next, entries)) invalidate();
-        entries = next; // Item-Handles immer aktualisieren, gemessen wird nur bei Änderung
+        entries = next; // always update item handles, measuring only on change
     }
 
     private static boolean sameKeys(List<Entry> a, List<Entry> b) {
@@ -196,7 +196,7 @@ public final class ArmorHudModule extends HudElement {
         }
     }
 
-    /** Beispiel-Ausrüstung für die Vorschau im Editor, solange der Spieler nichts trägt. */
+    /** Sample equipment for the preview in the editor while the player wears nothing. */
     private static final String[] SAMPLE = {"minecraft:shield", "minecraft:diamond_helmet", "minecraft:diamond_chestplate",
             "minecraft:diamond_leggings", "minecraft:diamond_boots", "minecraft:diamond_sword"};
     private final ItemRef[] sampleItems = new ItemRef[SAMPLE.length];
@@ -248,7 +248,7 @@ public final class ArmorHudModule extends HudElement {
     }
 
     @Override protected float[] partOffset(Renderer r, HudPart part) {
-        // Reihenfolge wie im Block, gezählt über die eingeschalteten Plätze
+        // Order like in the block, counted over the switched-on slots
         int n = 0;
         for (int i = 0; i < indexOf(part); i++) if (partEnabled(parts[i])) n++;
         if (orientation.get() == Orientation.VERTICAL) return new float[]{PADDING - PART_PAD, PADDING - PART_PAD + n * ROW};

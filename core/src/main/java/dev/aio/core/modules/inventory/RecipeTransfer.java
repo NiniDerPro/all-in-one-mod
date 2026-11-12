@@ -14,24 +14,24 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Legt ein Rezept per echten Klicks in das Eingabe-Raster (wie der "+"-Knopf in JEI/REI).
+ * Puts a recipe into the input grid with real clicks (like the "+" button in JEI/REI).
  *
  * <ul>
- *   <li>Einfach: pro Zutat genau ein Item (höchstens 3 Klicks pro Slot).</li>
- *   <li>Maximal: ganze Stacks per Ziehen-Verteilen auf alle Slots derselben Zutat, bis die Slots
- *       voll sind oder nichts mehr da ist. Das braucht nur wenige Pakete (Server-Spamschutz!).</li>
+ *   <li>Simple: exactly one item per ingredient (at most 3 clicks per slot).</li>
+ *   <li>Maximum: whole stacks by drag-distributing over all slots of the same ingredient, until the slots
+ *       are full or nothing is left. That needs only a few packets (server spam protection!).</li>
  * </ul>
- * Vorher wird das Raster geleert; klappt das nicht (Inventar voll), wird abgebrochen.
+ * Before that the grid is emptied; if that does not work (inventory full), it aborts.
  */
 public final class RecipeTransfer {
     public enum Status { OK, WRONG_STATION, TOO_BIG, MISSING_ITEMS }
 
-    /** Obergrenze an Klickpaketen pro Übertragung, damit kein Server wegen Spam kickt. */
+    /** Upper limit of click packets per transfer, so that no server kicks for spam. */
     public static final int MAX_CLICKS = 300;
 
     private RecipeTransfer() {}
 
-    /** Prüft, ob das Rezept hier passt und genug Zutaten für einmal Herstellen da sind. */
+    /** Checks whether the recipe fits here and enough ingredients for one craft are there. */
     public static Status check(ContainerView c, RecipeView recipe) {
         Grid g = c == null ? null : c.grid();
         if (g == null || !g.kinds().contains(recipe.kind())) return Status.WRONG_STATION;
@@ -39,20 +39,20 @@ public final class RecipeTransfer {
         return missing(c, recipe).isEmpty() ? Status.OK : Status.MISSING_ITEMS;
     }
 
-    /** Indizes der Rezept-Slots, für die im Inventar (inkl. Raster) kein passendes Item liegt. */
+    /** Indices of the recipe slots for which no matching item lies in the inventory (incl. grid). */
     public static List<Integer> missing(ContainerView c, RecipeView recipe) { return missing(c, recipe, true); }
 
     /**
-     * Überträgt das Rezept.
+     * Transfers the recipe.
      *
-     * @return wie oft das Rezept jetzt hergestellt werden kann (0 = nichts übertragen)
+     * @return how often the recipe can now be crafted (0 = nothing transferred)
      */
     public static int transfer(ContainerView c, RecipeView recipe, boolean max) {
         if (check(c, recipe) != Status.OK || !c.cursor().isEmpty()) return 0;
         Grid g = c.grid();
         int[] clicks = {0};
 
-        // 1. Raster leeren, bei vollem Inventar abbrechen statt Items zu vertauschen
+        // 1. Empty the grid, abort when the inventory is full instead of swapping items
         for (int idx : g.slots()) {
             Slot s = InventoryOps.slot(c, idx);
             if (s != null && !s.item().isEmpty()) click(c, clicks, idx, 0, Click.QUICK_MOVE);
@@ -85,7 +85,7 @@ public final class RecipeTransfer {
     }
 
     private static int transferMax(ContainerView c, RecipeView recipe, Grid g, int[] clicks) {
-        // Zutat pro Slot festlegen (die mit dem größten Vorrat) und Ziel-Slots je Item-ID sammeln
+        // Determine the ingredient per slot (the one with the largest supply) and collect target slots per item id
         Map<String, Integer> available = availableCounts(c, false);
         Map<String, List<Integer>> groups = new LinkedHashMap<>();
         for (int i = 0; i < recipe.slots().size(); i++) {
@@ -118,7 +118,7 @@ public final class RecipeTransfer {
                     c.dragSplit(toArray(needing));
                     clicks[0] += needing.size() + 2;
                 }
-                // Rest (oder zu wenig für alle Slots) zurücklegen: alle Slots bleiben gleich voll
+                // Put back the rest (or too little for all slots): all slots stay equally full
                 if (!c.cursor().isEmpty()) click(c, clicks, src.index(), 0, Click.PICKUP);
                 if (!distributed || !c.cursor().isEmpty()) break;
             }
@@ -167,7 +167,7 @@ public final class RecipeTransfer {
         return null;
     }
 
-    /** Anzahl pro Item-ID im Spielerinventar (optional plus Inhalt des Rasters). */
+    /** Count per item id in the player inventory (optionally plus the contents of the grid). */
     private static Map<String, Integer> availableCounts(ContainerView c, boolean includeGrid) {
         Map<String, Integer> m = new HashMap<>();
         for (Slot s : c.slots()) {
@@ -183,7 +183,7 @@ public final class RecipeTransfer {
         return m;
     }
 
-    /** Erster Stack dieser Item-ID im Spielerinventar (Hauptinventar oder Hotbar). */
+    /** First stack of this item id in the player inventory (main inventory or hotbar). */
     private static Slot findSource(ContainerView c, String id) {
         for (Slot s : c.slots()) {
             if (!s.item().isEmpty() && (s.playerMain() || s.hotbar()) && id.equals(s.item().id())) return s;

@@ -23,13 +23,13 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Rezepte für die Item-Liste. Quelle: im Singleplayer der integrierte Server, sonst vom
- * Server per Fabric synchronisierte Rezepte (nur wenn der Server das anbietet).
+ * Recipes for the item list. Source: in singleplayer the integrated server, otherwise the
+ * recipes synced from the server via Fabric (only if the server offers it).
  */
 final class RecipeSource {
     private static final int LIMIT = 1000;
     private static volatile SynchronizedRecipes synced;
-    /** Umgewandelte Rezepte der aktuellen Quelle; einmal pro Welt/Quelle statt bei jedem Öffnen. */
+    /** Converted recipes of the current source; once per world/source instead of on every open. */
     private static volatile List<RecipeView> cache;
     private static volatile Object cacheSource;
 
@@ -47,7 +47,7 @@ final class RecipeSource {
         VanillaRecipes.clear();
     }
 
-    /** Immer verfügbar: notfalls die Vanilla-Rezepte aus dem Spiel selbst. */
+    /** Always available: if necessary the vanilla recipes from the game itself. */
     static boolean available(Minecraft client) { return client.level != null; }
 
     private static Collection<RecipeHolder<?>> all(Minecraft client) {
@@ -64,8 +64,8 @@ final class RecipeSource {
             return out;
         }
         SynchronizedRecipes s = synced;
-        if (s != null) return s.recipes(); // vom Server geschickt: auch geänderte Rezepte
-        return VanillaRecipes.get(client);   // sonst die Standard-Rezepte von Minecraft
+        if (s != null) return s.recipes(); // sent by the server: changed recipes too
+        return VanillaRecipes.get(client);   // otherwise the default recipes of Minecraft
     }
 
     static List<RecipeView> find(Minecraft client, ItemRef item, boolean usages) {
@@ -78,7 +78,7 @@ final class RecipeSource {
         return out;
     }
 
-    /** Alle Rezepte der aktuellen Quelle als Anzeige-Daten (gecacht, Quelle = Server/Sync/Vanilla). */
+    /** All recipes of the current source as display data (cached, source = server/sync/vanilla). */
     private static List<RecipeView> views(Minecraft client) {
         Object source = client.getSingleplayerServer() != null ? client.getSingleplayerServer() : synced != null ? synced : client.level;
         List<RecipeView> c = cache;

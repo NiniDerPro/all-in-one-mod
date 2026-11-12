@@ -2,7 +2,7 @@ package dev.aio.core.platform;
 
 import java.util.List;
 
-/** Versionsunabhängige Sicht auf einen ItemStack. */
+/** Version-independent view of an ItemStack. */
 public interface ItemRef {
     ItemRef EMPTY = new ItemRef() {
         @Override public boolean isEmpty() { return true; }
@@ -25,10 +25,10 @@ public interface ItemRef {
     /** Registry-ID, z. B. {@code minecraft:diamond_sword}. */
     default String id() { return ""; }
 
-    /** Anzeigename der Mod, aus der das Item stammt. */
+    /** Display name of the mod the item comes from. */
     default String modName() { return ""; }
 
-    /** Farbe des Namens wie im Tooltip (Seltenheit, verzaubert = türkis, …), ARGB. */
+    /** Colour of the name as in the tooltip (rarity, enchanted = cyan, …), ARGB. */
     default int nameColor() { return 0xFFFFFFFF; }
 
     default int maxStackSize() { return 64; }

@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
 
-/** Einstiegspunkt des 26.3-Adapters: verbindet Fabric-Events mit dem Kern-Event-Bus. */
+/** Entry point of the 26.3 adapter: connects Fabric events with the core event bus. */
 public final class AioFabricClient implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("aio");
 
@@ -43,7 +43,7 @@ public final class AioFabricClient implements ClientModInitializer {
             }
         };
 
-        // Texte aus assets/aio/lang/*.json; folgt der Spracheinstellung von Minecraft
+        // Texts from assets/aio/lang/*.json; follows the language setting of Minecraft
         Lang.setLookup(key -> {
             Language language = Language.getInstance();
             return language.has(key) ? language.getOrDefault(key) : null;
@@ -56,7 +56,7 @@ public final class AioFabricClient implements ClientModInitializer {
         ChatWaypoints.register(core);
         FabricRenderer hudRenderer = new FabricRenderer(client);
 
-        // Ganz oben über allen Vanilla-HUD-Elementen zeichnen (F1 blendet das HUD samt diesem Element aus).
+        // Draw at the very top above all vanilla HUD elements (F1 hides the HUD including this element).
         HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("aio", "hud"), (graphics, deltaTracker) -> {
             if (hideHudFor(client.gui.screen())) return;
             long t0 = System.nanoTime();
@@ -66,7 +66,7 @@ public final class AioFabricClient implements ClientModInitializer {
             hudFrames++;
         });
 
-        // Vanilla-Teile ausblenden, die ein aktives AIO-Modul ersetzt
+        // Hide vanilla parts that an active AIO module replaces
         HudElementRegistry.replaceElement(VanillaHudElements.MOB_EFFECTS, vanilla -> (graphics, delta) -> {
             PotionStatusModule potions = core.module(PotionStatusModule.class);
             if (potions == null || !potions.isActive()) vanilla.extractRenderState(graphics, delta);
@@ -76,7 +76,7 @@ public final class AioFabricClient implements ClientModInitializer {
             if (info == null || !info.replacesVanillaName()) vanilla.extractRenderState(graphics, delta);
         });
 
-        // Essens-Info direkt an Hunger- und Lebensleiste (Positionen wie Vanilla: Mitte ± 91, 39 über unten)
+        // Food info directly at the hunger and health bars (positions like vanilla: centre ± 91, 39 above the bottom)
         FabricRenderer foodRenderer = new FabricRenderer(client);
         HudElementRegistry.attachElementBefore(VanillaHudElements.FOOD_BAR, Identifier.fromNamespaceAndPath("aio", "food_under"),
                 (g, d) -> FoodHud.renderUnder(g, core.module(FoodInfoModule.class), g.guiWidth() / 2 + 91, g.guiHeight() - 39));
@@ -101,7 +101,7 @@ public final class AioFabricClient implements ClientModInitializer {
 
         ClientTickEvents.START_CLIENT_TICK.register(c -> Freecam.preTick());
         ClientTickEvents.END_CLIENT_TICK.register(c -> {
-            // Fenster ohne Fokus (Alt+Tab): Loslassen kommt nicht mehr an, darum alles als losgelassen werten
+            // Window without focus (Alt+Tab): releases no longer arrive, so treat everything as released
             if (!c.isWindowActive()) InputState.clear();
             platform.applyPendingScreen();
             Culler.tick();
@@ -134,9 +134,9 @@ public final class AioFabricClient implements ClientModInitializer {
     }
 
     /**
-     * In Menüs und Inventaren (Werkbank, Truhe, Pause, ...) ist das AIO-HUD ausgeblendet.
-     * Im Chat bleibt es sichtbar, die AIO-eigenen Screens zeichnen selbst, was sie brauchen.
-     * Das Item-Panel rechts hängt am Inventar-Screen und ist davon nicht betroffen.
+     * In menus and inventories (crafting table, chest, pause, ...) the AIO HUD is hidden.
+     * In chat it stays visible, the AIO's own screens draw what they need themselves.
+     * The item panel on the right is attached to the inventory screen and is not affected.
      */
     private static boolean hideHudFor(Screen screen) {
         return screen != null && !(screen instanceof ChatScreen) && !(screen instanceof AioScreen);
@@ -146,7 +146,7 @@ public final class AioFabricClient implements ClientModInitializer {
     private static long hudNanos, hudFrames, tickNanos;
     private static int diagTicks;
 
-    /** Alle 30 Sekunden: wie viel Zeit AIO selbst gebraucht hat (zum Vergleichen mit der Frame-Zeit aus F3). */
+    /** Every 30 seconds: how much time AIO itself needed (to compare with the frame time from F3). */
     private static void reportPerformance(AioCore core) {
         FpsBoostModule boost = core.module(FpsBoostModule.class);
         if (boost != null && boost.diagnose()) {

@@ -8,10 +8,10 @@ import dev.aio.core.platform.Perspective;
 import dev.aio.core.setting.BooleanSetting;
 
 /**
- * Freelook: Solange aktiv, dreht die Maus nur die Kamera, nicht den Spieler.
- * Wechselt dabei auf die 3. Person (hinten) und springt danach zur vorherigen Perspektive zurück.
+ * Freelook: while active, the mouse only turns the camera, not the player.
+ * Switches to third person (behind) and jumps back to the previous perspective afterwards.
  *
- * <p>Der Adapter fragt {@link #consumeMouse} (Mausbewegung) und {@link #cameraYaw()}/{@link #cameraPitch()} ab.
+ * <p>The adapter queries {@link #consumeMouse} (mouse movement) and {@link #cameraYaw()}/{@link #cameraPitch()}.
  */
 public final class FreelookModule extends KeyActivatedModule {
     private final BooleanSetting thirdPerson;
@@ -46,7 +46,7 @@ public final class FreelookModule extends KeyActivatedModule {
     }
 
     @Override protected void onDisengage() {
-        // Nur zurückspringen, wenn der Spieler die Perspektive nicht inzwischen selbst geändert hat.
+        // Only jump back if the player has not changed the perspective in the meantime.
         if (changedPerspective && platform().perspective() == Perspective.THIRD_PERSON_BACK) {
             platform().setPerspective(previous);
         }
@@ -54,12 +54,12 @@ public final class FreelookModule extends KeyActivatedModule {
     }
 
     /**
-     * Vom Adapter aufgerufen, bevor die Mausbewegung auf den Spieler angewendet wird.
+     * Called by the adapter before the mouse movement is applied to the player.
      *
-     * @return true, wenn Freelook die Bewegung verbraucht hat (Spieler nicht drehen)
+     * @return true if freelook consumed the movement (do not turn the player)
      */
     public boolean consumeMouse(double dx, double dy) {
-        // Ohne funktionierenden Kamera-Hook würde die Sicht sonst "einfrieren"
+        // Without a working camera hook the view would "freeze"
         if (!isEngaged() || !platform().freelookSupported()) return false;
         yaw += (float) dx * 0.15f;
         pitch += (float) (invertPitch.on() ? -dy : dy) * 0.15f;

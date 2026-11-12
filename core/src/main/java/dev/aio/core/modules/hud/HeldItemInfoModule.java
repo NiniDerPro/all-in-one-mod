@@ -13,14 +13,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Zeigt beim Wechseln des Items die Verzauberungen (und ähnliche Infos) über der Hotbar,
- * wie der Vanilla-Itemname, und blendet sie danach aus.
+ * Shows the enchantments (and similar info) above the hotbar when switching the item,
+ * like the vanilla item name, and fades them out afterwards.
  */
 public final class HeldItemInfoModule extends HudElement {
     private static final int LINE = 10;
-    /** Abstand zwischen Itemname und Verzauberungen. */
+    /** Distance between item name and enchantments. */
     private static final int NAME_GAP = 2;
-    /** Abstand zur Bildschirmunterkante: Hotbar (22) plus Luft; im Überleben zusätzlich über Herzen/Hunger. */
+    /** Distance to the bottom screen edge: hotbar (22) plus air; in survival additionally above hearts/hunger. */
     private static final int MARGIN_CREATIVE = 27, MARGIN_SURVIVAL = 51;
 
     private final NumberSetting duration;
@@ -53,16 +53,16 @@ public final class HeldItemInfoModule extends HudElement {
 
     @Override protected int defaultTextColor() { return 0xFFAAAAAA; }
 
-    /** Feste Standardposition über der Hotbar: nicht automatisch verschieben. */
+    /** Fixed default position above the hotbar: do not move automatically. */
     @Override public boolean isPlaced() { return true; }
 
-    /** Alte Standardposition (0,80) auf die neue, unten verankerte umstellen. */
+    /** Switch the old default position (0,80) to the new one anchored at the bottom. */
     @Override public void afterLoad() {
         if (Math.abs(posY.get() - 0.80) < 1e-6) posY.reset();
-        if (textColor.argb() == 0xFFFFFFFF) textColor.reset(); // früher fest blau, jetzt grau wie Vanilla
+        if (textColor.argb() == 0xFFFFFFFF) textColor.reset(); // used to be fixed blue, now grey like vanilla
     }
 
-    /** Unten verankert: 1,0 = direkt über der Hotbar (bzw. über Herzen und Hunger im Überleben). */
+    /** Anchored at the bottom: 1.0 = directly above the hotbar (or above hearts and hunger in survival). */
     private float bottomMargin() {
         return core != null && platform().foodState().visible() ? MARGIN_SURVIVAL : MARGIN_CREATIVE;
     }
@@ -82,7 +82,7 @@ public final class HeldItemInfoModule extends HudElement {
         if (!platform().inWorld()) return;
         ItemRef held = platform().mainHand();
         int slot = platform().selectedSlot();
-        // Details gehören zum Schlüssel, damit z. B. eine neue Verzauberung am Amboss auch erscheint
+        // Details belong to the key so that e.g. a new enchantment at the anvil also appears
         List<String> next = held.isEmpty() ? List.of() : platform().heldItemDetails();
         String key = held.isEmpty() ? "" : held.id() + "|" + held.name() + "|" + next;
         if (slot != lastSlot || !key.equals(lastKey)) {
@@ -111,7 +111,7 @@ public final class HeldItemInfoModule extends HudElement {
         return elapsed < fadeStart ? 1f : 1f - (elapsed - fadeStart) / 500f;
     }
 
-    /** Ob der Itemname über den Verzauberungen steht (dann blendet der Adapter den Vanilla-Namen aus). */
+    /** Whether the item name is above the enchantments (then the adapter hides the vanilla name). */
     public boolean replacesVanillaName() { return isActive() && showName.on(); }
 
     @Override public boolean hasContent() { return (!lines.isEmpty() || !name(false).isEmpty()) && alpha() > 0.02f; }
@@ -153,7 +153,7 @@ public final class HeldItemInfoModule extends HudElement {
         for (int i = 0; i < s.size(); i++) {
             String line = s.get(i);
             float x = (w - r.textWidth(line)) / 2f;
-            // Grau wie die Verzauberungen im Vanilla-Tooltip (Flüche bringen ihr Rot selbst mit)
+            // Grey like the enchantments in the vanilla tooltip (curses bring their red themselves)
             int color = Colors.fade(colorMode() == ColorMode.STATIC ? textColor() : dynamicColor(i * 12), a);
             if (Colors.alpha(color) < 8) continue;
             r.text(line, x, top + i * LINE, color, shadow());

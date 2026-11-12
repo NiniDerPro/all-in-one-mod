@@ -8,7 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
-/** Bestes Werkzeug bzw. beste Waffe in der Hotbar (Auto Tool, Auto Weapon); schont vom Tool Saver geschützte Items. */
+/** Best tool or weapon in the hotbar (Auto Tool, Auto Weapon); spares items protected by Tool Saver. */
 final class HotbarTools {
     private final Minecraft client;
 
@@ -50,8 +50,8 @@ final class HotbarTools {
         for (int i = 0; i < 9; i++) {
             ItemStack s = p.getInventory().getItem(i);
             int type = s.is(ItemTags.SWORDS) ? (preferAxe ? 1 : 2) : s.is(ItemTags.AXES) ? (preferAxe ? 2 : 1) : 0;
-            if (type == 0) continue; // geschützte Waffen nicht meiden: Tool Saver blockiert statt zu wechseln
-            // höhere Stufe = mehr Haltbarkeit (Holz < Stein < Eisen < Diamant < Netherit)
+            if (type == 0) continue; // do not avoid protected weapons: Tool Saver blocks instead of switching
+            // higher tier = more durability (wood < stone < iron < diamond < netherite)
             int score = type * 100_000 + s.getMaxDamage();
             if (score > bestScore) {
                 bestScore = score;

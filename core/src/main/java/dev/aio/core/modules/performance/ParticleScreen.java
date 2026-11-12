@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/** Liste aller Partikel mit Schaltern und Suche; oben die häufig abgeschalteten. */
+/** List of all particles with switches and search; the frequently switched-off ones at the top. */
 public final class ParticleScreen implements UiScreen {
     private static final int ROW = 14;
 

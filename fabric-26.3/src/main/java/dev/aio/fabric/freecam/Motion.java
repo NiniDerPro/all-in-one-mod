@@ -3,7 +3,7 @@ package dev.aio.fabric.freecam;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
-/** Bewegung der Freecam (Modus "Default"). Aus Freecam (MIT) übernommen, siehe NOTICE.md. */
+/** Movement of the freecam (mode "Default"). Adapted from Freecam (MIT), see NOTICE.md. */
 public final class Motion {
     private Motion() {}
 

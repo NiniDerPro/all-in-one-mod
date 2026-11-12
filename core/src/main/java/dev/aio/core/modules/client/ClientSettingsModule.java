@@ -14,7 +14,7 @@ import dev.aio.core.setting.StringSetting;
 import dev.aio.core.ui.SortMode;
 import dev.aio.core.ui.Theme;
 
-/** Globale Client-Einstellungen. Immer aktiv, lassen sich nicht ausschalten. */
+/** Global client settings. Always active, cannot be switched off. */
 public final class ClientSettingsModule extends Module {
     public final KeybindSetting guiKey;
     public final KeybindSetting hudEditorKey;
@@ -24,14 +24,14 @@ public final class ClientSettingsModule extends Module {
     public final ColorSetting accent;
     public final BooleanSetting rainbowAccent;
     public final EnumSetting<SortMode> sortMode;
-    /** Andere installierte Mods mit gleicher Funktion haben Vorrang (das AIO-Modul bleibt dann aus). */
+    /** Other installed mods with the same function take priority (the AIO module then stays off). */
     public final BooleanSetting preferOtherMods;
-    /** "AIO"-Knopf im Pause- und Titelmenü. */
+    /** "AIO" button in the pause and title menu. */
     public final BooleanSetting menuButton;
     public final BooleanSetting rememberMenu;
-    /** Anonyme Nutzungsstatistik an bStats senden (abschaltbar; der Erststart-Hinweis erklärt es). */
+    /** Send anonymous usage statistics (can be switched off; the first-start notice explains it). */
     public final BooleanSetting telemetry;
-    /** Ob der Erststart-Hinweis zur Statistik schon weggeklickt wurde (versteckt). */
+    /** Whether the first-start notice about the statistics was already dismissed (hidden). */
     public final BooleanSetting telemetryNoticeSeen;
     public final BooleanSetting hudHintSeen;
 
@@ -63,7 +63,7 @@ public final class ClientSettingsModule extends Module {
 
     private final NumberSetting styleVersion;
 
-    /** Einmalig zum neuen Design: alter Standard (Regenbogen, Lila) wird zum neuen Akzent. */
+    /** Once for the new design: old default (rainbow, purple) becomes the new accent. */
     @Override public void afterLoad() {
         if (styleVersion.intValue() < 2) {
             if ((accent.argb() & 0xFFFFFF) == 0x7C5CFF) accent.reset();

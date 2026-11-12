@@ -53,7 +53,7 @@ public abstract class Setting<T> {
 
     public void reset() { set(defaultValue); }
 
-    /** Normiert einen Wert (z. B. Clamping). Null heißt: Wert ablehnen. */
+    /** Normalises a value (e.g. clamping). Null means: reject the value. */
     protected T sanitize(T v) { return v; }
 
     public Setting<T> onChange(Consumer<T> listener) {
@@ -61,13 +61,13 @@ public abstract class Setting<T> {
         return this;
     }
 
-    /** Versteckt die Einstellung in der GUI. Sie wird trotzdem gespeichert, z. B. für die HUD-Position. */
+    /** Hides the setting in the GUI. It is still saved, e.g. for the HUD position. */
     public Setting<T> hidden() {
         hidden = true;
         return this;
     }
 
-    /** Zeigt die Einstellung nur an, wenn die Bedingung erfüllt ist. */
+    /** Shows the setting only if the condition is met. */
     public Setting<T> visibleWhen(BooleanSupplier condition) {
         visibleWhen = condition;
         return this;
@@ -75,11 +75,11 @@ public abstract class Setting<T> {
 
     public boolean isVisible() { return !hidden && visibleWhen.getAsBoolean(); }
 
-    /** Interne Einstellung (Position, Daten), die nie im Menü erscheint und nicht zurückgesetzt wird. */
+    /** Internal setting (position, data) that never appears in the menu and is not reset. */
     public boolean isHidden() { return hidden; }
 
     public abstract JsonElement toJson();
 
-    /** Liest den Wert aus JSON. Bei ungültigem Inhalt bleibt der aktuelle Wert stehen. */
+    /** Reads the value from JSON. With invalid content the current value stays. */
     public abstract void fromJson(JsonElement json);
 }

@@ -8,11 +8,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Welche AIO-Eingriffe (Mixins) wirklich greifen. Wird vom {@link AioMixinPlugin} beim Laden der
- * Spielklassen gefüllt. Greift ein Eingriff nicht (z. B. weil eine andere Mod dieselbe Stelle
- * verändert), fällt nur das zugehörige Modul aus statt des ganzen Spiels.
+ * Which AIO hooks (mixins) really apply. Filled by the {@link AioMixinPlugin} when the
+ * game classes are loaded. If a hook does not apply (e.g. because another mod changes the same place),
+ * only the associated module fails instead of the whole game.
  *
- * <p>Darf keine Minecraft-Klassen benutzen: wird sehr früh vom Mixin-System geladen.
+ * <p>Must not use Minecraft classes: it is loaded very early by the mixin system.
  */
 public final class HookStatus {
     private HookStatus() {}
@@ -22,7 +22,7 @@ public final class HookStatus {
     /** Mixins, deren Einbau fertig wurde. */
     static final Set<String> finished = ConcurrentHashMap.newKeySet();
 
-    /** Zu welchem Modul ein Eingriff gehört. Schlüssel: "Mixin#handler" oder nur "Mixin" für alle Eingriffe. */
+    /** Which module a hook belongs to. Key: "Mixin#handler" or just "Mixin" for all hooks. */
     private static final Map<String, String> MODULE = Map.ofEntries(
             Map.entry("AtmosphericFogMixin", "nofog"), Map.entry("LavaFogMixin", "nofog"), Map.entry("WaterFogMixin", "nofog"),
             Map.entry("BlockEntityCullMixin", "entityculling"), Map.entry("EntityRendererCullMixin", "entityculling"),
@@ -62,10 +62,10 @@ public final class HookStatus {
         return null;
     }
 
-    /** Mehr gleichzeitige Ausfälle als das gelten als Messfehler: dann wird nichts abgeschaltet. */
+    /** More simultaneous failures than this count as a measurement error: then nothing is switched off. */
     private static final int PLAUSIBLE_FAILURES = 4;
 
-    /** Modul-ID → Beschreibung für alle Module, deren Mixin nicht eingebaut werden konnte. */
+    /** Module id → description for all modules whose mixin could not be applied. */
     public static Map<String, String> broken() {
         Map<String, String> out = new LinkedHashMap<>();
         for (String mixin : started) {
@@ -78,7 +78,7 @@ public final class HookStatus {
         return out.size() > PLAUSIBLE_FAILURES ? Map.of() : out;
     }
 
-    /** Für das Log: alle Mixins, deren Einbau abgebrochen ist. */
+    /** For the log: all mixins whose application was aborted. */
     public static List<String> missing() {
         List<String> out = new ArrayList<>();
         for (String mixin : started) if (!finished.contains(mixin)) out.add(mixin);

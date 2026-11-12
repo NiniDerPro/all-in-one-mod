@@ -9,7 +9,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Armor HUD ganz links: ohne Hintergrund liegen die Icons direkt am Rand. */
+/** Armor HUD at the far left: without background the icons sit directly at the edge. */
 class ArmorEdgeTest {
     @TempDir Path dir;
 
@@ -20,7 +20,7 @@ class ArmorEdgeTest {
         ArmorHudModule armor = core.module(ArmorHudModule.class);
         FakeRenderer r = new FakeRenderer();
         armor.setScreenPos(r, 0, 100);
-        // Innenabstand (4 px) ragt bis auf 1 px über den Rand, die Icons beginnen bei x = 1
+        // Padding (4 px) extends up to 1 px beyond the edge, the icons start at x = 1
         assertEquals(-3f, armor.screenX(r), 0.01f);
     }
 }

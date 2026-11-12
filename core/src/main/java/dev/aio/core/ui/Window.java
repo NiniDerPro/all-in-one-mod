@@ -2,7 +2,7 @@ package dev.aio.core.ui;
 
 import dev.aio.core.platform.Renderer;
 
-/** Gemeinsamer Rahmen für Fenster (wie das Hauptmenü): Schatten, abgerundete Fläche, Titel. */
+/** Shared frame for windows (like the main menu): shadow, rounded area, title. */
 public final class Window {
     private Window() {}
 

@@ -3,9 +3,9 @@ package dev.aio.core.ui;
 import dev.aio.core.platform.Renderer;
 
 /**
- * Klassischer Minecraft-Look für Item-Liste und Rezeptansicht: graue Fenster mit heller und
- * dunkler Kante, eingelassene Felder, Slots, Vanilla-Knöpfe, Pfeile. Alles selbst gezeichnet,
- * nur die Knopf-Grafik kommt aus dem Spiel (damit Ressourcenpakete greifen).
+ * Classic Minecraft look for item list and recipe view: grey windows with light and
+ * dark edge, inset fields, slots, vanilla buttons, arrows. All drawn by ourselves,
+ * only the button graphic comes from the game (so that resource packs apply).
  */
 public final class McGui {
     public static final int BG = 0xFFC6C6C6;
@@ -18,7 +18,7 @@ public final class McGui {
 
     private McGui() {}
 
-    /** Fenster mit schwarzem Rand, abgerundeten Ecken und Licht/Schatten-Kante. */
+    /** Window with black border, rounded corners and light/shadow edge. */
     public static void panel(Renderer r, float x1, float y1, float x2, float y2) {
         r.fill(x1 + 2, y1, x2 - 2, y1 + 1, BORDER);
         r.fill(x1 + 2, y2 - 1, x2 - 2, y2, BORDER);
@@ -36,7 +36,7 @@ public final class McGui {
         r.fill(x2 - 3, y1 + 3, x2 - 1, y2 - 2, SHADOW);
     }
 
-    /** Eingelassene Fläche (z. B. Rezept-Kasten, Beschriftungsleiste). */
+    /** Inset area (e.g. recipe box, label bar). */
     public static void inset(Renderer r, float x1, float y1, float x2, float y2) {
         r.fill(x1, y1, x2, y2, SLOT);
         r.fill(x1, y1, x2 - 1, y1 + 1, SLOT_DARK);
@@ -45,7 +45,7 @@ public final class McGui {
         r.fill(x2 - 1, y1 + 1, x2, y2, LIGHT);
     }
 
-    /** Flacher Rahmen mit heller Füllung (Rezept-Kasten wie in Rezeptbüchern). */
+    /** Flat frame with light fill (recipe box as in recipe books). */
     public static void box(Renderer r, float x1, float y1, float x2, float y2) {
         r.fill(x1, y1, x2, y2, 0xFFB7B7B7);
         r.outline(x1, y1, x2, y2, 1, 0xFF8B8B8B);
@@ -63,7 +63,7 @@ public final class McGui {
         r.fill(x + size - 1, y + 1, x + size, y + size, LIGHT);
     }
 
-    /** Vanilla-Knopf (Grafik aus dem Spiel, mit Rand dazu gezeichnet), gibt true bei Maus darüber. */
+    /** Vanilla button (graphic from the game, with border drawn on), returns true when the mouse is over it. */
     public static boolean button(Renderer r, float x1, float y1, float x2, float y2, int mx, int my, boolean enabled) {
         boolean hover = enabled && mx >= x1 && mx < x2 && my >= y1 && my < y2;
         String sprite = !enabled ? "minecraft:widget/button_disabled" : hover ? "minecraft:widget/button_highlighted" : "minecraft:widget/button";
@@ -71,7 +71,7 @@ public final class McGui {
         return hover;
     }
 
-    /** Dreieck-Pfeil nach links oder rechts, zentriert in (cx, cy). */
+    /** Triangle arrow to the left or right, centred in (cx, cy). */
     public static void arrow(Renderer r, float cx, float cy, boolean right, int color) {
         for (int i = 0; i < 4; i++) {
             float h = 3.5f - i;
@@ -87,21 +87,21 @@ public final class McGui {
         return hover;
     }
 
-    /** Großer grauer Rezept-Pfeil (→) zwischen Zutaten und Ergebnis, 22×15. */
+    /** Large grey recipe arrow (→) between ingredients and result, 22×15. */
     public static void recipeArrow(Renderer r, float x, float y) {
         int c = 0xFF8B8B8B;
         r.fill(x, y + 5, x + 14, y + 10, c);
         for (int i = 0; i < 8; i++) r.fill(x + 14 + i, y + i, x + 15 + i, y + 15 - i, c);
     }
 
-    /** Schraubenschlüssel-Symbol (Einstellungen), 12×12. */
+    /** Wrench icon (settings), 12×12. */
     public static void wrench(Renderer r, float x, float y, int color) {
         for (int i = 0; i < 7; i++) r.fill(x + 1 + i, y + 10 - i, x + 3 + i, y + 12 - i, color);
         r.fill(x + 7, y + 1, x + 12, y + 6, color);
         r.fill(x + 9, y + 2, x + 11, y + 4, 0xFF5A5A5A);
     }
 
-    /** Vanilla-Textfeld: schwarz mit grauem (fokussiert weißem) Rand. */
+    /** Vanilla text field: black with grey (focused white) border. */
     public static void textField(Renderer r, float x1, float y1, float x2, float y2, boolean focused) {
         r.fill(x1, y1, x2, y2, focused ? 0xFFFFFFFF : 0xFFA0A0A0);
         r.fill(x1 + 1, y1 + 1, x2 - 1, y2 - 1, 0xFF000000);

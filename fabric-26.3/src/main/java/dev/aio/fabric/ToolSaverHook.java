@@ -5,7 +5,7 @@ import dev.aio.core.modules.player.ToolSaverModule;
 import dev.aio.core.platform.ItemRef;
 import net.minecraft.world.item.ItemStack;
 
-/** Tool Saver: gemeinsame Prüfung für alle Eingriffe. */
+/** Tool Saver: shared check for all interventions. */
 public final class ToolSaverHook {
     private ToolSaverHook() {}
 

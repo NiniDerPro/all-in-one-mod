@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Partikel: abgeschaltete Arten und das Prozent-Limit (null = kein Partikel, wie Vanilla bei vollem Limit). */
+/** Particles: switched-off types and the percent limit (null = no particle, like vanilla at a full limit). */
 @Mixin(ParticleEngine.class)
 public abstract class ParticleEngineMixin {
     @Inject(method = "createParticle", at = @At("HEAD"), cancellable = true)

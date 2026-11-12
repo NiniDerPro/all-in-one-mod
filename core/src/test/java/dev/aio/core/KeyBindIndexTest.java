@@ -16,10 +16,10 @@ class KeyBindIndexTest {
     @TempDir Path dir;
 
     private final List<KeyBinding> vanilla = new ArrayList<>(List.of(
-            new KeyBinding("key.forward", "Vorwärts", "Bewegung", "key.keyboard.w", "key.keyboard.w"),
-            new KeyBinding("key.jump", "Springen", "Bewegung", "key.keyboard.space", "key.keyboard.space"),
-            new KeyBinding("key.drop", "Fallen lassen", "Gameplay", "key.keyboard.w", "key.keyboard.q"),
-            new KeyBinding("key.chat", "Chat", "Mehrspieler", "key.keyboard.unknown", "key.keyboard.t")));
+            new KeyBinding("key.forward", "Forward", "Movement", "key.keyboard.w", "key.keyboard.w"),
+            new KeyBinding("key.jump", "Jump", "Movement", "key.keyboard.space", "key.keyboard.space"),
+            new KeyBinding("key.drop", "Drop item", "Gameplay", "key.keyboard.w", "key.keyboard.q"),
+            new KeyBinding("key.chat", "Chat", "Multiplayer", "key.keyboard.unknown", "key.keyboard.t")));
 
     private AioCore core() {
         FakePlatform p = new FakePlatform() {
@@ -43,9 +43,9 @@ class KeyBindIndexTest {
         List<KeyBindIndex.Entry> conflicts = idx.entries("", KeyBindIndex.Filter.CONFLICTS, KeyBindIndex.Sort.DEFAULT);
         assertEquals(List.of("key.forward", "key.drop"), conflicts.stream().map(e -> e.binding().id()).toList());
         assertEquals("key.chat", idx.entries("", KeyBindIndex.Filter.UNBOUND, KeyBindIndex.Sort.DEFAULT).get(0).binding().id());
-        assertEquals(1, idx.entries("spring", KeyBindIndex.Filter.ALL, KeyBindIndex.Sort.DEFAULT).size());
+        assertEquals(1, idx.entries("jump", KeyBindIndex.Filter.ALL, KeyBindIndex.Sort.DEFAULT).size());
         assertTrue(idx.entries("", KeyBindIndex.Filter.ALL, KeyBindIndex.Sort.DEFAULT).stream()
-                .anyMatch(e -> e.binding().id().equals("aio:elytraswap.key")), "AIO-Tasten sind dabei");
+                .anyMatch(e -> e.binding().id().equals("aio:elytraswap.key")), "AIO keys are included");
         assertFalse(idx.freeKeys().contains("key.keyboard.w"));
         assertTrue(idx.freeKeys().contains("key.keyboard.z"));
     }

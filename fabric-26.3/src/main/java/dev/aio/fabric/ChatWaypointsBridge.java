@@ -3,7 +3,7 @@ package dev.aio.fabric;
 import dev.aio.core.AioCore;
 import net.minecraft.network.chat.Component;
 
-/** Öffentlicher Zugang für das Chat-Mixin (die eigentliche Klasse ist paketintern). */
+/** Public access for the chat mixin (the actual class is package-private). */
 public final class ChatWaypointsBridge {
     private ChatWaypointsBridge() {}
 

@@ -9,7 +9,7 @@ import dev.aio.core.setting.ColorSetting;
 import dev.aio.core.setting.EnumSetting;
 import dev.aio.core.setting.NumberSetting;
 
-/** Eigene Block-Umrandung: Farbe (auch Regenbogen), Dicke, Füllung. */
+/** Own block outline: colour (also rainbow), thickness, fill. */
 public final class BlockOutlineModule extends Module {
     private final EnumSetting<ColorMode> colorMode;
     private final ColorSetting lineColor;
@@ -36,7 +36,7 @@ public final class BlockOutlineModule extends Module {
         return ColoredText.color(colorMode.get(), lineColor.argb(), secondColor.argb(), 0.3f, 0);
     }
 
-    /** Liniendicke in Blöcken (1 px ≈ 1/400 Block, passt optisch zur Vanilla-Linie). */
+    /** Line thickness in blocks (1 px ≈ 1/400 block, visually matches the vanilla line). */
     public float thicknessBlocks() { return thickness.floatValue() / 400f; }
 
     public boolean fill() { return fill.on(); }

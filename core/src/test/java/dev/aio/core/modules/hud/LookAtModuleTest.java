@@ -64,7 +64,7 @@ class LookAtModuleTest {
 
         p.lookTarget = LookTarget.block("Eichenstamm", "Minecraft", DIRT, null, "Axe", Float.NaN, 1, 2, 3);
         m.update();
-        assertEquals("Axe", m.lineTexts().get(0), "ohne Axt in der Hand neutral");
+        assertEquals("Axe", m.lineTexts().get(0), "neutral without an axe in hand");
     }
 
     @Test void blockDetailsOnlyForThatBlock() {
@@ -80,7 +80,7 @@ class LookAtModuleTest {
 
         p.lookTarget = LookTarget.block("Stein", "Minecraft", DIRT, null, null, Float.NaN, 0, 0, 0);
         m.update();
-        assertEquals(List.of("§oMinecraft"), m.lineTexts(), "andere Blöcke ohne Details");
+        assertEquals(List.of("§oMinecraft"), m.lineTexts(), "other blocks without details");
 
         ((BooleanSetting) m.setting("showDetails")).set(false);
         p.lookTarget = LookTarget.block("Komposter", "Minecraft", DIRT, null, null, Float.NaN, 0, 0, 0,
@@ -96,11 +96,11 @@ class LookAtModuleTest {
         p.lookTarget = LookTarget.entity("Zombie", "Minecraft", ItemRef.EMPTY, 15, 20, 2, 0, 0, 0);
         m.update();
         assertEquals(List.of("<hearts> 15 / 20 HP", "Armor: 2", "§oMinecraft"), m.lineTexts());
-        assertFalse(m.iconShown(), "kein Icon bei Wesen ohne Item");
+        assertFalse(m.iconShown(), "no icon for entities without an item");
 
         p.lookTarget = LookTarget.entity("Wither", "Minecraft", ItemRef.EMPTY, 250, 300, 4, 0, 0, 0);
         m.update();
-        assertEquals("❤ 250 / 300 HP", m.lineTexts().get(0), "viel Leben als Zahl statt Herzen");
+        assertEquals("❤ 250 / 300 HP", m.lineTexts().get(0), "lots of health as a number instead of hearts");
 
         p.lookTarget = LookTarget.entity("Bernd", "Zombie", "Minecraft", ItemRef.EMPTY, 20, 20, 0, 0, 0, 0);
         m.update();
@@ -140,6 +140,6 @@ class LookAtModuleTest {
             m.render(r, false);
         }
         assertEquals(0, r.depth);
-        assertTrue(r.widthCalls - calls < 50 * 3, "Breite wird nicht jeden Frame neu gemessen");
+        assertTrue(r.widthCalls - calls < 50 * 3, "width is not measured again every frame");
     }
 }

@@ -26,9 +26,9 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 /**
- * Standard-Rezepte von Minecraft für Server, die keine Rezepte schicken. Sie stammen aus dem
- * Vanilla-Datenpaket, das im Spiel-Jar liegt ({@code data/minecraft/recipe/*.json}), und werden
- * mit den Registries der aktuellen Welt gelesen, damit Tags (z. B. alle Holzbretter) passen.
+ * Default recipes of Minecraft for servers that send no recipes. They come from the
+ * vanilla data pack that lies in the game jar ({@code data/minecraft/recipe/*.json}), and are read
+ * with the registries of the current world so that tags (e.g. all wood planks) match.
  */
 final class VanillaRecipes {
     private static final String DIR = "data/minecraft/recipe";
@@ -64,7 +64,7 @@ final class VanillaRecipes {
                     fs = FileSystems.newFileSystem(uri, Map.of());
                     dir = fs.getPath("/" + DIR);
                 } catch (FileSystemAlreadyExistsException e) {
-                    dir = FileSystems.getFileSystem(uri).getPath("/" + DIR); // fremdes FS: nicht schließen
+                    dir = FileSystems.getFileSystem(uri).getPath("/" + DIR); // foreign FS: do not close
                 }
             } else {
                 dir = Path.of(uri).getParent();
@@ -75,24 +75,24 @@ final class VanillaRecipes {
                     String name = rel.substring(0, rel.length() - 5);
                     try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
                         JsonElement json = JsonParser.parseReader(reader);
-                        // In 26.3 liefert der Codec einen Holder (Inline-JSON = direkter Holder)
+                        // In 26.3 the codec returns a Holder (inline JSON = direct holder)
                         Recipe.CODEC.parse(ops, json).result().ifPresent(holder -> out.add(new RecipeHolder<Recipe<?>>(
                                 ResourceKey.create(Registries.RECIPE, Identifier.withDefaultNamespace(name)), holder.value())));
                     } catch (Exception e) {
-                        // einzelne Sonderrezepte überspringen
+                        // skip individual special recipes
                     }
                 }
             }
             if (fs != null) {
                 try {
-                    fs.close(); // nur selbst geöffnete Dateisysteme schließen
+                    fs.close(); // only close file systems we opened ourselves
                 } catch (Exception ignored) {
                     // egal
                 }
             }
             AioFabricClient.LOGGER.info("{} Vanilla-Rezepte geladen", out.size());
         } catch (Exception e) {
-            AioFabricClient.LOGGER.error("Vanilla-Rezepte konnten nicht geladen werden", e);
+            AioFabricClient.LOGGER.error("Vanilla recipes could not be loaded", e);
         }
         return out;
     }

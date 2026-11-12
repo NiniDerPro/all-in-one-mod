@@ -1,24 +1,24 @@
 package dev.aio.core.modules.player;
 
-/** Hunger-Rechnungen wie in Minecraft (FoodData), ohne Minecraft-Abhängigkeit. */
+/** Hunger calculations like in Minecraft (FoodData), without Minecraft dependency. */
 public final class FoodMath {
     public static final float MAX_EXHAUSTION = 4f;
     public static final int MAX_FOOD = 20;
 
     private FoodMath() {}
 
-    /** Hunger nach dem Essen (Vanilla: auf 20 begrenzt). */
+    /** Hunger after eating (vanilla: capped at 20). */
     public static int foodAfter(int food, int nutrition) { return Math.min(MAX_FOOD, food + nutrition); }
 
-    /** Sättigung nach dem Essen (Vanilla: nie über dem Hungerwert). */
+    /** Saturation after eating (vanilla: never above the hunger value). */
     public static float saturationAfter(int food, float saturation, int nutrition, float gain) {
         return Math.min(saturation + gain, foodAfter(food, nutrition));
     }
 
     /**
-     * Wie viel Leben das natürliche Heilen aus Hunger und Sättigung noch bringt (Schätzung).
-     * Bei vollem Hunger und Sättigung heilt Minecraft schnell (Sättigung/6 je Schritt), ab 18
-     * Hunger langsam (1 Leben für 6 Erschöpfung). Erschöpfung zehrt erst Sättigung, dann Hunger auf.
+     * How much health natural healing still brings from hunger and saturation (estimate).
+     * With full hunger and saturation Minecraft heals fast (saturation/6 per step), from 18
+     * hunger slowly (1 health for 6 exhaustion). Exhaustion first uses up saturation, then hunger.
      */
     public static float healthIncrement(int food, float saturation, float exhaustion) {
         if (!Float.isFinite(exhaustion)) exhaustion = 0;

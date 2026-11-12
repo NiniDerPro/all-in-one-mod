@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Shield Indicator: merkt sich beim Erfassen eines Items, wem es gehört. */
+/** Shield Indicator: remembers who owns an item when it is captured. */
 @Mixin(ItemModelResolver.class)
 public abstract class ShieldIndicatorOwnerMixin {
     @Inject(method = "appendItemLayers", at = @At("HEAD"))

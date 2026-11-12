@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
 
-/** Shulker-Vorschau: liefert das Raster als Tooltip-Bild. */
+/** Shulker preview: delivers the grid as a tooltip image. */
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin {
     @Inject(method = "getTooltipImage()Ljava/util/Optional;", at = @At("HEAD"), cancellable = true)

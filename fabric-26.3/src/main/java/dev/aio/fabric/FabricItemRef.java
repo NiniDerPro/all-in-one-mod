@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** {@link ItemRef} über einem ItemStack. */
+/** {@link ItemRef} over an ItemStack. */
 public record FabricItemRef(ItemStack stack) implements ItemRef {
     private static final Map<String, String> MOD_NAMES = new ConcurrentHashMap<>();
 

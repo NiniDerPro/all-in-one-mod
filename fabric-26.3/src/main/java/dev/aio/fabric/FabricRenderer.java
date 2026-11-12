@@ -14,7 +14,7 @@ import java.util.Map;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
 
-/** {@link Renderer} über dem {@link GuiGraphicsExtractor} von 26.3. Pro Frame per {@link #begin} gesetzt. */
+/** {@link Renderer} over the {@link GuiGraphicsExtractor} of 26.3. Set per frame via {@link #begin}. */
 public final class FabricRenderer implements Renderer {
     private final Minecraft client;
     private GuiGraphicsExtractor g;
@@ -23,7 +23,7 @@ public final class FabricRenderer implements Renderer {
         this.client = client;
     }
 
-    /** Für Vanilla-Zeichenfunktionen (z. B. das Profiler-Diagramm). */
+    /** For vanilla drawing functions (e.g. the profiler chart). */
     public GuiGraphicsExtractor graphics() { return g; }
 
     public void begin(GuiGraphicsExtractor graphics) {

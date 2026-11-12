@@ -5,7 +5,7 @@ import dev.aio.core.module.Category;
 import dev.aio.core.platform.Vec3;
 import dev.aio.core.setting.BooleanSetting;
 
-/** Zeigt die passenden Koordinaten in der anderen Dimension (Oberwelt ÷ 8 = Nether). */
+/** Shows the matching coordinates in the other dimension (overworld ÷ 8 = nether). */
 public final class PortalCalculatorModule extends TextHudElement {
     private final BooleanSetting showY;
 

@@ -16,7 +16,7 @@ import dev.aio.core.util.Colors;
 import java.util.ArrayList;
 import java.util.List;
 
-/** WASD, Leertaste und Maustasten mit sanftem Farbwechsel beim Drücken. */
+/** WASD, space and mouse buttons with a smooth colour change when pressed. */
 public final class KeystrokesModule extends HudElement {
     public enum Layout implements EnumSetting.Named {
         WASD("WASD"), WASD_MOUSE("WASD + Mouse"), FULL("WASD + Mouse + Space");
@@ -28,7 +28,7 @@ public final class KeystrokesModule extends HudElement {
         @Override public String displayName() { return displayName; }
     }
 
-    /** Eine Taste im Layout, Koordinaten in Pixeln relativ zur oberen linken Ecke. */
+    /** One key in the layout, coordinates in pixels relative to the top left corner. */
     private static final class KeyBox {
         final GameKey key;
         final float x, y, w, h;

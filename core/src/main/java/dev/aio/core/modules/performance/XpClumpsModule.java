@@ -4,8 +4,8 @@ import dev.aio.core.module.Category;
 import dev.aio.core.module.Module;
 
 /**
- * XP bündeln: Erfahrungskugeln in der Nähe werden zu einer zusammengefasst (weniger Entities, weniger
- * Lag) und berührte Kugeln ohne die Vanilla-Pause aufgesammelt. Wirkt nur im Einzelspieler (Server-Logik).
+ * XP clumping: nearby experience orbs are merged into one (fewer entities, less
+ * lag) and touched orbs are picked up without the vanilla pause. Only works in singleplayer (server logic).
  */
 public final class XpClumpsModule extends Module {
     public XpClumpsModule() {

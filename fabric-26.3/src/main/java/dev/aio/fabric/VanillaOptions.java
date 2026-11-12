@@ -6,7 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 
-/** Lesen und Setzen einzelner Vanilla-Optionen (Chat-Größe, Empfindlichkeit, …), gesammelt gespeichert. */
+/** Reading and setting individual vanilla options (chat size, sensitivity, …), saved collectively. */
 final class VanillaOptions {
     private final Minecraft client;
 
@@ -33,7 +33,7 @@ final class VanillaOptions {
     }
 
     double get(VanillaOption o) {
-        if (client.options == null) return Double.NaN; // Spielstart: Optionen noch nicht geladen
+        if (client.options == null) return Double.NaN; // game start: options not loaded yet
         Object v = optionInstance(o).get();
         if (v instanceof Boolean b) return b ? 1 : 0;
         return v instanceof Number n ? n.doubleValue() : 0;
@@ -52,7 +52,7 @@ final class VanillaOptions {
         optionsDirtyAt = System.currentTimeMillis();
     }
 
-    /** Vom Tick aufgerufen: Optionen gesammelt speichern (nicht bei jedem Zieh-Schritt). */
+    /** Called by the tick: save options collectively (not on every drag step). */
     void saveIfDirty() {
         if (client.options != null && optionsDirtyAt > 0 && System.currentTimeMillis() - optionsDirtyAt > 1000) {
             optionsDirtyAt = -1;

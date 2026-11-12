@@ -10,15 +10,15 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Handel aus den Datenpaketen (ab 26.x datengetrieben): {@code trade_set/*} wählt aus einer Liste
+ * Trades from the data packs (data-driven since 26.x): {@code trade_set/*} picks from a list
  * oder einem Tag ({@code tags/villager_trade/*}) einzelne Trades ({@code villager_trade/*}).
  */
 public final class TradeData {
-    /** Ein Gegenstand mit Anzahl (Bereich). */
+    /** An item with count (range). */
     public record Stack(String item, double min, double max) {
         public boolean isEmpty() { return item.isEmpty(); }
 
-        /** Feste Anzahl für das Symbol; 0 = unbekannt/zufällig. */
+        /** Fixed count for the icon; 0 = unknown/random. */
         public int iconCount() { return min == max ? (int) min : 0; }
 
         public String countText() { return new Json.Range(min, max, (min + max) / 2).text(); }
@@ -28,7 +28,7 @@ public final class TradeData {
 
     public record Trade(String id, Stack wants, Stack additionalWants, Stack gives, int maxUses, int xp, boolean randomized) {}
 
-    /** Ein Trade-Set: wie viele Angebote gezogen werden und aus welchen. */
+    /** A trade set: how many offers are drawn and from which ones. */
     public record TradeSet(String id, int amount, List<Trade> trades) {}
 
     private final Map<String, JsonElement> sets, trades, tags;
@@ -55,7 +55,7 @@ public final class TradeData {
         return new TradeSet(id, amount, out);
     }
 
-    /** Einträge auflösen: ID, "#tag" (auch verschachtelt) oder {"id": ..., "required": ...}. */
+    /** Resolve entries: id, "#tag" (also nested) or {"id": ..., "required": ...}. */
     private void resolve(JsonElement e, Set<String> out, int depth) {
         if (depth > 8 || e == null) return;
         String ref;

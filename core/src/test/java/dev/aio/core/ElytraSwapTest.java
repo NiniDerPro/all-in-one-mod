@@ -19,7 +19,7 @@ class ElytraSwapTest {
 
     private static final Item EMPTY = new Item("", 0, 0);
 
-    /** Spielerinventar wie InventoryMenu: 5-8 Rüstung (39..36), 9-35 Haupt, 36-44 Hotbar, 45 Zweithand. */
+    /** Player inventory like InventoryMenu: 5-8 armor (39..36), 9-35 main, 36-44 hotbar, 45 offhand. */
     private static List<Slot> inventory(String chest, String... extra) {
         List<Slot> out = new ArrayList<>();
         for (int i = 0; i < 4; i++) {

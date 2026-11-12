@@ -1,6 +1,6 @@
 package dev.aio.core.util;
 
-/** Minimale Logging-Fassade, damit der Kern keine Logging-Bibliothek braucht. Der Adapter setzt {@link #sink}. */
+/** Minimal logging facade so that the core needs no logging library. The adapter sets {@link #sink}. */
 public final class Log {
     public interface Sink {
         void log(String level, String message, Throwable error);

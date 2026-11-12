@@ -7,7 +7,7 @@ import dev.aio.core.platform.Platform;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 
-/** Tastenbelegung als Minecraft-Tastenname (siehe {@link Keys}); leer = keine. */
+/** Key binding as a Minecraft key name (see {@link Keys}); empty = none. */
 public class KeybindSetting extends Setting<String> {
     public KeybindSetting(String id, String name, String defaultKey) {
         super(id, name, defaultKey);
@@ -19,7 +19,7 @@ public class KeybindSetting extends Setting<String> {
 
     public boolean matches(String key) { return isBound() && value.equals(key); }
 
-    /** Wie {@link #matches}, aber nur ohne zusätzlich gehaltene Kombi-Taste (F3+F4 zählt nicht als F4). */
+    /** Like {@link #matches}, but only without an additionally held combo key (F3+F4 does not count as F4). */
     public boolean triggeredBy(Platform platform, String key) {
         return matches(key) && !Hotkeys.otherComboHeld(platform, key);
     }

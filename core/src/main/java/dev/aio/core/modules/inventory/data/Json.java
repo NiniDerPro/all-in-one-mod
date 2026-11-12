@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/** Kleine Helfer für die Minecraft-Datenformate (Zahlen-Provider, IDs, Listen). */
+/** Small helpers for the Minecraft data formats (number providers, ids, lists). */
 final class Json {
     private Json() {}
 

@@ -11,9 +11,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 /**
- * Profiler Chart: Minecraft sammelt die Daten fürs Kreisdiagramm nur bei offenem F3 mit F3+1.
- * Nur an dieser einen Stelle (Frame-Schleife in run) wird das zusätzlich eingeschaltet, nicht global,
- * damit die Zahlentasten weiter die Hotbar wechseln statt das Diagramm zu steuern.
+ * Profiler Chart: Minecraft only collects the data for the pie chart with F3 open and F3+1.
+ * Only at this one place (frame loop in run) it is additionally switched on, not globally,
+ * so that the number keys keep switching the hotbar instead of controlling the chart.
  */
 @Mixin(Minecraft.class)
 public abstract class MinecraftProfilerMixin {

@@ -9,8 +9,8 @@ import dev.aio.core.setting.EnumSetting;
 import dev.aio.core.setting.KeybindSetting;
 
 /**
- * Modul, das (wenn eingeschaltet) über eine eigene Taste kurzzeitig aktiviert wird,
- * z. B. Freelook und Zoom. Modus: halten oder umschalten.
+ * Module that (when switched on) is briefly activated via its own key,
+ * e.g. freelook and zoom. Mode: hold or toggle.
  */
 public abstract class KeyActivatedModule extends Module {
     protected final KeybindSetting activationKey;
@@ -37,7 +37,7 @@ public abstract class KeyActivatedModule extends Module {
     private void onInput(String key, boolean press, boolean release, boolean screenOpen) {
         if (press) tap.pressed(key);
         if (!activationKey.matches(key)) {
-            // Kombi dazugedrückt (z. B. Alt halten, dann Tab): gehaltene Aktivierung sofort beenden
+            // Combo pressed too (e.g. hold Alt, then Tab): end the held activation immediately
             if (press && engaged && mode.get() == ActivationMode.HOLD && Hotkeys.isCombo(key)
                     && platform().isKeyDown(activationKey.key())) {
                 setEngaged(false);
@@ -45,9 +45,9 @@ public abstract class KeyActivatedModule extends Module {
             return;
         }
         if (press && !screenOpen) {
-            if (Hotkeys.otherComboHeld(platform(), key)) return; // F3+F4 ist nicht F4
+            if (Hotkeys.otherComboHeld(platform(), key)) return; // F3+F4 is not F4
             if (mode.get() == ActivationMode.TOGGLE) {
-                // Strg/Alt/Windows erst beim Loslassen, damit Alt+Tab nichts umschaltet
+                // Ctrl/Alt/Windows only on release so that Alt+Tab does not switch anything
                 if (Hotkeys.isModifier(key)) tap.arm(key);
                 else setEngaged(!engaged);
             } else {
@@ -61,7 +61,7 @@ public abstract class KeyActivatedModule extends Module {
 
     private void tickEngaged() {
         if (!engaged) return;
-        // Loslassen verpasst (z. B. in einem Menü) oder Welt verlassen: sauber beenden.
+        // Release missed (e.g. in a menu) or left the world: end cleanly.
         if (!platform().inWorld() || (mode.get() == ActivationMode.HOLD && !platform().isKeyDown(activationKey.key()))) {
             setEngaged(false);
         }

@@ -8,7 +8,7 @@ import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-// Aus Freecam (MIT) übernommen, siehe dev/aio/fabric/freecam/NOTICE.md
+// Adapted from Freecam (MIT), see dev/aio/fabric/freecam/NOTICE.md
 @Mixin(Hud.class)
 public class FreecamHudMixin {
     /** Herzen, Hunger, Hotbar usw. zeigen weiter den echten Spieler. */

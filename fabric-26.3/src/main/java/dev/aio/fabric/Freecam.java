@@ -9,9 +9,9 @@ import net.minecraft.client.player.ClientInput;
 import net.minecraft.world.entity.player.Input;
 
 /**
- * Freecam nach dem Vorbild der Freecam-Mod (MIT, siehe freecam/NOTICE.md): Ein eigener
- * Kamera-Spieler ({@link FreeCamera}) wird in der Welt angemeldet und zur Kamera gemacht. Der echte
- * Spieler bekommt solange eine leere Eingabe (nur Schleichen bleibt erhalten) und bleibt stehen.
+ * Freecam modelled on the Freecam mod (MIT, see freecam/NOTICE.md): an own
+ * camera player ({@link FreeCamera}) is registered in the world and made the camera. The real
+ * player gets an empty input meanwhile (only sneaking is kept) and stays put.
  */
 public final class Freecam {
     private Freecam() {}
@@ -25,7 +25,7 @@ public final class Freecam {
     private static ClientInput playerInput;
     private static ClientInput dummyPlayerInput;
 
-    // ---- Einstellungen aus dem AIO-Modul ----
+    // ---- Settings from the AIO module ----
 
     private static FreecamModule module() {
         AioCore core = AioCore.get();
@@ -65,7 +65,7 @@ public final class Freecam {
             }
             AioFabricClient.LOGGER.info("[aio] Freecam {}", enabled ? "on" : "off");
         } catch (RuntimeException e) {
-            AioFabricClient.LOGGER.error("[aio] Freecam konnte nicht umgeschaltet werden", e);
+            AioFabricClient.LOGGER.error("[aio] Freecam could not be switched", e);
             enabled = false;
             freeCamera = null;
             if (MC.player != null) {
@@ -85,7 +85,7 @@ public final class Freecam {
         if (MC.gameRenderer.mainCamera().isDetached()) MC.options.setCameraType(CameraType.FIRST_PERSON);
 
         freeCamera = new FreeCamera(-420);
-        freeCamera.copyPosition(MC.player); // Perspektive "Inside": genau am Kopf des Spielers
+        freeCamera.copyPosition(MC.player); // perspective "Inside": exactly at the player's head
         freeCamera.spawn();
         MC.setCameraEntity(freeCamera);
     }
@@ -102,21 +102,21 @@ public final class Freecam {
         rememberedF5 = null;
     }
 
-    /** Leere Eingabe für den Spieler; Schleichen bleibt, damit man nicht von Kanten fällt. */
+    /** Empty input for the player; sneaking stays so that you do not fall off edges. */
     private static ClientInput updateDummyInput() {
         ClientInput input = new ClientInput();
         input.keyPresses = new Input(false, false, false, false, false, playerInput.keyPresses.shift(), false);
         return dummyPlayerInput = input;
     }
 
-    /** Vor jedem Client-Tick (wie in der Freecam-Mod). */
+    /** Before every client tick (as in the Freecam mod). */
     public static void preTick() {
         if (disableNextTick && enabled) set(false);
         disableNextTick = false;
         if (enabled && MC.player != null) MC.player.input = dummyPlayerInput;
     }
 
-    /** Nach jedem Client-Tick: aufräumen, falls Welt/Spieler weg sind. */
+    /** After every client tick: clean up if world/player are gone. */
     public static void tick() {
         if (!enabled) return;
         if (MC.player == null || MC.level == null || freeCamera == null || freeCamera.level() != MC.level || !MC.player.isAlive()) {
@@ -128,7 +128,7 @@ public final class Freecam {
 
     public static void disableNextTick() { disableNextTick = true; }
 
-    /** Mausbewegung dreht die Kamera statt des Spielers. */
+    /** Mouse movement turns the camera instead of the player. */
     public static boolean turn(double dx, double dy) {
         if (!enabled || freeCamera == null) return false;
         freeCamera.turn(dx, dy);

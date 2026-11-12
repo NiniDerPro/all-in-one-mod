@@ -8,9 +8,9 @@ import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.NumberSetting;
 
 /**
- * Freecam: Die Kamera löst sich vom Spieler und fliegt frei durch Blöcke (WASD, Springen hoch,
- * Schleichen runter, Sprinten schneller). Der Spieler bleibt stehen und ist sichtbar; Abbauen und
- * Benutzen sind gesperrt. Taste F4 im Modus "Toggle": einmal drücken an, nochmal aus.
+ * Freecam: the camera detaches from the player and flies freely through blocks (WASD, jump up,
+ * sneak down, sprint faster). The player stays put and is visible; breaking and
+ * using are blocked. Key F4 in "Toggle" mode: press once on, again off.
  */
 public final class FreecamModule extends KeyActivatedModule {
     private final NumberSetting horizontalSpeed;
@@ -30,7 +30,7 @@ public final class FreecamModule extends KeyActivatedModule {
         showPlayer = add(new BooleanSetting("showPlayer", "Show your player", true));
         showHand = add(new BooleanSetting("showHand", "Show hand", false));
         allowInteract = add(new BooleanSetting("allowInteract", "Allow interacting (break/use)", false));
-        // Von außen beendet (Schaden, Tod, Weltwechsel): Zustand angleichen, damit F4 wieder einschaltet
+        // Ended from outside (damage, death, world change): sync the state so that F4 switches on again
         on(Events.Tick.class, e -> { if (isEngaged() && !platform().freecamActive()) setEngaged(false); });
     }
 

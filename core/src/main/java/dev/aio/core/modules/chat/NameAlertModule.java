@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-/** Benachrichtigt, wenn der eigene Name (oder ein Stichwort) im Chat erwähnt wird. */
+/** Notifies when the own name (or a keyword) is mentioned in chat. */
 public final class NameAlertModule extends Module {
     private final BooleanSetting requireAt;
     private final StringSetting keywords;
@@ -53,9 +53,9 @@ public final class NameAlertModule extends Module {
     }
 
     /**
-     * Erkennt eigene Nachrichten auch bei Server-Chatformaten: Am Anfang dürfen Rang-Präfixe in
-     * Klammern stehen ("[VIP] ", "[Admin] [Lv 5] "), danach kommt der eigene Name, gefolgt von
-     * einem Trenner (":", ">", "»", "|", "→") oder einem Leerzeichen (Beitritts-/Systemmeldungen über
+     * Recognises own messages with server chat formats too: at the start rank prefixes in
+     * brackets may appear ("[VIP] ", "[Admin] [Lv 5] "), then comes the own name, followed by
+     * a separator (":", ">", "»", "|", "→") or a space (join/system messages via
      * einen selbst, z. B. "Steve joined the game").
      */
     static boolean isOwnMessage(String text, String name) {
@@ -65,11 +65,11 @@ public final class NameAlertModule extends Module {
         return Pattern.compile(regex, Pattern.CASE_INSENSITIVE).matcher(text.replaceAll("§.", "")).find();
     }
 
-    /** Liefert das gefundene Wort oder null. Ganze Wörter, ohne Groß/Klein. */
+    /** Returns the found word or null. Whole words, case-insensitive. */
     static String match(String text, List<String> words, boolean requireAt) {
         for (String w : words) {
             String q = Pattern.quote(w.toLowerCase(Locale.ROOT));
-            // ganzes Wort, auch mit Endung "s" oder "'s" ("Steves", "Steve's")
+            // whole word, also with ending "s" or "'s" ("Steves", "Steve's")
             String end = "(?:'?s)?(?![\\w])";
             String regex = requireAt ? "@" + q + end : "(?<![\\w])@?" + q + end;
             if (Pattern.compile(regex, Pattern.CASE_INSENSITIVE).matcher(text).find()) return w;

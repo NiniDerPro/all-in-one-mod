@@ -20,13 +20,13 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
- * Chat Heads: Absender je Nachricht finden, ihre Zeilen einrücken und beim Zeichnen den Kopf davor
- * setzen. Die Zeilen merken wir uns über ihren Inhalt (dasselbe Objekt kommt beim Zeichnen an).
+ * Chat Heads: find the sender per message, indent their lines and draw the head in front when drawing.
+ * We remember the lines by their content (the same object arrives when drawing).
  */
 public final class ChatHeads {
     private ChatHeads() {}
 
-    /** Platz vor dem Text: 8 px Kopf und Abstand (drei Leerzeichen à 4 px). */
+    /** Room in front of the text: 8 px head and gap (three spaces of 4 px). */
     private static final String INDENT = "   ";
 
     private record Head(PlayerSkin skin, boolean firstLine) {}
@@ -41,7 +41,7 @@ public final class ChatHeads {
         return m != null && m.isActive() ? m : null;
     }
 
-    /** Beim Anlegen einer Chatzeile: ggf. einrücken und den Kopf vormerken. */
+    /** When a chat line is created: indent if needed and note the head. */
     public static FormattedCharSequence line(GuiMessage message, FormattedCharSequence content) {
         ChatHeadsModule m = module();
         if (m == null) return content;
@@ -67,14 +67,14 @@ public final class ChatHeads {
         return info == null ? null : info.getSkin();
     }
 
-    /** Beim Zeichnen einer Zeile: Kopf an den Zeilenanfang (in der Chat-Pose, gleiche Deckkraft wie der Text). */
+    /** When drawing a line: head at the line start (in the chat pose, same opacity as the text). */
     public static void draw(GuiGraphicsExtractor graphics, int y, float alpha, FormattedCharSequence content) {
         Head head = LINES.get(content);
         if (head == null || !head.firstLine() || module() == null) return;
         PlayerFaceExtractor.extractRenderState(graphics, head.skin(), 0, y, 8, ARGB.white(alpha));
     }
 
-    /** Chatzeilen neu aufbauen (Ein-/Ausschalten). */
+    /** Rebuild chat lines (switching on/off). */
     static void refresh() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.gui == null || mc.gui.hud == null) return;

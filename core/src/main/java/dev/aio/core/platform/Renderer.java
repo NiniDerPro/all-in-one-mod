@@ -3,8 +3,8 @@ package dev.aio.core.platform;
 import dev.aio.core.util.Colors;
 
 /**
- * Zeichen-API, die der Kern benutzt. Der Adapter implementiert sie pro MC-Version
- * (z. B. über {@code DrawContext}). Farben sind immer ARGB.
+ * Drawing API that the core uses. The adapter implements it per MC version
+ * (e.g. via {@code DrawContext}). Colours are always ARGB.
  */
 public interface Renderer {
     int screenWidth();
@@ -18,11 +18,11 @@ public interface Renderer {
     void text(String text, float x, float y, int argb, boolean shadow);
 
     /**
-     * Text mit eigener Farbe je Zeichen (Regenbogen, Verlauf). Der Adapter zeichnet das in einem
-     * Aufruf; die Standardumsetzung zeichnet Zeichen für Zeichen.
+     * Text with its own colour per character (rainbow, gradient). The adapter draws it in a single
+     * call; the default implementation draws character by character.
      *
-     * @param colors  ARGB je Codepoint, Alpha vom ersten Eintrag gilt für alle
-     * @param offsets x-Versatz je Codepoint (für die Umsetzung Zeichen für Zeichen)
+     * @param colors  ARGB per code point, alpha of the first entry applies to all
+     * @param offsets x offset per code point (for the character-by-character implementation)
      */
     default void coloredText(String text, int[] colors, float[] offsets, float x, float y, boolean shadow) {
         for (int i = 0, idx = 0; i < text.length() && idx < colors.length; idx++) {
@@ -34,15 +34,15 @@ public interface Renderer {
 
     void fill(float x1, float y1, float x2, float y2, int argb);
 
-    /** Zeichnet ein Item-Icon (16x16). {@code overlay} zeigt Anzahl und Haltbarkeitsbalken. */
+    /** Draws an item icon (16x16). {@code overlay} shows count and durability bar. */
     void item(ItemRef item, float x, float y, boolean overlay);
 
-    /** Zeichnet ein Sprite aus dem GUI-Atlas, z. B. {@code minecraft:mob_effect/speed}. */
+    /** Draws a sprite from the GUI atlas, e.g. {@code minecraft:mob_effect/speed}. */
     void sprite(String id, float x, float y, int width, int height);
 
     /**
-     * Zeichnet ein Pixelbild (ARGB, w×h) skaliert nach dw×dh. Das Bild wird nur neu hochgeladen,
-     * wenn sich {@code version} geändert hat; so kostet es pro Frame nur ein Rechteck.
+     * Draws a pixel image (ARGB, w×h) scaled to dw×dh. The image is only uploaded again
+     * when {@code version} changed; that way it costs only one rectangle per frame.
      */
     default void image(String key, int[] argb, int w, int h, int version, float x, float y, float dw, float dh) {}
 
@@ -57,15 +57,15 @@ public interface Renderer {
 
     void scale(float factor);
 
-    /** Getrennte Skalierung für Breite und Höhe. */
+    /** Separate scaling for width and height. */
     default void scale(float sx, float sy) { scale(sx); }
 
-    /** Beschränkt das Zeichnen auf ein Rechteck (GUI-Koordinaten, ohne Transformation). */
+    /** Restricts drawing to a rectangle (GUI coordinates, without transformation). */
     void enableScissor(int x1, int y1, int x2, int y2);
 
     void disableScissor();
 
-    // ---- Hilfsfunktionen auf Basis der Primitive ----
+    // ---- Helper functions based on the primitives ----
 
     default void outline(float x1, float y1, float x2, float y2, float thickness, int argb) {
         fill(x1, y1, x2, y1 + thickness, argb);
@@ -74,7 +74,7 @@ public interface Renderer {
         fill(x2 - thickness, y1 + thickness, x2, y2 - thickness, argb);
     }
 
-    /** Kürzt Text mit "…", damit er in {@code maxWidth} passt. */
+    /** Shortens text with "…" so that it fits in {@code maxWidth}. */
     default String trim(String text, float maxWidth) {
         if (textWidth(text) <= maxWidth) return text;
         String ellipsis = "…";

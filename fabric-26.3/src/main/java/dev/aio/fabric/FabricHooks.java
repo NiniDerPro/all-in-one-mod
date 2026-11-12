@@ -1,13 +1,13 @@
 package dev.aio.fabric;
 
-/** Kleiner gemeinsamer Zustand zwischen Mixins und Plattform. */
+/** Small shared state between mixins and platform. */
 public final class FabricHooks {
-    /** Ob Minecraft gerade Profiler-Daten für das Kreisdiagramm sammelt. */
+    /** Whether Minecraft is currently collecting profiler data for the pie chart. */
     public static volatile boolean profilerResults;
 
     private FabricHooks() {}
 
-    /** Wird gesetzt, sobald der Freelook-Kamera-Hook einmal ausgeführt wurde (= greift in dieser Version). */
+    /** Set as soon as the freelook camera hook has run once (= applies in this version). */
     public static volatile boolean cameraHookSeen;
 
     /** Zuletzt berechnetes Welt-Sichtfeld (inkl. Sprinten, Effekten, Zoom), 0 = noch unbekannt. */

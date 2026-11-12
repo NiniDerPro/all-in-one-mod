@@ -6,8 +6,8 @@ import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.NumberSetting;
 
 /**
- * Kleinere Items in der Hand (Ego-Sicht): Schild und Totem verdecken beim PvP oder beim Fliegen
- * mit dem Dreizack (Sog) sonst viel vom Bild. Rein optisch, ändert nichts am Spiel.
+ * Smaller items in hand (first person): shield and totem otherwise cover a lot of the picture in PvP or when flying
+ * with the trident (riptide). Purely visual, changes nothing in the game.
  */
 public final class SmallItemsModule extends Module {
     private final BooleanSetting shield, totem, trident;
@@ -22,7 +22,7 @@ public final class SmallItemsModule extends Module {
         lower = add(new NumberSetting("lower", "Lower", 10, 0, 50, 1, ""));
     }
 
-    /** Welche Items betroffen sind, nach Item-ID (z. B. "minecraft:shield"). */
+    /** Which items are affected, by item id (e.g. "minecraft:shield"). */
     public boolean affects(String itemId) {
         if (!isActive()) return false;
         return switch (itemId) {
@@ -36,6 +36,6 @@ public final class SmallItemsModule extends Module {
     /** Skalierung 0.2..1. */
     public float scale() { return (float) (size.get() / 100.0); }
 
-    /** Wie weit nach unten (in Blöcken der Hand-Ansicht). */
+    /** How far down (in blocks of the hand view). */
     public float lowerBy() { return (float) (lower.get() / 100.0); }
 }

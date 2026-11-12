@@ -29,8 +29,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Wegpunkte pro Welt und Dimension: Marker mit Name und Entfernung im Bild, am Bildrand,
- * wenn sie außerhalb liegen. Verwaltung über einen eigenen Screen.
+ * Waypoints per world and dimension: markers with name and distance in the picture, at the screen edge
+ * when they are outside. Management via its own screen.
  */
 public final class WaypointsModule extends HudElement {
     public static final int[] PALETTE = {0xFF5555, 0xFFAA00, 0xFFFF55, 0x55FF55, 0x55FFFF, 0x5599FF, 0xAA55FF, 0xFF55FF, 0xFFFFFF};
@@ -58,7 +58,7 @@ public final class WaypointsModule extends HudElement {
 
     public WaypointsModule() {
         super("waypoints", "Waypoints", "Waypoints with distance on screen and on the compass", Category.QOL, false, 0, 0);
-        // nur noch zum Übernehmen alter Daten (früher im Profil gespeichert)
+        // only for taking over old data (used to be stored in the profile)
         data = add(new StringSetting("data", "Data (old)", "[]", 1_000_000));
         data.hidden();
         posX.hidden();
@@ -84,12 +84,12 @@ public final class WaypointsModule extends HudElement {
 
     private final BooleanSetting importShared;
 
-    /** Im Chat geteilte Wegpunkte automatisch übernehmen (nur wenn eingeschaltet). */
+    /** Automatically take over waypoints shared in chat (only when switched on). */
     private void importShared(String text) {
         for (SharedWaypoint.Found f : SharedWaypoint.parse(text)) addShared(f);
     }
 
-    /** Fügt einen geteilten Wegpunkt hinzu (Klick im Chat oder automatisch); doppelte werden übersprungen. */
+    /** Adds a shared waypoint (click in chat or automatic); duplicates are skipped. */
     public boolean addShared(SharedWaypoint.Found f) {
         String dim = f.dimension() != null ? f.dimension() : platform().dimension();
         int y = f.y() != null ? f.y() : (int) Math.floor(platform().playerPos().y());
@@ -108,7 +108,7 @@ public final class WaypointsModule extends HudElement {
 
     // ---- Daten ----
 
-    /** Eigene Datei, unabhängig von Profilen und vom "Zurücksetzen" im Menü. */
+    /** Own file, independent of profiles and of "Reset" in the menu. */
     static final String FILE = "waypoints.json";
 
     private boolean saving;
@@ -117,7 +117,7 @@ public final class WaypointsModule extends HudElement {
         waypoints.clear();
         String json = core.config().readText(FILE);
         if (json != null) parseInto(json, waypoints);
-        // Alte Versionen speicherten die Wegpunkte als Einstellung im Profil: einmalig übernehmen
+        // Old versions stored the waypoints as a setting in the profile: take over once
         String legacy = data.get();
         if (legacy != null && !legacy.isBlank() && !legacy.trim().equals("[]")) {
             List<Waypoint> old = new ArrayList<>();
@@ -146,7 +146,7 @@ public final class WaypointsModule extends HudElement {
                             o.get("color").getAsInt(), !o.has("visible") || o.get("visible").getAsBoolean(),
                             o.has("death") && o.get("death").getAsBoolean()));
                 } catch (RuntimeException ignored) {
-                    // einzelnen kaputten Eintrag überspringen, Rest behalten
+                    // skip a single broken entry, keep the rest
                 }
             }
         } catch (RuntimeException e) {
@@ -177,7 +177,7 @@ public final class WaypointsModule extends HudElement {
         return List.copyOf(waypoints);
     }
 
-    /** Wegpunkte der aktuellen Welt (alle Dimensionen). */
+    /** Waypoints of the current world (all dimensions). */
     public List<Waypoint> inThisWorld() {
         List<Waypoint> out = new ArrayList<>();
         String world = platform().worldKey();
@@ -231,7 +231,7 @@ public final class WaypointsModule extends HudElement {
 
     @Override public boolean hasContent() { return platform().inWorld() && !platform().isScreenOpen(); }
 
-    /** Marker werden über den ganzen Bildschirm gezeichnet, nicht als verschiebbares Element. */
+    /** Markers are drawn across the whole screen, not as a movable element. */
     @Override protected void renderContent(Renderer r, boolean preview) {}
 
     @Override public boolean editable() { return false; }
@@ -243,37 +243,37 @@ public final class WaypointsModule extends HudElement {
     }
 
     /**
-     * Wegpunkte, die gerade angezeigt werden: alle sichtbaren, wenn das Modul an ist; sonst nur der
-     * Todespunkt, falls "Death Waypoint" an ist (der funktioniert auch ohne dieses Modul).
+     * Waypoints that are currently shown: all visible ones when the module is on; otherwise only the
+     * death point if "Death Waypoint" is on (that works without this module too).
      */
     public List<Waypoint> shownHere() {
         if (core == null) return List.of();
         DeathPointModule death = core.module(DeathPointModule.class);
         boolean showDeath = death != null && death.isActive();
         if (!isActive() && !showDeath) return List.of();
-        // Todespunkte werden immer gespeichert, aber nur gezeigt, wenn "Death Waypoint" an ist
+        // Death points are always saved, but only shown when "Death Waypoint" is on
         List<Waypoint> out = new ArrayList<>();
         for (Waypoint w : visibleHere()) if (w.death() ? showDeath : isActive()) out.add(w);
         return out;
     }
 
-    /** Radius (px) um das Fadenkreuz, in dem ein Punkt als "angezielt" gilt. */
+    /** Radius (px) around the crosshair in which a point counts as "aimed at". */
     static final float HOVER_RADIUS = 10;
 
-    /** Einblend-Zustand der Beschriftung je Wegpunkt (0..1), für weiches Ein-/Ausblenden. */
+    /** Fade state of the label per waypoint (0..1), for smooth fading in/out. */
     private final Map<String, Float> labelFade = new HashMap<>();
     private long lastFrame;
 
     private static String key(Waypoint w) { return w.name() + '|' + w.x() + '|' + w.y() + '|' + w.z() + '|' + w.dimension(); }
 
     /**
-     * Marker im Stil der großen Wegpunkt-Mods, nur aufgeräumter:
+     * Markers in the style of the big waypoint mods, only tidier:
      * <ul>
-     *   <li>Im Bild ein kleiner Punkt (oder auf Wunsch ein Symbol mit Anfangsbuchstaben wie bei Xaero).</li>
-     *   <li>Zielt man darauf (oder "Always show names"), blendet die Beschriftung weich ein: Name in
+     *   <li>In the picture a small dot (or optionally an icon with the initial letter as in Xaero).</li>
+     *   <li>If you aim at it (or "Always show names"), the label fades in smoothly: name in
      *       der Wegpunktfarbe, Entfernung dahinter in Grau.</li>
-     *   <li>Der angezielte Marker wird etwas größer, nahe Marker (< 4 Blöcke) blenden aus.</li>
-     *   <li>Außerhalb des Bildes ein kleiner Pfeil am Rand, der in die Richtung zeigt.</li>
+     *   <li>The aimed marker gets a bit bigger, near markers (< 4 blocks) fade out.</li>
+     *   <li>Outside the picture a small arrow at the edge pointing in the direction.</li>
      * </ul>
      */
     public void drawMarkers(Renderer r, float partialTick) {
@@ -283,7 +283,7 @@ public final class WaypointsModule extends HudElement {
         float dt = lastFrame == 0 ? 0 : Math.min(0.1f, (now - lastFrame) / 1000f);
         lastFrame = now;
         if (list.isEmpty()) return;
-        // exakt die Kamera, mit der die Welt gezeichnet wurde (inkl. Laufwackeln) → kein Zittern
+        // exactly the camera with which the world was drawn (incl. view bobbing) → no jitter
         CameraView cam = platform().camera(partialTick);
         Vec3 pos = platform().playerPos();
         float w = r.screenWidth(), h = r.screenHeight(), cx = w / 2f, cy = h / 2f;
@@ -302,7 +302,7 @@ public final class WaypointsModule extends HudElement {
             float x = pt.x(), y = pt.y();
             if (edge) {
                 if (!edgeMarkers.on()) continue;
-                // vom Bildschirmmittelpunkt Richtung Ziel bis an den Rand
+                // from the screen centre towards the target up to the edge
                 float dx = x - cx, dy = y - cy;
                 float m = 10, k = Math.min(Math.abs(dx) > 0.001f ? (cx - m) / Math.abs(dx) : Float.MAX_VALUE,
                         Math.abs(dy) > 0.001f ? (cy - m) / Math.abs(dy) : Float.MAX_VALUE);
@@ -320,7 +320,7 @@ public final class WaypointsModule extends HudElement {
             }
         }
 
-        // 2. Weiter entfernte zuerst zeichnen, damit nahe darüber liegen
+        // 2. Draw farther ones first so that near ones lie above
         ms.sort((a, b2) -> Double.compare(b2.dist, a.dist));
         Set<String> alive = new HashSet<>();
         for (M m : ms) {
@@ -330,7 +330,7 @@ public final class WaypointsModule extends HudElement {
             float f = labelFade.getOrDefault(k, 0f);
             f = Math.max(0, Math.min(1, f + (target ? dt * 8 : -dt * 6)));
             labelFade.put(k, f);
-            // nahe Wegpunkte blenden aus (man steht ja schon dort)
+            // near waypoints fade out (you are standing there already)
             float near = (float) Math.max(0, Math.min(1, (m.dist - 2.5) / 3));
             int color = m.wp.color() | 0xFF000000;
             if (m.edge) drawArrow(r, color, m.x, m.y, m.x - cx, m.y - cy);
@@ -360,14 +360,14 @@ public final class WaypointsModule extends HudElement {
             r.text(letter, -r.textWidth(letter) / 2f + 0.5f, -3.5f, alpha(lum > 140 ? 0xFF000000 : 0xFFFFFFFF, a), false);
         } else {
             int s = wp.death() ? 4 : 3;
-            diamond(r, s + 1, alpha(0xB0000000, a)); // dunkler Rand: sichtbar auf hellem und dunklem Grund
+            diamond(r, s + 1, alpha(0xB0000000, a)); // dark edge: visible on light and dark ground
             diamond(r, s, alpha(color, a));
             r.fill(-1, -1, 0, 0, alpha(0x60FFFFFF, a)); // kleiner Glanzpunkt
         }
         r.pop();
     }
 
-    /** Kleiner Pfeil am Bildrand, zeigt grob in die Richtung (vier Grundrichtungen). */
+    /** Small arrow at the screen edge, points roughly in the direction (four cardinal directions). */
     private static void drawArrow(Renderer r, int color, float x, float y, float dx, float dy) {
         r.push();
         r.translate(x, y);
@@ -402,7 +402,7 @@ public final class WaypointsModule extends HudElement {
         int nw = r.textWidth(name), dw = d.isEmpty() ? 0 : r.textWidth(d) + 5;
         int tw = nw + dw;
         int fh = r.fontHeight();
-        float lift = (1 - a) * 3; // gleitet beim Einblenden leicht nach oben
+        float lift = (1 - a) * 3; // glides up slightly when fading in
         r.push();
         r.translate(x, y - 9 - fh + lift);
         int x1 = -tw / 2 - 4, x2 = tw - tw / 2 + 4, y1 = -3, y2 = fh + 1;

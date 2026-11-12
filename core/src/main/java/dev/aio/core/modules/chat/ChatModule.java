@@ -14,8 +14,8 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Custom Chat: Zeitstempel, längerer Verlauf, Kopieren (Rechtsklick im Chat oder Taste),
- * Deckkraft und Schrift. Die Größe gehört zu {@link FlexChatModule}.
+ * Custom Chat: timestamps, longer history, copy (right click in chat or key),
+ * opacity and font. The size belongs to {@link FlexChatModule}.
  */
 public final class ChatModule extends Module {
     public static final int VANILLA_HISTORY = 100;
@@ -31,7 +31,7 @@ public final class ChatModule extends Module {
     private final ChatHistory chatHistory = new ChatHistory(1000);
     private final BooleanSetting splitMigrated;
     private boolean applying;
-    /** Ob die Vanilla-Werte schon übernommen wurden (beim Spielstart gibt es sie noch nicht). */
+    /** Whether the vanilla values were already taken over (they do not exist yet at game start). */
     private boolean synced;
 
     public ChatModule() {
@@ -67,11 +67,11 @@ public final class ChatModule extends Module {
     }
 
     /**
-     * Übernimmt die aktuellen Vanilla-Werte in die Einstellungen, damit das Modul nichts
-     * überschreibt. Geschrieben wird nur, wenn man im Menü oder Editor etwas ändert.
+     * Takes the current vanilla values into the settings so that the module does not
+     * overwrite anything. Only written when something is changed in the menu or editor.
      */
     private void readFromVanilla() {
-        if (Double.isNaN(platform().option(VanillaOption.CHAT_OPACITY))) return; // noch nicht geladen, später erneut
+        if (Double.isNaN(platform().option(VanillaOption.CHAT_OPACITY))) return; // not loaded yet, try again later
         applying = true;
         try {
             textOpacity.set(platform().option(VanillaOption.CHAT_OPACITY));
@@ -90,8 +90,8 @@ public final class ChatModule extends Module {
 
 
     /**
-     * Früher war "Chat" standardmäßig an und enthielt auch die Größe. Seit der Aufteilung (Flex Chat
-     * für die Größe) ist Custom Chat standardmäßig aus: einmalig ausschalten.
+     * "Chat" used to be on by default and also contained the size. Since the split (Flex Chat
+     * for the size) Custom Chat is off by default: switch it off once.
      */
     @Override public boolean adjustLoadedEnabled(boolean enabled) {
         if (splitMigrated.on()) return enabled;
@@ -105,7 +105,7 @@ public final class ChatModule extends Module {
 
     public ChatHistory chatHistory() { return chatHistory; }
 
-    /** Präfix wie {@code [12:34] } oder null, wenn deaktiviert. */
+    /** Prefix like {@code [12:34] } or null if disabled. */
     public String timestampPrefix() {
         if (!isActive() || !timestamps.on()) return null;
         return "[" + LocalTime.now().format(seconds.on() ? HMS : HM) + "] ";

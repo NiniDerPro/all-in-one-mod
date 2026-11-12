@@ -21,18 +21,18 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Shield Indicator: bestimmt die Farbe eines Schilds und reicht sie bis zum Zeichnen durch.
- * Beim Erfassen des Items (mit Besitzer) wird die Farbe an eine eigene Kopie der Item-Daten
- * gehängt; beim späteren Zeichnen des Schildmodells wird sie wieder ausgelesen.
+ * Shield Indicator: determines the colour of a shield and passes it on until drawing.
+ * When the item is captured (with its owner), the colour is attached to an own copy of the item data;
+ * when the shield model is drawn later it is read out again.
  */
 public final class ShieldIndicator {
     private ShieldIndicator() {}
 
-    /** Besitzer des Items, das gerade erfasst wird (verschachtelt möglich). */
+    /** Owner of the item that is currently being captured (nesting possible). */
     private static final ArrayList<LivingEntity> OWNERS = new ArrayList<>();
     /**
-     * Item-Daten mit angehängter Farbe. Eigene Klasse statt Zuordnungstabelle: Minecrafts
-     * Item-Daten vergleichen nach Inhalt, zwei gleiche Schilde wären sonst nicht zu unterscheiden.
+     * Item data with an attached colour. Own class instead of a lookup table: Minecraft's
+     * item data compare by content, two identical shields could otherwise not be told apart.
      */
     public static final class Tinted implements DataComponentMap {
         private final DataComponentMap base;
@@ -47,11 +47,11 @@ public final class ShieldIndicator {
 
         @Override public <T> T get(DataComponentType<? extends T> type) { return base.get(type); }
     }
-    /** Vorhersage: Spieler → Zeitpunkt (ms), bis zu dem das Schild als deaktiviert gilt. */
+    /** Prediction: player → time (ms) until which the shield counts as disabled. */
     private static final Map<UUID, Long> PREDICTED = new ConcurrentHashMap<>();
     private static final long DISABLE_MS = 5000;
 
-    /** Farbe, mit der das aktuell gezeichnete Schild eingefärbt wird (-1 = normal). */
+    /** Colour with which the shield currently being drawn is tinted (-1 = normal). */
     public static int current = -1;
 
     private static ShieldIndicatorModule module() {
@@ -63,7 +63,7 @@ public final class ShieldIndicator {
 
     public static void popOwner() { if (!OWNERS.isEmpty()) OWNERS.removeLast(); }
 
-    /** Beim Erfassen: ggf. eingefärbte Kopie der Item-Daten zurückgeben. */
+    /** When capturing: return a tinted copy of the item data if needed. */
     public static DataComponentMap tag(DataComponentMap map) {
         if (map == null || OWNERS.isEmpty()) return map;
         int tint = tintFor(OWNERS.getLast());
@@ -82,7 +82,7 @@ public final class ShieldIndicator {
         boolean self = owner == mc.player;
         if (self ? !m.own() : !m.others()) return -1;
 
-        // Deaktiviert: eigener Cooldown (mit Ausblenden) bzw. Vorhersage für andere
+        // Disabled: own cooldown (with fade-out) or prediction for others
         ItemStack shield = shieldOf(owner);
         if (self && shield != null && mc.player.getCooldowns().isOnCooldown(shield)) {
             float left = mc.player.getCooldowns().getCooldownPercent(shield, 0);
@@ -109,13 +109,13 @@ public final class ShieldIndicator {
         return null;
     }
 
-    /** Eigener Angriff: Axt gegen einen blockenden Spieler von vorne → Schild 5 s deaktiviert. */
+    /** Own attack: axe against a blocking player from the front → shield disabled for 5 s. */
     public static void onAttack(Player attacker, Entity target) {
         ShieldIndicatorModule m = module();
         if (m == null || !m.isActive() || !m.predict()) return;
         if (!(target instanceof Player p) || !p.isBlocking()) return;
         if (!attacker.getMainHandItem().is(ItemTags.AXES)) return;
-        // Schilde wehren nur von vorne ab
+        // Shields only block from the front
         Vec3 look = p.getViewVector(1f);
         Vec3 toAttacker = attacker.position().subtract(p.position()).normalize();
         if (look.x * toAttacker.x + look.z * toAttacker.z <= 0) return;

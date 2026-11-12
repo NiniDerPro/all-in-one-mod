@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Welche Tasten gerade gehalten werden, gesammelt aus den Eingabe-Events.
- * Unabhängig vom Eingabe-Backend (26.x nutzt SDL statt GLFW).
+ * Which keys are currently held, collected from the input events.
+ * Independent of the input backend (26.x uses SDL instead of GLFW).
  */
 public final class InputState {
     private static final Set<String> DOWN = new HashSet<>();
@@ -20,6 +20,6 @@ public final class InputState {
 
     public static boolean isDown(String key) { return DOWN.contains(key); }
 
-    /** Z. B. wenn das Fenster den Fokus verliert. */
+    /** E.g. when the window loses focus. */
     public static void clear() { DOWN.clear(); }
 }

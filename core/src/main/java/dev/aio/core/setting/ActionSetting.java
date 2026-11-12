@@ -3,7 +3,7 @@ package dev.aio.core.setting;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 
-/** Ein Knopf in den Moduleinstellungen, der eine Aktion auslöst. Wird nicht gespeichert. */
+/** A button in the module settings that triggers an action. Is not saved. */
 public class ActionSetting extends Setting<Boolean> {
     private final Runnable action;
 

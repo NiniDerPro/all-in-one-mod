@@ -22,9 +22,9 @@ import net.minecraft.world.phys.Vec2;
 import java.util.UUID;
 
 /**
- * Die Kamera ist ein eigener, unsichtbarer Client-Spieler, der in der Welt angemeldet wird und
- * dadurch wie ein Spieler tickt, sich bewegt und gerendert werden kann.
- * Aus Freecam (MIT) übernommen, siehe NOTICE.md.
+ * The camera is an own, invisible client player that is registered in the world and
+ * therefore ticks like a player, moves and can be rendered.
+ * Adapted from Freecam (MIT), see NOTICE.md.
  */
 public class FreeCamera extends AbstractClientPlayer {
     private static final Minecraft MC = Minecraft.getInstance();
@@ -60,7 +60,7 @@ public class FreeCamera extends AbstractClientPlayer {
         snapTo(position.x, position.y, position.z, position.yaw, position.pitch);
         xBob = getXRot();
         yBob = getYRot();
-        xBobO = xBob; // verhindert ein Drehen der Kamera beim Einschalten
+        xBobO = xBob; // prevents the camera from turning when switching on
         yBobO = yBob;
     }
 
@@ -76,11 +76,11 @@ public class FreeCamera extends AbstractClientPlayer {
         getClientLevel().removeEntity(getId(), RemovalReason.DISCARDED);
     }
 
-    // Kein Fallschaden-Geräusch beim Aufsetzen
+    // No fall damage sound on landing
     @Override
     protected void checkFallDamage(double heightDifference, boolean onGround, BlockState landedState, BlockPos landedPosition) {}
 
-    // Schlag- und Benutzen-Animation der Hand kommen vom echten Spieler
+    // Hit and use animation of the hand come from the real player
     @Override
     public SwingDescription getCurrentSwing() {
         return MC.player.getCurrentSwing();
@@ -106,7 +106,7 @@ public class FreeCamera extends AbstractClientPlayer {
         return MC.player.isUsingItem();
     }
 
-    // Nicht von Leitern/Ranken oder Wasser bremsen lassen
+    // Do not let ladders/vines or water slow it down
     @Override
     public boolean onClimbable() {
         return false;
@@ -117,20 +117,20 @@ public class FreeCamera extends AbstractClientPlayer {
         return false;
     }
 
-    // Nachtsicht des Spielers gilt auch für die Kamera
+    // The player's night vision also applies to the camera
     @Override
     public MobEffectInstance getEffect(Holder<MobEffect> effect) {
         return MC.player.getEffect(effect);
     }
 
-    // Kolben schieben die Kamera nicht, wenn sie durch Blöcke fliegt
+    // Pistons do not push the camera when it flies through blocks
     @Override
     public PushReaction getPistonPushReaction() {
         if (Freecam.noClip()) return PushReaction.IGNORE_ENTITY;
         return super.getPistonPushReaction();
     }
 
-    // Keine Kollision mit festen Entities (Shulker, Boote)
+    // No collision with solid entities (shulkers, boats)
     @Override
     public boolean canCollideWith(Entity other) {
         return false;
@@ -142,7 +142,7 @@ public class FreeCamera extends AbstractClientPlayer {
         super.setPose(Pose.SWIMMING);
     }
 
-    // Keine Unterwasser-Geräusche
+    // No underwater sounds
     @Override
     protected boolean updateIsUnderwater() {
         this.wasUnderwater = this.isEyeInFluid(FluidTags.WATER);

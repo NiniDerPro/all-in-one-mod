@@ -3,7 +3,7 @@ package dev.aio.core;
 import dev.aio.core.platform.ItemRef;
 import dev.aio.core.platform.Renderer;
 
-/** Renderer, der nur zählt: 6 px pro Zeichen, Schrifthöhe 9. */
+/** Renderer that only counts: 6 px per character, font height 9. */
 public class FakeRenderer implements Renderer {
     public int width = 480, height = 270;
     public int textCalls, fillCalls, widthCalls;

@@ -8,14 +8,14 @@ import dev.aio.core.platform.Renderer;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Zeichnet alle aktiven HUD-Elemente und versorgt sie pro Tick mit Updates. */
+/** Draws all active HUD elements and feeds them updates every tick. */
 public final class HudManager {
     private final ModuleRegistry modules;
     private List<HudElement> elements = List.of();
     private boolean editorOpen;
     private Runnable onFirstPlaced;
 
-    /** Wird einmal aufgerufen, wenn ein Element zum ersten Mal auf dem Bildschirm erscheint. */
+    /** Called once when an element first appears on the screen. */
     public void onFirstPlaced(Runnable r) { this.onFirstPlaced = r; }
 
     public HudManager(ModuleRegistry modules) {
@@ -34,14 +34,14 @@ public final class HudManager {
 
     private void render(Renderer r, float partialTick) {
         placeNew(r);
-        if (editorOpen) return; // der Editor zeichnet die Elemente selbst
+        if (editorOpen) return; // the editor draws the elements itself
         for (HudElement el : elements) if (el.isActive()) el.renderOverlay(r, partialTick);
         for (HudElement el : elements) if (el.isActive() && el.editable()) el.render(r, false);
     }
 
     /**
-     * Elemente, die zum ersten Mal eingeschaltet wurden, bekommen einen freien Platz nahe ihrer
-     * Standardposition, damit sie nicht über bereits platzierten liegen.
+     * Elements that were switched on for the first time get a free place near their
+     * default position, so that they do not lie over ones that are already placed.
      */
     public void placeNew(Renderer r) {
         for (HudElement el : elements) {

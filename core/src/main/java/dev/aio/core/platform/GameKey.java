@@ -1,6 +1,6 @@
 package dev.aio.core.platform;
 
-/** Vanilla-Tastenbelegungen, die der Kern abfragt (unabhängig von der tatsächlichen Taste). */
+/** Vanilla key bindings that the core queries (independent of the actual key). */
 public enum GameKey {
     FORWARD, BACK, LEFT, RIGHT, JUMP, SNEAK, SPRINT, ATTACK, USE
 }

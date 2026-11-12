@@ -21,14 +21,14 @@ import java.util.List;
 import java.util.function.IntConsumer;
 
 /**
- * Kleines Fenster zum Erstellen (Taste B) oder Bearbeiten eines Wegpunkts: Name, Farbe und
- * Koordinaten (vorausgefüllt mit der aktuellen Position, änderbar). Über "Templates" lassen sich
- * Vorlagen (Name + Farbe) übernehmen, eigene speichern und löschen.
+ * Small window for creating (key B) or editing a waypoint: name, colour and
+ * coordinates (prefilled with the current position, changeable). Via "Templates" templates
+ * (name + colour) can be applied, own ones saved and deleted.
  */
 public final class WaypointEditScreen implements UiScreen {
     private record Hit(float x1, float y1, float x2, float y2, IntConsumer action) {}
 
-    /** Vorlage für einen Wegpunkt. */
+    /** Template for a waypoint. */
     public record Template(String name, int color) {}
 
     static final String TEMPLATE_FILE = "waypoint_templates.json";
@@ -51,7 +51,7 @@ public final class WaypointEditScreen implements UiScreen {
     private List<Template> templates;
     private final List<Hit> hits = new ArrayList<>();
     private String error;
-    /** Das "b" der Taste, die das Fenster geöffnet hat, soll nicht im Namen landen. */
+    /** The "b" of the key that opened the window must not end up in the name. */
     private final long openedAt = System.currentTimeMillis();
 
     public WaypointEditScreen(AioCore core, WaypointsModule module, Waypoint original) {
@@ -188,7 +188,7 @@ public final class WaypointEditScreen implements UiScreen {
             Draw.round(r, x + 4, ry, x + w - 4, ry + 13, 2, hover ? Theme.CARD_HOVER : Theme.CARD);
             r.fill(x + 7, ry + 3, x + 14, ry + 10, 0xFF000000 | t.color());
             r.text(r.trim(t.name(), w - 40), x + 18, ry + 3, Theme.TEXT, false);
-            // ✖ zuerst registrieren (Treffer werden von hinten geprüft, also hier nach der Zeile)
+            // register ✖ first (hits are checked from the back, so here after the row)
             hits.add(new Hit(x + 4, ry, x + w - 18, ry + 13, b -> {
                 fields[0] = t.name();
                 color = t.color();
@@ -278,7 +278,7 @@ public final class WaypointEditScreen implements UiScreen {
             selectAll = true;
             return true;
         }
-        if (Keys.ESCAPE.equals(key)) return false; // schließt
+        if (Keys.ESCAPE.equals(key)) return false; // closes
         TextEdit.Result res = TextEdit.key(core.platform(), fields[focus], selectAll, key);
         fields[focus] = clean(focus, res.text());
         selectAll = res.allSelected();

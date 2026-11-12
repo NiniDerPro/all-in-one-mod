@@ -82,7 +82,7 @@ class FeaturesTest {
     @Test void compassMath() {
         assertEquals(0, Compass.heading(180), 1e-4);   // Norden
         assertEquals(90, Compass.heading(-90), 1e-4);  // Osten
-        assertEquals(180, Compass.heading(0), 1e-4);   // Süden
+        assertEquals(180, Compass.heading(0), 1e-4);   // south
         assertEquals(270, Compass.heading(90), 1e-4);  // Westen
         assertEquals(0, Compass.bearing(0, -10), 1e-4);
         assertEquals(90, Compass.bearing(10, 0), 1e-4);
@@ -97,7 +97,7 @@ class FeaturesTest {
         assertTrue(p.onScreen());
         assertEquals(200, p.x(), 0.01);
         assertEquals(100, p.y(), 0.01);
-        // Blick nach Süden: Westen (-X) liegt rechts
+        // Looking south: west (-X) is on the right
         assertTrue(Projection.project(-3, 0, 10, 0, 0, 0, 0, 0, 70, 400, 200).x() > 200);
         // oben = kleineres y
         assertTrue(Projection.project(0, 3, 10, 0, 0, 0, 0, 0, 70, 400, 200).y() < 100);
@@ -129,7 +129,7 @@ class FeaturesTest {
         core.module(WaypointsModule.class).setEnabled(true);
         core.bus().post(new Events.Key("key.keyboard.b", 1, false));
         assertInstanceOf(WaypointEditScreen.class, p.screen);
-        assertEquals(0, core.module(WaypointsModule.class).inThisWorld().size(), "erst beim Speichern");
+        assertEquals(0, core.module(WaypointsModule.class).inThisWorld().size(), "only when saving");
     }
 
     @Test void deathPointCreatedAndRemovedOnArrival() {
@@ -147,7 +147,7 @@ class FeaturesTest {
         p.dead = false;
         p.x = 0; p.z = 0; // Respawn weit weg
         core.bus().post(Events.Tick.INSTANCE);
-        assertEquals(1, wp.inThisWorld().size(), "bleibt bis zur Ankunft");
+        assertEquals(1, wp.inThisWorld().size(), "stays until arrival");
         p.x = 101; p.z = 200;
         core.bus().post(Events.Tick.INSTANCE);
         assertTrue(wp.inThisWorld().isEmpty(), "verschwindet bei Ankunft");
@@ -161,7 +161,7 @@ class FeaturesTest {
         core.bus().post(new Events.ChatReceived("<Alex> @Steve schau", false));
         assertEquals(2, p.alerts);
         core.bus().post(new Events.ChatReceived("<Alex> Steven ist da", false));
-        assertEquals(2, p.alerts, "nur ganze Wörter");
+        assertEquals(2, p.alerts, "whole words only");
         core.bus().post(new Events.ChatReceived("<Steve> ich bin Steve", false));
         assertEquals(2, p.alerts, "eigene Nachricht ignoriert");
     }
@@ -174,7 +174,7 @@ class FeaturesTest {
         AioCore core = newCore(p);
         FlexChatModule chat = core.module(FlexChatModule.class);
         assertTrue(chat.isActive());
-        assertEquals(0.3, chat.setting("width").get(), "übernimmt Vanilla-Wert");
+        assertEquals(0.3, chat.setting("width").get(), "takes over the vanilla value");
         assertEquals(0.3, p.options.get(VanillaOption.CHAT_WIDTH));
         chat.resizeTo(40 + 280 * 0.8f, 20 + 160 * 0.5f);
         assertEquals(0.8, p.options.get(VanillaOption.CHAT_WIDTH), 0.01);
@@ -184,7 +184,7 @@ class FeaturesTest {
     @Test void chatHistoryCollectsMessages() {
         FakePlatform p = new FakePlatform();
         AioCore core = newCore(p);
-        core.module(ChatModule.class).setEnabled(true); // Custom Chat ist standardmäßig aus
+        core.module(ChatModule.class).setEnabled(true); // Custom Chat is off by default
         core.bus().post(new Events.ChatReceived("Hallo Welt", false));
         core.bus().post(new Events.ChatReceived("Zweite", true));
         assertEquals(2, core.module(ChatModule.class).chatHistory().entries().size());
@@ -201,19 +201,19 @@ class FeaturesTest {
         core.bus().post(new Events.StartBreak(0, 0, 0));
         assertEquals(5, p.selected);
         core.bus().post(Events.Tick.INSTANCE);
-        assertEquals(5, p.selected, "bleibt, solange abgebaut wird");
+        assertEquals(5, p.selected, "stays while breaking");
         p.heldGameKeys.remove(GameKey.ATTACK);
         core.bus().post(Events.Tick.INSTANCE);
-        assertEquals(5, p.selected, "Standard: bleibt beim Werkzeug");
+        assertEquals(5, p.selected, "default: stays on the tool");
 
-        // Mit "Switch back afterwards" geht es zum alten Slot
+        // With "Switch back afterwards" it goes to the old slot
         ((BooleanSetting) m.setting("restore")).set(true);
         p.selected = 2;
         p.heldGameKeys.add(GameKey.ATTACK);
         core.bus().post(new Events.StartBreak(0, 0, 0));
         p.heldGameKeys.remove(GameKey.ATTACK);
         core.bus().post(Events.Tick.INSTANCE);
-        assertEquals(2, p.selected, "zurück zum alten Slot");
+        assertEquals(2, p.selected, "back to the old slot");
     }
 
     @Test void autoWeaponSwitchesWhileAimingNotOnHit() {
@@ -225,13 +225,13 @@ class FeaturesTest {
         p.selected = 0;
         p.bestWeapon = 3;
         core.bus().post(new Events.AttackEntity(true));
-        assertEquals(0, p.selected, "kein Wechsel im Angriffs-Tick (Attribute Swapping)");
+        assertEquals(0, p.selected, "no switch in the attack tick (attribute swapping)");
         p.onLiving = true;
         core.bus().post(Events.Tick.INSTANCE);
-        assertEquals(3, p.selected, "Wechsel schon beim Anvisieren");
+        assertEquals(3, p.selected, "switch already when aiming");
         p.onLiving = false;
         for (int i = 0; i < 25; i++) core.bus().post(Events.Tick.INSTANCE);
-        assertEquals(0, p.selected, "danach zurück");
+        assertEquals(0, p.selected, "then back");
     }
 
     @Test void sortMergesAndOrdersChest() {
@@ -241,7 +241,7 @@ class FeaturesTest {
         c.set(5, "minecraft:stone", 60);
         c.set(9, "minecraft:apple", 3);
         c.set(12, "minecraft:dirt", 7);
-        c.set(30, "minecraft:diamond", 1); // Spielerinventar bleibt unberührt
+        c.set(30, "minecraft:diamond", 1); // player inventory stays untouched
         assertTrue(InventoryOps.sort(c, InventoryOps.sameRegion(c, c.slots().get(0))));
         assertEquals("minecraft:apple", c.get(0).id());
         assertEquals("minecraft:dirt", c.get(1).id());
@@ -268,7 +268,7 @@ class FeaturesTest {
         assertTrue(m.onMiddleClick(c, 1, false));
         assertEquals("a", c.get(0).id());
         assertEquals("b", c.get(1).id());
-        assertEquals("z", c.get(27).id(), "Hotbar unverändert");
+        assertEquals("z", c.get(27).id(), "hotbar unchanged");
         assertNotNull(mod);
     }
 
@@ -306,7 +306,7 @@ class FeaturesTest {
 
     @Test void itemSearch() {
         ItemRef a = item("minecraft:diamond_sword", "Diamantschwert", "Minecraft");
-        ItemRef b = item("create:wrench", "Schraubenschlüssel", "Create");
+        ItemRef b = item("create:wrench", "Wrench", "Create");
         ItemRef c = item("minecraft:diamond", "Diamant", "Minecraft");
         List<ItemRef> all = List.of(a, b, c);
         assertEquals(List.of(a, c), ItemSearch.filter(all, "diamant"));

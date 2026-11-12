@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Chat Heads: Kopf vor die Zeile zeichnen, im normalen und im geöffneten Chat. */
+/** Chat Heads: draw the head in front of the line, in normal and in open chat. */
 @Mixin(targets = {
         "net.minecraft.client.gui.components.ChatComponent$DrawingBackgroundGraphicsAccess",
         "net.minecraft.client.gui.components.ChatComponent$DrawingFocusedGraphicsAccess"}, remap = false)

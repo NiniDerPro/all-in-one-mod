@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Verdeckte Entities auf dem Client nur vereinfacht ticken (Position nachführen, keine Animationen). */
+/** Hidden entities only tick in a simplified way on the client (follow position, no animations). */
 @Mixin(ClientLevel.class)
 public abstract class ClientLevelTickMixin {
     @Inject(method = "tickNonPassenger", at = @At("HEAD"), cancellable = true, require = 0)

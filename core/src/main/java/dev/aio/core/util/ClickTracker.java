@@ -8,11 +8,11 @@ import java.util.ArrayDeque;
 import java.util.function.LongSupplier;
 
 /**
- * Zählt Klicks pro Sekunde, getrennt für links und rechts: Zeitstempel in einer Queue,
- * alles älter als 1 s fliegt raus.
+ * Counts clicks per second, separate for left and right: timestamps in a queue,
+ * everything older than 1 s drops out.
  *
- * <p>Wird von mehreren Modulen geteilt (CPS, Keystrokes). Der Maus-Listener hängt nur,
- * solange mindestens ein Modul den Tracker per {@link #acquire()} benutzt.
+ * <p>Shared by several modules (CPS, keystrokes). The mouse listener is only attached
+ * while at least one module uses the tracker via {@link #acquire()}.
  */
 public final class ClickTracker {
     public static final long WINDOW_NANOS = 1_000_000_000L;

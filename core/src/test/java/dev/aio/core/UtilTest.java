@@ -31,8 +31,8 @@ class UtilTest {
             now[0] += 100_000_000L;
         }
         bus.post(new Events.MouseButton(1, 1, false));
-        bus.post(new Events.MouseButton(0, 0, false)); // Loslassen zählt nicht
-        bus.post(new Events.MouseButton(0, 1, true));  // Klick im Menü zählt nicht
+        bus.post(new Events.MouseButton(0, 0, false)); // release does not count
+        bus.post(new Events.MouseButton(0, 1, true));  // click in the menu does not count
         assertEquals(5, t.leftCps());
         assertEquals(1, t.rightCps());
         now[0] = 1_000_000_001L; // erster Klick (t=0) ist jetzt > 1 s alt
@@ -52,7 +52,7 @@ class UtilTest {
         t.release();
         assertFalse(t.isListening());
         assertFalse(bus.hasListeners(Events.MouseButton.class));
-        t.release(); // zu viele releases sind harmlos
+        t.release(); // too many releases are harmless
     }
 
     @Test void snapsToScreenEdgesCenterAndOthers() {
@@ -62,7 +62,7 @@ class UtilTest {
         assertFalse(r.hasGuideY());
 
         r = Snapper.snap(new Snapper.Rect(178, 100, 40, 10), List.of(), 400, 300, 5);
-        assertEquals(180, r.x(), "Mitte rastet auf Bildschirmmitte ein");
+        assertEquals(180, r.x(), "centre snaps to the screen centre");
 
         Snapper.Rect other = new Snapper.Rect(100, 100, 50, 20);
         r = Snapper.snap(new Snapper.Rect(153, 123, 30, 10), List.of(other), 400, 300, 5);
@@ -70,7 +70,7 @@ class UtilTest {
         assertEquals(120, r.y(), "obere Kante an untere Kante des anderen");
 
         r = Snapper.snap(new Snapper.Rect(500, -20, 40, 10), List.of(), 400, 300, 5);
-        assertEquals(360, r.x(), "bleibt im Bildschirm");
+        assertEquals(360, r.x(), "stays on the screen");
         assertEquals(0, r.y());
     }
 

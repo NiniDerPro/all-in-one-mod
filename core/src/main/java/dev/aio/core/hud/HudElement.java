@@ -16,9 +16,9 @@ import java.util.List;
 /**
  * Gemeinsame Basis aller HUD-Elemente: Position, Skalierung, Farbe, Hintergrund, Schatten, Sichtbarkeit.
  *
- * <p>Die Position wird als Anteil 0..1 des freien Platzes gespeichert
- * ({@code x * (Bildschirmbreite - Elementbreite)}). Ein Element am rechten Rand bleibt dadurch
- * auch bei anderer Auflösung oder GUI-Skalierung am rechten Rand.
+ * <p>The position is stored as a fraction 0..1 of the free space
+ * ({@code x * (screen width - element width)}). An element at the right edge therefore stays
+ * at the right edge even with a different resolution or GUI scale.
  */
 public abstract class HudElement extends Module implements HudTarget {
     public static final int PADDING = 4;
@@ -36,7 +36,7 @@ public abstract class HudElement extends Module implements HudTarget {
     protected final BooleanSetting background;
     protected final ColorSetting backgroundColor;
     protected final BooleanSetting shadow;
-    /** Ob das Element schon einen Platz bekommen hat (beim ersten Einschalten automatisch). */
+    /** Whether the element already got a place (automatically when first switched on). */
     protected final BooleanSetting placed;
 
     protected HudElement(String id, String name, String description, double defaultX, double defaultY) {
@@ -50,8 +50,8 @@ public abstract class HudElement extends Module implements HudTarget {
         posX.hidden();
         posY = add(new NumberSetting("y", "Y", defaultY, 0, 1, 0));
         posY.hidden();
-        // Breite und Höhe getrennt, damit man im HUD-Editor an jeder Kante/Ecke frei ziehen kann.
-        // Die ID "scale" bleibt für alte Configs (dort war es die gemeinsame Größe).
+        // Width and height separate, so that in the HUD editor you can drag freely at every edge/corner.
+        // The id "scale" stays for old configs (it was the shared size there).
         scale = add(new NumberSetting("scale", "Width", 1.0, MIN_SCALE, MAX_SCALE, 0.01, "x"));
         scaleY = add(new NumberSetting("scaleY", "Height", 1.0, MIN_SCALE, MAX_SCALE, 0.01, "x"));
         colorMode = add(new EnumSetting<>("colorMode", "Color mode", defaultColorMode()));
@@ -75,8 +75,8 @@ public abstract class HudElement extends Module implements HudTarget {
     private BooleanSetting separate;
 
     /**
-     * Fügt einen einzeln verschiebbaren Teil hinzu (im Konstruktor der Unterklasse aufrufen).
-     * Beim ersten Teil entsteht die Einstellung "Move parts separately".
+     * Adds an individually movable part (call in the constructor of the subclass).
+     * The first part creates the setting "Move parts separately".
      */
     protected final HudPart addPart(String partId, String partName) {
         if (separate == null) separate = add(new BooleanSetting("separate", "Move parts separately", true));
@@ -98,17 +98,17 @@ public abstract class HudElement extends Module implements HudTarget {
 
     public List<HudPart> parts() { return parts; }
 
-    /** Ob die Teile gerade einzeln stehen (sonst ein zusammenhängender Block). */
+    /** Whether the parts are currently separate (otherwise one connected block). */
     public boolean separated() { return separate != null && separate.on() && !parts.isEmpty(); }
 
-    /** Teile, die gerade angezeigt werden (im Editor alle). */
+    /** Parts that are currently shown (all in the editor). */
     public List<HudPart> visibleParts(boolean preview) {
         List<HudPart> out = new ArrayList<>();
         for (HudPart p : parts) if (partEnabled(p) && (preview || partHasContent(p))) out.add(p);
         return out;
     }
 
-    /** Ob ein Teil per Einstellung überhaupt gezeigt wird (z. B. "Show date" aus). */
+    /** Whether a part is shown at all by setting (e.g. "Show date" off). */
     protected boolean partEnabled(HudPart part) { return true; }
 
     protected boolean partHasContent(HudPart part) { return true; }
@@ -117,13 +117,13 @@ public abstract class HudElement extends Module implements HudTarget {
 
     protected int partHeight(Renderer r, HudPart part) { return height(r); }
 
-    /** Lage des Teils im zusammenhängenden Element (unskaliert), Startplatz beim Trennen. */
+    /** Position of the part in the connected element (unscaled), start place when separating. */
     protected float[] partOffset(Renderer r, HudPart part) { return new float[]{0, 0}; }
 
-    /** Zeichnet einen Teil im lokalen Koordinatensystem (0,0 = obere linke Ecke des Teils). */
+    /** Draws a part in the local coordinate system (0,0 = top left corner of the part). */
     protected void renderPart(Renderer r, HudPart part, boolean preview) {}
 
-    /** Für Elemente, die frei über den Bildschirm zeichnen (Marker, Namensschilder): Box-Einstellungen ausblenden. */
+    /** For elements that draw freely across the screen (markers, nametags): hide box settings. */
     protected final void hideBoxSettings() {
         for (var s : new Setting<?>[]{posX, posY, scale, scaleY, colorMode, textColor, secondColor,
                 colorSpeed, background, backgroundColor, shadow}) {
@@ -131,22 +131,22 @@ public abstract class HudElement extends Module implements HudTarget {
         }
     }
 
-    /** Standard-Farbmodus. Wird im Konstruktor abgefragt, darf also nur eine Konstante liefern. */
+    /** Default colour mode. Queried in the constructor, so it may only return a constant. */
     protected ColorMode defaultColorMode() { return ColorMode.CLEAN; }
 
-    /** Standard-Textfarbe (ARGB). Wie oben: nur eine Konstante liefern. */
+    /** Default text colour (ARGB). As above: only return a constant. */
     protected int defaultTextColor() { return 0xFFFFFFFF; }
 
-    /** Ob der Hintergrund standardmäßig an ist. Wie oben: nur eine Konstante liefern. */
+    /** Whether the background is on by default. As above: only return a constant. */
     protected boolean defaultBackground() { return true; }
 
-    /** Standard-Hintergrundfarbe (ARGB). Wie oben: nur eine Konstante liefern. */
+    /** Default background colour (ARGB). As above: only return a constant. */
     protected int defaultBackgroundColor() { return DEFAULT_BACKGROUND; }
 
     /** Neuer Standard-Hintergrund: dunkles Graphit, leicht durchsichtig. */
     public static final int DEFAULT_BACKGROUND = 0x8C0E1015;
 
-    /** Einmalig beim Wechsel aufs neue Design: alte Standardwerte (Regenbogen, Grau) übernehmen den neuen Stil. */
+    /** Once on the switch to the new design: old default values (rainbow, grey) take over the new style. */
     public void migrateStyle() {
         if (colorMode.get() == ColorMode.CHROMA && defaultColorMode() != ColorMode.CHROMA) colorMode.reset();
         if (backgroundColor.argb() == 0x6F000000) backgroundColor.reset();
@@ -157,29 +157,29 @@ public abstract class HudElement extends Module implements HudTarget {
     /** Breite ohne Skalierung, inklusive Innenabstand. */
     public abstract int width(Renderer r);
 
-    /** Höhe ohne Skalierung, inklusive Innenabstand. */
+    /** Height without scaling, including padding. */
     public abstract int height(Renderer r);
 
     /**
-     * Zeichnet den Inhalt im lokalen Koordinatensystem (0,0 = obere linke Ecke, unskaliert).
+     * Draws the content in the local coordinate system (0,0 = top left corner, unscaled).
      *
-     * @param preview true im HUD-Editor: Platzhalter zeigen, wenn es nichts anzuzeigen gibt
+     * @param preview true in the HUD editor: show placeholders when there is nothing to display
      */
     protected abstract void renderContent(Renderer r, boolean preview);
 
-    /** Zeichnet frei über den ganzen Bildschirm (z. B. Wegpunkt-Marker). Standard: nichts. */
+    /** Draws freely across the whole screen (e.g. waypoint markers). Default: nothing. */
     public void renderOverlay(Renderer r, float partialTick) {}
 
-    /** Ob das Element im HUD-Editor verschoben werden kann. */
+    /** Whether the element can be moved in the HUD editor. */
     public boolean editable() { return true; }
 
-    /** Wird pro Tick aufgerufen, solange das Element aktiv ist. Ideal zum Aktualisieren von Caches. */
+    /** Called every tick while the element is active. Ideal for updating caches. */
     public void update() {}
 
-    /** Ob das Element im Spiel gerade etwas zu zeigen hat (z. B. Trank-Effekte nur mit Effekten). */
+    /** Whether the element has something to show in game right now (e.g. potion effects only with effects). */
     public boolean hasContent() { return true; }
 
-    /** Ob die Standard-Hintergrundbox gezeichnet werden soll. Keystrokes zeichnen z. B. eigene. */
+    /** Whether the default background box should be drawn. Keystrokes draw their own, for example. */
     protected boolean drawsDefaultBackground() { return true; }
 
     // ---- Zeichnen ----
@@ -220,8 +220,8 @@ public abstract class HudElement extends Module implements HudTarget {
     public float scaledHeight(Renderer r) { return height(r) * scaleY(); }
 
     /**
-     * Setzt das Element auf ein Rechteck in Bildschirmpixeln (HUD-Editor). Breite und Höhe werden
-     * auf den erlaubten Bereich begrenzt.
+     * Sets the element to a rectangle in screen pixels (HUD editor). Width and height are
+     * limited to the allowed range.
      */
     public void setScreenBounds(Renderer r, float x, float y, float w, float h) {
         int bw = Math.max(1, width(r)), bh = Math.max(1, height(r));
@@ -230,7 +230,7 @@ public abstract class HudElement extends Module implements HudTarget {
         setScreenPos(r, x, y);
     }
 
-    /** Position und Größe auf die Standardwerte zurücksetzen. */
+    /** Reset position and size to the default values. */
     public void resetLayout() {
         scale.reset();
         scaleY.reset();
@@ -241,10 +241,10 @@ public abstract class HudElement extends Module implements HudTarget {
 
     static double clampScale(double v) { return Math.max(MIN_SCALE, Math.min(MAX_SCALE, v)); }
 
-    /** Abstand zum Bildschirmrand, damit nichts direkt am Rand klebt. */
+    /** Distance to the screen edge, so that nothing sticks directly to the edge. */
     public static final float EDGE = 3;
 
-    /** Bildschirm-Position aus dem gespeicherten Anteil (0 = linker Rand, 1 = rechter Rand). */
+    /** Screen position from the stored fraction (0 = left edge, 1 = right edge). */
     static float toScreen(double fraction, float screen, float size) { return toScreen(fraction, screen, size, EDGE); }
 
     static double toFraction(float pos, float screen, float size) { return toFraction(pos, screen, size, EDGE); }
@@ -257,19 +257,19 @@ public abstract class HudElement extends Module implements HudTarget {
     static double toFraction(float pos, float screen, float size, float edge) {
         float free = screen - size - 2 * edge;
         if (free <= 0) return 0;
-        // Bis an den Bildschirmrand gezogen: am Rand einrasten (auch wenn der Abstand negativ ist)
+        // Dragged all the way to the screen edge: snap to the edge (even if the margin is negative)
         if (pos <= Math.max(edge, 0)) return 0;
         if (pos >= screen - size - Math.max(edge, 0)) return 1;
         return clamp01((pos - edge) / free);
     }
 
     /**
-     * Abstand zum Bildschirmrand bei Position 0 bzw. 1. Negativ heißt: der (unsichtbare) Innenabstand
-     * darf über den Rand ragen, damit der Inhalt selbst am Rand anliegt.
+     * Distance to the screen edge at position 0 or 1. Negative means: the (invisible) padding
+     * may extend over the edge so that the content itself touches the edge.
      */
     protected float edgeMargin() { return EDGE; }
 
-    /** Wie {@link #edgeMargin()}, für einzeln verschobene Teile. */
+    /** Like {@link #edgeMargin()}, for individually moved parts. */
     protected float partEdgeMargin() { return EDGE; }
 
     public float screenX(Renderer r) { return toScreen(posX.get(), r.screenWidth(), scaledWidth(r), edgeMargin()); }
@@ -295,7 +295,7 @@ public abstract class HudElement extends Module implements HudTarget {
                 colorSpeed.floatValue(), shadow.on(), (float) (posX.get() * 300 + posY.get() * 120));
     }
 
-    /** Dynamische Farbe für Flächen im eingestellten Farbmodus. */
+    /** Dynamic colour for areas in the chosen colour mode. */
     protected int dynamicColor(float offset) {
         return ColoredText.color(colorMode.get(), textColor.argb(), secondColor.argb(), colorSpeed.floatValue(),
                 (float) (posX.get() * 300 + posY.get() * 120) + offset);

@@ -6,11 +6,11 @@ import dev.aio.core.module.ModuleRegistry;
 import java.util.Locale;
 
 /**
- * Server-Kompatibilitäts-Schalter: Sperrt Module, die als Spielvorteil gelten können
- * ({@link Module#isGameplayAffecting()}), je nach Modus und Server automatisch.
+ * Server compatibility switch: blocks modules that may count as a gameplay advantage
+ * ({@link Module#isGameplayAffecting()}), automatically depending on mode and server.
  *
- * <p>Der gewünschte Zustand des Spielers bleibt erhalten. Verlässt man den Server,
- * laufen die Module wieder wie vorher.
+ * <p>The player's desired state is kept. When leaving the server,
+ * the modules run as before again.
  */
 public final class ServerCompat {
     private final ModuleRegistry modules;
@@ -26,7 +26,7 @@ public final class ServerCompat {
         this.address = address;
     }
 
-    /** Wendet die Regeln an. Gibt die Anzahl der Module zurück, die dadurch neu gesperrt wurden. */
+    /** Applies the rules. Returns the number of modules that were newly blocked by it. */
     public int apply(CompatMode mode, String allowList) {
         boolean block = shouldBlock(mode, singleplayer, address, allowList);
         int newlyBlocked = 0;
@@ -47,8 +47,8 @@ public final class ServerCompat {
     }
 
     /**
-     * Prüft die kommagetrennte Erlaubt-Liste. Ein Eintrag {@code example.net} passt auf
-     * {@code example.net} und alle Subdomains wie {@code play.example.net}. Ports werden ignoriert.
+     * Checks the comma-separated allow list. An entry {@code example.net} matches
+     * {@code example.net} and all subdomains such as {@code play.example.net}. Ports are ignored.
      */
     public static boolean isAllowed(String address, String allowList) {
         if (address == null || allowList == null || allowList.isBlank()) return false;

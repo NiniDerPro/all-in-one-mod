@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Sammelt die Objekte für die Nametags. Sichtlinie wird höchstens einmal pro Tick geprüft. */
+/** Collects the objects for the nametags. Line of sight is checked at most once per tick. */
 public final class NametagTargets {
     private NametagTargets() {}
 
@@ -78,7 +78,7 @@ public final class NametagTargets {
             hp = le.getHealth();
             max = le.getMaxHealth();
             abs = le.getAbsorptionAmount();
-            // Ausrüstung bei Spielern und Mobs (gepanzerte Zombies sind die gefährlichen)
+            // Equipment on players and mobs (armored zombies are the dangerous ones)
             List<ItemRef> list = new ArrayList<>(GEAR.length);
             for (EquipmentSlot slot : GEAR) list.add(FabricItemRef.of(le.getItemBySlot(slot)));
             gear = list;
@@ -113,7 +113,7 @@ public final class NametagTargets {
         };
     }
 
-    /** Für den Mixin: soll das Vanilla-Namensschild dieses Entities ausgeblendet werden? */
+    /** For the mixin: should the vanilla nametag of this entity be hidden? */
     public static boolean hidesVanilla(Entity e) {
         AioCore core = AioCore.get();
         NametagsModule m = core == null ? null : core.module(NametagsModule.class);

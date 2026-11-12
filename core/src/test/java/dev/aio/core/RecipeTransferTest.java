@@ -29,7 +29,7 @@ class RecipeTransferTest {
         return c;
     }
 
-    /** Stöcke: 2 Bretter übereinander (1 breit, 2 hoch), beliebige Holzart. */
+    /** Sticks: 2 planks on top of each other (1 wide, 2 high), any wood type. */
     private static RecipeView sticks() {
         List<ItemRef> planks = List.of(ref("oak_planks"), ref("birch_planks"));
         return new RecipeView("Crafting", 1, 2, List.of(planks, planks), ref("stick"), ItemRef.EMPTY, RecipeKind.CRAFTING);
@@ -63,9 +63,9 @@ class RecipeTransferTest {
     @Test void shiftPlacesAsManyAsPossible() {
         FakeContainer c = inventory2x2();
         c.set(10, "oak_planks", 10);
-        assertEquals(2, RecipeTransfer.transfer(c, table(), true), "10 Bretter reichen für 2× (je 4)");
-        for (int i = 0; i < 4; i++) assertEquals(2, c.get(i).count(), "gleichmäßig verteilt");
-        assertEquals(10, c.total("oak_planks"), "Rest bleibt im Inventar");
+        assertEquals(2, RecipeTransfer.transfer(c, table(), true), "10 planks are enough for 2× (4 each)");
+        for (int i = 0; i < 4; i++) assertEquals(2, c.get(i).count(), "evenly distributed");
+        assertEquals(10, c.total("oak_planks"), "rest stays in the inventory");
     }
 
     @Test void smallRecipeFitsInto2x2ButBigDoesNot() {
@@ -95,7 +95,7 @@ class RecipeTransferTest {
         c.grid = new ContainerView.Grid(Set.of(RecipeKind.FURNACE), 1, 1, new int[]{0});
         c.set(30, "iron_ore", 40);
         RecipeView smelt = new RecipeView("Furnace", 1, 1, List.of(List.of(ref("iron_ore"))), ref("iron_ingot"), ItemRef.EMPTY, RecipeKind.FURNACE);
-        assertEquals(40, RecipeTransfer.transfer(c, smelt, true), "Shift füllt den Eingang");
+        assertEquals(40, RecipeTransfer.transfer(c, smelt, true), "Shift fills the input");
         assertEquals(40, c.get(0).count());
     }
 
@@ -112,7 +112,7 @@ class RecipeTransferTest {
         FakeContainer c = inventory2x2();
         for (int i = 4; i < 40; i++) c.set(i, "stone", 64); // Inventar komplett voll
         c.set(39, "oak_planks", 4);
-        c.set(0, "dirt", 1);                                // Raster belegt, kann nicht weg
+        c.set(0, "dirt", 1);                                // grid occupied, cannot go away
         assertEquals(0, RecipeTransfer.transfer(c, table(), false));
         assertEquals("dirt", c.get(0).id(), "nichts vertauscht");
     }
@@ -122,7 +122,7 @@ class RecipeTransferTest {
         c.set(0, "dirt", 3); // altes Zeug im Raster
         c.set(10, "oak_planks", 4);
         assertEquals(1, RecipeTransfer.transfer(c, table(), false));
-        assertEquals(3, c.total("dirt"), "Erde zurück ins Inventar, nicht weg");
+        assertEquals(3, c.total("dirt"), "dirt back into the inventory, not lost");
         for (int i = 0; i < 4; i++) assertEquals("oak_planks", c.get(i).id());
     }
 }

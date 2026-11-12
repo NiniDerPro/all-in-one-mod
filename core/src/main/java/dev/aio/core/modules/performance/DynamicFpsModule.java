@@ -4,7 +4,7 @@ import dev.aio.core.module.Category;
 import dev.aio.core.module.Module;
 import dev.aio.core.setting.NumberSetting;
 
-/** Dynamische FPS: Im Hintergrund (Alt+Tab) läuft das Spiel mit wenigen Bildern pro Sekunde. */
+/** Dynamic FPS: in the background (Alt+Tab) the game runs with a few frames per second. */
 public final class DynamicFpsModule extends Module {
     private final NumberSetting unfocused;
 
@@ -14,7 +14,7 @@ public final class DynamicFpsModule extends Module {
     }
 
 
-    /** FPS-Grenze für den Fensterzustand oder -1 = keine Änderung. */
+    /** FPS limit for the window state or -1 = no change. */
     public int limit(boolean focused) {
         if (!isActive() || focused) return -1;
         return unfocused.intValue();

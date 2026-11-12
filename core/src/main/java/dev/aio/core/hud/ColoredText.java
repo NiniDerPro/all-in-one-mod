@@ -6,11 +6,11 @@ import dev.aio.core.util.Colors;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Zeichnet Text in fester Farbe, als Regenbogen-Welle oder als wandernden Verlauf. */
+/** Draws text in a fixed colour, as a rainbow wave or as a moving gradient. */
 public final class ColoredText {
     private ColoredText() {}
 
-    /** Breite je Zeichen: MC-Schrift hat kein Kerning, also Text = Summe der Zeichen. */
+    /** Width per character: the MC font has no kerning, so text = sum of the characters. */
     private static final Map<Integer, Integer> CHAR_WIDTH = new HashMap<>();
     private static int probeWidth = -1;
 
@@ -23,12 +23,12 @@ public final class ColoredText {
         return w;
     }
 
-    /** Schriftwechsel (z. B. Unicode-Schrift) erkennen: dann alle Breiten neu messen. */
+    /** Detect a font change (e.g. unicode font): then re-measure all widths. */
     private static long lastProbe;
 
     private static void checkFont(Renderer r) {
         long now = System.nanoTime();
-        if (probeWidth != -1 && now - lastProbe < 2_000_000_000L) return; // alle 2 s prüfen reicht
+        if (probeWidth != -1 && now - lastProbe < 2_000_000_000L) return; // checking every 2 s is enough
         lastProbe = now;
         int probe = r.textWidth("W");
         if (probe != probeWidth) {
@@ -37,7 +37,7 @@ public final class ColoredText {
         }
     }
 
-    /** Leert den Breiten-Cache, z. B. nach einem Wechsel der Schriftart. */
+    /** Clears the width cache, e.g. after a font change. */
     public static void clearCache() {
         CHAR_WIDTH.clear();
         SEGMENTS.clear();
@@ -45,7 +45,7 @@ public final class ColoredText {
     }
 
     /**
-     * @param screenOffset Versatz für die Welle, damit Elemente nebeneinander nicht gleichfarbig pulsieren
+     * @param screenOffset offset for the wave, so that elements next to each other do not pulse in the same colour
      */
     public static void draw(Renderer r, String text, float x, float y, ColorMode mode, int primary, int secondary,
                             float speed, boolean shadow, float screenOffset) {
@@ -61,9 +61,9 @@ public final class ColoredText {
         int alpha = Colors.alpha(primary);
         double t = System.nanoTime() / 1e9 * speed;
         checkFont(r);
-        // Ohne Cache pro Text: Koordinaten & Co. ändern sich ständig und würden ihn nur füllen
+        // No per-text cache: coordinates & co. change constantly and would only fill it
         int n = text.codePointCount(0, text.length());
-        // Eigenes Array je Aufruf: Minecraft wertet den Text erst später beim Zeichnen aus
+        // Own array per call: Minecraft only evaluates the text later when drawing
         int[] colors = new int[n];
         float[] offsets = new float[n];
         float cx = x;
@@ -79,11 +79,11 @@ public final class ColoredText {
             cx += charWidth(r, cp);
             i += Character.charCount(cp);
         }
-        // Ein Aufruf für die ganze Zeile statt einem pro Zeichen (spart viel Arbeit pro Frame)
+        // One call for the whole line instead of one per character (saves a lot of work per frame)
         r.coloredText(text, colors, offsets, x, y, shadow);
     }
 
-    /** Gedimmte Variante einer Textfarbe für Beschriftungen. */
+    /** Dimmed variant of a text colour for labels. */
     public static int dim(int primary) {
         return (primary & 0xFF000000) | (Colors.lerp(primary, 0xFF000000, 0.42f) & 0xFFFFFF);
     }
@@ -130,7 +130,7 @@ public final class ColoredText {
         }
     }
 
-    /** Ziffern und was zu Zahlen gehört (Vorzeichen, Komma, Doppelpunkt in Uhrzeiten, %). */
+    /** Digits and what belongs to numbers (sign, comma, colon in times, %). */
     private static boolean isValueChar(String s, int i) {
         char c = s.charAt(i);
         if (Character.isDigit(c)) return true;
@@ -144,7 +144,7 @@ public final class ColoredText {
         };
     }
 
-    /** Einzelne dynamische Farbe (z. B. für Flächen) passend zum Modus. */
+    /** A single dynamic colour (e.g. for areas) matching the mode. */
     public static int color(ColorMode mode, int primary, int secondary, float speed, float offset) {
         return switch (mode) {
             case STATIC, CLEAN -> primary;

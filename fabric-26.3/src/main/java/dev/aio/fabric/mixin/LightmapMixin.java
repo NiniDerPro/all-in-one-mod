@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import static org.objectweb.asm.Opcodes.GETFIELD;
 
-/** Fullbright: erhöht die Helligkeit der Lightmap, ohne die Gamma-Option anzufassen (nichts landet in options.txt). */
+/** Fullbright: raises the brightness of the lightmap without touching the gamma option (nothing ends up in options.txt). */
 @Mixin(Lightmap.class)
 public abstract class LightmapMixin {
     @ModifyExpressionValue(method = "render",

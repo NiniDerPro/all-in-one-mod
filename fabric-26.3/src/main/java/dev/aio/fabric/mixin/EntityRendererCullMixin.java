@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Entity-Culling und Render-Reichweite: verdeckte bzw. zu weit entfernte Entities nicht zeichnen. */
+/** Entity culling and render distance: do not draw hidden or too distant entities. */
 @Mixin(EntityRenderer.class)
 public abstract class EntityRendererCullMixin {
     @Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true, require = 0)

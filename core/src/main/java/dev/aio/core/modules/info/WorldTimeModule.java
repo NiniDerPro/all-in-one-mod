@@ -4,7 +4,7 @@ import dev.aio.core.hud.TextHudElement;
 import dev.aio.core.module.Category;
 import dev.aio.core.setting.BooleanSetting;
 
-/** Uhrzeit in der Welt, optional mit Tag/Nacht-Symbol. */
+/** Time in the world, optionally with a day/night symbol. */
 public final class WorldTimeModule extends TextHudElement {
     private final BooleanSetting twelveHour;
     private final BooleanSetting symbol;

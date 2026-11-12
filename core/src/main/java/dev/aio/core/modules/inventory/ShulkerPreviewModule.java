@@ -5,7 +5,7 @@ import dev.aio.core.module.Module;
 import dev.aio.core.platform.Keys;
 import dev.aio.core.setting.BooleanSetting;
 
-/** Zeigt den Inhalt von Shulkerkisten im Tooltip als Raster (mit Shift oder immer). */
+/** Shows the contents of shulker boxes in the tooltip as a grid (with Shift or always). */
 public final class ShulkerPreviewModule extends Module {
     private final BooleanSetting requireShift;
     private final BooleanSetting tint;
@@ -22,7 +22,7 @@ public final class ShulkerPreviewModule extends Module {
         return !requireShift.on() || platform().isKeyDown(Keys.LEFT_SHIFT) || platform().isKeyDown(Keys.RIGHT_SHIFT);
     }
 
-    /** Hinweis im normalen Tooltip, dass Shift den Inhalt zeigt. */
+    /** Note in the normal tooltip that Shift shows the contents. */
     public boolean showHint() { return isActive() && requireShift.on() && !shouldPreview(); }
 
     public boolean tint() { return tint.on(); }

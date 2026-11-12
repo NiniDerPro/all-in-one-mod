@@ -7,9 +7,9 @@ import dev.aio.core.platform.GameKey;
 import dev.aio.core.setting.BooleanSetting;
 
 /**
- * Wechselt zur besten Waffe, sobald das Fadenkreuz auf einem Lebewesen liegt, also bevor man
- * zuschlägt. Wechsel und Schlag im selben Tick würden mit den Werten des alten Items rechnen
- * (Server aktualisiert Attribute erst im nächsten Tick) und gelten als "Attribute Swapping".
+ * Switches to the best weapon as soon as the crosshair is on a living entity, i.e. before
+ * hitting. Switching and hitting in the same tick would use the values of the old item
+ * (the server only updates attributes in the next tick) and count as "attribute swapping".
  */
 public final class AutoWeaponModule extends Module {
     private static final int RESTORE_AFTER_TICKS = 20;

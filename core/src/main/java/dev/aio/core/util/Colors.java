@@ -11,7 +11,7 @@ public final class Colors {
 
     public static int withAlpha(int c, int alpha) { return (c & 0x00FFFFFF) | (Math.max(0, Math.min(255, alpha)) << 24); }
 
-    /** Multipliziert den Alphakanal, z. B. für Einblend-Animationen. */
+    /** Multiplies the alpha channel, e.g. for fade-in animations. */
     public static int fade(int c, float factor) {
         return withAlpha(c, Math.round(alpha(c) * Math.max(0f, Math.min(1f, factor))));
     }
@@ -26,7 +26,7 @@ public final class Colors {
         return argb(a, r, g, b);
     }
 
-    /** HSV nach ARGB. h, s, v in 0..1 (h wird zyklisch behandelt). */
+    /** HSV to ARGB. h, s, v in 0..1 (h is treated cyclically). */
     public static int hsv(float h, float s, float v, int alpha) {
         h = h - (float) Math.floor(h);
         float c = v * s;
@@ -45,17 +45,17 @@ public final class Colors {
     }
 
     /**
-     * Regenbogenfarbe, die über die Zeit wandert.
+     * Rainbow colour that moves over time.
      *
-     * @param offset Versatz in Bildschirmpixeln (für die Welle über den Text)
-     * @param speed  Umläufe pro Sekunde
+     * @param offset offset in screen pixels (for the wave across the text)
+     * @param speed  cycles per second
      */
     public static int chroma(float offset, float speed, int alpha) {
         double t = System.nanoTime() / 1e9 * speed;
         return hsv((float) (t - offset / 220.0), 0.75f, 1f, alpha);
     }
 
-    /** Grün bis Rot je nach Anteil (1 = grün). */
+    /** Green to red depending on the fraction (1 = green). */
     public static int health(float fraction) {
         fraction = Math.max(0f, Math.min(1f, fraction));
         return lerp(0xFFFF5555, 0xFF55FF55, fraction);

@@ -84,8 +84,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Zentrale des Clients: verbindet Event-Bus, Module, Config, HUD und Server-Kompatibilität.
- * Der Adapter erzeugt genau eine Instanz über {@link #init(Platform, Path)}.
+ * Center of the client: connects event bus, modules, config, HUD and server compatibility.
+ * The adapter creates exactly one instance via {@link #init(Platform, Path)}.
  */
 public final class AioCore {
     public static final String NAME = "AIO ClientSide";
@@ -118,7 +118,7 @@ public final class AioCore {
     }
 
     public static AioCore init(Platform platform, Path configDir) {
-        if (instance != null) throw new IllegalStateException("AioCore ist bereits initialisiert");
+        if (instance != null) throw new IllegalStateException("AioCore is already initialised");
         AioCore core = new AioCore(platform, configDir);
         core.registerDefaultModules();
         core.start();
@@ -126,10 +126,10 @@ public final class AioCore {
         return core;
     }
 
-    /** Zugriff für Mixins. Null, bevor der Client initialisiert ist. */
+    /** Access for mixins. Null before the client is initialised. */
     public static AioCore get() { return instance; }
 
-    /** Registriert die eingebauten Module. Reihenfolge = Reihenfolge in der GUI. */
+    /** Registers the built-in modules. Order = order in the GUI. */
     public void registerDefaultModules() {
         clientSettings = modules.register(new ClientSettingsModule());
         modules.register(new FpsModule());
@@ -197,7 +197,7 @@ public final class AioCore {
         modules.register(new XpClumpsModule());
     }
 
-    /** Hängt alle Module an, lädt die Config und registriert die Kern-Listener. */
+    /** Attaches all modules, loads the config and registers the core listeners. */
     public void start() {
         if (clientSettings == null) clientSettings = modules.register(new ClientSettingsModule());
         for (Module m : modules.all()) m.attach(this);
@@ -225,7 +225,7 @@ public final class AioCore {
         applyCompat(false);
         clientSettings.preferOtherMods.onChange(v -> applyAvailability());
         applyAvailability();
-        // Ob alle Eingriffe greifen, steht erst fest, wenn die Welt geladen ist: kurz danach prüfen
+        // Whether all hooks apply is only known once the world is loaded: check shortly after
         bus.subscribe(Events.ServerJoin.class, e -> hookCheckIn = 60);
         bus.subscribe(Events.Tick.class, e -> {
             if (hookCheckIn > 0 && --hookCheckIn == 0) checkHooks();
@@ -234,8 +234,8 @@ public final class AioCore {
     }
 
     /**
-     * Alles auf Standard: jedes Modul erst aus (damit z. B. FPS Boost seine gemerkten Vanilla-Werte
-     * zurückschreibt), dann Einstellungen zurück und Standard-Ein/Aus. Wegpunkte bleiben erhalten.
+     * Everything back to default: first switch every module off (so e.g. FPS Boost writes back its remembered
+     * vanilla values), then reset settings and default on/off. Waypoints are kept.
      */
     public void resetAll() {
         for (Module m : modules.all()) if (m != clientSettings) m.setEnabled(false);
@@ -255,7 +255,7 @@ public final class AioCore {
 
     // ---- Eingaben ----
 
-    /** Strg/Alt/Windows als Hotkey: erst beim Loslassen auslösen, wenn nichts dazwischen kam. */
+    /** Ctrl/Alt/Windows as a hotkey: only fire on release if nothing else was pressed in between. */
     private final Hotkeys.Tap tap = new Hotkeys.Tap();
 
     private void onKey(Events.Key e) {
@@ -271,7 +271,7 @@ public final class AioCore {
 
     private void handleKeybind(String key) {
         if (Keys.isNone(key)) return;
-        // Nur allein gedrückte Hotkeys zählen (F3+F4 löst F4 nicht aus)
+        // Only hotkeys pressed on their own count (F3+F4 does not trigger F4)
         if (Hotkeys.otherComboHeld(platform, key)) return;
         if (Hotkeys.isModifier(key) && isBoundAnywhere(key)) {
             tap.arm(key);
@@ -301,7 +301,7 @@ public final class AioCore {
         }
     }
 
-    /** Schaltet ein Modul um und meldet das dem Spieler (oder warum es gesperrt ist). */
+    /** Toggles a module and tells the player (or why it is blocked). */
     public void toggleWithFeedback(Module m) {
         if (m.unavailableReason() != null) {
             platform.notify(m.name() + ": " + m.unavailableReason());
@@ -329,17 +329,17 @@ public final class AioCore {
         platform.openScreen(new HudEditorScreen(this));
     }
 
-    // ---- Server-Kompatibilität ----
+    // ---- Server compatibility ----
 
-    // ---- Verträglichkeit mit anderen Mods ----
+    // ---- Compatibility with other mods ----
 
     private int hookCheckIn;
     private final Map<String, String> brokenHooks = new HashMap<>();
     private final Set<String> announcedBroken = new HashSet<>();
 
     /**
-     * Setzt für jedes Modul, ob es gerade laufen kann: Eingriff fehlt (immer aus) oder eine andere
-     * Mod mit derselben Funktion ist installiert (aus, solange "Prefer other mods" an ist).
+     * Sets for every module whether it can run right now: hook missing (always off) or another
+     * mod with the same feature is installed (off while "Prefer other mods" is on).
      */
     public void applyAvailability() {
         Map<String, String> other = clientSettings.preferOtherMods.on() ? platform.conflictingMods() : Map.of();

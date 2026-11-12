@@ -9,14 +9,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-// Aus Freecam (MIT) übernommen, siehe dev/aio/fabric/freecam/NOTICE.md
+// Adapted from Freecam (MIT), see dev/aio/fabric/freecam/NOTICE.md
 @Mixin(Camera.class)
 public class FreecamCameraMixin {
     @Shadow private Entity entity;
     @Shadow private float eyeHeightOld;
     @Shadow private float eyeHeight;
 
-    /** Beim Umschalten die Augenhöhe sofort übernehmen, ohne Übergang. */
+    /** When switching take over the eye height immediately, without transition. */
     @Inject(method = "setEntity", at = @At("HEAD"))
     private void aio$freecamSetEntity(Entity entity, CallbackInfo ci) {
         if (entity == null || this.entity == null) return;

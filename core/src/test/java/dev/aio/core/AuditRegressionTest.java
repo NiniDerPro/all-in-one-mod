@@ -22,7 +22,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Tests zu den Befunden aus dem Audit (jeder schlug mit dem alten Code fehl). */
+/** Tests for the findings of the audit (each one failed with the old code). */
 class AuditRegressionTest {
     @TempDir Path dir;
 
@@ -33,7 +33,7 @@ class AuditRegressionTest {
         return core;
     }
 
-    /** A1: Beim Spielstart gibt es noch keine Optionen (Adapter liefert NaN). */
+    /** A1: At game start there are no options yet (adapter delivers NaN). */
     @Test void startsWithoutOptionsAndSyncsChatLater() {
         boolean[] ready = {false};
         FakePlatform p = new FakePlatform() {
@@ -44,10 +44,10 @@ class AuditRegressionTest {
         assertTrue(chat.isActive());
         ready[0] = true;
         core.bus().post(Events.Tick.INSTANCE);
-        assertEquals(0.42, (Double) chat.setting("width").get(), 1e-9, "Vanilla-Werte im ersten Tick übernommen");
+        assertEquals(0.42, (Double) chat.setting("width").get(), 1e-9, "vanilla values taken over in the first tick");
     }
 
-    /** A1: Ein laut Config ausgeschaltetes Modul wird beim Laden nicht kurz aktiviert. */
+    /** A1: A module that the config says is off is not briefly activated on load. */
     @Test void disabledModuleIsNotActivatedWhileLoading() {
         AioCore first = start(new FakePlatform());
         first.module(FlexChatModule.class).setEnabled(false);
@@ -57,29 +57,29 @@ class AuditRegressionTest {
             @Override public double option(VanillaOption o) { calls[0]++; return 0.5; }
         };
         start(p);
-        assertEquals(0, calls[0], "kein Zugriff auf Optionen durch ein ausgeschaltetes Modul");
+        assertEquals(0, calls[0], "no access to options by a switched-off module");
     }
 
-    /** A1: Ein Fehler beim Aktivieren eines Moduls bricht den Start nicht ab. */
+    /** A1: An error when activating a module does not abort the start. */
     @Test void exceptionInActivateDoesNotCrash() {
         FakePlatform p = new FakePlatform() {
             @Override public double option(VanillaOption o) { throw new IllegalStateException("kaputt"); }
         };
         AioCore core = assertDoesNotThrow(() -> start(p));
-        assertFalse(core.module(FlexChatModule.class).isActive(), "fehlerhaftes Modul ausgehängt");
+        assertFalse(core.module(FlexChatModule.class).isActive(), "faulty module detached");
         assertTrue(core.module(FlexChatModule.class).isEnabled(), "Wunsch bleibt gespeichert");
     }
 
-    /** A2: "Reset" im Menü lässt Wegpunkte in Ruhe. */
+    /** A2: "Reset" in the menu leaves waypoints alone. */
     @Test void resetKeepsWaypoints() {
         AioCore core = start(new FakePlatform());
         WaypointsModule wp = core.module(WaypointsModule.class);
         wp.addHere("Basis");
-        for (Setting<?> s : wp.settings()) if (!s.isHidden()) s.reset(); // wie der Knopf
+        for (Setting<?> s : wp.settings()) if (!s.isHidden()) s.reset(); // like the button
         assertEquals(1, wp.all().size());
     }
 
-    /** B7: Wegpunkte sind unabhängig vom Profil und liegen in eigener Datei. */
+    /** B7: Waypoints are independent of the profile and live in their own file. */
     @Test void waypointsSurviveProfileSwitch() {
         AioCore core = start(new FakePlatform());
         WaypointsModule wp = core.module(WaypointsModule.class);
@@ -88,10 +88,10 @@ class AuditRegressionTest {
         core.config().switchProfile("default");
         assertEquals(1, wp.all().size());
         assertTrue(Files.exists(dir.resolve("waypoints.json")));
-        assertFalse(core.config().exportProfile().contains("Mine"), "Export enthält keine Koordinaten");
+        assertFalse(core.config().exportProfile().contains("Mine"), "export contains no coordinates");
     }
 
-    /** A2: Wegpunkte aus alten Versionen (im Profil gespeichert) werden übernommen. */
+    /** A2: Waypoints from old versions (stored in the profile) are taken over. */
     @Test void legacyWaypointsAreMigrated() throws Exception {
         Files.createDirectories(dir.resolve("profiles/default"));
         Files.writeString(dir.resolve("profiles/default/waypoints.json"), "{\"enabled\":true,\"settings\":{\"data\":"
@@ -101,7 +101,7 @@ class AuditRegressionTest {
         assertTrue(Files.readString(dir.resolve("waypoints.json")).contains("Alt"));
     }
 
-    /** B10: Ohne Kamera-Hook fängt Freelook die Maus nicht ab (sonst friert die Sicht ein). */
+    /** B10: Without a camera hook freelook does not intercept the mouse (otherwise the view freezes). */
     @Test void freelookDoesNotSwallowMouseWithoutHook() {
         FakePlatform p = new FakePlatform();
         p.freelookOk = false;
@@ -113,7 +113,7 @@ class AuditRegressionTest {
         assertTrue(p.messages.stream().anyMatch(m -> m.contains("Freelook")), "Hinweis an den Spieler");
     }
 
-    /** B9: Eigene Nachrichten in Server-Chatformaten lösen keinen Alarm aus. */
+    /** B9: Own messages in server chat formats do not trigger an alert. */
     @Test void nameAlertIgnoresOwnMessagesInServerFormats() {
         FakePlatform p = new FakePlatform();
         AioCore core = start(p);
@@ -126,7 +126,7 @@ class AuditRegressionTest {
         assertEquals(1, p.alerts, "fremde Nachricht mit meinem Namen");
     }
 
-    /** B13: Effekte haben eine stabile Reihenfolge (gut vor schlecht, dann Name). */
+    /** B13: Effects have a stable order (good before bad, then name). */
     @Test void effectsAreSorted() {
         FakePlatform p = new FakePlatform();
         p.effects.add(new EffectInfo("Vergiftung", 0, 100, false, false));
@@ -142,7 +142,7 @@ class AuditRegressionTest {
         assertEquals(0, r.depth);
     }
 
-    /** E: Neben JEI/REI/EMI bzw. Mouse Tweaks schalten sich die eigenen Varianten ab. */
+    /** E: Next to JEI/REI/EMI or Mouse Tweaks the own variants switch off. */
     @Test void conflictingModsDisableDuplicates() {
         FakePlatform p = new FakePlatform();
         AioCore core = start(p);
@@ -155,7 +155,7 @@ class AuditRegressionTest {
         assertFalse(core.module(InventoryTweaksModule.class).onScroll(c, 0, -1, false));
     }
 
-    /** B13: Die Blick-Info gibt die eingestellte Reichweite an die Plattform weiter. */
+    /** B13: The look-at info passes the configured reach on to the platform. */
     @Test void lookAtUsesConfiguredRange() {
         FakePlatform p = new FakePlatform();
         AioCore core = start(p);

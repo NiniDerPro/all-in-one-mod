@@ -30,8 +30,8 @@ import java.util.zip.ZipFile;
 import javax.imageio.ImageIO;
 
 /**
- * Zeichnet die Oberfläche mit Java2D in ein Bild, mit der echten Minecraft-Schrift und echten
- * Texturen aus dem Spiel-Jar. Nur für Design-Vorschauen (Tests), nicht im Spiel.
+ * Draws the interface with Java2D into an image, with the real Minecraft font and real
+ * textures from the game jar. Only for design previews (tests), not in the game.
  */
 public final class PreviewRenderer implements Renderer {
     private final int guiW, guiH, scale;
@@ -57,7 +57,7 @@ public final class PreviewRenderer implements Renderer {
         if (jar != null) loadFont();
     }
 
-    /** Hintergrund, z. B. ein Screenshot aus dem Spiel oder eine Farbe. */
+    /** Background, e.g. a screenshot from the game or a colour. */
     public void background(int argb) {
         AffineTransform t = g.getTransform();
         g.setTransform(new AffineTransform());
@@ -66,7 +66,7 @@ public final class PreviewRenderer implements Renderer {
         g.setTransform(t);
     }
 
-    /** Pseudo-Spielszene als Hintergrund: Himmel, Horizont, Gras, ein paar Blöcke. */
+    /** Pseudo game scene as background: sky, horizon, grass, a few blocks. */
     public void fakeWorld() {
         AffineTransform t = g.getTransform();
         g.setTransform(new AffineTransform());

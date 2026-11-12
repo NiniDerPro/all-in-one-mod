@@ -6,7 +6,7 @@ import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.NumberSetting;
 import dev.aio.core.util.RollingStats;
 
-/** FPS aus dem MC-Client, optional mit Durchschnitt und Min/Max über ein Zeitfenster. */
+/** FPS from the MC client, optionally with average and min/max over a time window. */
 public final class FpsModule extends TextHudElement {
     private final BooleanSetting showAverage;
     private final BooleanSetting showMinMax;
@@ -32,7 +32,7 @@ public final class FpsModule extends TextHudElement {
     }
 
     private void sample() {
-        // MC aktualisiert den FPS-Wert einmal pro Sekunde, also reicht ein Sample pro 20 Ticks.
+        // MC updates the FPS value once per second, so one sample per 20 ticks is enough.
         if (++tickCounter >= 20) {
             tickCounter = 0;
             stats.add(platform().fps());

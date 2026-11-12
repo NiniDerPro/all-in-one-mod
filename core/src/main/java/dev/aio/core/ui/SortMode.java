@@ -8,7 +8,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
-/** Sortierung der Modulkarten im Menü. */
+/** Sorting of the module cards in the menu. */
 public enum SortMode implements EnumSetting.Named {
     DEFAULT("Default"), ALPHABETICAL("A–Z"), ACTIVE_FIRST("Active first");
 
@@ -29,7 +29,7 @@ public enum SortMode implements EnumSetting.Named {
         return out;
     }
 
-    /** Filtert nach Name, Beschreibung und Kategorie (alle Wörter müssen passen). */
+    /** Filters by name, description and category (all words must match). */
     public static List<Module> search(List<Module> modules, String query) {
         String q = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
         if (q.isEmpty()) return modules;

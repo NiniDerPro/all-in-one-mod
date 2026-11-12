@@ -15,7 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 
-/** Verbindet die Shulker-Vorschau mit den Tooltip-Events von Fabric. */
+/** Connects the shulker preview with Fabric's tooltip events. */
 public final class ShulkerTooltipHook {
     private ShulkerTooltipHook() {}
 
@@ -27,7 +27,7 @@ public final class ShulkerTooltipHook {
             if (m == null || !m.isActive() || !isShulker(stack)) return;
             int stacks = stackCount(stack.get(DataComponents.CONTAINER));
             if (stacks == 0) return;
-            // Ersetzt die Vanilla-Liste: kurze Zusammenfassung, darunter der Hinweis auf die Taste
+            // Replaces the vanilla list: short summary, below it the note about the key
             lines.add(Component.literal("Contains " + stacks + (stacks == 1 ? " Stack" : " Stacks")).withStyle(ChatFormatting.GRAY));
             if (m.showHint()) {
                 lines.add(Component.literal("[Shift]").withStyle(ChatFormatting.GOLD)
@@ -50,12 +50,12 @@ public final class ShulkerTooltipHook {
         return stack.getItem() instanceof BlockItem bi && bi.getBlock() instanceof ShulkerBoxBlock;
     }
 
-    // Der Tooltip wird jeden Frame abgefragt: Ergebnis für denselben Inhalt wiederverwenden
+    // The tooltip is queried every frame: reuse the result for the same content
     private static ItemContainerContents lastContents;
     private static boolean lastTint;
     private static TooltipComponent lastData;
 
-    /** Tooltip-Daten oder null, wenn das Item keine (gefüllte) Shulkerkiste ist. */
+    /** Tooltip data or null if the item is not a (filled) shulker box. */
     public static TooltipComponent create(ItemStack stack, boolean tint) {
         if (!isShulker(stack)) return null;
         ItemContainerContents contents = stack.get(DataComponents.CONTAINER);

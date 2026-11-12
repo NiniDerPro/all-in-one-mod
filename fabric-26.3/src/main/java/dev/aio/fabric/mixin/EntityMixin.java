@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Mausbewegung des Spielers ({@code Entity.turn}): Zoom verlangsamt sie, Freelook leitet sie auf die Kamera um. */
+/** Mouse movement of the player ({@code Entity.turn}): zoom slows it down, freelook redirects it to the camera. */
 @Mixin(Entity.class)
 public abstract class EntityMixin {
     @Unique

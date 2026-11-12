@@ -18,8 +18,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Blockspezifische Angaben für die Blick-Info. Jede Zeile erscheint nur bei der Blockart,
- * zu der sie gehört (erkannt an der Block-Eigenschaft, z. B. Honigstand nur bei Bienenstöcken).
+ * Block-specific details for the look-at info. Each row only appears for the block type
+ * it belongs to (recognised by the block property, e.g. honey level only for beehives).
  */
 final class BlockDetails {
     private static final String[] NOTES = {"Fis", "G", "Gis", "A", "B", "H", "C", "Cis", "D", "Dis", "E", "F"};
@@ -35,12 +35,12 @@ final class BlockDetails {
             int bees = beeCount(client, pos);
             if (bees >= 0) out.add(new Detail("Bees", bees + "/3", false));
         }
-        // Komposter: 0..7 füllen, 8 = Knochenmehl fertig
+        // Composter: 0..7 filling, 8 = bone meal ready
         if (state.hasProperty(BlockStateProperties.LEVEL_COMPOSTER)) {
             int level = state.getValue(BlockStateProperties.LEVEL_COMPOSTER);
             out.add(level >= 8 ? new Detail("Level", "fertig", true) : Detail.of("Level", level, 7));
         }
-        // Kessel mit Wasser oder Pulverschnee
+        // Cauldron with water or powder snow
         if (state.hasProperty(BlockStateProperties.LEVEL_CAULDRON)) {
             out.add(Detail.of("Level", state.getValue(BlockStateProperties.LEVEL_CAULDRON), 3));
         }
@@ -70,7 +70,7 @@ final class BlockDetails {
             int note = state.getValue(NoteBlock.NOTE);
             out.add(Detail.of("Sound", NOTES[note % 12] + " (" + note + ")"));
         }
-        // Stapelbare Kleinblöcke
+        // Stackable small blocks
         if (state.hasProperty(BlockStateProperties.PICKLES)) {
             out.add(Detail.of("Sea pickles", state.getValue(BlockStateProperties.PICKLES), 4));
         }
@@ -94,10 +94,10 @@ final class BlockDetails {
     private static volatile BlockPos requested;
 
     /**
-     * Bienen im Stock. Der Server schickt diese Zahl nicht an den Client, deshalb nur im
-     * Singleplayer. Die Serverwelt darf nur auf dem Server-Thread gelesen werden (vom Client-Thread
-     * liefert sie keine Block-Entities), darum wird dort angefragt und das Ergebnis zwischengespeichert.
-     * Bis die erste Antwort da ist (ein Tick), -1 = Zeile weglassen.
+     * Bees in the hive. The server does not send this number to the client, so only in
+     * singleplayer. The server world may only be read on the server thread (from the client thread
+     * it returns no block entities), so it is queried there and the result cached.
+     * Until the first answer is there (one tick), -1 = leave the row out.
      */
     private static int beeCount(Minecraft client, BlockPos pos) {
         var server = client.getSingleplayerServer();

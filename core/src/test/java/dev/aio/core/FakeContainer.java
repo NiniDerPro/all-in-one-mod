@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Simuliertes Inventar mit den Klickregeln von Minecraft (Linksklick nimmt/legt/tauscht/stapelt,
- * Rechtsklick legt eins bzw. nimmt die Hälfte, Shift-Klick schiebt in den anderen Bereich).
+ * Simulated inventory with the click rules of Minecraft (left click takes/places/swaps/stacks,
+ * right click places one or takes half, shift click moves into the other area).
  */
 public final class FakeContainer implements ContainerView {
     public record Stack(String id, int count, int max) implements ItemRef {
@@ -29,7 +29,7 @@ public final class FakeContainer implements ContainerView {
     private Stack cursor = EMPTY;
     public int clicks;
 
-    /** @param chestSlots Anzahl Truhenslots vor den 36 Spielerslots (0 = nur Spielerinventar) */
+    /** @param chestSlots number of chest slots before the 36 player slots (0 = player inventory only) */
     public FakeContainer(int chestSlots) {
         int n = chestSlots + 36;
         items = new Stack[n];
@@ -39,7 +39,7 @@ public final class FakeContainer implements ContainerView {
         for (int i = 0; i < n; i++) {
             items[i] = EMPTY;
             player[i] = i >= chestSlots;
-            // wie in MC: Hauptinventar (9-35) vor der Hotbar (0-8)
+            // like in MC: main inventory (9-35) before the hotbar (0-8)
             int p = i - chestSlots;
             containerSlot[i] = player[i] ? (p < 27 ? p + 9 : p - 27) : i;
         }
@@ -71,7 +71,7 @@ public final class FakeContainer implements ContainerView {
 
     @Override public Grid grid() { return grid; }
 
-    /** Wie Vanilla-Quick-Craft (Ziehen links): gleichmäßig verteilen, Stapelgrenze beachten, Rest am Cursor. */
+    /** Like vanilla quick craft (drag left): distribute evenly, respect the stack limit, rest on the cursor. */
     @Override public void dragSplit(int[] slots) {
         clicks += slots.length + 2;
         if (cursor.isEmpty() || slots.length == 0) return;

@@ -83,7 +83,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-/** {@link Platform}-Implementierung für Minecraft 26.3 (offizielle Mojang-Namen). */
+/** {@link Platform} implementation for Minecraft 26.3 (official Mojang names). */
 public final class FabricPlatform implements Platform {
     private static final EquipmentSlot[] ARMOR = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
 
@@ -108,8 +108,8 @@ public final class FabricPlatform implements Platform {
     }
 
     /**
-     * Übersetzt die MC-Maustaste in die Nummerierung des Kerns (0 = links, 1 = rechts, 2 = Mitte).
-     * 26.3 nutzt SDL, die Rohwerte müssen deshalb nicht den alten GLFW-Werten entsprechen.
+     * Translates the MC mouse button into the core's numbering (0 = left, 1 = right, 2 = middle).
+     * 26.3 uses SDL, so the raw values do not have to match the old GLFW values.
      */
     public static int button(int raw) {
         if (raw == InputConstants.MOUSE_BUTTON_LEFT) return 0;
@@ -197,7 +197,7 @@ public final class FabricPlatform implements Platform {
     @Override public String worldKey() {
         var server = client.getSingleplayerServer();
         if (server != null) {
-            // Ordnername ist eindeutig, der Anzeigename nicht
+            // Folder name is unique, the display name is not
             var root = server.getWorldPath(LevelResource.ROOT).toAbsolutePath().normalize();
             var folder = root.getFileName();
             return "sp:" + (folder != null ? folder.toString() : server.getWorldData().getLevelName());
@@ -233,7 +233,7 @@ public final class FabricPlatform implements Platform {
         double x = eye.x, y = eye.y, z = eye.z;
         Perspective persp = perspective();
         if (persp != Perspective.FIRST_PERSON) {
-            // Vanilla-Kamera steht 4 Blöcke hinter (bzw. vor) dem Kopf; Wände verkürzen das, wird hier ignoriert
+            // The vanilla camera stands 4 blocks behind (or in front of) the head; walls shorten that, ignored here
             double ry = Math.toRadians(yaw), rp = Math.toRadians(pitch);
             double fx = -Math.sin(ry) * Math.cos(rp), fy = -Math.sin(rp), fz = Math.cos(ry) * Math.cos(rp);
             double d = persp == Perspective.THIRD_PERSON_BACK ? -4 : 4;
@@ -314,7 +314,7 @@ public final class FabricPlatform implements Platform {
         if (ench.isEmpty()) ench = s.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY);
         List<String> out = new ArrayList<>();
         for (Object2IntMap.Entry<Holder<Enchantment>> e : ench.entrySet()) {
-            // Flüche rot wie im Vanilla-Tooltip
+            // Curses red like in the vanilla tooltip
             boolean curse = e.getKey().is(EnchantmentTags.CURSE);
             out.add((curse ? "§c" : "") + Enchantment.getFullname(e.getKey(), e.getIntValue()).getString());
         }
@@ -325,7 +325,7 @@ public final class FabricPlatform implements Platform {
 
     @Override public int selectedSlot() { return player() == null ? 0 : player().getInventory().getSelectedSlot(); }
 
-    /** Der Wechsel geht mit der nächsten Aktion (Abbauen, Schlagen) bzw. im nächsten Tick an den Server. */
+    /** The switch goes to the server with the next action (breaking, hitting) or in the next tick. */
     @Override public void selectSlot(int slot) {
         if (player() != null && slot >= 0 && slot < 9) player().getInventory().setSelectedSlot(slot);
     }
@@ -337,8 +337,8 @@ public final class FabricPlatform implements Platform {
     // ---- Inventar / Item-Liste ----
 
     /**
-     * Offenes Menü. Auch wenn gerade die Rezeptansicht über dem Inventar liegt, ist das Menü des
-     * Inventars noch offen ({@code player.containerMenu}); ohne Screen ist es das Spielerinventar.
+     * Open menu. Even when the recipe view lies over the inventory, the inventory's menu is
+     * still open ({@code player.containerMenu}); without a screen it is the player inventory.
      */
     @Override public ContainerView container() {
         if (player() == null || client.gameMode == null) return null;
@@ -434,14 +434,14 @@ public final class FabricPlatform implements Platform {
     @Override public boolean drawProfilerChart(Renderer r, int w, int h) {
         if (!(r instanceof FabricRenderer fr) || fr.graphics() == null || !FabricHooks.profilerResults) return false;
         var chart = client.getDebugOverlay().getProfilerPieChart();
-        // Vanilla richtet das Diagramm rechts unten aus: rechte Kante = Breite − 5, untere = Höhe − Offset
+        // Vanilla aligns the chart at the bottom right: right edge = width − 5, bottom = height − offset
         chart.setBottomOffset(0);
         chart.extractRenderState(fr.graphics(), w + 5, h);
         return true;
     }
 
     @Override public String profilerChartPath() {
-        // Ohne den Accessor (z. B. von einem anderen Mod verdrängt) bleibt es einfach bei "root"
+        // Without the accessor (e.g. displaced by another mod) it simply stays at "root"
         return client.getDebugOverlay().getProfilerPieChart() instanceof dev.aio.fabric.mixin.ProfilerPieChartAccessor a
                 ? a.aio$getPath() : "root";
     }
@@ -483,8 +483,8 @@ public final class FabricPlatform implements Platform {
     @Override public void setGameKeyPressed(GameKey key, boolean pressed) {
         if (client.options == null) return;
         KeyMapping m = mapping(key);
-        // Sprint/Schleichen sind immer ToggleKeyMappings; nur wenn die Vanilla-Option "Umschalten" an
-        // ist, würde setDown jedes Mal umschalten (dann schaltet Vanilla ohnehin selbst um).
+        // Sprint/sneak are always ToggleKeyMappings; only when the vanilla option "Toggle" is on
+        // would setDown toggle every time (then vanilla toggles by itself anyway).
         if (m instanceof ToggleKeyMapping && vanillaToggle(key)) return;
         m.setDown(pressed);
     }
@@ -497,7 +497,7 @@ public final class FabricPlatform implements Platform {
         };
     }
 
-    // ---- Daten für den Item-Browser ----
+    // ---- Data for the item browser ----
 
     @Override public Map<String, JsonElement> dataFiles(String dir) { return DataFiles.read(client, dir); }
 
@@ -570,13 +570,13 @@ public final class FabricPlatform implements Platform {
     @Override public FoodState foodState() {
         LocalPlayer p = player();
         if (p == null || client.gameMode == null) return FoodState.NONE;
-        // Hungerleiste wie Vanilla nur im Überleben/Abenteuer und nicht auf Reittieren mit Leben
+        // Hunger bar like vanilla only in survival/adventure and not on mounts with health
         boolean visible = client.gameMode.canHurtPlayer() && !(p.getVehicle() instanceof LivingEntity);
         FoodData fd = p.getFoodData();
         float exhaustion = Float.NaN;
         var server = client.getSingleplayerServer();
         if (server != null) {
-            // Der Server schickt die Erschöpfung nicht; im Einzelspieler direkt lesen (nur ein float)
+            // The server does not send the exhaustion; read directly in singleplayer (only a float)
             var sp = server.getPlayerList().getPlayer(p.getUUID());
             if (sp != null) exhaustion = ((FoodDataAccessor) sp.getFoodData()).aio$exhaustion();
         }
@@ -642,11 +642,11 @@ public final class FabricPlatform implements Platform {
     // ---- UI ----
 
     /**
-     * Wird erst im nächsten Client-Tick ausgeführt: Das Öffnen passiert oft mitten in der
-     * Tastatur- oder Mausverarbeitung, die sonst denselben Tastendruck an den neuen Screen weitergibt.
+     * Only runs in the next client tick: opening often happens in the middle of
+     * keyboard or mouse processing, which would otherwise pass the same key press on to the new screen.
      */
     @Override public void openScreen(UiScreen screen) {
-        // wenn schon ein Tick-Wechsel aussteht, gewinnt der neueste
+        // if a tick switch is already pending, the newest wins
         pendingScreen = screen;
         pendingClose = false;
     }
@@ -664,7 +664,7 @@ public final class FabricPlatform implements Platform {
             client.gui.setScreen(new AioScreen(s, client.gui.screen()));
         } else if (pendingClose) {
             pendingClose = false;
-            // onClose kehrt bei Rezeptansicht & Co. zum vorherigen Screen (Inventar) zurück
+            // onClose returns to the previous screen (inventory) for recipe view & co.
             if (client.gui.screen() instanceof AioScreen screen) screen.onClose();
         }
     }

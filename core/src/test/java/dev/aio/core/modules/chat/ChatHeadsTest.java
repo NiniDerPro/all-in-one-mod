@@ -13,11 +13,11 @@ class ChatHeadsTest {
         assertEquals("Steve", ChatHeadsModule.findSender("<Steve> hi", ONLINE));
         assertEquals("Alex", ChatHeadsModule.findSender("[VIP] Alex: who has iron?", ONLINE));
         assertEquals("Steve2", ChatHeadsModule.findSender("Steve2 » hello", ONLINE), "ganzes Wort, nicht Steve");
-        assertEquals("Notch", ChatHeadsModule.findSender("[12:00] <Notch> Steve, come here", ONLINE), "der vorderste Name zählt");
+        assertEquals("Notch", ChatHeadsModule.findSender("[12:00] <Notch> Steve, come here", ONLINE), "the foremost name counts");
     }
 
     @Test void noSenderForPlainServerText() {
         assertNull(ChatHeadsModule.findSender("Welcome to the server!", ONLINE));
-        assertNull(ChatHeadsModule.findSender("x".repeat(60) + " Steve", ONLINE), "Erwähnung weit hinten zählt nicht");
+        assertNull(ChatHeadsModule.findSender("x".repeat(60) + " Steve", ONLINE), "mention far back does not count");
     }
 }

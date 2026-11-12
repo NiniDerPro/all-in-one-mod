@@ -16,15 +16,15 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Partikel: jede Partikelart einzeln abschaltbar (mit Suche und den wichtigsten oben), dazu ein
- * allgemeines Limit, wie viel Prozent der übrigen Partikel erscheinen.
+ * Particles: every particle type can be switched off individually (with search and the most important on top), plus a
+ * general limit for what percentage of the remaining particles appear.
  */
 public final class ParticleLimitModule extends Module {
-    /** Eigene IDs für Partikel, die Minecraft ohne eigene Partikelart erzeugt. */
+    /** Own ids for particles that Minecraft creates without its own particle type. */
     public static final String BLOCK_BREAK = "aio:block_break";
     public static final String BLOCK_CRACK = "aio:block_crack";
 
-    /** Häufig abgeschaltete Partikel mit deutschem Namen (oben in der Liste). */
+    /** Frequently switched-off particles with display names (at the top of the list). */
     public static final Map<String, String> IMPORTANT = new LinkedHashMap<>();
 
     static {
@@ -78,7 +78,7 @@ public final class ParticleLimitModule extends Module {
         disabled.set(String.join(",", next));
     }
 
-    /** Darf ein Partikel dieser Art erscheinen? (Art abgeschaltet, sonst Prozent-Limit) */
+    /** May a particle of this type appear? (type switched off, otherwise percent limit) */
     public boolean allow(String id) {
         if (!isActive()) return true;
         if (id != null && disabledSet.contains(id)) return false;
@@ -86,6 +86,6 @@ public final class ParticleLimitModule extends Module {
         return p >= 1 || random.nextDouble() < p;
     }
 
-    /** Für direkt erzeugte Partikel ohne Art: nur das Prozent-Limit. */
+    /** For directly created particles without a type: only the percent limit. */
     public boolean allow() { return allow(null); }
 }

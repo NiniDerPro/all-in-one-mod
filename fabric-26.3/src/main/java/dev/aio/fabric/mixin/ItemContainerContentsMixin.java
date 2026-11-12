@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.function.Consumer;
 
-/** Die Vanilla-Textliste („Totem der Unsterblichkeit x1“, ...) entfällt, solange die Shulker-Vorschau aktiv ist. */
+/** The vanilla text list ("Totem of Undying x1", ...) is dropped while the shulker preview is active. */
 @Mixin(ItemContainerContents.class)
 public abstract class ItemContainerContentsMixin {
     @Inject(method = "addToTooltip", at = @At("HEAD"), cancellable = true, require = 0)

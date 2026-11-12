@@ -16,7 +16,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Bedienung des Hauptmenüs wie ein Spieler: klicken, Tasten, Panel, Zahnrad. */
+/** Operating the main menu like a player: clicks, keys, panel, gear. */
 class MenuInteractionTest {
     @TempDir Path dir;
 
@@ -63,10 +63,10 @@ class MenuInteractionTest {
             Map<String, Boolean> after = states();
             int diff = 0;
             for (String id : before.keySet()) if (!before.get(id).equals(after.get(id))) diff++;
-            assertTrue(diff <= 1, "höchstens ein Modul pro Klick");
+            assertTrue(diff <= 1, "at most one module per click");
             changed = diff == 1;
         }
-        assertTrue(changed, "Schalter in der Zeile schaltet das Modul um");
+        assertTrue(changed, "switch in the row toggles the module");
     }
 
     @Test void clickingARowOpensSettingsAndEscapeClosesThemFirst() {
@@ -74,10 +74,10 @@ class MenuInteractionTest {
         FakeRenderer r = new FakeRenderer();
         gui.render(r, 0, 0, 0);
         Map<String, Boolean> before = states();
-        click(gui, r, 60, 74); // Name der ersten Zeile, nicht der Schalter
-        assertEquals(before, states(), "Klick auf den Namen schaltet nichts um");
-        assertTrue(gui.keyPressed("key.keyboard.escape"), "erstes ESC schließt das Panel");
-        assertFalse(gui.keyPressed("key.keyboard.escape"), "zweites ESC schließt das Menü");
+        click(gui, r, 60, 74); // name of the first row, not the switch
+        assertEquals(before, states(), "click on the name toggles nothing");
+        assertTrue(gui.keyPressed("key.keyboard.escape"), "first ESC closes the panel");
+        assertFalse(gui.keyPressed("key.keyboard.escape"), "second ESC closes the menu");
     }
 
     @Test void settingsPanelTogglesABooleanSetting() {
@@ -87,7 +87,7 @@ class MenuInteractionTest {
         BooleanSetting distance = (BooleanSetting) waypoints.setting("distance");
         ClickGuiScreen panel = new ClickGuiScreen(core, waypoints);
         boolean before = distance.on();
-        // im Panel rechts (unterhalb des Schließen-Knopfs) auf die Schalterspalte klicken, bis "Show distance" umspringt
+        // in the panel on the right (below the close button) click the switch column until "Show distance" flips
         for (int y = 112; y < 240 && distance.on() == before; y += 2) click(panel, r, 452, y);
         assertNotEquals(before, distance.on(), "Schalter im Einstellungs-Panel wirkt");
     }
@@ -98,10 +98,10 @@ class MenuInteractionTest {
         int profiles = core.config().profiles().size();
         click(gui, r, 452, 25); // Zahnrad oben rechts
         settle(gui, r); // Panel gleitet herein
-        gui.mouseScrolled(400, 150, -20); // im Panel nach unten zu den Profilen
-        // von unten nach oben (oberhalb von "Reset all"), damit nichts darüber Zeilen verschiebt
+        gui.mouseScrolled(400, 150, -20); // in the panel down to the profiles
+        // from bottom to top (above "Reset all"), so that nothing above moves rows
         for (int y = 186; y > 60 && core.config().profiles().size() == profiles; y -= 2) click(gui, r, 250, y);
-        assertTrue(core.config().profiles().size() > profiles, "Profil über das Zahnrad-Panel anlegen");
+        assertTrue(core.config().profiles().size() > profiles, "create a profile via the gear panel");
     }
 
     @Test void clickingEverywhereNeverThrows() {
@@ -115,7 +115,7 @@ class MenuInteractionTest {
                 }
             }
         }
-        // jede Kategorie, jedes Modul-Panel
+        // every category, every module panel
         for (Category c : Category.values()) {
             List<Module> mods = core.modules().byCategory(c);
             for (Module m : mods) {
@@ -138,14 +138,14 @@ class MenuInteractionTest {
         var listening = ClickGuiScreen.class.getDeclaredField("listening");
         listening.setAccessible(true);
         listening.set(gui, zoomKey);
-        // So kommt es vom Spiel: erst die Taste, dann das Zeichen dazu
+        // This is how it comes from the game: first the key, then the character
         assertTrue(gui.keyPressed("key.keyboard.v"));
         assertTrue(gui.charTyped("v"));
         assertEquals("key.keyboard.v", zoomKey.get());
         var search = ClickGuiScreen.class.getDeclaredField("search");
         search.setAccessible(true);
-        assertEquals("", search.get(gui), "das Zeichen der belegten Taste landet nicht in der Suche");
-        // danach tippt man normal weiter
+        assertEquals("", search.get(gui), "the character of the bound key does not end up in the search");
+        // afterwards you type on normally
         gui.keyPressed("key.keyboard.z");
         gui.charTyped("z");
         assertEquals("z", search.get(gui));
@@ -156,18 +156,18 @@ class MenuInteractionTest {
         FakeRenderer r = new FakeRenderer();
         gui.render(r, 0, 0, 0);
         Module zoom = core.modules().get("zoom");
-        ClickGuiScreen focused = new ClickGuiScreen(core, zoom); // Panel und Kategorie von Zoom
+        ClickGuiScreen focused = new ClickGuiScreen(core, zoom); // panel and category of zoom
         focused.render(r, 0, 0, 0);
         focused.onClose();
 
         ClickGuiScreen again = new ClickGuiScreen(core, null);
         again.render(r, 0, 0, 0);
-        assertTrue(again.keyPressed("key.keyboard.escape"), "Zoom-Panel ist wieder offen und ESC schließt es");
+        assertTrue(again.keyPressed("key.keyboard.escape"), "zoom panel is open again and ESC closes it");
 
         core.clientSettings().rememberMenu.set(false);
         ClickGuiScreen fresh = new ClickGuiScreen(core, null);
         fresh.render(r, 0, 0, 0);
-        assertFalse(fresh.keyPressed("key.keyboard.escape"), "ohne die Option startet das Menü leer");
+        assertFalse(fresh.keyPressed("key.keyboard.escape"), "without the option the menu starts empty");
     }
 
     @Test void typingReplacesARememberedSearch() throws Exception {
@@ -184,6 +184,6 @@ class MenuInteractionTest {
         again.charTyped("f");
         var search = ClickGuiScreen.class.getDeclaredField("search");
         search.setAccessible(true);
-        assertEquals("f", search.get(again), "die gemerkte Suche wird beim Lostippen ersetzt");
+        assertEquals("f", search.get(again), "the remembered search is replaced on typing");
     }
 }

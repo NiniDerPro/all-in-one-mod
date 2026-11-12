@@ -7,8 +7,8 @@ import dev.aio.core.platform.GameKey;
 import dev.aio.core.setting.BooleanSetting;
 
 /**
- * Toggle Sprint: Ein Druck auf die Sprint-Taste schaltet Dauersprinten ein oder aus.
- * Entspricht der Vanilla-Option "Sprinten: Umschalten", nur mit Statusanzeige.
+ * Toggle Sprint: one press of the sprint key switches permanent sprinting on or off.
+ * Corresponds to the vanilla option "Sprint: Toggle", only with a status display.
  */
 public final class ToggleSprintModule extends TextHudElement {
     private final BooleanSetting showStatus;

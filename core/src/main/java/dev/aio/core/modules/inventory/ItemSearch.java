@@ -7,16 +7,16 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Suche in der Item-Liste. Mehrere Wörter = alle müssen passen.
- * {@code @mod} filtert nach Mod (Name oder ID-Namespace), {@code $id} nach Registry-ID,
- * sonst wird im Namen und in der ID gesucht. {@code -wort} schließt aus.
+ * Search in the item list. Several words = all must match.
+ * {@code @mod} filters by mod (name or id namespace), {@code $id} by registry id,
+ * otherwise name and id are searched. {@code -word} excludes.
  */
 public final class ItemSearch {
     private ItemSearch() {}
 
     /**
-     * Suchindex: Namen, IDs und Mods einmal kleingeschrieben vorberechnet. Wird die Suche nur
-     * verlängert ("dia" → "diam"), wird nur in den bisherigen Treffern weitergesucht.
+     * Search index: names, ids and mods precomputed once in lower case. If the search is only
+     * extended ("dia" → "diam"), only the previous hits are searched further.
      */
     public static final class Index {
         private record Entry(ItemRef item, String name, String id, String ns, String mod) {}
@@ -46,7 +46,7 @@ public final class ItemSearch {
                 return all;
             }
             String[] tokens = q.split("\\s+");
-            // Nur verlängert und ohne Ausschluss: Treffer können nur weniger werden
+            // Only extended and without exclusion: hits can only get fewer
             boolean narrowing = !lastQuery.isEmpty() && q.startsWith(lastQuery) && !q.contains("-");
             List<Entry> source = narrowing ? lastHits : entries;
             List<Entry> hits = new ArrayList<>();

@@ -9,8 +9,8 @@ import dev.aio.core.setting.BooleanSetting;
 import java.util.Locale;
 
 /**
- * Essens-Info: Nährwert und Sättigung im Tooltip, Sättigung und Erschöpfung auf der Hungerleiste
- * und beim Halten von Essen eine Vorschau, wie viel Hunger, Sättigung und Leben es bringt.
+ * Food info: nutrition and saturation in the tooltip, saturation and exhaustion on the hunger bar
+ * and when holding food a preview of how much hunger, saturation and health it brings.
  */
 public final class FoodInfoModule extends Module {
     private static final String FOOD_FULL = "minecraft:hud/food_full";
@@ -59,19 +59,19 @@ public final class FoodInfoModule extends Module {
 
     private static int alpha(float a) { return (Math.round(Math.max(0, Math.min(1, a)) * 255) << 24) | 0xFFFFFF; }
 
-    /** Unter der Hungerleiste: Erschöpfung als Balken von rechts. */
+    /** Below the hunger bar: exhaustion as a bar from the right. */
     public void renderUnderFood(Renderer r, FoodState s, float right, float top) {
         if (!isActive() || !s.visible() || !exhaustion.on() || !Float.isFinite(s.exhaustion())) return;
         float ratio = Math.max(0, Math.min(1, s.exhaustion() / FoodMath.MAX_EXHAUSTION));
         float w = ratio * 81;
-        // Erschöpfung als heller Balken hinter den Symbolen, von rechts wachsend
+        // Exhaustion as a light bar behind the icons, growing from the right
         if (w >= 1) {
             r.fill(right - w, top + 1, right, top + 8, 0x70FFFFFF);
             r.fill(right - w, top + 8, right, top + 9, 0x40FFFFFF);
         }
     }
 
-    /** Über der Hungerleiste: Sättigung als goldene Rahmen und die Vorschau des gehaltenen Essens. */
+    /** Above the hunger bar: saturation as golden frames and the preview of the held food. */
     public void renderOverFood(Renderer r, FoodState s, float right, float top) {
         if (!isActive() || !s.visible()) return;
         boolean holding = preview.on() && s.heldNutrition() > 0 && s.heldCanEat();
@@ -97,8 +97,8 @@ public final class FoodInfoModule extends Module {
     }
 
     /**
-     * Goldene Keule (9×9, eigene Pixelgrafik) für Sättigung: '#' Rand, 'o' Gold, 'h' Glanz, 'w' Knochen.
-     * Halbe Sättigung zeigt nur die rechte Hälfte, wie halbe Hunger-Symbole.
+     * Golden drumstick (9×9, own pixel art) for saturation: '#' edge, 'o' gold, 'h' shine, 'w' bone.
+     * Half saturation only shows the right half, like half hunger icons.
      */
     private static final String[] SHANK = {
             ".....###.",
@@ -128,7 +128,7 @@ public final class FoodInfoModule extends Module {
         }
     }
 
-    /** Sättigung von {@code from} bis {@code to} als goldene Keulen über den Hunger-Symbolen. */
+    /** Saturation from {@code from} to {@code to} as golden drumsticks over the hunger icons. */
     private static void drawSaturation(Renderer r, float right, float top, float from, float to, float alpha) {
         for (int i = 0; i < 10; i++) {
             float lo = i * 2f, hi = lo + 2f;
@@ -138,7 +138,7 @@ public final class FoodInfoModule extends Module {
         }
     }
 
-    /** Über der Lebensleiste: Herzen, die das Essen über natürliches Heilen bringen würde. */
+    /** Above the health bar: hearts that the food would bring via natural healing. */
     public void renderOverHealth(Renderer r, FoodState s, float left, float top) {
         if (!isActive() || !s.visible() || !preview.on() || !healthPreview.on()) return;
         if (s.heldNutrition() <= 0 || !s.heldCanEat()) return;

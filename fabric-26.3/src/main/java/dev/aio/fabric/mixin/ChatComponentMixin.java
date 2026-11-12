@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 /**
- * Chat: Zeitstempel und längerer Verlauf (Vanilla: 100 Zeilen).
- * Unverifiziert für 26.3, darum require = 0: fehlt ein Ziel, bleibt nur die Funktion weg.
+ * Chat: timestamps and longer history (vanilla: 100 lines).
+ * Unverified for 26.3, hence require = 0: if a target is missing, only the feature is lost.
  */
 @Mixin(ChatComponent.class)
 public abstract class ChatComponentMixin {

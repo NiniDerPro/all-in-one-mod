@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Beobachtet den Einbau der AIO-Mixins. Die Mixin-Konfiguration ist nicht "required": Scheitert
- * der Einbau eines Mixins (z. B. weil eine andere Mod die Klasse verändert hat), startet das Spiel
- * trotzdem, und AIO schaltet nur das betroffene Modul ab.
+ * Observes the application of the AIO mixins. The mixin config is not "required": if
+ * a mixin cannot be applied (e.g. because another mod changed the class), the game starts
+ * anyway, and AIO only switches off the affected module.
  */
 public final class AioMixinPlugin implements IMixinConfigPlugin {
     @Override public void onLoad(String mixinPackage) {}
@@ -28,9 +28,9 @@ public final class AioMixinPlugin implements IMixinConfigPlugin {
     }
 
     @Override public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
-        // Erreicht nur, wenn der Einbau ohne Fehler durchlief. Ob jede einzelne Injektion eine Stelle
-        // gefunden hat, lässt sich hier nicht prüfen: MixinExtras-Injektionen (WrapOperation,
-        // ModifyReturnValue, …) werden erst nach diesem Aufruf eingebaut.
+        // Only reached if the application ran without errors. Whether every single injection found a place
+        // cannot be checked here: MixinExtras injections (WrapOperation,
+        // ModifyReturnValue, …) are only applied after this call.
         HookStatus.finished.add(simple(mixinClassName));
     }
 

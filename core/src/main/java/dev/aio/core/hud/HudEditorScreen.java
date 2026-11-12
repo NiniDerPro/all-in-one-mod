@@ -18,21 +18,21 @@ import java.util.List;
  * HUD-Editor wie in einem Grafikprogramm.
  *
  * <ul>
- *   <li>Linksklick wählt ein Element aus, Ziehen verschiebt es (rastet an Rändern und anderen
+ *   <li>Left click selects an element, dragging moves it (snaps to edges and other
  *       Elementen ein, Shift = frei).</li>
- *   <li>Das ausgewählte Element hat einen Rahmen mit acht Griffen: an Kanten und Ecken ziehen
- *       ändert Breite und Höhe unabhängig, Shift an einer Ecke behält das Seitenverhältnis.</li>
- *   <li>Rechtsklick öffnet die Einstellungen, R/Entf oder der Knopf oben setzt die Auswahl zurück.</li>
- *   <li>Teile eines Moduls (Uhrzeit/Datum, Rüstungsteile) sind einzeln verschiebbar. Ziehen auf
- *       freier Fläche zieht einen Auswahlrahmen: alles darin wird gemeinsam verschoben. Strg+Klick
- *       fügt hinzu/entfernt, Doppelklick wählt alle Teile desselben Moduls.</li>
- *   <li>Der Chat lässt sich ebenso auswählen, oben und rechts in der Größe ziehen und zurücksetzen.
+ *   <li>The selected element has a frame with eight handles: dragging at edges and corners
+ *       changes width and height independently, Shift on a corner keeps the aspect ratio.</li>
+ *   <li>Right click opens the settings, R/Del or the button at the top resets the selection.</li>
+ *   <li>Parts of a module (time/date, armor parts) can be moved individually. Dragging on
+ *       free space draws a selection box: everything inside is moved together. Ctrl+click
+ *       adds/removes, double click selects all parts of the same module.</li>
+ *   <li>The chat can be selected the same way, resized at the top and right, and reset.
  *       Seine Position legt Minecraft fest (unten links).</li>
  * </ul>
  */
 public final class HudEditorScreen implements UiScreen {
     private static final float SNAP_THRESHOLD = 5f;
-    /** Fangbereich der Griffe in Pixeln (innen und außen um die Kante). */
+    /** Grab area of the handles in pixels (inside and outside around the edge). */
     private static final float GRIP = 4f;
     private static final float MIN_PX = 6f;
 
@@ -41,9 +41,9 @@ public final class HudEditorScreen implements UiScreen {
 
     private final AioCore core;
 
-    /** Ausgewähltes Ziel: ein {@link HudTarget} oder {@link #CHAT}. */
+    /** Selected target: a {@link HudTarget} or {@link #CHAT}. */
     private Object selected;
-    /** Mehrfachauswahl (Auswahlrahmen, Strg+Klick, Doppelklick). Leer oder ≥ 2 Einträge. */
+    /** Multi-selection (selection box, Ctrl+click, double click). Empty or ≥ 2 entries. */
     private final List<HudTarget> group = new ArrayList<>();
     private float[] groupStart;
     private float marqueeX, marqueeY;
@@ -54,7 +54,7 @@ public final class HudEditorScreen implements UiScreen {
     private enum Mode { NONE, MOVE, RESIZE, MARQUEE, GROUP_MOVE }
     private Mode mode = Mode.NONE;
     private int edges;
-    /** Startzustand beim Ziehen: Maus und Rechteck. */
+    /** Start state when dragging: mouse and rectangle. */
     private float startMx, startMy, startX, startY, startW, startH;
     private Snapper.Result lastSnap;
     private int lastMouseX, lastMouseY;
@@ -73,7 +73,7 @@ public final class HudEditorScreen implements UiScreen {
         return list;
     }
 
-    /** Alles, was einzeln verschoben werden kann: Elemente bzw. ihre Teile, wenn getrennt. */
+    /** Everything that can be moved individually: elements or their parts when separated. */
     private List<HudTarget> targets() {
         List<HudTarget> list = new ArrayList<>();
         for (HudElement el : visibleElements()) {
@@ -89,7 +89,7 @@ public final class HudEditorScreen implements UiScreen {
     }
 
     // =====================================================================
-    // Ziele (Element oder Chat) als Rechteck
+    // Targets (element or chat) as a rectangle
     // =====================================================================
 
     private FlexChatModule chat() {
@@ -97,7 +97,7 @@ public final class HudEditorScreen implements UiScreen {
         return c != null && c.isActive() ? c : null;
     }
 
-    /** x, y, Breite, Höhe des Ziels oder null. */
+    /** x, y, width, height of the target or null. */
     private float[] bounds(Renderer r, Object target) {
         if (target instanceof HudTarget el) {
             return new float[]{el.screenX(r), el.screenY(r), el.scaledWidth(r), el.scaledHeight(r)};
@@ -111,7 +111,7 @@ public final class HudEditorScreen implements UiScreen {
         return null;
     }
 
-    /** Welche Kanten am Ziel gezogen werden dürfen. */
+    /** Which edges of the target may be dragged. */
     private static int allowedEdges(Object target) {
         return target == CHAT ? RIGHT | TOP : LEFT | RIGHT | TOP | BOTTOM;
     }
@@ -130,11 +130,11 @@ public final class HudEditorScreen implements UiScreen {
         return b != null && mx >= b[0] - pad && mx <= b[0] + b[2] + pad && my >= b[1] - pad && my <= b[1] + b[3] + pad;
     }
 
-    /** Kanten unter der Maus am ausgewählten Ziel (0 = keine). */
+    /** Edges under the mouse at the selected target (0 = none). */
     private int edgesAt(Renderer r, double mx, double my) {
         float[] b = bounds(r, selected);
         if (b == null || !inside(b, mx, my, GRIP)) return 0;
-        // Bei kleinen Elementen den Fangbereich verkleinern, damit die Mitte zum Verschieben bleibt
+        // For small elements shrink the grab area so that the middle stays for moving
         float gx = Math.min(GRIP, b[2] / 3f), gy = Math.min(GRIP, b[3] / 3f);
         int e = 0;
         if (Math.abs(mx - b[0]) <= gx) e |= LEFT;
@@ -170,10 +170,10 @@ public final class HudEditorScreen implements UiScreen {
         int accent = Theme.accent(core);
         Object hovered = mode != Mode.NONE ? selected : targetAt(r, mouseX, mouseY);
 
-        // Chat-Fläche
+        // Chat area
         float[] cb = bounds(r, CHAT);
         if (cb != null) {
-            // Leichte Fläche, damit der Chat auch ohne Vanilla-Hintergrund als Block erkennbar ist
+            // Light area so that the chat is recognisable as a block even without the vanilla background
             boolean focus = hovered == CHAT || selected == CHAT;
             Draw.round(r, cb[0], cb[1], cb[0] + cb[2], cb[1] + cb[3], 2, focus ? 0x50000000 : 0x28000000);
             chat().renderPreview(r, cb[0], cb[1] + cb[3], focus ? 1f : 0.4f);
@@ -200,7 +200,7 @@ public final class HudEditorScreen implements UiScreen {
             r.outline(x1, y1, x2, y2, 1, accent);
         }
 
-        // Auswahl mit Griffen zuletzt, damit sie über allem liegt
+        // Selection with handles last, so that it lies above everything
         float[] sb = bounds(r, selected);
         if (sb != null) {
             frame(r, sb, accent);
@@ -216,8 +216,8 @@ public final class HudEditorScreen implements UiScreen {
         Object info = mode == Mode.MARQUEE || mode == Mode.GROUP_MOVE ? null : mode != Mode.NONE ? selected : hovered;
         if (info != null) tooltip(r, info, mouseX, mouseY);
 
-        // Werkzeugleiste: Auswahl, Menü, Zurücksetzen. Liegt sie über Elementen, wird sie durchsichtig,
-        // bis die Maus in die Nähe kommt.
+        // Toolbar: selection, menu, reset. If it lies over elements it becomes transparent
+        // until the mouse comes near.
         float[] tb = toolbar(r);
         boolean covering = overlap(r, tb, 0) > 0;
         boolean near = mouseX >= tb[0] - 16 && mouseX <= tb[2] + 16 && mouseY >= tb[1] - 16 && mouseY <= tb[3] + 16;
@@ -233,7 +233,7 @@ public final class HudEditorScreen implements UiScreen {
             drawButton(r, resetButton(r), Draw.RESET, Lang.tr("aio.ui.hud_editor.reset", "Reset"), selected != null || !group.isEmpty(), mouseX, mouseY);
         }
 
-        // Bedienhilfe nur, solange nichts ausgewählt ist und unter der Leiste Platz ist
+        // Help only while nothing is selected and there is room below the bar
         if (selected == null && group.isEmpty() && mode == Mode.NONE) {
             String hint = Lang.tr("aio.ui.hud_editor.hint", "Drag to move · Edges resize · Drag empty space to select · Right click: settings · R: reset");
             if (r.textWidth(hint) * 0.75f > w - 8) hint = Lang.tr("aio.ui.hud_editor.hint_short", "Drag · Edges · Select · Right click · R");
@@ -252,8 +252,8 @@ public final class HudEditorScreen implements UiScreen {
     private static final int TOOLBAR_TEXT = 110;
 
     /**
-     * Werkzeugleiste (x1, y1, x2, y2) an der Stelle, die am wenigsten HUD-Elemente verdeckt: über der
-     * Hotbar, ganz oben, oben oder in der Mitte.
+     * Toolbar (x1, y1, x2, y2) at the place that covers the fewest HUD elements: above the
+     * hotbar, at the very top, top or in the middle.
      */
     private float[] toolbar(Renderer r) {
         float w = TOOLBAR_TEXT + 16 + buttonWidth(r, Lang.tr("aio.ui.hud_editor.settings", "Settings"))
@@ -274,7 +274,7 @@ public final class HudEditorScreen implements UiScreen {
         return best;
     }
 
-    /** Fläche, mit der ein Rechteck (plus Rand) HUD-Elemente oder den Chat überdeckt. */
+    /** Area with which a rectangle (plus margin) covers HUD elements or the chat. */
     private float overlap(Renderer r, float[] box, float margin) {
         float sum = 0;
         List<Object> all = new ArrayList<>(targets());
@@ -374,7 +374,7 @@ public final class HudEditorScreen implements UiScreen {
         }
         if (button != 0) return false;
 
-        // Erst die Griffe der Auswahl (liegen teils außerhalb des Elements)
+        // First the handles of the selection (partly outside the element)
         int e = group.isEmpty() ? edgesAt(r, mx, my) : 0;
         if (e != 0) {
             begin(r, Mode.RESIZE, e, mx, my);
@@ -387,7 +387,7 @@ public final class HudEditorScreen implements UiScreen {
         lastClickTarget = t;
 
         if (t == null) {
-            // Freie Fläche: Auswahlrahmen aufziehen
+            // Free area: draw a selection box
             selected = null;
             if (!ctrl()) group.clear();
             mode = Mode.MARQUEE;
@@ -406,7 +406,7 @@ public final class HudEditorScreen implements UiScreen {
                 return true;
             }
             if (ctrl()) {
-                // Strg+Klick: zur Gruppe hinzufügen/entfernen
+                // Ctrl+click: add to / remove from the group
                 if (group.isEmpty() && selected instanceof HudTarget cur && cur != ht) group.add(cur);
                 if (group.contains(ht)) group.remove(ht);
                 else group.add(ht);
@@ -424,7 +424,7 @@ public final class HudEditorScreen implements UiScreen {
         }
         group.clear();
         selected = t;
-        // Der Chat sitzt fest unten links, dort nur auswählen
+        // The chat sits fixed at the bottom left, only select it there
         begin(r, t == CHAT ? Mode.NONE : Mode.MOVE, 0, mx, my);
         return true;
     }
@@ -445,7 +445,7 @@ public final class HudEditorScreen implements UiScreen {
         }
     }
 
-    /** Verschiebt die Gruppe gemeinsam; der umgebende Rahmen rastet wie ein einzelnes Element ein. */
+    /** Moves the group together; the surrounding frame snaps like a single element. */
     private void moveGroup(Renderer r, float ddx, float ddy, boolean free) {
         if (groupStart == null || groupStart.length != group.size() * 2) return;
         float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE;
@@ -544,7 +544,7 @@ public final class HudEditorScreen implements UiScreen {
 
         boolean corner = (edges & (LEFT | RIGHT)) != 0 && (edges & (TOP | BOTTOM)) != 0;
         if (keepRatio && corner && startW > 0 && startH > 0) {
-            // Den größeren relativen Zug nehmen und die andere Seite nachziehen
+            // Take the larger relative drag and follow with the other side
             float f = Math.max((x2 - x1) / startW, (y2 - y1) / startH);
             float nw = startW * f, nh = startH * f;
             if ((edges & LEFT) != 0) x1 = x2 - nw; else x2 = x1 + nw;
@@ -553,7 +553,7 @@ public final class HudEditorScreen implements UiScreen {
 
         if (selected instanceof HudTarget el) {
             el.setScreenBounds(r, x1, y1, x2 - x1, y2 - y1);
-            // Begrenzung der Skalierung: die gegenüberliegende Kante bleibt stehen
+            // Limit the scaling: the opposite edge stays put
             float w = el.scaledWidth(r), h = el.scaledHeight(r);
             float nx = (edges & LEFT) != 0 ? x2 - w : x1;
             float ny = (edges & TOP) != 0 ? y2 - h : y1;
@@ -573,12 +573,12 @@ public final class HudEditorScreen implements UiScreen {
         return false;
     }
 
-    /** Das Mausrad ändert im Editor bewusst nichts mehr (Größe nur über die Griffe). */
+    /** The mouse wheel deliberately no longer changes anything in the editor (size only via the handles). */
     @Override public boolean mouseScrolled(double mx, double my, double amount) { return false; }
 
     @Override public boolean keyPressed(String key) {
         if ("key.keyboard.a".equals(key) && ctrl()) {
-            // Strg+A: alles auswählen
+            // Ctrl+A: select everything
             selected = null;
             group.clear();
             group.addAll(targets());
@@ -615,7 +615,7 @@ public final class HudEditorScreen implements UiScreen {
 
     @Override public void onOpen() { core.hud().setEditorOpen(true); }
 
-    /** ESC führt dorthin zurück, woher man kam (z. B. ins Menü). */
+    /** ESC returns to where you came from (e.g. the menu). */
     @Override public boolean returnsToPrevious() { return true; }
 
     @Override public void onClose() {

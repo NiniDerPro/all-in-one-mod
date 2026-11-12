@@ -22,10 +22,10 @@ import java.util.Locale;
 import java.util.Random;
 
 /**
- * Hunger-Overlays wie bei AppleSkin (Grafik und Verhalten nach AppleSkin, Public Domain):
- * Sättigung als goldene Rahmen in vier Stufen, Erschöpfung als Balken hinter der Hungerleiste,
- * beim Halten von Essen blinkende Vorschau für Hunger, Sättigung und Herzen. Die Symbole wackeln
- * im selben Takt wie die Vanilla-Leiste, damit alles deckungsgleich bleibt.
+ * Hunger overlays:
+ * saturation as golden frames in four levels, exhaustion as a bar behind the hunger bar,
+ * a blinking preview for hunger, saturation and hearts when holding food. The icons shake
+ * in the same rhythm as the vanilla bar so that everything stays congruent.
  */
 public final class FoodHud {
     private FoodHud() {}
@@ -62,13 +62,13 @@ public final class FoodHud {
 
     private static int white(float alpha) { return (Math.round(Math.max(0, Math.min(1, alpha)) * 255) << 24) | 0xFFFFFF; }
 
-    /** Hungerleiste wie Vanilla sichtbar? (Überleben/Abenteuer, nicht auf Reittier mit Leben) */
+    /** Hunger bar visible like vanilla? (survival/adventure, not on a mount with health) */
     static boolean visible(Minecraft mc) {
         return mc.player != null && mc.gameMode != null && mc.gameMode.canHurtPlayer()
                 && !(mc.player.getVehicle() instanceof LivingEntity);
     }
 
-    // ---- Wackel-Versatz der Symbole wie in Vanilla (gleicher Zufall, gleicher Takt) ----
+    // ---- Shake offset of the icons like in vanilla (same randomness, same rhythm) ----
     private static final int[] FOOD_Y = new int[10];
     private static int[] healthX = new int[0], healthY = new int[0];
     private static int offsetsTick = -1;
@@ -126,7 +126,7 @@ public final class FoodHud {
 
     // ---- Zeichnen ----
 
-    /** Vor der Hungerleiste: Erschöpfung als Balken. */
+    /** Before the hunger bar: exhaustion as a bar. */
     public static void renderUnder(GuiGraphicsExtractor g, FoodInfoModule m, int right, int top) {
         Minecraft mc = Minecraft.getInstance();
         if (m == null || !m.showExhaustion() || !visible(mc)) return;
@@ -138,7 +138,7 @@ public final class FoodHud {
         g.blit(RenderPipelines.GUI_TEXTURED, ICONS, right - width, top, 81 - width, 18, width, 9, 256, 256, white(0.75F));
     }
 
-    /** Nach der Hungerleiste: Sättigung und Vorschau. */
+    /** After the hunger bar: saturation and preview. */
     public static void renderOver(GuiGraphicsExtractor g, FoodInfoModule m, int right, int top) {
         Minecraft mc = Minecraft.getInstance();
         if (m == null || !m.isActive() || !visible(mc)) return;
@@ -168,7 +168,7 @@ public final class FoodHud {
         }
     }
 
-    /** Nach der Lebensleiste: Herzen, die das Essen über natürliches Heilen bringt. */
+    /** After the health bar: hearts that the food brings via natural healing. */
     public static void renderHealth(GuiGraphicsExtractor g, FoodInfoModule m, int left, int top) {
         Minecraft mc = Minecraft.getInstance();
         if (m == null || !m.showHealthPreview() || !visible(mc)) return;
@@ -176,7 +176,7 @@ public final class FoodHud {
         Held held = held(p);
         if (held == null) return;
         FoodData stats = p.getFoodData();
-        // wie AppleSkin: nur, wenn die Vorhersage eindeutig ist
+        // only if the prediction is unambiguous
         if (p.level().getDifficulty() == Difficulty.PEACEFUL || stats.getFoodLevel() >= 18) return;
         if (p.hasEffect(MobEffects.POISON) || p.hasEffect(MobEffects.WITHER) || p.hasEffect(MobEffects.REGENERATION)) return;
         int guiTicks = mc.gui.hud.getGuiTicks();

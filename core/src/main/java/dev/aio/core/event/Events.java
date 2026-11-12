@@ -2,17 +2,17 @@ package dev.aio.core.event;
 
 import dev.aio.core.platform.Renderer;
 
-/** Alle Events, die der Adapter in den Kern postet. */
+/** All events that the adapter posts into the core. */
 public final class Events {
     private Events() {}
 
-    /** Einmal pro Client-Tick (20/s), nach dem Vanilla-Tick. */
+    /** Once per client tick (20/s), after the vanilla tick. */
     public static final class Tick {
         public static final Tick INSTANCE = new Tick();
         private Tick() {}
     }
 
-    /** Einmal pro Frame, wenn das HUD gezeichnet wird. */
+    /** Once per frame, when the HUD is drawn. */
     public static final class RenderHud {
         public final Renderer renderer;
         public final float tickDelta;
@@ -23,7 +23,7 @@ public final class Events {
         }
     }
 
-    /** Tastatur-Event mit MC-Tastennamen. {@code action}: 0 = losgelassen, 1 = gedrückt, 2 = wiederholt. */
+    /** Keyboard event with MC key names. {@code action}: 0 = released, 1 = pressed, 2 = repeated. */
     public record Key(String key, int action, boolean screenOpen) {
         public boolean isPress() { return action == 1; }
         public boolean isRelease() { return action == 0; }
@@ -34,29 +34,29 @@ public final class Events {
         public boolean isPress() { return action == 1; }
     }
 
-    /** Mausrad im Spiel (kein Screen offen). Abbrechen verhindert das Scrollen der Hotbar. */
+    /** Mouse wheel in game (no screen open). Cancelling prevents the hotbar from scrolling. */
     public static final class MouseScroll extends Cancellable {
         public final double amount;
 
         public MouseScroll(double amount) { this.amount = amount; }
     }
 
-    /** Kurz bevor der Spieler anfängt, einen Block abzubauen (vor dem Senden an den Server). */
+    /** Shortly before the player starts breaking a block (before sending to the server). */
     public record StartBreak(int x, int y, int z) {}
 
-    /** Kurz bevor der Spieler ein Wesen schlägt (vor dem Senden an den Server). */
+    /** Shortly before the player hits an entity (before sending to the server). */
     public record AttackEntity(boolean living) {}
 
     /**
-     * Eine empfangene Chat- oder Systemnachricht als reiner Text.
+     * A received chat or system message as plain text.
      *
-     * @param fromSelf vom eigenen Spieler gesendet (laut Absender, nur bei signierten Chatnachrichten bekannt)
+     * @param fromSelf sent by the own player (according to the sender, only known for signed chat messages)
      */
     public record ChatReceived(String text, boolean system, boolean fromSelf) {
         public ChatReceived(String text, boolean system) { this(text, system, false); }
     }
 
-    /** Beim Betreten einer Welt bzw. eines Servers. {@code address} ist bei Singleplayer null. */
+    /** When entering a world or server. {@code address} is null in singleplayer. */
     public record ServerJoin(String address) {}
 
     public static final class ServerLeave {

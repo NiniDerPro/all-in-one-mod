@@ -9,7 +9,7 @@ import net.minecraft.util.FormattedCharSequence;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-/** Chat Heads: Zeilen von Spielernachrichten beim Anlegen einrücken. */
+/** Chat Heads: indent lines of player messages when they are created. */
 @Mixin(ChatComponent.class)
 public abstract class ChatHeadsLineMixin {
     @WrapOperation(method = "addMessageToDisplayQueue", at = @At(value = "NEW",

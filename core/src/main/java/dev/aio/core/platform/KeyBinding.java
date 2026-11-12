@@ -1,9 +1,9 @@
 package dev.aio.core.platform;
 
 /**
- * Eine Tastenbelegung aus Minecraft oder einer Mod.
+ * A key binding from Minecraft or a mod.
  *
- * @param id         eindeutige ID (Übersetzungsschlüssel der Belegung)
+ * @param id         unique id (translation key of the binding)
  * @param name       Anzeigename
  * @param category   Anzeigename der Kategorie
  * @param key        MC-Tastenname, z. B. {@code key.keyboard.w}, leer = nicht belegt
