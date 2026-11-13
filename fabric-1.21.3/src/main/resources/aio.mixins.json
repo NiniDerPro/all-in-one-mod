@@ -53,6 +53,7 @@
     "DynamicLightsEntityMixin",
     "LightOverlayDirtyMixin",
     "NametagsVanillaMixin",
+    "CrosshairMixin",
     "FriendsArmorLayerMixin",
     "FriendsArmorMixin",
     "FriendsTintMixin",
