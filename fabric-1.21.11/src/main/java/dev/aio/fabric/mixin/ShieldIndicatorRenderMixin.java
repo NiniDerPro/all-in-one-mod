@@ -22,33 +22,25 @@ public abstract class ShieldIndicatorRenderMixin {
         return ShieldIndicator.tag(map);
     }
 
-    @Inject(method = "submit(Lnet/minecraft/core/component/DataComponentMap;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;IIZI)V",
+    @Inject(method = "submit(Lnet/minecraft/core/component/DataComponentMap;Lnet/minecraft/world/item/ItemDisplayContext;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;IIZI)V",
             at = @At("HEAD"))
-    private void aio$shieldBegin(DataComponentMap map, PoseStack pose, SubmitNodeCollector collector, int light, int overlay,
+    private void aio$shieldBegin(DataComponentMap map, net.minecraft.world.item.ItemDisplayContext context, PoseStack pose, SubmitNodeCollector collector, int light, int overlay,
                                  boolean glint, int outline, CallbackInfo ci) {
         ShieldIndicator.current = ShieldIndicator.tintOf(map);
     }
 
-    @Inject(method = "submit(Lnet/minecraft/core/component/DataComponentMap;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;IIZI)V",
+    @Inject(method = "submit(Lnet/minecraft/core/component/DataComponentMap;Lnet/minecraft/world/item/ItemDisplayContext;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;IIZI)V",
             at = @At("RETURN"))
-    private void aio$shieldEnd(DataComponentMap map, PoseStack pose, SubmitNodeCollector collector, int light, int overlay,
+    private void aio$shieldEnd(DataComponentMap map, net.minecraft.world.item.ItemDisplayContext context, PoseStack pose, SubmitNodeCollector collector, int light, int overlay,
                                boolean glint, int outline, CallbackInfo ci) {
         ShieldIndicator.current = -1;
     }
 
-    /** Colour of the base model (with banner pattern). */
-    @ModifyArg(method = "submit(Lnet/minecraft/core/component/DataComponentMap;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;IIZI)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/rendertype/RenderType;IIILnet/minecraft/client/renderer/texture/UvMapping;I)V"),
-            index = 6)
-    private int aio$shieldColorA(int color) {
-        return ShieldIndicator.current != -1 ? ShieldIndicator.current : color;
-    }
-
-    /** Colour of the base model (without pattern). */
-    @ModifyArg(method = "submit(Lnet/minecraft/core/component/DataComponentMap;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;IIZI)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;IIILnet/minecraft/client/resources/model/sprite/SpriteId;Lnet/minecraft/client/resources/model/sprite/SpriteGetter;I)V"),
-            index = 5)
-    private int aio$shieldColorB(int color) {
+    /** Colour of the shield parts (plate and handle). */
+    @ModifyArg(method = "submit(Lnet/minecraft/core/component/DataComponentMap;Lnet/minecraft/world/item/ItemDisplayContext;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;IIZI)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitModelPart(Lnet/minecraft/client/model/geom/ModelPart;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/rendertype/RenderType;IILnet/minecraft/client/renderer/texture/TextureAtlasSprite;ZZILnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;I)V"),
+            index = 8)
+    private int aio$shieldColor(int color) {
         return ShieldIndicator.current != -1 ? ShieldIndicator.current : color;
     }
 }
