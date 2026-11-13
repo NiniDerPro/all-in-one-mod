@@ -431,6 +431,11 @@ public final class NeoForgePlatform implements Platform {
 
     @Override public boolean debugScreenOpen() { return client.debugEntries.isOverlayVisible(); }
 
+
+    @Override public double guiScale() { return client.getWindow().getGuiScale(); }
+
+    @Override public float attackCharge() { return client.player == null ? 1f : client.player.getAttackStrengthScale(0f); }
+
     @Override public boolean drawProfilerChart(Renderer r, int w, int h) {
         if (!(r instanceof NeoForgeRenderer fr) || fr.graphics() == null || !NeoForgeHooks.profilerResults) return false;
         var chart = client.getDebugOverlay().getProfilerPieChart();
