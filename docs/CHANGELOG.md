@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.5
+
+Downloads for Minecraft 26.3: Fabric, Forge and NeoForge.
+
+- Fixed: a file for a different Minecraft version is no longer loaded and crashes the game; Fabric now names the required version instead
+
 ## 0.4.4
 
 Downloads for Minecraft 26.3: Fabric, Forge and NeoForge.
