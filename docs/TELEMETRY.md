@@ -9,7 +9,7 @@ You can change this at any time under **Client → Send anonymous usage statisti
 Data is only sent if the switch is on **and** the build contains a server address. The address is not in the
 source code; official builds receive it at build time from a secret (`AIO_STATS_URL`), your own builds send nothing.
 
-Full privacy information: [`PRIVACY.md`](../PRIVACY.md).
+Full privacy information: [`PRIVACY.md`](PRIVACY.md).
 
 ## What is sent
 
