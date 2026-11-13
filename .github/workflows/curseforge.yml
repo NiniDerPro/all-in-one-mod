@@ -1,0 +1,87 @@
+name: Publish to CurseForge
+# Runs only when started by hand (Actions -> Publish to CurseForge -> Run workflow).
+# Uploads the jars of existing GitHub releases; nothing is rebuilt.
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'CurseForge project ID (number; empty = repository variable CURSEFORGE_PROJECT)'
+        required: false
+        default: ''
+      version:
+        description: 'Mod version, e.g. 0.4.3 (empty = newest)'
+        required: false
+        default: ''
+      minecraft:
+        description: 'Minecraft versions, comma separated, e.g. 26.3,1.21.11 (empty = all)'
+        required: false
+        default: ''
+      loaders:
+        description: 'Loaders, comma separated: fabric, neoforge, forge (empty = all)'
+        required: false
+        default: ''
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upload to CurseForge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          CF_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+          PROJECT: ${{ inputs.project || vars.CURSEFORGE_PROJECT }}
+          WANT_VERSION: ${{ inputs.version }}
+          WANT_MC: ${{ inputs.minecraft }}
+          WANT_LOADERS: ${{ inputs.loaders }}
+        run: |
+          set -euo pipefail
+          API=https://minecraft.curseforge.com/api
+          [ -n "$CF_TOKEN" ] || { echo "::error::Secret CURSEFORGE_TOKEN is missing"; exit 1; }
+          echo "$PROJECT" | grep -Eq '^[0-9]+$' || { echo "::error::CurseForge project ID (a number) missing: enter it when starting, or set the repository variable CURSEFORGE_PROJECT"; exit 1; }
+          curl -fsS -H "X-Api-Token: $CF_TOKEN" "$API/game/version-types" > types.json || { echo "::error::CurseForge rejected the token"; exit 1; }
+          curl -fsS -H "X-Api-Token: $CF_TOKEN" "$API/game/versions" > versions.json
+          # id of a game version entry by name within the version types whose slug matches a pattern
+          gv() { jq -r --arg n "$1" --arg t "$2" --slurpfile types types.json \
+            '[$types[0][] | select(.slug | test($t)) | .id] as $ids | [.[] | select(.name == $n and (.gameVersionTypeID as $g | $ids | index($g)))][0].id // empty' versions.json; }
+
+          TAGS=$(gh release list --limit 200 --json tagName -q '.[].tagName' | grep -E '^v[0-9.]+-mc' || true)
+          [ -n "$WANT_VERSION" ] || WANT_VERSION=$(echo "$TAGS" | sed -E 's/^v([0-9.]+)-mc.*/\1/' | sort -V | tail -1)
+          echo "Mod version: $WANT_VERSION"
+          uploaded=0
+          for TAG in $(echo "$TAGS" | grep -E "^v${WANT_VERSION//./\\.}-mc"); do
+            MC=${TAG#v$WANT_VERSION-mc}
+            if [ -n "$WANT_MC" ] && ! echo ",$WANT_MC," | tr -d ' ' | grep -q ",$MC,"; then continue; fi
+            if [ "$MC" = "26.1" ]; then MCS="26.1 26.1.1 26.1.2"; else MCS="$MC"; fi
+            NOTES=$(gh release view "$TAG" --json body -q .body)
+            rm -rf dl && mkdir dl
+            gh release download "$TAG" --dir dl --pattern 'aio-clientside-*.jar'
+            for JAR in dl/*.jar; do
+              LOADER=$(basename "$JAR" | sed -E 's/^aio-clientside-([a-z]+)-.*/\1/')
+              if [ -n "$WANT_LOADERS" ] && ! echo ",$WANT_LOADERS," | tr -d ' ' | grep -q ",$LOADER,"; then continue; fi
+              case "$LOADER" in fabric) NAME=Fabric; REL='[{"slug":"fabric-api","type":"requiredDependency"}]'; REQ="Fabric Loader and Fabric API";;
+                                neoforge) NAME=NeoForge; REL='[]'; REQ="NeoForge";; forge) NAME=Forge; REL='[]'; REQ="Forge";; *) continue;; esac
+              case "$MC" in 26.*) JAVA=25;; 1.20.*) JAVA=17;; *) JAVA=21;; esac
+              # Game versions: Minecraft version(s), loader, client side, Java
+              IDS=""
+              for V in $MCS; do ID=$(gv "$V" '^minecraft-'); [ -n "$ID" ] || { echo "::error::CurseForge does not know Minecraft $V"; exit 1; }; IDS="$IDS $ID"; done
+              ID=$(gv "$NAME" '^modloader$'); [ -n "$ID" ] || { echo "::error::CurseForge does not know the loader $NAME"; exit 1; }; IDS="$IDS $ID"
+              ID=$(gv "Client" '^environment$'); [ -n "$ID" ] && IDS="$IDS $ID"
+              ID=$(gv "Java $JAVA" '^java$'); [ -n "$ID" ] && IDS="$IDS $ID"
+              GAME=$(echo $IDS | jq -R 'split(" ") | map(tonumber)')
+              TYPE=release; case "$WANT_VERSION" in 0.*) TYPE=beta;; esac
+              MCTEXT=$MC; [ "$MC" = "26.1" ] && MCTEXT="26.1, 26.1.1 and 26.1.2"
+              BODY=$(echo "$NOTES" | grep -v '^Downloads for Minecraft' | { if [ "$LOADER" = fabric ]; then grep -v 'Forge and NeoForge'; else cat; fi; } | sed '/./,$!d')
+              CHANGES=$(printf '**%s for Minecraft %s** (client-side)\n\n%s\n\nRequires %s, Java %s.\n' "$NAME" "$MCTEXT" "$BODY" "$REQ" "$JAVA")
+              META=$(jq -n --arg c "$CHANGES" --arg n "AIO ClientSide $WANT_VERSION ($NAME $MC)" --arg t "$TYPE" \
+                --argjson g "$GAME" --argjson r "$REL" \
+                '{changelog:$c, changelogType:"markdown", displayName:$n, gameVersions:$g, releaseType:$t} + (if ($r|length)>0 then {relations:{projects:$r}} else {} end)')
+              echo "upload $NAME $MC"
+              CODE=$(curl -sS -o resp.json -w '%{http_code}' -H "X-Api-Token: $CF_TOKEN" \
+                -F "metadata=$META" -F "file=@$JAR;type=application/java-archive" "$API/projects/$PROJECT/upload-file")
+              [ "$CODE" = 200 ] || { echo "::error::Upload of $NAME $MC failed (HTTP $CODE): $(cat resp.json)"; exit 1; }
+              uploaded=$((uploaded + 1))
+            done
+          done
+          echo "::notice::Uploaded $uploaded file(s) for version $WANT_VERSION"
