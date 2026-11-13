@@ -9,7 +9,7 @@ You can change this at any time under **Client → Send anonymous usage statisti
 Data is only sent if the switch is on **and** the build contains a server address. The address is not in the
 source code; official builds receive it at build time from a secret (`AIO_STATS_URL`), your own builds send nothing.
 
-Full privacy information: [`PRIVACY.md`](../PRIVACY.md).
+Full privacy information: [`PRIVACY.md`](PRIVACY.md).
 
 ## What is sent
 
@@ -32,7 +32,7 @@ Player name, UUID, account, IP address (the server does not store it), server na
 setting values, key bindings.
 
 ## Server
-Cloudflare Worker + D1 database, source in `server/stats-worker/`. The address is kept out of the repository
+Cloudflare Worker + D1 database, source in `server/stats-worker/` of the 26.3 branch. The address is kept out of the repository
 (secret at build time). The worker accepts `POST` with JSON, stores the fields per installation id (last seen),
 and deletes installations that have not been seen for 395 days. It must not store IP addresses or any headers
 other than the ones it needs.
