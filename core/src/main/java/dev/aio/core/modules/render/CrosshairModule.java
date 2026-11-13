@@ -81,22 +81,61 @@ public final class CrosshairModule extends HudElement {
         attackIndicator = add(new BooleanSetting("attackIndicator", "Attack indicator", true));
         thirdPerson = add(new BooleanSetting("thirdPerson", "Show in third person", false));
 
-        add(new ActionSetting("presetClassic", "Preset: classic cross", () -> preset(false, true, 6, 2, 3, false)));
-        add(new ActionSetting("presetDot", "Preset: dot only", () -> preset(true, false, 6, 2, 3, false)));
-        add(new ActionSetting("presetTactical", "Preset: tactical (dot, short lines, outer lines)", () -> preset(true, true, 4, 2, 4, true)));
+        add(new ActionSetting("presets", "Presets", () -> core.platform().openScreen(new CrosshairScreen(core, this))));
     }
 
-    private void preset(boolean withDot, boolean withInner, double length, double thickness, double gap, boolean withOuter) {
-        dot.set(withDot);
-        dotSize.set(withInner ? 2.0 : 4.0);
-        inner.set(withInner);
-        innerLength.set(length);
-        innerThickness.set(thickness);
-        innerGap.set(gap);
-        outer.set(withOuter);
-        outline.set(true);
-        tShape.set(false);
+    /** Everything that makes up the look of a crosshair (sizes in screen pixels, opacity in percent). */
+    public record Style(String name, int color, boolean rainbow, boolean outline, int outlineColor, float outlineThickness,
+                        boolean dot, float dotSize, float dotOpacity,
+                        boolean inner, float innerLength, float innerThickness, float innerGap, float innerOpacity,
+                        boolean outer, float outerLength, float outerThickness, float outerGap, float outerOpacity,
+                        boolean tShape) {}
+
+    private static final int BLACK = 0xB4000000;
+
+    /** Ready-made looks; clicked in the preset screen they replace the current settings. */
+    public static final java.util.List<Style> PRESETS = java.util.List.of(
+            new Style("Classic", 0xFFFFFFFF, false, true, BLACK, 1, false, 2, 100, true, 6, 2, 3, 100, false, 4, 2, 14, 50, false),
+            new Style("Dot", 0xFFFFFFFF, false, true, BLACK, 1, true, 4, 100, false, 6, 2, 3, 100, false, 4, 2, 14, 50, false),
+            new Style("Tactical", 0xFF00FFAA, false, true, BLACK, 1, true, 2, 100, true, 4, 2, 4, 100, true, 4, 2, 16, 60, false),
+            new Style("Small cross", 0xFF00FF00, false, true, BLACK, 1, false, 2, 100, true, 3, 2, 2, 100, false, 4, 2, 14, 50, false),
+            new Style("Plus", 0xFFFFFF55, false, true, BLACK, 1, false, 2, 100, true, 6, 2, 0, 100, false, 4, 2, 14, 50, false),
+            new Style("T shape", 0xFFFF5555, false, true, BLACK, 1, true, 2, 100, true, 6, 2, 3, 100, false, 4, 2, 14, 50, true),
+            new Style("Sniper", 0xFFFF5555, false, false, BLACK, 1, true, 2, 100, true, 14, 1, 4, 100, false, 4, 2, 14, 50, false),
+            new Style("Bold", 0xFF55FFFF, false, true, BLACK, 2, false, 2, 100, true, 8, 4, 4, 100, false, 4, 2, 14, 50, false),
+            new Style("Outer only", 0xFFFFFFFF, false, true, BLACK, 1, true, 2, 100, false, 6, 2, 3, 100, true, 6, 2, 8, 100, false),
+            new Style("Rainbow", 0xFFFFFFFF, true, true, BLACK, 1, true, 2, 100, true, 6, 2, 3, 100, false, 4, 2, 14, 50, false));
+
+    /** The current look from the settings. */
+    public Style current() {
+        return new Style("", color.argb(), rainbow.on(), outline.on(), outlineColor.argb(), outlineThickness.floatValue(),
+                dot.on(), dotSize.floatValue(), dotOpacity.floatValue(),
+                inner.on(), innerLength.floatValue(), innerThickness.floatValue(), innerGap.floatValue(), innerOpacity.floatValue(),
+                outer.on(), outerLength.floatValue(), outerThickness.floatValue(), outerGap.floatValue(), outerOpacity.floatValue(),
+                tShape.on());
     }
+
+    /** Takes over a preset (name ignored). */
+    public void apply(Style st) {
+        color.set(st.color()); rainbow.set(st.rainbow()); outline.set(st.outline()); outlineColor.set(st.outlineColor());
+        outlineThickness.set((double) st.outlineThickness());
+        dot.set(st.dot()); dotSize.set((double) st.dotSize()); dotOpacity.set((double) st.dotOpacity());
+        inner.set(st.inner()); innerLength.set((double) st.innerLength()); innerThickness.set((double) st.innerThickness());
+        innerGap.set((double) st.innerGap()); innerOpacity.set((double) st.innerOpacity());
+        outer.set(st.outer()); outerLength.set((double) st.outerLength()); outerThickness.set((double) st.outerThickness());
+        outerGap.set((double) st.outerGap()); outerOpacity.set((double) st.outerOpacity());
+        tShape.set(st.tShape());
+    }
+
+    /** Whether the settings match a preset (for the highlight in the preset screen). */
+    public boolean matches(Style st) {
+        Style c = current();
+        return new Style("", st.color(), st.rainbow(), st.outline(), st.outlineColor(), st.outlineThickness(), st.dot(), st.dotSize(),
+                st.dotOpacity(), st.inner(), st.innerLength(), st.innerThickness(), st.innerGap(), st.innerOpacity(), st.outer(),
+                st.outerLength(), st.outerThickness(), st.outerGap(), st.outerOpacity(), st.tShape()).equals(c);
+    }
+
+    public float rainbowSpeed() { return rainbowSpeed.floatValue(); }
 
     /** Whether the vanilla crosshair is replaced right now. With F3 open vanilla shows its axis cross. */
     public boolean replacesVanilla() {
@@ -145,18 +184,20 @@ public final class CrosshairModule extends HudElement {
         spread += (target - spread) * Math.min(1f, dt * 12f);
     }
 
-    /** Draws the crosshair centred at (cx, cy); also used for the preview. */
+    /** Draws the current crosshair with the middle pixel at (cx, cy), in screen pixels. */
     public void draw(Renderer r, float cx, float cy) {
-        int base = rainbow.on() ? Colors.chroma(0, rainbowSpeed.floatValue(), 255) : color.argb();
-        float extra = Math.round(spread * spreadAmount.floatValue());
-        if (outer.on()) lines(r, cx, cy, outerLength.floatValue(), outerThickness.floatValue(), outerGap.floatValue() + extra,
-                withOpacity(base, outerOpacity.floatValue()));
-        if (inner.on()) lines(r, cx, cy, innerLength.floatValue(), innerThickness.floatValue(), innerGap.floatValue() + extra,
-                withOpacity(base, innerOpacity.floatValue()));
-        if (dot.on()) {
-            int size = Math.max(1, Math.round(dotSize.floatValue()));
+        draw(r, cx, cy, current(), Math.round(spread * spreadAmount.floatValue()), rainbowSpeed.floatValue());
+    }
+
+    /** Draws any look (also the previews), sizes in screen pixels. */
+    public static void draw(Renderer r, float cx, float cy, Style st, float extraGap, float rainbowSpeed) {
+        int base = st.rainbow() ? Colors.chroma(0, rainbowSpeed, 255) : st.color();
+        if (st.outer()) lines(r, st, cx, cy, st.outerLength(), st.outerThickness(), st.outerGap() + extraGap, withOpacity(base, st.outerOpacity()));
+        if (st.inner()) lines(r, st, cx, cy, st.innerLength(), st.innerThickness(), st.innerGap() + extraGap, withOpacity(base, st.innerOpacity()));
+        if (st.dot()) {
+            int size = Math.max(1, Math.round(st.dotSize()));
             float x1 = (float) Math.floor(cx + 0.5f - size / 2f), y1 = (float) Math.floor(cy + 0.5f - size / 2f);
-            box(r, x1, y1, x1 + size, y1 + size, withOpacity(base, dotOpacity.floatValue()));
+            box(r, st, x1, y1, x1 + size, y1 + size, withOpacity(base, st.dotOpacity()));
         }
     }
 
@@ -164,23 +205,23 @@ public final class CrosshairModule extends HudElement {
      * Four lines around the middle pixel (cx, cy)…(cx+1, cy+1). With an even thickness the extra pixel
      * goes to the top/left, like in most shooters.
      */
-    private void lines(Renderer r, float cx, float cy, float len, float thick, float gap, int col) {
+    private static void lines(Renderer r, Style st, float cx, float cy, float len, float thick, float gap, int col) {
         int t = Math.max(1, Math.round(thick)), l = Math.max(1, Math.round(len)), g = Math.round(gap);
         float a = cx + 0.5f - t / 2f, b = a + t;          // across (x for vertical lines)
         float c = cy + 0.5f - t / 2f, d = c + t;          // across (y for horizontal lines)
         a = (float) Math.floor(a); b = a + t; c = (float) Math.floor(c); d = c + t;
-        box(r, cx + 1 + g, c, cx + 1 + g + l, d, col);    // right
-        box(r, cx - g - l, c, cx - g, d, col);            // left
-        box(r, a, cy + 1 + g, b, cy + 1 + g + l, col);    // bottom
-        if (!tShape.on()) box(r, a, cy - g - l, b, cy - g, col); // top
+        box(r, st, cx + 1 + g, c, cx + 1 + g + l, d, col);    // right
+        box(r, st, cx - g - l, c, cx - g, d, col);            // left
+        box(r, st, a, cy + 1 + g, b, cy + 1 + g + l, col);    // bottom
+        if (!st.tShape()) box(r, st, a, cy - g - l, b, cy - g, col); // top
     }
 
     /** A filled rectangle with the optional outline around it. */
-    private void box(Renderer r, float x1, float y1, float x2, float y2, int col) {
+    private static void box(Renderer r, Style st, float x1, float y1, float x2, float y2, int col) {
         if ((col >>> 24) == 0) return;
-        if (outline.on()) {
-            float o = Math.max(1, Math.round(outlineThickness.floatValue()));
-            int oc = outlineColor.argb();
+        if (st.outline()) {
+            float o = Math.max(1, Math.round(st.outlineThickness()));
+            int oc = st.outlineColor();
             int a = Math.round((oc >>> 24) * ((col >>> 24) / 255f));
             r.fill(x1 - o, y1 - o, x2 + o, y2 + o, (a << 24) | (oc & 0xFFFFFF));
         }
