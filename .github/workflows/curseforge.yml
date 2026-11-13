@@ -49,6 +49,14 @@ jobs:
           TAGS=$(gh release list --limit 200 --json tagName -q '.[].tagName' | grep -E '^v[0-9.]+-mc' || true)
           [ -n "$WANT_VERSION" ] || WANT_VERSION=$(echo "$TAGS" | sed -E 's/^v([0-9.]+)-mc.*/\1/' | sort -V | tail -1)
           echo "Mod version: $WANT_VERSION"
+          # Check everything first, so that a missing version never leaves a half-done upload behind
+          for TAG in $(echo "$TAGS" | grep -E "^v${WANT_VERSION//./\\.}-mc"); do
+            MC=${TAG#v$WANT_VERSION-mc}
+            if [ -n "$WANT_MC" ] && ! echo ",$WANT_MC," | tr -d ' ' | grep -q ",$MC,"; then continue; fi
+            if [ "$MC" = "26.1" ]; then MCS="26.1 26.1.1 26.1.2"; else MCS="$MC"; fi
+            for V in $MCS; do [ -n "$(gv "$V" '^minecraft-')" ] || { echo "::error::CurseForge does not know Minecraft $V - nothing was uploaded"; exit 1; }; done
+          done
+          for L in Fabric Forge NeoForge; do [ -n "$(gv "$L" '^modloader$')" ] || echo "::warning::CurseForge does not know the loader $L"; done
           uploaded=0
           for TAG in $(echo "$TAGS" | grep -E "^v${WANT_VERSION//./\\.}-mc"); do
             MC=${TAG#v$WANT_VERSION-mc}
