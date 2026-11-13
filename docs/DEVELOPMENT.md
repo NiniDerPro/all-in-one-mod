@@ -19,7 +19,7 @@ core/                 Version-independent core, NO Minecraft dependency (Gson on
 fabric-26.3/          Thin adapter for MC 26.3 (Fabric/Quilt): Platform/Renderer implementation + mixins
 neoforge-26.3/        Placeholder for a NeoForge adapter (no build.gradle yet, skipped by the build)
 forge-26.3/           Placeholder for a Forge adapter (same)
-server/stats-worker/  Cloudflare Worker for the optional anonymous statistics
+server/stats-worker/  (26.3 branch only) Cloudflare Worker for the optional anonymous statistics
 ```
 
 **Version abstraction:** modules, HUD and GUI only talk to `Platform` and `Renderer`. For a new
