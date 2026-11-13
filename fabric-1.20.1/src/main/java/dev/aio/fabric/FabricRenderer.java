@@ -118,11 +118,15 @@ public final class FabricRenderer implements Renderer {
     private final Map<String, ResourceLocation> sprites = new HashMap<>();
 
     @Override public void sprite(String id, float x, float y, int width, int height) {
-        // GUI atlas sprites are not available through GuiGraphics on this Minecraft version
+        sprite(id, x, y, width, height, 0xFFFFFFFF);
     }
 
     @Override public void sprite(String id, float x, float y, int width, int height, int argb) {
-        // see above
+        ResourceLocation sprite = sprites.computeIfAbsent(id, ResourceLocation::new);
+        g.pose().pushPose();
+        g.pose().translate(x, y, 0);
+        GuiCompat.named(client, g, sprite, 0, 0, width, height, argb);
+        g.pose().popPose();
     }
 
     @Override public void push() { g.pose().pushPose(); }
