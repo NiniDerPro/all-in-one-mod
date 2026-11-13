@@ -37,7 +37,7 @@ public record FabricItemRef(ItemStack stack) implements ItemRef {
     @Override public String name() { return stack.getHoverName().getString(); }
 
     @Override public int nameColor() {
-        TextColor c = stack.getHoverName().getStyle().getColor();
+        TextColor c = stack.getStyledHoverName().getStyle().getColor();
         return c == null ? 0xFFFFFFFF : 0xFF000000 | c.getValue();
     }
 

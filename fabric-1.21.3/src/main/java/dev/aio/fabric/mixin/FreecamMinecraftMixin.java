@@ -16,7 +16,7 @@ public class FreecamMinecraftMixin {
         if (Freecam.active() && Freecam.preventInteractions()) cir.setReturnValue(false);
     }
 
-    @Inject(method = "pickBlockOrEntity", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "pickBlock", at = @At("HEAD"), cancellable = true)
     private void aio$freecamPick(CallbackInfo ci) {
         if (Freecam.active() && Freecam.preventInteractions()) ci.cancel();
     }

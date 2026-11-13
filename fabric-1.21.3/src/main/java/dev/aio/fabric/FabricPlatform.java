@@ -300,8 +300,8 @@ public final class FabricPlatform implements Platform {
     }
 
     @Override public ItemRef item(String id) {
-        return BuiltInRegistries.ITEM.getOptional(ResourceLocation.parse(id))
-                .map(i -> FabricItemRef.of(new ItemStack(i)))
+        return BuiltInRegistries.ITEM.get(ResourceLocation.parse(id))
+                .map(h -> FabricItemRef.of(new ItemStack(h.value())))
                 .orElse(ItemRef.EMPTY);
     }
 
@@ -430,15 +430,38 @@ public final class FabricPlatform implements Platform {
 
     @Override public boolean debugScreenOpen() { return client.getDebugOverlay().showDebugScreen(); }
 
-    @Override public boolean drawProfilerChart(Renderer r, int w, int h) { return false; }
+    @Override public boolean drawProfilerChart(Renderer r, int w, int h) {
+        if (!(r instanceof FabricRenderer fr) || fr.graphics() == null || !FabricHooks.profilerResults) return false;
+        var chart = client.getDebugOverlay().getProfilerPieChart();
+        // In 26.2 the chart aligns itself at the bottom right of the screen: shift it so that its corner
+        // lands on the local rectangle (right edge = width − 5, bottom = height)
+        var g = fr.graphics();
+        chart.setBottomOffset(0);
+        g.pose().pushPose();
+        g.pose().translate(w + 5 - g.guiWidth(), h - g.guiHeight(), 0);
+        chart.render(g);
+        g.pose().popPose();
+        return true;
+    }
 
-    @Override public String profilerChartPath() { return "root"; }
+    @Override public String profilerChartPath() {
+        // Without the accessor (e.g. displaced by another mod) it simply stays at "root"
+        return client.getDebugOverlay().getProfilerPieChart() instanceof dev.aio.fabric.mixin.ProfilerPieChartAccessor a
+                ? a.aio$getPath() : "root";
+    }
+
 
     @Override public void refreshChat() { ChatHeads.refresh(); }
 
-    @Override public int profilerChartEntries() { return 7; }
+    @Override public int profilerChartEntries() {
+        if (!(client.getDebugOverlay().getProfilerPieChart() instanceof dev.aio.fabric.mixin.ProfilerPieChartAccessor a)) return 7;
+        var results = a.aio$getResults();
+        return results == null ? 7 : Math.max(1, results.getTimes(a.aio$getPath()).size() - 1);
+    }
 
-    @Override public void setProfilerChartPath(String path) {}
+    @Override public void setProfilerChartPath(String path) {
+        if (client.getDebugOverlay().getProfilerPieChart() instanceof dev.aio.fabric.mixin.ProfilerPieChartAccessor a) a.aio$setPath(path);
+    }
 
     @Override public Map<String, String> conflictingMods() {
         Map<String, String> found = ModConflicts.installed();
@@ -498,12 +521,34 @@ public final class FabricPlatform implements Platform {
     }
 
     @Override public List<Profession> professions() {
-        return new ArrayList<>(); // trade data differs on this Minecraft version
+        List<Profession> out = new ArrayList<>();
+        var level = client.level;
+        if (level == null) return out;
+        try {
+            var access = level.registryAccess();
+            var pois = access.lookupOrThrow(Registries.POINT_OF_INTEREST_TYPE).listElements().toList();
+            access.lookupOrThrow(Registries.VILLAGER_PROFESSION).listElements().forEach(ref -> {
+                var prof = ref.value();
+                String jobBlock = "";
+                for (var poi : pois) {
+                    if (!prof.heldJobSite().test(poi) || poi.value().matchingStates().isEmpty()) continue;
+                    Item item = poi.value().matchingStates().iterator().next().getBlock().asItem();
+                    if (item != Items.AIR) jobBlock = BuiltInRegistries.ITEM.getKey(item).toString();
+                    break;
+                }
+                Map<Integer, String> sets = new TreeMap<>();
+                // Trade sets are data-driven only since 26.x; not available in 1.21.11
+                out.add(new Profession(ref.key().location().toString(), Component.translatable("entity.minecraft.villager." + prof.name()).getString(), jobBlock, sets));
+            });
+        } catch (RuntimeException e) {
+            AioFabricClient.LOGGER.warn("Berufe nicht lesbar: {}", e.toString());
+        }
+        return out;
     }
 
     @Override public List<RecipeView> trimViews(ItemRef template) {
         if (!(template instanceof FabricItemRef ref) || client.level == null) return List.of();
-        return List.of();
+        return TrimPreview.views(client, ref.stack());
     }
 
     @Override public List<WorldLabel> villagerLabels(double maxDistance, float partialTick) {
