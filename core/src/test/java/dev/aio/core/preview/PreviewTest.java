@@ -84,6 +84,12 @@ class PreviewTest {
         wpModule.add(new dev.aio.core.modules.navigation.Waypoint("Mine", 80, 12, -20, "sp:Testwelt", "overworld", 0xFFAA00, true, false));
         render(new dev.aio.core.modules.navigation.WaypointScreen(core, wpModule), new File(outDir, "waypoints.png"), 300, 120, true);
         render(new dev.aio.core.modules.navigation.WaypointEditScreen(core, wpModule, null), new File(outDir, "waypoint_new.png"), 300, 120, true);
+        var friends = (dev.aio.core.modules.render.FriendsModule) core.modules().get("friends");
+        friends.setEnabled(true);
+        friends.addRule(new dev.aio.core.modules.render.FriendsModule.Rule(dev.aio.core.modules.render.FriendsModule.Match.NAME, "Alex", dev.aio.core.modules.render.FriendsModule.FRIEND_GREEN, true));
+        friends.addRule(new dev.aio.core.modules.render.FriendsModule.Rule(dev.aio.core.modules.render.FriendsModule.Match.CONTAINS, "{Team}", 0xFF5599FF, true));
+        friends.addRule(new dev.aio.core.modules.render.FriendsModule.Rule(dev.aio.core.modules.render.FriendsModule.Match.STARTS, "Builder_", 0xFFFFAA00, false));
+        render(new dev.aio.core.modules.render.FriendsScreen(core, friends), new File(outDir, "friends.png"), 300, 120, true);
         render(new dev.aio.core.modules.client.KeyBindsScreen(core), new File(outDir, "keybinds.png"), 300, 120, true);
         var particles = (dev.aio.core.modules.performance.ParticleLimitModule) core.modules().get("particlelimit");
         render(new dev.aio.core.modules.performance.ParticleScreen(core, particles), new File(outDir, "particles.png"), 300, 120, true);

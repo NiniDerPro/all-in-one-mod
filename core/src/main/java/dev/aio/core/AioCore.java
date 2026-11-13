@@ -59,6 +59,7 @@ import dev.aio.core.modules.player.ToolSaverModule;
 import dev.aio.core.modules.render.BlockOutlineModule;
 import dev.aio.core.modules.render.DynamicLightsModule;
 import dev.aio.core.modules.render.FreecamModule;
+import dev.aio.core.modules.render.FriendsModule;
 import dev.aio.core.modules.render.FreelookModule;
 import dev.aio.core.modules.render.FullbrightModule;
 import dev.aio.core.modules.render.LightOverlayModule;
@@ -163,6 +164,7 @@ public final class AioCore {
         modules.register(new HealthTagsModule());
         modules.register(new DynamicLightsModule());
         modules.register(new NametagsModule());
+        modules.register(new FriendsModule());
         modules.register(new PlaytimeModule());
         modules.register(new ServerInfoModule());
         modules.register(new VillagerInfoModule());

@@ -53,7 +53,14 @@
     "ToolSaverMixin",
     "DynamicLightsEntityMixin",
     "LightOverlayDirtyMixin",
-    "NametagsVanillaMixin"
+    "NametagsVanillaMixin",
+    "FriendsArmorLayerMixin",
+    "FriendsArmorMixin",
+    "FriendsTintMixin",
+    "FriendsExtractMixin",
+    "FriendsRenderStateMixin",
+    "FriendsTeamColorMixin",
+    "FriendsGlowMixin"
   ],
   "injectors": {
     "defaultRequire": 0
