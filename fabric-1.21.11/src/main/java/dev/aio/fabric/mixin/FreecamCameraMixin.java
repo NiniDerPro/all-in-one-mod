@@ -1,6 +1,7 @@
 package dev.aio.fabric.mixin;
 
 import dev.aio.fabric.freecam.FreeCamera;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.Camera;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,8 +18,8 @@ public class FreecamCameraMixin {
     @Shadow private float eyeHeight;
 
     /** When switching take over the eye height immediately, without transition. */
-    @Inject(method = "setEntity", at = @At("HEAD"))
-    private void aio$freecamSetEntity(Entity entity, CallbackInfo ci) {
+    @Inject(method = "setup", at = @At("HEAD"))
+    private void aio$freecamSetEntity(CallbackInfo ci, @Local(argsOnly = true) Entity entity) {
         if (entity == null || this.entity == null) return;
         if (entity instanceof FreeCamera || this.entity instanceof FreeCamera) {
             this.eyeHeightOld = this.eyeHeight = entity.getEyeHeight();

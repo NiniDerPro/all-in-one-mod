@@ -15,9 +15,9 @@ import org.spongepowered.asm.mixin.injection.At;
  */
 @Mixin(DebugScreenOverlay.class)
 public abstract class DebugPieChartMixin {
-    @WrapOperation(method = "extractRenderState", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/components/debugchart/ProfilerPieChart;extractRenderState(Lnet/minecraft/client/gui/GuiGraphics;II)V"))
-    private void aio$onlyWithF3Chart(ProfilerPieChart chart, GuiGraphics graphics, int w, int h, Operation<Void> original) {
-        if (((DebugScreenOverlay) (Object) this).showProfilerChart()) original.call(chart, graphics, w, h);
+    @WrapOperation(method = "render", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/components/debugchart/ProfilerPieChart;render(Lnet/minecraft/client/gui/GuiGraphics;)V"))
+    private void aio$onlyWithF3Chart(ProfilerPieChart chart, GuiGraphics graphics, Operation<Void> original) {
+        if (((DebugScreenOverlay) (Object) this).showProfilerChart()) original.call(chart, graphics);
     }
 }

@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /** Toasts lie at the top right exactly above search and buttons of the AIO menu: do not draw while it is open. */
 @Mixin(ToastManager.class)
 public abstract class ToastManagerMixin {
-    @Inject(method = "extractRenderState", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private void aio$hideOverMenu(GuiGraphics graphics, CallbackInfo ci) {
         if (Minecraft.getInstance().screen instanceof AioScreen s
                 && (s.ui() instanceof ClickGuiScreen || s.ui() instanceof HudEditorScreen)) {
