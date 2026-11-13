@@ -12,6 +12,20 @@ public final class Projection {
 
     private Projection() {}
 
+    /** Height of one font pixel of a vanilla nametag in blocks (0.025 per pixel). */
+    private static final double TAG_PIXEL = 0.025;
+
+    /**
+     * Size factor for overlays above entities, so they keep their size relative to the world like
+     * vanilla nametags: smaller far away, larger when zoomed in. Never larger than 1 (normal GUI size)
+     * so tags right in front of the camera do not cover the picture.
+     */
+    public static float worldScale(double distance, CameraView cam, float screenH) {
+        double tanHalf = Math.tan(Math.toRadians(Math.max(1, cam.fov())) / 2);
+        double pixelsPerBlock = screenH / (2 * tanHalf * Math.max(distance, 0.1));
+        return (float) Math.min(1.0, TAG_PIXEL * pixelsPerBlock);
+    }
+
     /** With the camera including view bobbing (how Minecraft shifts and tilts the picture when walking). */
     public static Point project(double px, double py, double pz, CameraView cam, float screenW, float screenH) {
         float[] m = cam.viewProj();
