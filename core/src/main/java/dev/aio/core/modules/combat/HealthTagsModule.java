@@ -80,8 +80,8 @@ public final class HealthTagsModule extends HudElement {
             if (onlyDamaged.on() && t.health() >= t.maxHealth() && t.absorption() <= 0) continue;
             Projection.Point pt = Projection.project(t.x(), t.y(), t.z(), cam, w, h);
             if (!pt.onScreen()) continue;
-            // smaller further away, like nametags
-            float scale = base * (float) Math.max(0.45, Math.min(1.0, 10.0 / Math.max(1, t.distance())));
+            // keeps its size relative to the world, like vanilla nametags
+            float scale = base * Projection.worldScale(t.distance(), cam, h);
             r.push();
             r.translate(pt.x(), pt.y());
             r.scale(scale);
