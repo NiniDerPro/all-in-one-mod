@@ -13,4 +13,12 @@ public record NametagTarget(Kind kind, double x, double y, double z, double dist
                             float health, float maxHealth, float absorption, int ping, String gameMode,
                             List<ItemRef> items, int count, int fuseTicks) {
     public enum Kind { PLAYER, MOB, ITEM, TNT }
+
+    /**
+     * Legacy formatting codes are removed from the name: servers use names made only of codes
+     * (invisible in vanilla) for NPCs, which would otherwise show up as "§7§8...".
+     */
+    public NametagTarget {
+        name = name == null ? "" : name.replaceAll("§.?", "").strip();
+    }
 }
