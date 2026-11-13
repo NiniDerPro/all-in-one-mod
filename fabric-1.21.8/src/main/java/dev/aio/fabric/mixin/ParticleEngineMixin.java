@@ -24,4 +24,12 @@ public abstract class ParticleEngineMixin {
         ResourceLocation id = BuiltInRegistries.PARTICLE_TYPE.getKey(options.getType());
         if (!m.allow(id == null ? null : id.toString())) cir.setReturnValue(null);
     }
+
+    /** Particles while a block is being mined (in this Minecraft version they are created here). */
+    @Inject(method = "crack", at = @At("HEAD"), cancellable = true)
+    private void aio$blockCrack(net.minecraft.core.BlockPos pos, net.minecraft.core.Direction side, org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+        AioCore core = AioCore.get();
+        ParticleLimitModule m = core == null ? null : core.module(ParticleLimitModule.class);
+        if (m != null && m.isActive() && m.isDisabled(ParticleLimitModule.BLOCK_CRACK)) ci.cancel();
+    }
 }

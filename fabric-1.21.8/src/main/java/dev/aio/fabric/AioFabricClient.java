@@ -14,7 +14,8 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ChatScreen;
@@ -51,12 +52,6 @@ public final class AioFabricClient implements ClientModInitializer {
         Minecraft client = Minecraft.getInstance();
         FabricPlatform platform = new FabricPlatform(client);
         AioCore core = AioCore.init(platform, FabricLoader.getInstance().getConfigDir().resolve("aio"));
-        // Features whose hooks are not ported to this Minecraft version yet are switched off with a reason
-        for (String id : new String[]{"chatheads", "dynamiclights", "fullbright", "blockoutline", "lightoverlay", "foodinfo", "shieldindicator",
-                "nofog", "smallitems", "piechart", "villagerinfo", "nopumpkin", "dynamicfps", "xpclumps"}) {
-            var m = core.modules().get(id);
-            if (m != null) m.setUnavailable("Not available on this Minecraft version yet");
-        }
         Telemetry.init(core);
         dev.aio.core.update.UpdateCheck.start(core, FabricLoader.getInstance().getModContainer("aio")
                 .map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse(""));
@@ -64,7 +59,7 @@ public final class AioFabricClient implements ClientModInitializer {
         FabricRenderer hudRenderer = new FabricRenderer(client);
 
         // Draw at the very top above all vanilla HUD elements (F1 hides the HUD including this element).
-        HudRenderCallback.EVENT.register((graphics, deltaTracker) -> {
+        HudElementRegistry.addLast(ResourceLocation.fromNamespaceAndPath("aio", "hud"), (graphics, deltaTracker) -> {
             if (hideHudFor(client.screen)) return;
             long t0 = System.nanoTime();
             hudRenderer.begin(graphics);
@@ -73,6 +68,29 @@ public final class AioFabricClient implements ClientModInitializer {
             hudFrames++;
         });
 
+        // Hide vanilla parts that an active AIO module replaces
+        HudElementRegistry.replaceElement(VanillaHudElements.STATUS_EFFECTS, vanilla -> (graphics, delta) -> {
+            PotionStatusModule potions = core.module(PotionStatusModule.class);
+            if (potions == null || !potions.isActive()) vanilla.render(graphics, delta);
+        });
+        HudElementRegistry.replaceElement(VanillaHudElements.HELD_ITEM_TOOLTIP, vanilla -> (graphics, delta) -> {
+            HeldItemInfoModule info = core.module(HeldItemInfoModule.class);
+            if (info == null || !info.replacesVanillaName()) vanilla.render(graphics, delta);
+        });
+
+        // Food info directly at the hunger and health bars (positions like vanilla: centre ± 91, 39 above the bottom)
+        FabricRenderer foodRenderer = new FabricRenderer(client);
+        HudElementRegistry.attachElementBefore(VanillaHudElements.FOOD_BAR, ResourceLocation.fromNamespaceAndPath("aio", "food_under"),
+                (g, d) -> FoodHud.renderUnder(g, core.module(FoodInfoModule.class), g.guiWidth() / 2 + 91, g.guiHeight() - 39));
+        HudElementRegistry.attachElementAfter(VanillaHudElements.FOOD_BAR, ResourceLocation.fromNamespaceAndPath("aio", "food_over"),
+                (g, d) -> FoodHud.renderOver(g, core.module(FoodInfoModule.class), g.guiWidth() / 2 + 91, g.guiHeight() - 39));
+        HudElementRegistry.attachElementAfter(VanillaHudElements.HEALTH_BAR, ResourceLocation.fromNamespaceAndPath("aio", "health_over"),
+                (g, d) -> FoodHud.renderHealth(g, core.module(FoodInfoModule.class), g.guiWidth() / 2 - 91, g.guiHeight() - 39));
+
+        ScreenHooks.register(core, client);
+        BlockOutlineRenderer.register(core, client);
+        LightOverlay.register(core, client);
+        ShulkerTooltipHook.register(core);
 
         ClientReceiveMessageEvents.CHAT.register((message, signed, sender, params, timestamp) -> {
             boolean self = sender != null && client.player != null && sender.equals(client.player.getGameProfile());

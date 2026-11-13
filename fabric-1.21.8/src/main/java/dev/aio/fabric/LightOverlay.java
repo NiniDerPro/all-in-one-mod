@@ -5,8 +5,10 @@ import dev.aio.core.modules.render.LightOverlayModule;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -66,7 +68,28 @@ final class LightOverlay {
     }
 
     static void register(AioCore core, Minecraft mc) {
-        // Drawing hook is not available in this Minecraft version yet (the module is switched off, see AioFabricClient)
+        WorldRenderEvents.AFTER_ENTITIES.register(context -> {
+            LightOverlayModule m = core.module(LightOverlayModule.class);
+            if (m == null || !m.isActive() || quadCount == 0 || mc.level == null) return;
+            Vec3 cam = context.camera().getPosition();
+            PoseStack pose = context.matrixStack();
+            if (pose == null || context.consumers() == null) return;
+            pose.pushPose();
+            pose.translate(-cam.x, -cam.y, -cam.z);
+            int[] q = quads;
+            int n = quadCount;
+            int danger = m.dangerColor(), safe = m.safeColor();
+            boolean showSafe = m.showSafe();
+            PoseStack.Pose p = pose.last();
+            VertexConsumer buffer = context.consumers().getBuffer(RenderType.debugQuads());
+            for (int i = 0; i < n; i++) {
+                int o = i * 4;
+                boolean lit = q[o + 3] != 0;
+                if (lit && !showSafe) continue;
+                quad(p, buffer, q[o], q[o + 1], q[o + 2], lit ? safe : danger);
+            }
+            pose.popPose();
+        });
     }
 
     private static void quad(PoseStack.Pose pose, VertexConsumer v, int x, int y, int z, int c) {
