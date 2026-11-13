@@ -54,10 +54,13 @@ jobs:
           # Only the newest Minecraft version is marked "Latest" (change this when a newer version becomes the main one)
           LATEST_MC="26.3"
           if [ "$MC" = "$LATEST_MC" ]; then LATEST="--latest"; else LATEST="--latest=false"; fi
+          # A published release is never changed: a new build needs a new mod_version (e.g. 0.4.3 -> 0.4.4)
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" dist/*.jar --clobber
-            gh release edit "$TAG" $LATEST --prerelease=false --title "AIO ClientSide $VER$BETA (Minecraft $MC)"
-          else
-            gh release create "$TAG" dist/*.jar --target "$GITHUB_SHA" $LATEST \
-              --title "AIO ClientSide $VER$BETA (Minecraft $MC)" --notes "Build $VER"
+            echo "::notice::Release $TAG already exists and stays unchanged. Raise mod_version for a new release."
+            exit 0
           fi
+          # Release notes: the section of this version from CHANGELOG.md
+          awk -v v="## $VER" '$0==v{f=1;next} /^## /{f=0} f' CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "Version $VER" > notes.md
+          gh release create "$TAG" dist/*.jar --target "$GITHUB_SHA" $LATEST \
+            --title "AIO ClientSide $VER$BETA (Minecraft $MC)" --notes-file notes.md
