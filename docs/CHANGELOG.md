@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.4
+
+Downloads for Minecraft 26.1: Fabric, Forge and NeoForge.
+
+- New: Friends module: rules by name (is, contains, starts with, ends with), each with its own colour, so tags in names work too
+- New: friends are marked with an outline, a tinted skin or both
+- Fixed: nametags no longer show raw formatting codes such as §7 for NPCs
+
 ## 0.4.3
 
 Downloads for Minecraft 26.1: Fabric, Forge and NeoForge.
