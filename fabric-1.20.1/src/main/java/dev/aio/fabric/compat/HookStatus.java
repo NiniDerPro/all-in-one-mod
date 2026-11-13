@@ -24,7 +24,7 @@ public final class HookStatus {
 
     /** Which module a hook belongs to. Key: "Mixin#handler" or just "Mixin" for all hooks. */
     private static final Map<String, String> MODULE = Map.ofEntries(
-            Map.entry("AtmosphericFogMixin", "nofog"), Map.entry("LavaFogMixin", "nofog"), Map.entry("WaterFogMixin", "nofog"),
+            Map.entry("NoFogMixin", "nofog"),
             Map.entry("BlockEntityCullMixin", "entityculling"), Map.entry("EntityRendererCullMixin", "entityculling"),
             Map.entry("ClientLevelTickMixin", "entityculling"),
             Map.entry("ZoomFovMixin", "zoom"),

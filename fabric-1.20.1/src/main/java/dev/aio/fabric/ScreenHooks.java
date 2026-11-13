@@ -30,6 +30,7 @@ import net.minecraft.client.gui.screens.inventory.MerchantScreen;
 import net.minecraft.client.gui.screens.controls.KeyBindsScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.phys.EntityHitResult;
 
@@ -43,6 +44,7 @@ final class ScreenHooks {
     static void register(AioCore core, Minecraft client) {
         FabricRenderer renderer = new FabricRenderer(client);
         ScreenEvents.AFTER_INIT.register((mc, screen, w, h) -> {
+            ScreenInput.clear(screen);
             if (screen instanceof ChatScreen) hookChat(core, renderer, screen);
             // "AIO" button at the top left of the pause and title menu opens the AIO menu
             if ((screen instanceof PauseScreen || screen instanceof TitleScreen) && core.clientSettings().menuButton.on()) {
@@ -59,9 +61,16 @@ final class ScreenHooks {
                     StatsNotice.render(core, renderer, s.width);
                     dev.aio.core.ui.UpdateNotice.render(core, renderer, s.width);
                 });
-                ScreenMouseEvents.allowMouseClick(screen).register((s, mouseX, mouseY, button) ->
+                ScreenMouseEvents.allowMouseClick(screen).register((s, mouseX, mouseY, mouseButton) ->
                         !(StatsNotice.mouseClicked(core, mouseX, mouseY, s.width)
                                 || dev.aio.core.ui.UpdateNotice.mouseClicked(core, mouseX, mouseY, s.width)));
+            }
+            // Trade window: remember offers of the villager being looked at (villager info)
+            if (screen instanceof MerchantScreen merchant) {
+                Entity target = client.hitResult instanceof EntityHitResult ehr ? ehr.getEntity() : null;
+                if (target instanceof AbstractVillager) {
+                    ScreenEvents.afterTick(screen).register(s -> VillagerOffers.remember(target, merchant.getMenu().getOffers()));
+                }
             }
             // Key bindings with search instead of the vanilla list (back leads to the controls)
             if (screen instanceof KeyBindsScreen) {
@@ -81,18 +90,19 @@ final class ScreenHooks {
             renderer.begin(graphics);
             resizer.render(renderer, mx, my);
         });
-        ScreenMouseEvents.allowMouseClick(screen).register((s, mouseX, mouseY, button) -> {
-            int btn = FabricPlatform.button(button);
-            if (resizer.mouseClicked(renderer, mouseX, mouseY, btn)) return false;
+        ScreenMouseEvents.allowMouseClick(screen).register((s, mouseX, mouseY, mouseButton) -> {
+            Click event = new Click(mouseX, mouseY, mouseButton);
+            int button = FabricPlatform.button(event.button());
+            if (resizer.mouseClicked(renderer, event.x(), event.y(), button)) return false;
             ChatModule chat = core.module(ChatModule.class);
-            if (btn == 1 && chat != null && chat.isActive()) {
+            if (button == 1 && chat != null && chat.isActive()) {
                 chat.openCopy();
                 return false;
             }
             return true;
         });
-        // Dragging the chat edges: not available as a screen event in this Fabric API version
-        ScreenMouseEvents.allowMouseRelease(screen).register((s, mouseX, mouseY, button) -> !resizer.mouseReleased());
+        ScreenInput.onDrag(screen, (mouseX, mouseY, mouseButton, dx, dy) -> !resizer.mouseDragged(mouseX, mouseY));
+        ScreenMouseEvents.allowMouseRelease(screen).register((s, mouseX, mouseY, mouseButton) -> !resizer.mouseReleased());
     }
 
     private static boolean shift() {
@@ -148,25 +158,33 @@ final class ScreenHooks {
             panel.render(renderer, mx, my, acc.aio$leftPos() + acc.aio$imageWidth() + effects);
         });
 
-        ScreenMouseEvents.allowMouseClick(screen).register((s, mouseX, mouseY, button) -> {
+        ScreenMouseEvents.allowMouseClick(screen).register((s, mouseX, mouseY, mouseButton) -> {
+            Click event = new Click(mouseX, mouseY, mouseButton);
             ItemPanel panel = list.panel();
-            boolean used = panel != null && panel.mouseClicked(renderer, mouseX, mouseY, FabricPlatform.button(button));
+            boolean used = panel != null && panel.mouseClicked(renderer, event.x(), event.y(), FabricPlatform.button(event.button()));
             syncTextInput(s, panel, textProxy);
             if (used) return false;
             if (creative) return true;
-            Slot slot = slotAt(screen, mouseX, mouseY);
+            Slot slot = slotAt(screen, event.x(), event.y());
             int index = slot == null ? -1 : slot.index;
-            if (FabricPlatform.button(button) == 2) {
+            if (FabricPlatform.button(event.button()) == 2) {
                 boolean creativeMode = client.player != null && client.player.isCreative();
                 if (tweaks.onMiddleClick(core.platform().container(), index, creativeMode)) return false;
             }
-            if (FabricPlatform.button(button) == 0 && shift()) tweaks.onDragStart(index);
+            if (FabricPlatform.button(event.button()) == 0 && shift()) tweaks.onDragStart(index);
             return true;
         });
 
-        ScreenMouseEvents.afterMouseRelease(screen).register((s, mouseX, mouseY, button) -> {
-            tweaks.onRelease();
+        ScreenInput.onDrag(screen, (mouseX, mouseY, mouseButton, dx, dy) -> {
+            Click event = new Click(mouseX, mouseY, mouseButton);
+            if (!creative && FabricPlatform.button(event.button()) == 0 && shift()) {
+                Slot slot = slotAt(screen, event.x(), event.y());
+                if (slot != null) tweaks.onDrag(core.platform().container(), slot.index, true);
+            }
+            return true;
         });
+
+        ScreenMouseEvents.afterMouseRelease(screen).register((s, mouseX, mouseY, mouseButton) -> tweaks.onRelease());
 
         ScreenMouseEvents.allowMouseScroll(screen).register((s, mx, my, h, v) -> {
             ItemPanel panel = list.panel();
@@ -174,7 +192,7 @@ final class ScreenHooks {
             if (creative) return true;
             Slot slot = slotAt(screen, mx, my);
             // Over bundles the mouse wheel selects the item in vanilla: do not interfere
-            if (slot == null) return true;
+            if (slot == null || slot.getItem().getItem() instanceof net.minecraft.world.item.BundleItem) return true;
             return !tweaks.onScroll(core.platform().container(), slot.index, v, shift());
         });
 
@@ -197,4 +215,7 @@ final class ScreenHooks {
             tweaks.onRelease();
         });
     }
+
+    /** A mouse position with its button, as the newer Minecraft versions pass it. */
+    private record Click(double x, double y, int button) {}
 }

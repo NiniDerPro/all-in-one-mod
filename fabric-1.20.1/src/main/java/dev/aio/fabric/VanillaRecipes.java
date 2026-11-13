@@ -1,6 +1,6 @@
 package dev.aio.fabric;
 
-/** Vanilla recipes: not available on this Minecraft version yet. */
+/** Not needed in this Minecraft version: the server always sends its complete recipe list to the client. */
 final class VanillaRecipes {
     private VanillaRecipes() {}
 

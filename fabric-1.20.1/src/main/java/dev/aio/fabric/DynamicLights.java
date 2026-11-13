@@ -156,8 +156,10 @@ public final class DynamicLights {
     }
 
     private static void dirtyRange(ClientLevel level, double x1, double y1, double z1, double x2, double y2, double z2) {
-        Minecraft.getInstance().levelRenderer.setBlocksDirty(
-                (int) Math.floor(x1), (int) Math.floor(y1), (int) Math.floor(z1),
-                (int) Math.floor(x2), (int) Math.floor(y2), (int) Math.floor(z2));
+        int sx1 = SectionPos.blockToSectionCoord((int) Math.floor(x1)), sy1 = SectionPos.blockToSectionCoord((int) Math.floor(y1));
+        int sz1 = SectionPos.blockToSectionCoord((int) Math.floor(z1)), sx2 = SectionPos.blockToSectionCoord((int) Math.floor(x2));
+        int sy2 = SectionPos.blockToSectionCoord((int) Math.floor(y2)), sz2 = SectionPos.blockToSectionCoord((int) Math.floor(z2));
+        var renderer = net.minecraft.client.Minecraft.getInstance().levelRenderer;
+        for (int sx = sx1; sx <= sx2; sx++) for (int sy = sy1; sy <= sy2; sy++) for (int sz = sz1; sz <= sz2; sz++) renderer.setSectionDirty(sx, sy, sz);
     }
 }

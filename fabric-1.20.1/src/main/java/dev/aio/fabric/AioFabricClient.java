@@ -51,12 +51,6 @@ public final class AioFabricClient implements ClientModInitializer {
         Minecraft client = Minecraft.getInstance();
         FabricPlatform platform = new FabricPlatform(client);
         AioCore core = AioCore.init(platform, FabricLoader.getInstance().getConfigDir().resolve("aio"));
-        // Features whose hooks are not ported to this Minecraft version yet are switched off with a reason
-        for (String id : new String[]{"chatheads", "dynamiclights", "fullbright", "blockoutline", "lightoverlay", "foodinfo", "shieldindicator",
-                "nofog", "smallitems", "piechart", "villagerinfo", "nopumpkin", "dynamicfps", "xpclumps"}) {
-            var m = core.modules().get(id);
-            if (m != null) m.setUnavailable("Not available on this Minecraft version yet");
-        }
         Telemetry.init(core);
         dev.aio.core.update.UpdateCheck.start(core, FabricLoader.getInstance().getModContainer("aio")
                 .map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse(""));
@@ -65,14 +59,19 @@ public final class AioFabricClient implements ClientModInitializer {
 
         // Draw at the very top above all vanilla HUD elements (F1 hides the HUD including this element).
         HudRenderCallback.EVENT.register((graphics, deltaTracker) -> {
-            if (hideHudFor(client.screen)) return;
+            if (client.options.hideGui || hideHudFor(client.screen)) return;
             long t0 = System.nanoTime();
             hudRenderer.begin(graphics);
             core.bus().post(new Events.RenderHud(hudRenderer, deltaTracker));
             hudNanos += System.nanoTime() - t0;
             hudFrames++;
         });
+        // Hiding replaced vanilla parts and the food info at the bars: see HudLayersMixin
 
+        ScreenHooks.register(core, client);
+        BlockOutlineRenderer.register(core, client);
+        LightOverlay.register(core, client);
+        ShulkerTooltipHook.register(core);
 
         ClientReceiveMessageEvents.CHAT.register((message, signed, sender, params, timestamp) -> {
             boolean self = sender != null && client.player != null && sender.equals(client.player.getGameProfile());

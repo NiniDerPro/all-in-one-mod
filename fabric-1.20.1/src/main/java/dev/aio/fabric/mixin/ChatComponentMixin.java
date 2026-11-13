@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 @Mixin(ChatComponent.class)
 public abstract class ChatComponentMixin {
     @ModifyVariable(
-            method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/multiplayer/chat/GuiMessageSource;Lnet/minecraft/client/multiplayer/chat/GuiMessageTag;)V",
+            method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V",
             at = @At("HEAD"), argsOnly = true, require = 0)
     private Component aio$timestamp(Component message) {
         AioCore core = AioCore.get();
@@ -29,7 +29,7 @@ public abstract class ChatComponentMixin {
         return Component.literal(prefix).withStyle(ChatFormatting.GRAY).append(message);
     }
 
-    @ModifyConstant(method = {"addMessageToQueue", "addMessageToDisplayQueue"},
+    @ModifyConstant(method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V",
             constant = @Constant(intValue = 100), require = 0)
     private int aio$historySize(int original) {
         AioCore core = AioCore.get();
