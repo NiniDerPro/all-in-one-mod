@@ -200,7 +200,7 @@ public final class NametagsModule extends HudElement {
     private void drawPlayer(Renderer r, NametagTarget t) {
         List<Part> parts = new ArrayList<>();
         if (gameMode.on() && !t.gameMode().isEmpty()) parts.add(new Part(t.gameMode(), GRAY));
-        parts.add(new Part(t.name(), t.nameColor()));
+        if (!t.name().isEmpty()) parts.add(new Part(t.name(), t.nameColor()));
         if (health.on()) {
             String hp = number(t.health() + t.absorption()) + " ❤";
             parts.add(new Part(hp, t.absorption() > 0 ? GOLD : healthColor(t.health(), t.maxHealth())));
@@ -262,7 +262,7 @@ public final class NametagsModule extends HudElement {
 
     private void drawMob(Renderer r, NametagTarget t) {
         List<Part> parts = new ArrayList<>();
-        parts.add(new Part(t.name(), 0xFFFFFFFF));
+        if (!t.name().isEmpty()) parts.add(new Part(t.name(), 0xFFFFFFFF));
         if (health.on()) parts.add(new Part(number(t.health()) + " ❤", healthColor(t.health(), t.maxHealth())));
         if (distance.on()) parts.add(new Part(Math.round(t.distance()) + "m", GRAY));
         float top = line(r, parts, 0);
@@ -271,7 +271,7 @@ public final class NametagsModule extends HudElement {
 
     private void drawItem(Renderer r, NametagTarget t) {
         List<Part> parts = new ArrayList<>();
-        parts.add(new Part(t.name(), t.nameColor()));
+        if (!t.name().isEmpty()) parts.add(new Part(t.name(), t.nameColor()));
         if (itemCount.on() && t.count() > 1) parts.add(new Part("×" + t.count(), GOLD));
         line(r, parts, 0);
     }
