@@ -1,0 +1,76 @@
+name: Publish to Modrinth
+# Runs only when started by hand (Actions -> Publish to Modrinth -> Run workflow).
+# Uploads the jars of existing GitHub releases; nothing is rebuilt. Versions already on Modrinth are skipped.
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'Modrinth project ID or slug (empty = repository variable MODRINTH_PROJECT)'
+        required: false
+        default: ''
+      version:
+        description: 'Mod version, e.g. 0.4.3 (empty = newest)'
+        required: false
+        default: ''
+      minecraft:
+        description: 'Minecraft versions, comma separated, e.g. 26.3,1.21.11 (empty = all)'
+        required: false
+        default: ''
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upload to Modrinth
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          PROJECT: ${{ inputs.project || vars.MODRINTH_PROJECT }}
+          WANT_VERSION: ${{ inputs.version }}
+          WANT_MC: ${{ inputs.minecraft }}
+        run: |
+          set -euo pipefail
+          API=https://api.modrinth.com/v2
+          UA="NiniDerPro/all-in-one-mod (release upload)"
+          [ -n "$MODRINTH_TOKEN" ] || { echo "::error::Secret MODRINTH_TOKEN is missing"; exit 1; }
+          [ -n "$PROJECT" ] || { echo "::error::No Modrinth project: enter it when starting, or set the repository variable MODRINTH_PROJECT"; exit 1; }
+          PID=$(curl -fsS -H "User-Agent: $UA" -H "Authorization: $MODRINTH_TOKEN" "$API/project/$PROJECT" | jq -r .id) \
+            || { echo "::error::Modrinth project '$PROJECT' not found (or the token has no access)"; exit 1; }
+          EXISTING=$(curl -fsS -H "User-Agent: $UA" -H "Authorization: $MODRINTH_TOKEN" "$API/project/$PID/version" | jq -r '.[].version_number')
+
+          # Releases are tagged v<mod version>-mc<minecraft version>
+          TAGS=$(gh release list --limit 200 --json tagName -q '.[].tagName' | grep -E '^v[0-9.]+-mc' || true)
+          if [ -z "$WANT_VERSION" ]; then
+            WANT_VERSION=$(echo "$TAGS" | sed -E 's/^v([0-9.]+)-mc.*/\1/' | sort -V | tail -1)
+          fi
+          echo "Mod version: $WANT_VERSION"
+          uploaded=0
+          for TAG in $(echo "$TAGS" | grep -E "^v${WANT_VERSION//./\\.}-mc"); do
+            MC=${TAG#v$WANT_VERSION-mc}
+            if [ -n "$WANT_MC" ] && ! echo ",$WANT_MC," | tr -d ' ' | grep -q ",$MC,"; then continue; fi
+            # 26.1 jars run on all 26.1.x versions
+            if [ "$MC" = "26.1" ]; then GAME='["26.1","26.1.1","26.1.2"]'; else GAME="[\"$MC\"]"; fi
+            NOTES=$(gh release view "$TAG" --json body -q .body)
+            rm -rf dl && mkdir dl
+            gh release download "$TAG" --dir dl --pattern 'aio-clientside-*.jar'
+            for JAR in dl/*.jar; do
+              LOADER=$(basename "$JAR" | sed -E 's/^aio-clientside-([a-z]+)-.*/\1/')
+              NUMBER="$WANT_VERSION+$LOADER-$MC"
+              if echo "$EXISTING" | grep -qxF "$NUMBER"; then echo "skip $NUMBER (already on Modrinth)"; continue; fi
+              case "$LOADER" in fabric) NAME=Fabric; DEPS='[{"project_id":"P7dR8mSH","dependency_type":"required"}]';;
+                                neoforge) NAME=NeoForge; DEPS='[]';; forge) NAME=Forge; DEPS='[]';; *) continue;; esac
+              TYPE=release; case "$WANT_VERSION" in 0.*) TYPE=beta;; esac
+              DATA=$(jq -n --arg p "$PID" --arg n "AIO ClientSide $WANT_VERSION ($NAME $MC)" --arg v "$NUMBER" \
+                --arg c "$NOTES" --arg l "$LOADER" --arg t "$TYPE" --argjson g "$GAME" --argjson d "$DEPS" \
+                '{project_id:$p, name:$n, version_number:$v, changelog:$c, loaders:[$l], game_versions:$g,
+                  dependencies:$d, version_type:$t, featured:false, file_parts:["file"], primary_file:"file"}')
+              echo "upload $NUMBER"
+              curl -fsS -H "User-Agent: $UA" -H "Authorization: $MODRINTH_TOKEN" \
+                -F "data=$DATA" -F "file=@$JAR;type=application/java-archive" "$API/version" > /dev/null \
+                || { echo "::error::Upload of $NUMBER failed"; exit 1; }
+              uploaded=$((uploaded + 1))
+            done
+          done
+          echo "::notice::Uploaded $uploaded file(s) for version $WANT_VERSION"
