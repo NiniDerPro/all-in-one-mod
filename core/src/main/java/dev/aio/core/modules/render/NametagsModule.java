@@ -36,15 +36,6 @@ public final class NametagsModule extends HudElement {
 
     private static final int ICON = 16;
 
-    /**
-     * Size by distance: up to 4 blocks full, then smoothly smaller (8 → 66 %, from about 12 → 50 %).
-     * The Minecraft font becomes unreadable when smaller; {@link #declutter} prevents overlapping.
-     */
-    static float distanceScale(double distance) {
-        if (distance <= 4) return 1f;
-        return (float) Math.max(0.5, Math.pow(4.0 / distance, 0.6));
-    }
-
     /** One tag on the screen: target, anchor point, size and rough area of the name row. */
     record Placed(NametagTarget target, float x, float y, float scale, float x1, float y1, float x2, float y2) {
         float area() { return (x2 - x1) * (y2 - y1); }
@@ -72,6 +63,8 @@ public final class NametagsModule extends HudElement {
     private final BooleanSetting players, items, mobs, tnt, throughWalls;
     private final BooleanSetting health, ping, gameMode, distance;
     private final BooleanSetting gear, enchants, skipEmpty, itemCount;
+    /** One-time switch: enchantments are off by default since 0.4.6, also for existing configs. */
+    private final BooleanSetting enchantsDefaultOff;
     private final EnumSetting<Durability> durability;
     private final NumberSetting range, maxCount, size;
     private final ColorSetting background;
@@ -89,8 +82,10 @@ public final class NametagsModule extends HudElement {
         gameMode = add(new BooleanSetting("gameMode", "Game mode", false));
         distance = add(new BooleanSetting("distance", "Distance", false));
         gear = add(new BooleanSetting("gear", "Armor and held items", true));
-        enchants = add(new BooleanSetting("enchants", "Enchantments", true));
+        enchants = add(new BooleanSetting("enchants", "Enchantments", false));
         enchants.visibleWhen(gear::on);
+        enchantsDefaultOff = add(new BooleanSetting("enchantsDefaultOff", "Enchantments default off", false));
+        enchantsDefaultOff.hidden();
         durability = add(new EnumSetting<>("durability", "Durability", Durability.BAR));
         durability.visibleWhen(gear::on);
         skipEmpty = add(new BooleanSetting("skipEmpty", "Skip empty slots", true));
@@ -125,6 +120,13 @@ public final class NametagsModule extends HudElement {
         };
     }
 
+    @Override public void afterLoad() {
+        super.afterLoad();
+        if (enchantsDefaultOff.on()) return;
+        enchants.set(false);
+        enchantsDefaultOff.set(true);
+    }
+
     @Override public void renderOverlay(Renderer r, float partialTick) {
         if (!isActive() || !hasContent()) return;
         List<NametagTarget> list = new ArrayList<>(platform().nametagTargets(range.get(), partialTick,
@@ -141,7 +143,7 @@ public final class NametagsModule extends HudElement {
         for (NametagTarget t : list) {
             Projection.Point pt = Projection.project(t.x(), t.y(), t.z(), cam, w, h);
             if (!pt.onScreen()) continue;
-            float scale = base * distanceScale(t.distance());
+            float scale = base * Projection.worldScale(t.distance(), cam, h);
             float half = (r.textWidth(t.name()) / 2f + 18) * scale; // Name plus Herz/Ping grob
             placed.add(new Placed(t, pt.x(), pt.y(), scale, pt.x() - half, pt.y() - (fh + 3) * scale, pt.x() + half, pt.y()));
         }
