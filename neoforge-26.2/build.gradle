@@ -1,0 +1,66 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.148'
+}
+
+// NeoForge adapter for Minecraft 26.2 (official Mojang names). The core stays unchanged.
+evaluationDependsOn(':core')
+
+version = "${project.mod_version}+mc${project.minecraft_version}"
+group = project.maven_group
+
+base {
+    archivesName = 'aio-clientside-neoforge'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}
+
+neoForge {
+    version = project.neoforge_version
+    runs {
+        client {
+            client()
+            gameDirectory = project.file('run')
+        }
+    }
+    mods {
+        aio {
+            sourceSet(sourceSets.main)
+            sourceSet(project(':core').sourceSets.main)
+        }
+    }
+}
+
+dependencies {
+    implementation project(':core')
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 25
+}
+
+processResources {
+    def version = project.version
+    inputs.property 'version', version
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand 'version': version
+    }
+}
+
+// The core is packed directly into the mod jar.
+jar {
+    from(project(':core').sourceSets.main.output)
+}
+
+// The stats server address only comes from the environment (CI secret), not from the source code
+processResources {
+    def statsUrl = System.getenv('AIO_STATS_URL') ?: ''
+    inputs.property('statsUrl', statsUrl)
+    doLast {
+        new File(destinationDir, 'aio_stats_url.txt').text = statsUrl
+    }
+}

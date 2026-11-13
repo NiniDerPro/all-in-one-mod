@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+license="MIT"
+
+[[mods]]
+modId="aio"
+version="${version}"
+displayName="AIO ClientSide"
+authors="niniderpro"
+description='''One mod instead of thirty: HUD, PvP and quality-of-life features in a single menu. Steps aside for mods you already have.'''
+
+[[mixins]]
+config="aio.mixins.json"
+
+[[dependencies.aio]]
+    modId="neoforge"
+    type="required"
+    versionRange="[26.2.0.0,)"
+    ordering="NONE"
+    side="CLIENT"
+
+[[dependencies.aio]]
+    modId="minecraft"
+    type="required"
+    versionRange="[26.2]"
+    ordering="NONE"
+    side="CLIENT"

@@ -1,0 +1,22 @@
+package dev.aio.forge;
+
+import dev.aio.core.AioCore;
+import dev.aio.core.modules.player.ToolSaverModule;
+import dev.aio.core.platform.ItemRef;
+import net.minecraft.world.item.ItemStack;
+
+/** Tool Saver: shared check for all interventions. */
+public final class ToolSaverHook {
+    private ToolSaverHook() {}
+
+    /** true = prevent use (and notify). */
+    public static boolean block(ItemStack stack) {
+        AioCore core = AioCore.get();
+        ToolSaverModule m = core == null ? null : core.module(ToolSaverModule.class);
+        if (m == null || stack == null || stack.isEmpty()) return false;
+        ItemRef ref = ForgeItemRef.of(stack);
+        if (!m.shouldBlock(ref)) return false;
+        m.onBlocked(ref);
+        return true;
+    }
+}
