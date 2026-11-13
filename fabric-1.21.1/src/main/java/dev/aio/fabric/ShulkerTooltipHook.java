@@ -21,6 +21,7 @@ public final class ShulkerTooltipHook {
 
     static void register(AioCore core) {
         TooltipComponentCallback.EVENT.register(data -> data instanceof ShulkerTooltip.Data d ? new ShulkerTooltip.Client(d) : null);
+        TooltipComponentCallback.EVENT.register(data -> data instanceof FoodTooltip.Data d ? new FoodTooltip.Client(d) : null);
         ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> {
             ShulkerPreviewModule m = core.module(ShulkerPreviewModule.class);
             if (m == null || !m.isActive() || !isShulker(stack)) return;
