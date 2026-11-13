@@ -90,6 +90,9 @@ class PreviewTest {
         friends.addRule(new dev.aio.core.modules.render.FriendsModule.Rule(dev.aio.core.modules.render.FriendsModule.Match.CONTAINS, "{Team}", 0xFF5599FF, true));
         friends.addRule(new dev.aio.core.modules.render.FriendsModule.Rule(dev.aio.core.modules.render.FriendsModule.Match.STARTS, "Builder_", 0xFFFFAA00, false));
         render(new dev.aio.core.modules.render.FriendsScreen(core, friends), new File(outDir, "friends.png"), 300, 120, true);
+        var xhair = (dev.aio.core.modules.render.CrosshairModule) core.modules().get("crosshair");
+        xhair.setEnabled(true);
+        render(new dev.aio.core.modules.render.CrosshairScreen(core, xhair), new File(outDir, "crosshair_presets.png"), 300, 120, true);
         render(new dev.aio.core.modules.client.KeyBindsScreen(core), new File(outDir, "keybinds.png"), 300, 120, true);
         var particles = (dev.aio.core.modules.performance.ParticleLimitModule) core.modules().get("particlelimit");
         render(new dev.aio.core.modules.performance.ParticleScreen(core, particles), new File(outDir, "particles.png"), 300, 120, true);
