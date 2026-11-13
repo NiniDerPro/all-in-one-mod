@@ -1,0 +1,24 @@
+modLoader="javafml"
+loaderVersion="[64,)"
+license="MIT"
+
+[[mods]]
+modId="aio"
+version="${version}"
+displayName="AIO ClientSide"
+authors="niniderpro"
+description='''One mod instead of thirty: HUD, PvP and quality-of-life features in a single menu. Steps aside for mods you already have.'''
+
+[[dependencies.aio]]
+    modId="forge"
+    mandatory=true
+    versionRange="[64,)"
+    ordering="NONE"
+    side="CLIENT"
+
+[[dependencies.aio]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[26.1,26.2)"
+    ordering="NONE"
+    side="CLIENT"

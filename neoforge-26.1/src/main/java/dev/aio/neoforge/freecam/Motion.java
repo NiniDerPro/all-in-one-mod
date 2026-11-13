@@ -1,0 +1,55 @@
+package dev.aio.neoforge.freecam;
+
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+
+/** Movement of the freecam (mode "Default"). Adapted from Freecam (MIT), see NOTICE.md. */
+public final class Motion {
+    private Motion() {}
+
+    public static final double DIAGONAL_MULTIPLIER = Mth.sin((float) Math.toRadians(45));
+
+    public static void doMotion(FreeCamera freeCamera, double hSpeed, double vSpeed) {
+        float yaw = freeCamera.getYRot();
+        double velocityX = 0.0, velocityY = 0.0, velocityZ = 0.0;
+
+        Vec3 forward = Vec3.directionFromRotation(0, yaw);
+        Vec3 side = Vec3.directionFromRotation(0, yaw + 90);
+
+        hSpeed = hSpeed * (freeCamera.isSprinting() ? 1.5 : 1.0);
+
+        boolean straight = false;
+        if (freeCamera.isForwardKeyDown()) {
+            velocityX += forward.x * hSpeed;
+            velocityZ += forward.z * hSpeed;
+            straight = true;
+        }
+        if (freeCamera.isBackwardKeyDown()) {
+            velocityX -= forward.x * hSpeed;
+            velocityZ -= forward.z * hSpeed;
+            straight = true;
+        }
+
+        boolean strafing = false;
+        if (freeCamera.isRightKeyDown()) {
+            velocityZ += side.z * hSpeed;
+            velocityX += side.x * hSpeed;
+            strafing = true;
+        }
+        if (freeCamera.isLeftKeyDown()) {
+            velocityZ -= side.z * hSpeed;
+            velocityX -= side.x * hSpeed;
+            strafing = true;
+        }
+
+        if (straight && strafing) {
+            velocityX *= DIAGONAL_MULTIPLIER;
+            velocityZ *= DIAGONAL_MULTIPLIER;
+        }
+
+        if (freeCamera.isJumpKeyDown()) velocityY += vSpeed;
+        if (freeCamera.isSneakKeyDown()) velocityY -= vSpeed;
+
+        freeCamera.setDeltaMovement(velocityX, velocityY, velocityZ);
+    }
+}
