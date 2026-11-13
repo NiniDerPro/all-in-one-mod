@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.6
+
+Downloads for Minecraft 26.1: Fabric, Forge and NeoForge.
+
+- Fixed: health indicator and nametags were far too big at range; they now shrink with distance like the entity itself
+- Changed: enchantments in nametags are off by default (also for existing settings, once)
+
 ## 0.4.5
 
 Downloads for Minecraft 26.1: Fabric, Forge and NeoForge.
