@@ -430,6 +430,11 @@ public final class FabricPlatform implements Platform {
 
     @Override public boolean debugScreenOpen() { return client.getDebugOverlay().showDebugScreen(); }
 
+
+    @Override public double guiScale() { return client.getWindow().getGuiScale(); }
+
+    @Override public float attackCharge() { return client.player == null ? 1f : client.player.getAttackStrengthScale(0f); }
+
     @Override public boolean drawProfilerChart(Renderer r, int w, int h) {
         if (!(r instanceof FabricRenderer fr) || fr.graphics() == null || !FabricHooks.profilerResults) return false;
         var chart = client.getDebugOverlay().getProfilerPieChart();
