@@ -9,7 +9,7 @@ a pile of separate mods, each with its own menu, keybinds and updates. AIO Clien
 - 50+ modules, each on/off on its own. A module costs nothing while it is off.
 - One menu, one search, one HUD editor, one config with profiles.
 - Already have a favourite mod for something? **It wins.** AIO turns only the overlapping module off.
-- Client-side only. Fabric, Minecraft 26.3.
+- Client-side only. Fabric, Minecraft 1.21.8.
 
 ## What it replaces
 
@@ -38,10 +38,27 @@ AIO is its own implementation; it does not contain the code of those mods.
 - **Performance**: entity culling, particle control, XP orb clumping, more FPS options.
 - **Menu**: search, profiles, config export/import, rainbow or custom accent colour, language selection (English, Deutsch, Español, Français).
 
+## Versions
+
+Each Minecraft version has its own branch; this page belongs to **1.21.8**. Downloads are on the [Releases](https://github.com/NiniDerPro/all-in-one-mod/releases) page.
+
+| Minecraft | Branch | Fabric | NeoForge | Forge |
+|---|---|---|---|---|
+| 26.3 | [`26.3`](https://github.com/NiniDerPro/all-in-one-mod/tree/26.3) | ✓ | ✓ | ✓ |
+| 26.2 | [`26.2`](https://github.com/NiniDerPro/all-in-one-mod/tree/26.2) | ✓ | ✓ | ✓ |
+| 26.1.x | [`26.1`](https://github.com/NiniDerPro/all-in-one-mod/tree/26.1) | ✓ | ✓ | ✓ |
+| 1.21.11 | [`1.21.11`](https://github.com/NiniDerPro/all-in-one-mod/tree/1.21.11) | ✓ | – | – |
+| 1.21.8 | [`1.21.8`](https://github.com/NiniDerPro/all-in-one-mod/tree/1.21.8) | ✓ | – | – |
+| 1.21.3 | [`1.21.3`](https://github.com/NiniDerPro/all-in-one-mod/tree/1.21.3) | ✓ | – | – |
+| 1.21.1 | [`1.21.1`](https://github.com/NiniDerPro/all-in-one-mod/tree/1.21.1) | ✓ | – | – |
+| 1.20.1 | [`1.20.1`](https://github.com/NiniDerPro/all-in-one-mod/tree/1.20.1) | ✓ | – | – |
+
+Changes per release: [`CHANGELOG.md`](CHANGELOG.md).
+
 ## Install
 
-1. Install Fabric Loader (0.16+) and **Fabric API** for Minecraft 26.3 (Java 25).
-2. Put the `aio-clientside-*.jar` into your `mods` folder.
+1. Install Fabric Loader (0.16+) and **Fabric API** for Minecraft 1.21.8 (Java 21).
+2. Put the `aio-clientside-fabric-*.jar` into your `mods` folder.
 3. Start the game. Open the menu with **Right Shift** (or the **AIO** button in the title and pause menu).
 
 ## Works with your other mods
@@ -62,7 +79,7 @@ AIO keeps a small statistics file **on your computer only** (`config/aio/stats.j
 sends it by itself. On the first start AIO asks whether you want to share **anonymous** usage statistics
 (via bStats): **Okay** turns it on, **No thanks** keeps it off. It is **off by default** and can be changed
 anytime under *Client → Send anonymous usage statistics*. No names, accounts, IPs, servers, coordinates or
-chat are ever sent. Full privacy information: [`PRIVACY.md`](PRIVACY.md). Technical details: [`docs/TELEMETRY.md`](docs/TELEMETRY.md).
+chat are ever sent. Full privacy information: [`PRIVACY.md`](PRIVACY.md). Technical details: [`TELEMETRY.md`](TELEMETRY.md).
 
 ## Building
 
@@ -71,10 +88,10 @@ chat are ever sent. Full privacy information: [`PRIVACY.md`](PRIVACY.md). Techni
 ```
 
 The jar is written to `fabric-26.3/build/libs/`. Architecture and how to add a module:
-[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md).
+[`DEVELOPMENT.md`](DEVELOPMENT.md).
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE). Parts of the Freecam module are adapted from Freecam (MIT); the food
+MIT — see [`LICENSE`](../LICENSE). Parts of the Freecam module are adapted from Freecam (MIT); the food
 overlay follows AppleSkin's look (public domain). See [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 Not affiliated with Mojang or Microsoft.
