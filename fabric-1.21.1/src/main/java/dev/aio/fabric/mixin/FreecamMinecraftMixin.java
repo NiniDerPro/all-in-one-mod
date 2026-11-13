@@ -27,7 +27,7 @@ public class FreecamMinecraftMixin {
     }
 
     /** Switch off when leaving the world. */
-    @Inject(method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;ZZ)V", at = @At("HEAD"))
+    @Inject(method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;Z)V", at = @At("HEAD"))
     private void aio$freecamDisconnect(CallbackInfo ci) {
         Freecam.set(false);
     }
