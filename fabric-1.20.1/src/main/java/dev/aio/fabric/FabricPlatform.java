@@ -427,6 +427,11 @@ public final class FabricPlatform implements Platform {
 
     @Override public boolean debugScreenOpen() { return client.options.renderDebug; }
 
+
+    @Override public double guiScale() { return client.getWindow().getGuiScale(); }
+
+    @Override public float attackCharge() { return client.player == null ? 1f : client.player.getAttackStrengthScale(0f); }
+
     @Override public boolean drawProfilerChart(Renderer r, int w, int h) {
         // This Minecraft version draws the chart itself at the bottom right (see DebugPieChartMixin)
         return false;
