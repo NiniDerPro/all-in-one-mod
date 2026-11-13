@@ -173,6 +173,12 @@ public interface Platform {
     /** Whether the F3 screen is currently open. */
     default boolean debugScreenOpen() { return false; }
 
+    /** Attack charge of the own player, 0..1 (1 = full hit possible). */
+    default float attackCharge() { return 1f; }
+
+    /** Real screen pixels per GUI pixel. */
+    default double guiScale() { return 1; }
+
     /**
      * Draws the profiler pie chart (F3+1) into the local rectangle 0..w × 0..h, flush at the bottom.
      * @return false if there is (not yet) any data
