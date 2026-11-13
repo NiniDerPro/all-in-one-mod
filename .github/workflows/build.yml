@@ -59,8 +59,8 @@ jobs:
             echo "::notice::Release $TAG already exists and stays unchanged. Raise mod_version for a new release."
             exit 0
           fi
-          # Release notes: the section of this version from CHANGELOG.md
-          awk -v v="## $VER" '$0==v{f=1;next} /^## /{f=0} f' CHANGELOG.md > notes.md
+          # Release notes: the section of this version from docs/CHANGELOG.md
+          awk -v v="## $VER" '$0==v{f=1;next} /^## /{f=0} f' docs/CHANGELOG.md > notes.md
           [ -s notes.md ] || echo "Version $VER" > notes.md
           gh release create "$TAG" dist/*.jar --target "$GITHUB_SHA" $LATEST \
             --title "AIO ClientSide $VER$BETA (Minecraft $MC)" --notes-file notes.md
