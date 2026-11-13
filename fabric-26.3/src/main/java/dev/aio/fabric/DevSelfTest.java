@@ -187,6 +187,13 @@ final class DevSelfTest {
                         AioFabricClient.LOGGER.info("[aio] Selftest LAN published: {}", ok);
                         continue;
                     }
+                    if (c.strip().equals("report")) { // state of every module (on, running, why not)
+                        for (var m : dev.aio.core.AioCore.get().modules().all()) {
+                            AioFabricClient.LOGGER.info("[aio] Selftest module {} enabled={} active={} blocked={} unavailable={}",
+                                    m.id(), m.isEnabled(), m.isActive(), m.isBlocked(), m.unavailableReason());
+                        }
+                        continue;
+                    }
                     server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), c.strip());
                     AioFabricClient.LOGGER.info("[aio] Selftest command: {}", c.strip());
                 }
