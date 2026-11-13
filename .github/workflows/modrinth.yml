@@ -16,6 +16,10 @@ on:
         description: 'Minecraft versions, comma separated, e.g. 26.3,1.21.11 (empty = all)'
         required: false
         default: ''
+      loaders:
+        description: 'Loaders, comma separated: fabric, neoforge, forge (empty = all)'
+        required: false
+        default: ''
 permissions:
   contents: read
 jobs:
@@ -30,6 +34,7 @@ jobs:
           PROJECT: ${{ inputs.project || vars.MODRINTH_PROJECT }}
           WANT_VERSION: ${{ inputs.version }}
           WANT_MC: ${{ inputs.minecraft }}
+          WANT_LOADERS: ${{ inputs.loaders }}
         run: |
           set -euo pipefail
           API=https://api.modrinth.com/v2
@@ -57,13 +62,20 @@ jobs:
             gh release download "$TAG" --dir dl --pattern 'aio-clientside-*.jar'
             for JAR in dl/*.jar; do
               LOADER=$(basename "$JAR" | sed -E 's/^aio-clientside-([a-z]+)-.*/\1/')
+              if [ -n "$WANT_LOADERS" ] && ! echo ",$WANT_LOADERS," | tr -d ' ' | grep -q ",$LOADER,"; then continue; fi
               NUMBER="$WANT_VERSION+$LOADER-$MC"
               if echo "$EXISTING" | grep -qxF "$NUMBER"; then echo "skip $NUMBER (already on Modrinth)"; continue; fi
               case "$LOADER" in fabric) NAME=Fabric; DEPS='[{"project_id":"P7dR8mSH","dependency_type":"required"}]';;
                                 neoforge) NAME=NeoForge; DEPS='[]';; forge) NAME=Forge; DEPS='[]';; *) continue;; esac
               TYPE=release; case "$WANT_VERSION" in 0.*) TYPE=beta;; esac
+              case "$MC" in 26.*) JAVA=25;; 1.20.*) JAVA=17;; *) JAVA=21;; esac
+              case "$LOADER" in fabric) REQ="Fabric Loader and Fabric API";; neoforge) REQ="NeoForge";; forge) REQ="Forge";; esac
+              MCTEXT=$MC; [ "$MC" = "26.1" ] && MCTEXT="26.1, 26.1.1 and 26.1.2"
+              # Changelog of this file: the release notes without the download line and without lines about other loaders
+              BODY=$(echo "$NOTES" | grep -v '^Downloads for Minecraft' | { if [ "$LOADER" = fabric ]; then grep -v 'Forge and NeoForge'; else cat; fi; } | sed '/./,$!d')
+              CHANGES=$(printf '**%s for Minecraft %s** (client-side)\n\n%s\n\nRequires %s, Java %s.\n' "$NAME" "$MCTEXT" "$BODY" "$REQ" "$JAVA")
               DATA=$(jq -n --arg p "$PID" --arg n "AIO ClientSide $WANT_VERSION ($NAME $MC)" --arg v "$NUMBER" \
-                --arg c "$NOTES" --arg l "$LOADER" --arg t "$TYPE" --argjson g "$GAME" --argjson d "$DEPS" \
+                --arg c "$CHANGES" --arg l "$LOADER" --arg t "$TYPE" --argjson g "$GAME" --argjson d "$DEPS" \
                 '{project_id:$p, name:$n, version_number:$v, changelog:$c, loaders:[$l], game_versions:$g,
                   dependencies:$d, version_type:$t, featured:false, file_parts:["file"], primary_file:"file"}')
               echo "upload $NUMBER"
