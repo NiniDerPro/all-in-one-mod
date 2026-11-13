@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.At;
 /** Small Shield & Totem: draw the item in hand smaller and a bit lower. */
 @Mixin(ItemInHandRenderer.class)
 public abstract class SmallItemsMixin {
-    @WrapOperation(method = "submitArmWithItem", at = @At(value = "INVOKE",
+    @WrapOperation(method = "renderItem", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/renderer/item/ItemStackRenderState;submit(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;III)V"))
     private void aio$smallItems(ItemStackRenderState state, PoseStack pose, SubmitNodeCollector collector, int a, int b, int c,
                                 Operation<Void> original, @Local(argsOnly = true) ItemStack stack) {

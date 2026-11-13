@@ -35,8 +35,8 @@ public abstract class ClientLevelParticlesMixin {
      * Only the splinters when mining, not the knock sound: in 26.3 addBreakingBlockEffects plays
      * the sound first and then calls addBreakingParticles, so only the latter is cancelled.
      */
-    @Inject(method = "addBreakingParticles", at = @At("HEAD"), cancellable = true)
-    private void aio$blockCrack(BlockPos pos, Direction side, BlockState state, CallbackInfo ci) {
+    @Inject(method = "addBreakingBlockEffect", at = @At("HEAD"), cancellable = true)
+    private void aio$blockCrack(BlockPos pos, Direction side, CallbackInfo ci) {
         if (aio$off(ParticleLimitModule.BLOCK_CRACK)) ci.cancel();
     }
 
