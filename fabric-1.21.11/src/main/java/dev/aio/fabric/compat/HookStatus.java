@@ -50,6 +50,10 @@ public final class HookStatus {
             Map.entry("ToolSaverMixin", "toolsaver"),
             Map.entry("LightOverlayDirtyMixin", "lightoverlay"),
             Map.entry("NametagsVanillaMixin", "nametags"),
+            Map.entry("FriendsArmorMixin", "friends"),
+            Map.entry("FriendsTintMixin", "friends"),
+            Map.entry("FriendsExtractMixin", "friends"),
+            Map.entry("FriendsRenderStateMixin", "friends"),
             Map.entry("MultiPlayerGameModeMixin#aio$attack", "autoweapon"),
             Map.entry("MultiPlayerGameModeMixin", "freecam"));
 
