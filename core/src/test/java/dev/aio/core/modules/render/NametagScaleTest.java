@@ -5,13 +5,20 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class NametagScaleTest {
-    @Test void fullSizeUpCloseAndSmallerFurtherAway() {
-        assertEquals(1f, NametagsModule.distanceScale(2));
-        assertEquals(1f, NametagsModule.distanceScale(4));
-        float at8 = NametagsModule.distanceScale(8), at16 = NametagsModule.distanceScale(16), at32 = NametagsModule.distanceScale(32);
-        assertTrue(at8 < 0.75f && at8 > 0.55f, "8 blocks: about two thirds, was " + at8);
-        assertTrue(at16 < at8 && at32 <= at16, "decreases with distance");
-        assertEquals(0.5f, NametagsModule.distanceScale(200), 1e-6, "never smaller than half (otherwise unreadable)");
+    private static final dev.aio.core.platform.CameraView CAM = new dev.aio.core.platform.CameraView(0, 0, 0, 0, 0, 70);
+
+    private static float scale(double d, dev.aio.core.platform.CameraView cam) {
+        return dev.aio.core.modules.navigation.Projection.worldScale(d, cam, 270);
+    }
+
+    @Test void keepsWorldSizeLikeVanillaNametags() {
+        assertEquals(1f, scale(2, CAM), "never larger than normal up close");
+        float at8 = scale(8, CAM), at16 = scale(16, CAM), at64 = scale(64, CAM);
+        assertEquals(at8 / 2, at16, 1e-4, "twice as far, half as big (like the player model)");
+        assertEquals(at16 / 4, at64, 1e-4);
+        assertTrue(at64 < 0.1f, "far away it is small, not half size, was " + at64);
+        var zoomed = new dev.aio.core.platform.CameraView(0, 0, 0, 0, 0, 20);
+        assertTrue(scale(64, zoomed) > at64 * 3, "grows when zoomed in, like the world");
     }
 
     private static NametagsModule.Placed at(float x, float y, float w) {
