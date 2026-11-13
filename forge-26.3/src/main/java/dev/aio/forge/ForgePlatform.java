@@ -431,6 +431,11 @@ public final class ForgePlatform implements Platform {
 
     @Override public boolean debugScreenOpen() { return client.debugEntries.isOverlayVisible(); }
 
+
+    @Override public double guiScale() { return client.getWindow().getGuiScale(); }
+
+    @Override public float attackCharge() { return client.player == null ? 1f : client.player.getAttackStrengthScale(0f); }
+
     @Override public boolean drawProfilerChart(Renderer r, int w, int h) {
         if (!(r instanceof ForgeRenderer fr) || fr.graphics() == null || !ForgeHooks.profilerResults) return false;
         var chart = client.getDebugOverlay().getProfilerPieChart();

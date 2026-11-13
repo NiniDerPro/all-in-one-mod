@@ -52,6 +52,7 @@
     "DynamicLightsEntityMixin",
     "LightOverlayDirtyMixin",
     "NametagsVanillaMixin",
+    "CrosshairMixin",
     "FriendsRenderStateMixin",
     "FriendsExtractMixin",
     "FriendsTintMixin",
