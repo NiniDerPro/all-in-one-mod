@@ -4,5 +4,8 @@ package dev.aio.neoforge;
 public final class LightOverlayHook {
     private LightOverlayHook() {}
 
-    public static void sectionDirty(int sx, int sy, int sz) { LightOverlay.onSectionDirty(sx, sy, sz); }
+    public static void sectionDirty(int sx, int sy, int sz) {
+        LightOverlay.onSectionDirty(sx, sy, sz);
+        Culler.sectionDirty(sx, sy, sz);
+    }
 }
