@@ -28,20 +28,47 @@ public final class NametagTargets {
 
     private static final EquipmentSlot[] GEAR = {EquipmentSlot.MAINHAND, EquipmentSlot.HEAD, EquipmentSlot.CHEST,
             EquipmentSlot.LEGS, EquipmentSlot.FEET, EquipmentSlot.OFFHAND};
-    private static final Map<Integer, Boolean> SIGHT = new HashMap<>();
-    private static long sightTick = Long.MIN_VALUE;
 
+    /** Built once per tick: entity, finished tag and height of the tag above the feet. */
+    private record Cached(Entity entity, NametagTarget tag, double yOffset) {}
+    private static final List<Cached> CACHE = new ArrayList<>();
+    private static long cacheTick = Long.MIN_VALUE;
+    private static String cacheKey = "";
+
+    /**
+     * Names, equipment and line of sight are worked out once per tick; per frame only the position is
+     * interpolated, so the tags still move smoothly.
+     */
     static List<NametagTarget> collect(Minecraft mc, double maxDistance, float partial, boolean players, boolean mobs,
                                        boolean items, boolean tnt, boolean throughWalls) {
         if (mc.level == null || mc.player == null) return List.of();
         long tick = mc.level.getGameTime();
-        if (tick != sightTick) {
-            SIGHT.clear();
-            sightTick = tick;
+        String key = maxDistance + "|" + players + mobs + items + tnt + throughWalls;
+        if (tick != cacheTick || !key.equals(cacheKey)) {
+            cacheTick = tick;
+            cacheKey = key;
+            rebuild(mc, maxDistance + 4, players, mobs, items, tnt, throughWalls);
         }
         Vec3 eye = mc.player.getEyePosition(partial);
         double max2 = maxDistance * maxDistance;
-        List<NametagTarget> out = new ArrayList<>();
+        List<NametagTarget> out = new ArrayList<>(CACHE.size());
+        for (Cached c : CACHE) {
+            if (c.entity().isRemoved()) continue;
+            Vec3 feet = c.entity().getPosition(partial);
+            double d2 = feet.distanceToSqr(eye);
+            if (d2 > max2) continue;
+            NametagTarget t = c.tag();
+            out.add(new NametagTarget(t.kind(), feet.x, feet.y + c.yOffset(), feet.z, Math.sqrt(d2), t.name(), t.nameColor(),
+                    t.health(), t.maxHealth(), t.absorption(), t.ping(), t.gameMode(), t.items(), t.count(), t.fuseTicks()));
+        }
+        return out;
+    }
+
+    private static void rebuild(Minecraft mc, double maxDistance, boolean players, boolean mobs, boolean items, boolean tnt,
+                                boolean throughWalls) {
+        CACHE.clear();
+        Vec3 eye = mc.player.getEyePosition();
+        double max2 = maxDistance * maxDistance;
         for (Entity e : mc.level.entitiesForRendering()) {
             if (e == mc.player || e == mc.getCameraEntity() || e instanceof ArmorStand) continue;
             NametagTarget.Kind kind = kindOf(e);
@@ -49,13 +76,13 @@ public final class NametagTargets {
             if (!(kind == NametagTarget.Kind.PLAYER ? players : kind == NametagTarget.Kind.MOB ? mobs
                     : kind == NametagTarget.Kind.ITEM ? items : tnt)) continue;
             if (e.isInvisibleTo(mc.player)) continue;
-            Vec3 feet = e.getPosition(partial);
+            Vec3 feet = e.position();
             double d2 = feet.distanceToSqr(eye);
             if (d2 > max2) continue;
-            if (!throughWalls && !SIGHT.computeIfAbsent(e.getId(), id -> mc.player.hasLineOfSight(e))) continue;
-            out.add(build(mc, e, kind, feet, Math.sqrt(d2)));
+            if (!throughWalls && !mc.player.hasLineOfSight(e)) continue;
+            NametagTarget tag = build(mc, e, kind, feet, Math.sqrt(d2));
+            CACHE.add(new Cached(e, tag, tag.y() - feet.y));
         }
-        return out;
     }
 
     static NametagTarget.Kind kindOf(Entity e) {
