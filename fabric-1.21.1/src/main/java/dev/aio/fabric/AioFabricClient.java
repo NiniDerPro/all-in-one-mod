@@ -62,7 +62,8 @@ public final class AioFabricClient implements ClientModInitializer {
             if (client.options.hideGui || hideHudFor(client.screen)) return;
             long t0 = System.nanoTime();
             hudRenderer.begin(graphics);
-            core.bus().post(new Events.RenderHud(hudRenderer, deltaTracker.getGameTimeDeltaPartialTick(false)));
+            // all HUD drawing in one batch: Minecraft flushes once at the end instead of after every text
+            graphics.drawManaged(() -> core.bus().post(new Events.RenderHud(hudRenderer, deltaTracker.getGameTimeDeltaPartialTick(false))));
             hudNanos += System.nanoTime() - t0;
             hudFrames++;
         });
