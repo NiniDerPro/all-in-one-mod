@@ -6,6 +6,9 @@ import dev.aio.core.modules.performance.RenderDistanceModule;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -56,6 +59,20 @@ public final class Culler {
     public static volatile int culledEntities, culledBlockEntities;
 
     private static final int REFRESH_TICKS = 2;
+
+    /**
+     * Opaque blocks per chunk section as 4096 bits, built on the game thread. The check thread only
+     * reads these copies and never touches the world itself. Missing sections count as see-through.
+     */
+    private record Section(long[] bits, long built) {}
+    private static final Map<Long, Section> SECTIONS = new ConcurrentHashMap<>();
+    private static final java.util.Set<Long> PENDING_SECTIONS = ConcurrentHashMap.newKeySet();
+    private static final int SECTIONS_PER_TICK = 24;
+    private static Level sectionsLevel;
+    /** Consecutive "hidden" results per object: only hide after two in a row (no flicker at edges). */
+    private static final Map<Long, Integer> HIDDEN_STREAK = new ConcurrentHashMap<>();
+    /** Index of the target point that was visible last time, tried first next time. */
+    private static final Map<Long, Integer> LAST_POINT = new ConcurrentHashMap<>();
     private static Thread worker;
 
     /** Every client tick from the game thread: update the state for the check thread, clean up old things. */
@@ -67,15 +84,29 @@ public final class Culler {
             level = null;
             return;
         }
-        eye = mc.player.getEyePosition();
+        // from the real camera (also correct in third person and with freecam)
+        AioCore core = AioCore.get();
+        var cam = core == null ? null : core.platform().camera(1f);
+        eye = cam == null ? mc.player.getEyePosition() : new Vec3(cam.x(), cam.y(), cam.z());
+        if (sectionsLevel != mc.level) {
+            SECTIONS.clear();
+            PENDING_SECTIONS.clear();
+            sectionsLevel = mc.level;
+        }
         level = mc.level;
         firstPerson = mc.options.getCameraType() == CameraType.FIRST_PERSON;
+        if (leavesSolid != m.leavesSolid()) SECTIONS.clear();
         leavesSolid = m.leavesSolid();
         traceDistance = m.traceDistance();
+        buildSections(mc.level);
         if (tick % 100 == 0) {
             long old = tick - 100;
             ENTITIES.values().removeIf(v -> (v >>> 1) < old);
             BLOCKS.values().removeIf(v -> (v >>> 1) < old);
+            if (HIDDEN_STREAK.size() > 4096) HIDDEN_STREAK.clear();
+            if (LAST_POINT.size() > 4096) LAST_POINT.clear();
+            // forget sections far from the camera
+            if (SECTIONS.size() > 6000) SECTIONS.clear();
         }
         ensureWorker();
     }
@@ -121,10 +152,13 @@ public final class Culler {
             it.remove();
             boolean vis;
             try {
-                vis = compute(lvl, from, e.getValue());
+                vis = compute(lvl, from, e.getValue(), e.getKey());
             } catch (Throwable t) {
                 vis = true; // when in doubt show
             }
+            // only hide after two hidden results in a row
+            if (vis) HIDDEN_STREAK.remove(e.getKey());
+            else if (HIDDEN_STREAK.merge(e.getKey(), 1, Integer::sum) < 2) vis = true;
             if (!vis) culled++;
             results.put(e.getKey(), (tick << 1) | (vis ? 1 : 0));
         }
@@ -198,11 +232,10 @@ public final class Culler {
         return v == null || (v & 1) == 1;
     }
 
-    private static boolean compute(Level lvl, Vec3 from, AABB box) {
+    private static boolean compute(Level lvl, Vec3 from, AABB box, long key) {
         Vec3 center = box.getCenter();
         double dist = from.distanceTo(center);
         if (dist < 4 || dist > traceDistance) return true; // near: always show; far: do not check
-        if (!firstPerson && dist < 10) return true;
         if (box.contains(from)) return true;
         AABB b = box.inflate(0.05);
         double[][] points = {
@@ -212,17 +245,80 @@ public final class Culler {
                 {b.minX, b.maxY, b.maxZ}, {b.maxX, b.minY, b.minZ},
                 {b.minX, b.maxY, b.minZ}, {b.maxX, b.minY, b.maxZ}};
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
-        for (double[] p : points) if (clear(lvl, cursor, from.x, from.y, from.z, p[0], p[1], p[2])) return true;
+        // the point that was visible last time first: usually one ray is enough
+        Integer last = LAST_POINT.get(key);
+        if (last != null && clear(lvl, cursor, from.x, from.y, from.z, points[last][0], points[last][1], points[last][2])) return true;
+        for (int i = 0; i < points.length; i++) {
+            if (last != null && i == last) continue;
+            double[] p = points[i];
+            if (clear(lvl, cursor, from.x, from.y, from.z, p[0], p[1], p[2])) {
+                LAST_POINT.put(key, i);
+                return true;
+            }
+        }
         return false;
     }
 
-    private static boolean occludes(Level lvl, BlockPos pos) {
-        BlockState state = lvl.getBlockState(pos);
-        if (state.isSolidRender(level, pos)) return true;
+    private static boolean opaque(BlockState state, Level lvl, BlockPos pos) {
+        if (state.isSolidRender(lvl, pos)) return true;
         return leavesSolid && state.getBlock() instanceof LeavesBlock;
     }
 
     /** Ray through the block grid (step by step from block to block); free if no full block is in the way. */
+    /** A block or its light changed in this section: rebuild it before it is used again. */
+    public static void sectionDirty(int sx, int sy, int sz) {
+        long key = SectionPos.asLong(sx, sy, sz);
+        if (SECTIONS.remove(key) != null) PENDING_SECTIONS.add(key);
+    }
+
+    /** Game thread: build a few requested sections per tick. */
+    private static void buildSections(Level lvl) {
+        int n = 0;
+        for (var it = PENDING_SECTIONS.iterator(); it.hasNext() && n < SECTIONS_PER_TICK; ) {
+            long key = it.next();
+            it.remove();
+            if (buildSection(lvl, key)) n++;
+        }
+    }
+
+    private static boolean buildSection(Level lvl, long key) {
+        int sx = SectionPos.x(key), sy = SectionPos.y(key), sz = SectionPos.z(key);
+        if (!lvl.hasChunk(sx, sz)) return false;
+        LevelChunk chunk = lvl.getChunk(sx, sz);
+        int index = chunk.getSectionIndex(sy << 4);
+        LevelChunkSection[] sections = chunk.getSections();
+        long[] bits = new long[64];
+        if (index >= 0 && index < sections.length && !sections[index].hasOnlyAir()) {
+            LevelChunkSection section = sections[index];
+            BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+            for (int y = 0; y < 16; y++) {
+                for (int z = 0; z < 16; z++) {
+                    for (int x = 0; x < 16; x++) {
+                        p.set((sx << 4) + x, (sy << 4) + y, (sz << 4) + z);
+                        if (opaque(section.getBlockState(x, y, z), lvl, p)) {
+                            int i = (y << 8) | (z << 4) | x;
+                            bits[i >> 6] |= 1L << (i & 63);
+                        }
+                    }
+                }
+            }
+        }
+        SECTIONS.put(key, new Section(bits, tick));
+        return true;
+    }
+
+    /** Check thread: is the block opaque? Unknown sections are requested and count as see-through. */
+    private static boolean occludesCached(int x, int y, int z) {
+        long key = SectionPos.asLong(x >> 4, y >> 4, z >> 4);
+        Section s = SECTIONS.get(key);
+        if (s == null) {
+            PENDING_SECTIONS.add(key);
+            return false;
+        }
+        int i = ((y & 15) << 8) | ((z & 15) << 4) | (x & 15);
+        return (s.bits()[i >> 6] & (1L << (i & 63))) != 0;
+    }
+
     private static boolean clear(Level lvl, BlockPos.MutableBlockPos cursor, double x0, double y0, double z0, double x1, double y1, double z1) {
         int x = floor(x0), y = floor(y0), z = floor(z0);
         int ex = floor(x1), ey = floor(y1), ez = floor(z1);
@@ -239,8 +335,7 @@ public final class Culler {
             else if (tmy < tmz) { y += sy; tmy += tdy; }
             else { z += sz; tmz += tdz; }
             if (x == ex && y == ey && z == ez) return true; // Ziel-Block erreicht
-            cursor.set(x, y, z);
-            if (occludes(lvl, cursor)) return false;
+            if (occludesCached(x, y, z)) return false;
         }
         return true;
     }
