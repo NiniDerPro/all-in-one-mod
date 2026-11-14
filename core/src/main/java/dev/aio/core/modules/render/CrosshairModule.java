@@ -246,43 +246,49 @@ public final class CrosshairModule extends HudElement {
         draw(r, cx, cy, current(), Math.round(spread * spreadAmount.floatValue()), rainbowSpeed.floatValue());
     }
 
-    /** Draws any look (also the previews), sizes in screen pixels. */
+    /** Draws any look (also the previews), sizes in screen pixels; (cx, cy) is the screen middle. */
     public static void draw(Renderer r, float cx, float cy, Style st, float extraGap, float rainbowSpeed) {
         int base = st.rainbow() ? Colors.chroma(0, rainbowSpeed, 255) : st.color();
-        if (st.outer()) lines(r, st, cx, cy, st.outerLength(), st.outerThickness(), st.outerGap() + extraGap, withOpacity(base, st.outerOpacity()));
-        if (st.inner()) lines(r, st, cx, cy, st.innerLength(), st.innerThickness(), st.innerGap() + extraGap, withOpacity(base, st.innerOpacity()));
+        java.util.List<float[]> boxes = new java.util.ArrayList<>(); // x1, y1, x2, y2, colour
+        if (st.outer()) lines(boxes, st, cx, cy, st.outerLength(), st.outerThickness(), st.outerGap() + extraGap, withOpacity(base, st.outerOpacity()));
+        if (st.inner()) lines(boxes, st, cx, cy, st.innerLength(), st.innerThickness(), st.innerGap() + extraGap, withOpacity(base, st.innerOpacity()));
         if (st.dot()) {
             int size = Math.max(1, Math.round(st.dotSize()));
-            float x1 = (float) Math.floor(cx + 0.5f - size / 2f), y1 = (float) Math.floor(cy + 0.5f - size / 2f);
-            box(r, st, x1, y1, x1 + size, y1 + size, withOpacity(base, st.dotOpacity()));
+            float x1 = square(cx, size), y1 = square(cy, size);
+            boxes.add(new float[]{x1, y1, x1 + size, y1 + size, withOpacity(base, st.dotOpacity())});
         }
-    }
-
-    /**
-     * Four lines around the middle pixel (cx, cy)…(cx+1, cy+1). With an even thickness the extra pixel
-     * goes to the top/left, like in most shooters.
-     */
-    private static void lines(Renderer r, Style st, float cx, float cy, float len, float thick, float gap, int col) {
-        int t = Math.max(1, Math.round(thick)), l = Math.max(1, Math.round(len)), g = Math.round(gap);
-        float a = cx + 0.5f - t / 2f, b = a + t;          // across (x for vertical lines)
-        float c = cy + 0.5f - t / 2f, d = c + t;          // across (y for horizontal lines)
-        a = (float) Math.floor(a); b = a + t; c = (float) Math.floor(c); d = c + t;
-        box(r, st, cx + 1 + g, c, cx + 1 + g + l, d, col);    // right
-        box(r, st, cx - g - l, c, cx - g, d, col);            // left
-        box(r, st, a, cy + 1 + g, b, cy + 1 + g + l, col);    // bottom
-        if (!st.tShape()) box(r, st, a, cy - g - l, b, cy - g, col); // top
-    }
-
-    /** A filled rectangle with the optional outline around it. */
-    private static void box(Renderer r, Style st, float x1, float y1, float x2, float y2, int col) {
-        if ((col >>> 24) == 0) return;
+        // first every outline, then every fill: an outline never covers a neighbouring line
         if (st.outline()) {
             float o = Math.max(1, Math.round(st.outlineThickness()));
             int oc = st.outlineColor();
-            int a = Math.round((oc >>> 24) * ((col >>> 24) / 255f));
-            r.fill(x1 - o, y1 - o, x2 + o, y2 + o, (a << 24) | (oc & 0xFFFFFF));
+            for (float[] b : boxes) {
+                int col = (int) b[4];
+                if ((col >>> 24) == 0) continue;
+                int a = Math.round((oc >>> 24) * ((col >>> 24) / 255f));
+                r.fill(b[0] - o, b[1] - o, b[2] + o, b[3] + o, (a << 24) | (oc & 0xFFFFFF));
+            }
         }
-        r.fill(x1, y1, x2, y2, col);
+        for (float[] b : boxes) if ((((int) b[4]) >>> 24) != 0) r.fill(b[0], b[1], b[2], b[3], (int) b[4]);
+    }
+
+    /** Start of a centred run of {@code size} pixels around the middle {@code c} (on the pixel grid). */
+    private static float square(float c, int size) {
+        return (float) Math.floor(c - size / 2f);
+    }
+
+    /**
+     * Four arms around a centre square of the line thickness, all the same length and the same distance
+     * from it, so the cross is exactly symmetric. With no gap the centre square is filled too (a plus).
+     */
+    private static void lines(java.util.List<float[]> out, Style st, float cx, float cy, float len, float thick, float gap, int col) {
+        int t = Math.max(1, Math.round(thick)), l = Math.max(1, Math.round(len)), g = Math.max(0, Math.round(gap));
+        float a = square(cx, t), b = a + t;   // columns of the vertical arms
+        float c = square(cy, t), d = c + t;   // rows of the horizontal arms
+        out.add(new float[]{b + g, c, b + g + l, d, col});        // right
+        out.add(new float[]{a - g - l, c, a - g, d, col});        // left
+        out.add(new float[]{a, d + g, b, d + g + l, col});        // bottom
+        if (!st.tShape()) out.add(new float[]{a, c - g - l, b, c - g, col}); // top
+        if (g == 0) out.add(new float[]{a, c, b, d, col});        // closed middle
     }
 
     /** Small bar below the crosshair while the attack is recharging (like the vanilla indicator). */
