@@ -400,13 +400,19 @@ public final class ClickGuiScreen implements UiScreen {
         Draw.round(r, x, y, x + w, y + h, 3, Theme.CARD);
         m.drawPreview(r, x + 1, y + 1, x + w - 1, y + h - 1);
         Draw.roundOutline(r, x, y, x + w, y + h, Theme.LINE_STRONG);
-        String label = m.previewButtonLabel();
-        if (label != null) {
-            float bw = r.textWidth(label) + 12, bx = x + w - bw - 4, by = y + 4;
+        java.util.List<String> labels = m.previewButtons();
+        float bx2 = x + w - 4;
+        for (int i = labels.size() - 1; i >= 0; i--) {
+            String label = labels.get(i);
+            float bw = Math.max(14, r.textWidth(label) + 10), bx = bx2 - bw, by = y + 4;
             boolean bh = inside(mx, my, bx, by, bx + bw, by + 14);
-            Draw.round(r, bx, by, bx + bw, by + 14, 2, bh ? brighten(accent) : accent);
+            boolean primary = i == labels.size() - 1, active = m.previewButtonActive(i);
+            int bg = primary || active ? (bh ? brighten(accent) : accent) : (bh ? 0xF033333E : 0xE024242C);
+            Draw.round(r, bx, by, bx + bw, by + 14, 2, bg);
             r.centeredText(label, bx + bw / 2, by + 3, Theme.TEXT, false);
-            hit(bx, by, bx + bw, by + 14, b -> m.previewButtonClicked());
+            int index = i;
+            hit(bx, by, bx + bw, by + 14, b -> m.previewButtonClicked(index));
+            bx2 = bx - 3;
         }
         return y + h + 6;
     }
