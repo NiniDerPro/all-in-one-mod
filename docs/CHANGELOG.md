@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.7
+
+Downloads for Minecraft 26.1: Fabric, Forge and NeoForge.
+
+- New: Crosshair module: centre dot, inner and outer lines (length, thickness, gap, opacity), outline, colour or rainbow, T shape, spread while moving, attack indicator
+- New: crosshair presets with live previews, and a preview in the settings that stays visible while you adjust it (zoom, outline toggle)
+- New: settings can be grouped into sections you can open and close
+- Faster: entity culling only checks what is on screen, uses its own block copy instead of reading the world from another thread, works from the real camera (also in third person) and reaches further
+- Faster: nametags and health indicator gather their entities once per tick instead of every frame
+- Faster: dynamic lights now default to your own light only, with a limit for light sources and fewer updates at low FPS
+
 ## 0.4.6
 
 Downloads for Minecraft 26.1: Fabric, Forge and NeoForge.
