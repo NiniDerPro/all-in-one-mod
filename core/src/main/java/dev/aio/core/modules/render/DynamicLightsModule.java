@@ -28,9 +28,28 @@ public final class DynamicLightsModule extends Module {
 
     public DynamicLightsModule() {
         super("dynamiclights", "Dynamic Lights", "Torches and other light items in your hand light up the area", Category.VISUALS, false);
-        mode = add(new EnumSetting<>("mode", "Light sources", Mode.ALL));
+        mode = add(new EnumSetting<>("mode", "Light sources", Mode.SELF));
         updateEvery = add(new NumberSetting("updateEvery", "Update every", 2, 1, 10, 1, " ticks"));
         entitiesLit = add(new BooleanSetting("entities", "Also light up mobs and players", true));
+        maxSources = add(new NumberSetting("maxSources", "Max light sources", 12, 1, 64, 1, ""));
+        maxSources.visibleWhen(() -> mode.get() != Mode.SELF);
+        adaptive = add(new BooleanSetting("adaptive", "Update less often at low FPS", true));
+    }
+
+    private final NumberSetting maxSources;
+    private final BooleanSetting adaptive;
+
+    /** Most light sources that are updated at once (the nearest ones). */
+    public int maxSources() { return mode.get() == Mode.SELF ? 1 : maxSources.intValue(); }
+
+    /**
+     * Ticks between updates; with "adaptive" doubled below 40 FPS and tripled below 25 FPS, because
+     * every moving light makes Minecraft rebuild chunk sections.
+     */
+    public int updateEvery(int fps) {
+        int base = updateEvery.intValue();
+        if (!adaptive.on() || fps <= 0) return base;
+        return fps < 25 ? base * 3 : fps < 40 ? base * 2 : base;
     }
 
     public Mode mode() { return mode.get(); }
