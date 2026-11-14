@@ -35,7 +35,7 @@ public final class EntityCullingModule extends Module {
         tickCulling = add(new BooleanSetting("tickCulling", "Simplified ticking for hidden entities", true));
         leavesSolid = add(new BooleanSetting("leavesSolid", "Leaves count as solid (more FPS in forests)", false));
         keepNamed = add(new BooleanSetting("keepNamed", "Always show name-tagged mobs", true));
-        traceDistance = add(new NumberSetting("traceRange", "Check distance", 64, 16, 128, 8, " blocks"));
+        traceDistance = add(new NumberSetting("traceRange", "Check distance", 96, 16, 192, 8, " blocks"));
         entityWhitelist = add(new StringSetting("entityWhitelist", "Entity exceptions (IDs, comma separated)",
                 "minecraft:ender_dragon,minecraft:wither,minecraft:end_crystal,minecraft:ghast,minecraft:happy_ghast", 2000));
         blockEntityWhitelist = add(new StringSetting("blockEntityWhitelist", "Block entity exceptions (IDs, comma separated)",
