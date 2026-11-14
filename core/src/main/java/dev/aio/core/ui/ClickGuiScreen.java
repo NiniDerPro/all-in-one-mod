@@ -60,6 +60,8 @@ public final class ClickGuiScreen implements UiScreen {
     /** Visible areas of the two scrollable regions (for clipping the click areas). */
     private float listY1, listY2, drawerX1, drawerY1, drawerY2;
     private int clip;
+    /** Open setting groups ("module:group"), kept while the menu is open. */
+    private final Set<String> openGroups = new java.util.HashSet<>();
     /** Dropdown list: the setting whose list is open, and the control it was opened from (set per frame). */
     private EnumSetting<?> openEnum, ddEnum;
     private float ddX1, ddY1, ddY2, ddX2;
@@ -368,18 +370,45 @@ public final class ClickGuiScreen implements UiScreen {
         if (!drawerOpen()) return;
 
         float x = x1 + 10, w = dw - 20;
-        r.enableScissor((int) x1 + 1, (int) top, (int) Math.min(x2, px + pw - 1), (int) bottom);
+        // Modules with a preview: title and preview stay at the top, only the settings below scroll
+        boolean pinned = !clientDrawer && drawer.hasPreview();
+        float contentTop = pinned ? renderPinnedPreview(r, mx, my, drawer, x, top + 8, w, accent) : top;
+        drawerY1 = contentTop;
+        r.enableScissor((int) x1 + 1, (int) contentTop, (int) Math.min(x2, px + pw - 1), (int) bottom);
         clip = 2;
-        float y = top + 8 - drawerScroll;
+        float y = contentTop + (pinned ? 2 : 8) - drawerScroll;
         float start = y;
         ddEnum = null;
-        y = clientDrawer ? renderClientDrawer(r, mx, my, x, y, w, accent) : renderModuleDrawer(r, mx, my, drawer, x, y, w, accent);
+        y = clientDrawer ? renderClientDrawer(r, mx, my, x, y, w, accent) : renderModuleDrawer(r, mx, my, drawer, x, y, w, accent, pinned);
         renderDropdown(r, mx, my, accent);
         clip = 0;
         r.disableScissor();
-        drawerMax = Math.max(0, (y - start) + 8 - (bottom - top));
+        drawerMax = Math.max(0, (y - start) + 8 - (bottom - contentTop));
         drawerScroll = Math.max(0, Math.min(drawerMax, drawerScroll));
-        scrollbar(r, x2 - 3, top + 2, bottom - 2, drawerScroll, drawerMax);
+        scrollbar(r, x2 - 3, contentTop + 2, bottom - 2, drawerScroll, drawerMax);
+    }
+
+    /** Title row, preview box and its button, drawn without scrolling. Returns where the settings start. */
+    private float renderPinnedPreview(Renderer r, int mx, int my, Module m, float x, float y, float w, int accent) {
+        float cx = x + w - 12;
+        boolean hover = inside(mx, my, cx - 2, y - 2, cx + 10, y + 10);
+        Draw.icon(r, Draw.CLOSE, cx, y, hover ? Theme.TEXT : Theme.TEXT_MUTED);
+        hit(cx - 3, y - 3, cx + 11, y + 11, b -> closeDrawer());
+        Draw.bold(r, r.trim(m.name(), w - 40), x, y, Theme.TEXT);
+        y += 14;
+        float h = m.previewHeight();
+        Draw.round(r, x, y, x + w, y + h, 3, Theme.CARD);
+        m.drawPreview(r, x + 1, y + 1, x + w - 1, y + h - 1);
+        Draw.roundOutline(r, x, y, x + w, y + h, Theme.LINE_STRONG);
+        String label = m.previewButtonLabel();
+        if (label != null) {
+            float bw = r.textWidth(label) + 12, bx = x + w - bw - 4, by = y + 4;
+            boolean bh = inside(mx, my, bx, by, bx + bw, by + 14);
+            Draw.round(r, bx, by, bx + bw, by + 14, 2, bh ? brighten(accent) : accent);
+            r.centeredText(label, bx + bw / 2, by + 3, Theme.TEXT, false);
+            hit(bx, by, bx + bw, by + 14, b -> m.previewButtonClicked());
+        }
+        return y + h + 6;
     }
 
     private static float ease(float t) { return 1 - (1 - t) * (1 - t) * (1 - t); }
@@ -399,8 +428,16 @@ public final class ClickGuiScreen implements UiScreen {
         return y + 4;
     }
 
-    private float renderModuleDrawer(Renderer r, int mx, int my, Module m, float x, float y, float w, int accent) {
-        y = drawerHeader(r, mx, my, m.name(), m.description(), x, y, w, accent);
+    private float renderModuleDrawer(Renderer r, int mx, int my, Module m, float x, float y, float w, int accent, boolean titlePinned) {
+        if (titlePinned) {
+            for (String line : wrap(r, m.description(), w)) {
+                r.text(line, x, y, Theme.TEXT_DIM, false);
+                y += 10;
+            }
+            y += 4;
+        } else {
+            y = drawerHeader(r, mx, my, m.name(), m.description(), x, y, w, accent);
+        }
         // On/off large, with status
         if (m.canToggle()) {
             boolean problem = m.isEnabled() && (m.isBlocked() || m.unavailableReason() != null);
@@ -420,13 +457,31 @@ public final class ClickGuiScreen implements UiScreen {
         }
 
         List<Setting<?>> general = new ArrayList<>(), look = new ArrayList<>();
+        java.util.Map<String, List<Setting<?>>> groups = new java.util.LinkedHashMap<>();
         for (Setting<?> s : m.settings()) {
+            if (s.group() != null && !s.isHidden()) groups.computeIfAbsent(s.group(), k -> new ArrayList<>());
             if (!s.isVisible() || s == m.toggleKey() && !m.canToggle()) continue;
-            (APPEARANCE.contains(s.id()) ? look : general).add(s);
+            if (s.group() != null) groups.get(s.group()).add(s);
+            else (APPEARANCE.contains(s.id()) ? look : general).add(s);
         }
-        if (!general.isEmpty()) {
+        if (!general.isEmpty() || !groups.isEmpty()) {
             y = section(r, Lang.tr("aio.ui.menu.settings", "Settings"), x, y + 2, w);
             for (Setting<?> s : general) y = renderSetting(r, mx, my, s, x, y, w, accent);
+        }
+        for (var e : groups.entrySet()) {
+            String key = m.id() + ":" + e.getKey();
+            boolean open = openGroups.contains(key);
+            y += 2;
+            boolean hover = inside(mx, my, x, y, x + w, y + 16);
+            Draw.round(r, x, y, x + w, y + 16, 2, hover ? Theme.CARD_HOVER : Theme.CARD);
+            Draw.icon(r, open ? Draw.CHEVRON_DOWN : Draw.CHEVRON_RIGHT, x + 3, y + 4, hover ? Theme.TEXT : Theme.TEXT_MUTED);
+            r.text(m.groupName(e.getKey()), x + 14, y + 4, open ? Theme.TEXT : Theme.TEXT_DIM, false);
+            hit(x, y, x + w, y + 16, b -> { if (!openGroups.remove(key)) openGroups.add(key); });
+            y += 18;
+            if (open) {
+                for (Setting<?> s : e.getValue()) y = renderSetting(r, mx, my, s, x + 6, y, w - 6, accent);
+                y += 2;
+            }
         }
         if (!look.isEmpty()) {
             y += 4;
