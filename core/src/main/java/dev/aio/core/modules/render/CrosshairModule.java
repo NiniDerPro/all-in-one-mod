@@ -119,11 +119,17 @@ public final class CrosshairModule extends HudElement {
 
     @Override public float previewHeight() { return 70; }
 
-    /** Live preview on a background that shows dark and light colours (sky above, ground below). */
+    /** Live preview on a neutral grey tile pattern, like an empty world. */
     @Override public void drawPreview(Renderer r, float x1, float y1, float x2, float y2) {
-        float mid = (y1 + y2) / 2;
-        r.fill(x1, y1, x2, mid, 0xFF7FA8D8);
-        r.fill(x1, mid, x2, y2, 0xFF4A6B33);
+        float mid = (y1 + y2) / 2, tile = 6;
+        r.fill(x1, y1, x2, y2, 0xFF3A3A3F);
+        for (float ty = y1; ty < y2; ty += tile) {
+            for (float tx = x1; tx < x2; tx += tile) {
+                if ((Math.round((tx - x1) / tile) + Math.round((ty - y1) / tile)) % 2 == 0) {
+                    r.fill(tx, ty, Math.min(x2, tx + tile), Math.min(y2, ty + tile), 0xFF44444A);
+                }
+            }
+        }
         float scale = (float) Math.max(1, platform().guiScale());
         r.push();
         r.scale(1f / scale);
