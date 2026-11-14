@@ -94,7 +94,7 @@ public final class DynamicLights {
         }
         enabled = true;
         entities = m.entitiesLit();
-        if (++tickCounter % m.updateEvery() != 0) return;
+        if (++tickCounter % m.updateEvery(mc.getFps()) != 0) return;
 
         List<Source> list = new ArrayList<>();
         DynamicLightsModule.Mode mode = m.mode();
@@ -107,6 +107,12 @@ public final class DynamicLights {
                 if (mode == DynamicLightsModule.Mode.PLAYERS && !(e instanceof Player)) continue;
                 add(list, e);
             }
+        }
+        // only the nearest sources: every moving light rebuilds chunk sections
+        if (list.size() > m.maxSources()) {
+            double vx = view.getX(), vy = view.getY(), vz = view.getZ();
+            list.sort(java.util.Comparator.comparingDouble(src -> (src.x - vx) * (src.x - vx) + (src.y - vy) * (src.y - vy) + (src.z - vz) * (src.z - vz)));
+            list = new ArrayList<>(list.subList(0, m.maxSources()));
         }
         Source[] next = list.toArray(new Source[0]);
 
