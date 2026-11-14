@@ -216,10 +216,13 @@ public abstract class Module {
     /** Draws the preview into the box (x1, y1)–(x2, y2). */
     public void drawPreview(dev.aio.core.platform.Renderer r, float x1, float y1, float x2, float y2) {}
 
-    /** Label of a button next to the preview, or null. */
-    public String previewButtonLabel() { return null; }
+    /** Labels of buttons on the preview box (right to left order is kept as given, drawn in a row). */
+    public java.util.List<String> previewButtons() { return java.util.List.of(); }
 
-    public void previewButtonClicked() {}
+    /** Highlighted (active) look for a preview button, e.g. a toggle. */
+    public boolean previewButtonActive(int index) { return false; }
+
+    public void previewButtonClicked(int index) {}
 
     /** Shown name of a settings group (see {@link Setting#group}). */
     public String groupName(String groupId) { return groupId; }

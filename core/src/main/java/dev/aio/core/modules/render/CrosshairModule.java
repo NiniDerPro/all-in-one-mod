@@ -117,11 +117,11 @@ public final class CrosshairModule extends HudElement {
 
     @Override public boolean hasPreview() { return true; }
 
-    @Override public float previewHeight() { return 70; }
+    @Override public float previewHeight() { return 86; }
 
     /** Live preview on a neutral grey tile pattern, like an empty world. */
     @Override public void drawPreview(Renderer r, float x1, float y1, float x2, float y2) {
-        float mid = (y1 + y2) / 2, tile = 6;
+        float mid = (y1 + 20 + y2) / 2, tile = 6; // below the button row
         r.fill(x1, y1, x2, y2, 0xFF3A3A3F);
         for (float ty = y1; ty < y2; ty += tile) {
             for (float tx = x1; tx < x2; tx += tile) {
@@ -130,16 +130,38 @@ public final class CrosshairModule extends HudElement {
                 }
             }
         }
+        // each crosshair pixel becomes "zoom" screen pixels, the picture stays sharp and centred
         float scale = (float) Math.max(1, platform().guiScale());
+        float unit = previewZoom / scale;
+        r.enableScissor((int) Math.ceil(x1), (int) Math.ceil(y1), (int) Math.floor(x2), (int) Math.floor(y2));
         r.push();
-        r.scale(1f / scale);
-        draw(r, Math.round((x1 + x2) / 2 * scale), Math.round(mid * scale), current(), 0, rainbowSpeed.floatValue());
+        r.scale(unit);
+        draw(r, Math.round((x1 + x2) / 2 / unit), Math.round(mid / unit), current(), 0, rainbowSpeed.floatValue());
         r.pop();
+        r.disableScissor();
+        String z = previewZoom + "x";
+        r.text(z, x1 + 4, y2 - 11, 0xFFB0B0B8, false);
     }
 
-    @Override public String previewButtonLabel() { return Lang.tr("aio.ui.crosshair.presets_button", "Presets"); }
+    /** Zoom of the preview (1 = real size). */
+    private int previewZoom = 2;
 
-    @Override public void previewButtonClicked() { core.platform().openScreen(new CrosshairScreen(core, this)); }
+    @Override public java.util.List<String> previewButtons() {
+        return java.util.List.of(Lang.tr("aio.ui.crosshair.outline_button", "Outline"), "-", "+",
+                Lang.tr("aio.ui.crosshair.zoom_reset", "Reset"), Lang.tr("aio.ui.crosshair.presets_button", "Presets"));
+    }
+
+    @Override public boolean previewButtonActive(int index) { return index == 0 && outline.on(); }
+
+    @Override public void previewButtonClicked(int index) {
+        switch (index) {
+            case 0 -> outline.set(!outline.on());
+            case 1 -> previewZoom = Math.max(1, previewZoom - 1);
+            case 2 -> previewZoom = Math.min(8, previewZoom + 1);
+            case 3 -> previewZoom = 2;
+            default -> core.platform().openScreen(new CrosshairScreen(core, this));
+        }
+    }
 
     /** Everything that makes up the look of a crosshair (sizes in screen pixels, opacity in percent). */
     public record Style(String name, int color, boolean rainbow, boolean outline, int outlineColor, float outlineThickness,
@@ -284,11 +306,16 @@ public final class CrosshairModule extends HudElement {
         int t = Math.max(1, Math.round(thick)), l = Math.max(1, Math.round(len)), g = Math.max(0, Math.round(gap));
         float a = square(cx, t), b = a + t;   // columns of the vertical arms
         float c = square(cy, t), d = c + t;   // rows of the horizontal arms
+        if (g == 0) {
+            // no gap: one bar across and one bar down, so there is no seam in the middle
+            out.add(new float[]{a - l, c, b + l, d, col});
+            out.add(new float[]{a, st.tShape() ? c : c - l, b, d + l, col});
+            return;
+        }
         out.add(new float[]{b + g, c, b + g + l, d, col});        // right
         out.add(new float[]{a - g - l, c, a - g, d, col});        // left
         out.add(new float[]{a, d + g, b, d + g + l, col});        // bottom
         if (!st.tShape()) out.add(new float[]{a, c - g - l, b, c - g, col}); // top
-        if (g == 0) out.add(new float[]{a, c, b, d, col});        // closed middle
     }
 
     /** Small bar below the crosshair while the attack is recharging (like the vanilla indicator). */
