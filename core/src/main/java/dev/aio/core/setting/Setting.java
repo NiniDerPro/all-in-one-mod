@@ -17,6 +17,7 @@ public abstract class Setting<T> {
     protected T value;
     private String key;
     private boolean hidden;
+    private String group;
     private BooleanSupplier visibleWhen = () -> true;
     private final List<Consumer<T>> listeners = new ArrayList<>(1);
 
@@ -66,6 +67,14 @@ public abstract class Setting<T> {
         hidden = true;
         return this;
     }
+
+    /** Puts the setting into a collapsible group in the menu (id, translated by the module). */
+    public Setting<T> group(String groupId) {
+        group = groupId;
+        return this;
+    }
+
+    public String group() { return group; }
 
     /** Shows the setting only if the condition is met. */
     public Setting<T> visibleWhen(BooleanSupplier condition) {

@@ -1,11 +1,11 @@
 package dev.aio.core.modules.render;
 
 import dev.aio.core.hud.HudElement;
+import dev.aio.core.i18n.Lang;
 import dev.aio.core.module.Category;
 import dev.aio.core.platform.Perspective;
 import dev.aio.core.platform.Renderer;
 import dev.aio.core.platform.Vec3;
-import dev.aio.core.setting.ActionSetting;
 import dev.aio.core.setting.BooleanSetting;
 import dev.aio.core.setting.ColorSetting;
 import dev.aio.core.setting.NumberSetting;
@@ -81,8 +81,59 @@ public final class CrosshairModule extends HudElement {
         attackIndicator = add(new BooleanSetting("attackIndicator", "Attack indicator", true));
         thirdPerson = add(new BooleanSetting("thirdPerson", "Show in third person", false));
 
-        add(new ActionSetting("presets", "Presets", () -> core.platform().openScreen(new CrosshairScreen(core, this))));
+        outline.group("outline");
+        outlineColor.group("outline");
+        outlineThickness.group("outline");
+        dot.group("dot");
+        dotSize.group("dot");
+        dotOpacity.group("dot");
+        inner.group("inner");
+        innerLength.group("inner");
+        innerThickness.group("inner");
+        innerGap.group("inner");
+        innerOpacity.group("inner");
+        outer.group("outer");
+        outerLength.group("outer");
+        outerThickness.group("outer");
+        outerGap.group("outer");
+        outerOpacity.group("outer");
+        tShape.group("more");
+        movementSpread.group("more");
+        spreadAmount.group("more");
+        attackIndicator.group("more");
+        thirdPerson.group("more");
     }
+
+    @Override public String groupName(String id) {
+        return switch (id) {
+            case "outline" -> Lang.tr("aio.ui.crosshair.group.outline", "Outline");
+            case "dot" -> Lang.tr("aio.ui.crosshair.group.dot", "Centre dot");
+            case "inner" -> Lang.tr("aio.ui.crosshair.group.inner", "Inner lines");
+            case "outer" -> Lang.tr("aio.ui.crosshair.group.outer", "Outer lines");
+            case "more" -> Lang.tr("aio.ui.crosshair.group.more", "More");
+            default -> id;
+        };
+    }
+
+    @Override public boolean hasPreview() { return true; }
+
+    @Override public float previewHeight() { return 70; }
+
+    /** Live preview on a background that shows dark and light colours (sky above, ground below). */
+    @Override public void drawPreview(Renderer r, float x1, float y1, float x2, float y2) {
+        float mid = (y1 + y2) / 2;
+        r.fill(x1, y1, x2, mid, 0xFF7FA8D8);
+        r.fill(x1, mid, x2, y2, 0xFF4A6B33);
+        float scale = (float) Math.max(1, platform().guiScale());
+        r.push();
+        r.scale(1f / scale);
+        draw(r, Math.round((x1 + x2) / 2 * scale), Math.round(mid * scale), current(), 0, rainbowSpeed.floatValue());
+        r.pop();
+    }
+
+    @Override public String previewButtonLabel() { return Lang.tr("aio.ui.crosshair.presets_button", "Presets"); }
+
+    @Override public void previewButtonClicked() { core.platform().openScreen(new CrosshairScreen(core, this)); }
 
     /** Everything that makes up the look of a crosshair (sizes in screen pixels, opacity in percent). */
     public record Style(String name, int color, boolean rainbow, boolean outline, int outlineColor, float outlineThickness,
