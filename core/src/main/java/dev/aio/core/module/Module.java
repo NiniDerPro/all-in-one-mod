@@ -205,6 +205,25 @@ public abstract class Module {
 
     public KeybindSetting toggleKey() { return toggleKey; }
 
+    // ---- Optional extras for the settings panel ----
+
+    /** A preview box that stays visible at the top of the settings while scrolling. */
+    public boolean hasPreview() { return false; }
+
+    /** Height of the preview box in GUI pixels. */
+    public float previewHeight() { return 64; }
+
+    /** Draws the preview into the box (x1, y1)–(x2, y2). */
+    public void drawPreview(dev.aio.core.platform.Renderer r, float x1, float y1, float x2, float y2) {}
+
+    /** Label of a button next to the preview, or null. */
+    public String previewButtonLabel() { return null; }
+
+    public void previewButtonClicked() {}
+
+    /** Shown name of a settings group (see {@link Setting#group}). */
+    public String groupName(String groupId) { return groupId; }
+
     public List<Setting<?>> settings() { return Collections.unmodifiableList(settings); }
 
     public Setting<?> setting(String settingId) {
