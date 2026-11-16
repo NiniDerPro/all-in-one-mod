@@ -4,6 +4,7 @@
   "package": "dev.aio.forge.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "ServerTpsMixin",
     "ClientLevelParticlesMixin",
     "ParticleEngineMixin",
     "MinecraftFpsMixin",
