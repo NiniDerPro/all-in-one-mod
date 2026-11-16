@@ -55,6 +55,7 @@ import dev.aio.core.modules.performance.XpClumpsModule;
 import dev.aio.core.modules.player.ElytraSwapModule;
 import dev.aio.core.modules.player.FoodInfoModule;
 import dev.aio.core.modules.player.ToggleSprintModule;
+import dev.aio.core.modules.player.ToggleSneakModule;
 import dev.aio.core.modules.player.ToolSaverModule;
 import dev.aio.core.modules.render.BlockOutlineModule;
 import dev.aio.core.modules.render.DynamicLightsModule;
@@ -148,6 +149,7 @@ public final class AioCore {
         modules.register(new ZoomModule());
         modules.register(new FullbrightModule());
         modules.register(new ToggleSprintModule());
+        modules.register(new ToggleSneakModule());
         modules.register(new ChatModule());
         modules.register(new FlexChatModule());
         modules.register(new ChatHeadsModule());

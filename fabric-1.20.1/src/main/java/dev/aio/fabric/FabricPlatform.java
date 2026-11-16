@@ -116,6 +116,11 @@ public final class FabricPlatform implements Platform {
 
     private LocalPlayer player() { return client.player; }
 
+    @Override public boolean playerFlyingOrRiding() {
+        LocalPlayer p = player();
+        return p != null && (p.getAbilities().flying || p.isPassenger());
+    }
+
     // ---- Zustand ----
 
     @Override public boolean inWorld() { return client.player != null && client.level != null; }
