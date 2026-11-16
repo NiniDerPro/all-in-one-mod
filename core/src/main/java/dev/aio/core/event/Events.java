@@ -63,4 +63,13 @@ public final class Events {
         public static final ServerLeave INSTANCE = new ServerLeave();
         private ServerLeave() {}
     }
+
+    /**
+     * A sound that starts playing in the world (not music, not UI).
+     *
+     * @param id       sound event id, e.g. {@code minecraft:entity.zombie.step}
+     * @param subtitle subtitle text as in the vanilla subtitles, may be empty
+     * @param source   sound category in lower case: hostile, neutral, players, blocks, ambient, weather, ...
+     */
+    public record Sound(String id, String subtitle, String source, double x, double y, double z) {}
 }
