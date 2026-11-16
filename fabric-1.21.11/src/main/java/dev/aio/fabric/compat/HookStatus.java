@@ -45,7 +45,7 @@ public final class HookStatus {
             Map.entry("ChatHeadsLineMixin", "chatheads"), Map.entry("ChatHeadsDrawMixin", "chatheads"),
             Map.entry("SmallItemsMixin", "smallitems"),
             Map.entry("DynamicLightsMixin", "dynamiclights"), Map.entry("DynamicLightsEntityMixin", "dynamiclights"),
-            Map.entry("ShieldIndicatorOwnerMixin", "shieldindicator"), Map.entry("ShieldIndicatorRenderMixin", "shieldindicator"),
+            Map.entry("ServerTpsMixin", "infolines"), Map.entry("ShieldIndicatorOwnerMixin", "shieldindicator"), Map.entry("ShieldIndicatorRenderMixin", "shieldindicator"),
             Map.entry("MultiPlayerGameModeMixin#aio$startBreak", "autotool"),
             Map.entry("ToolSaverMixin", "toolsaver"),
             Map.entry("LightOverlayDirtyMixin", "lightoverlay"),
