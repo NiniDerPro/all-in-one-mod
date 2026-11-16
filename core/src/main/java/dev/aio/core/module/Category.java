@@ -44,7 +44,7 @@ public enum Category {
             Map.entry("playtime", HUD), Map.entry("serverinfo", HUD), Map.entry("compass", HUD), Map.entry("helditeminfo", HUD),
             // PvP
             Map.entry("cps", PVP), Map.entry("keystrokes", PVP), Map.entry("totems", PVP), Map.entry("arrows", PVP),
-            Map.entry("autoweapon", PVP), Map.entry("togglesprint", PVP), Map.entry("nohurtcam", PVP),
+            Map.entry("autoweapon", PVP), Map.entry("togglesprint", PVP), Map.entry("togglesneak", PVP), Map.entry("nohurtcam", PVP),
             // QoL
             Map.entry("lookat", QOL), Map.entry("foodinfo", QOL), Map.entry("shulkerpreview", QOL), Map.entry("invtweaks", QOL),
             Map.entry("itemlist", QOL), Map.entry("elytraswap", QOL), Map.entry("autotool", QOL), Map.entry("villagerinfo", QOL),
