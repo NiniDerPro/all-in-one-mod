@@ -163,7 +163,8 @@ public final class ItemPanel {
             return true;
         }
         if (inGrid(mx, my) && hovered != null) {
-            module.showRecipes(hovered, button == 1);
+            if (button == 2) QuickCraft.craftItem(core, hovered); // middle click: craft directly
+            else module.showRecipes(hovered, button == 1);
             return true;
         }
         return false;

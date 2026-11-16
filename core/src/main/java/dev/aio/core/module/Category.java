@@ -41,7 +41,7 @@ public enum Category {
             // HUD: reine Anzeigen
             Map.entry("fps", HUD), Map.entry("armorhud", HUD), Map.entry("potions", HUD), Map.entry("coordinates", HUD),
             Map.entry("ping", HUD), Map.entry("biome", HUD), Map.entry("daycounter", HUD), Map.entry("worldtime", HUD), Map.entry("datetime", HUD),
-            Map.entry("playtime", HUD), Map.entry("serverinfo", HUD), Map.entry("compass", HUD), Map.entry("helditeminfo", HUD),
+            Map.entry("playtime", HUD), Map.entry("serverinfo", HUD), Map.entry("compass", HUD), Map.entry("helditeminfo", HUD), Map.entry("infolines", HUD),
             // PvP
             Map.entry("cps", PVP), Map.entry("keystrokes", PVP), Map.entry("totems", PVP), Map.entry("arrows", PVP),
             Map.entry("autoweapon", PVP), Map.entry("togglesprint", PVP), Map.entry("togglesneak", PVP), Map.entry("nohurtcam", PVP),
@@ -53,7 +53,7 @@ public enum Category {
             // Visuals
             Map.entry("fullbright", VISUALS), Map.entry("nofog", VISUALS), Map.entry("nopumpkin", VISUALS),
             Map.entry("blockoutline", VISUALS), Map.entry("zoom", VISUALS), Map.entry("freelook", VISUALS),
-            Map.entry("freecam", VISUALS));
+            Map.entry("freecam", VISUALS), Map.entry("soundradar", PVP));
 
     /** Category for a module: fixed mapping, otherwise the one given in the module. */
     public static Category of(String moduleId, Category fallback) { return BY_MODULE.getOrDefault(moduleId, fallback); }
