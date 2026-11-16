@@ -23,6 +23,12 @@ public interface Platform {
     /** Whether the own player is flying (creative/spectator) or riding something. */
     default boolean playerFlyingOrRiding() { return false; }
 
+    /** Block light and sky light at the player's feet, or null outside a world. */
+    default int[] lightLevels() { return null; }
+
+    /** Number of entities the client currently has loaded, -1 if unknown. */
+    default int entityCount() { return -1; }
+
     /** Server address (e.g. {@code play.example.net}) or null in singleplayer/menu. */
     String serverAddress();
 

@@ -118,6 +118,7 @@ public final class AioForgeClient {
             Telemetry.tick(c.getFps());
             long t0 = System.nanoTime();
             platform.saveOptionsIfDirty();
+            SoundHook.install(net.minecraft.client.Minecraft.getInstance(), core);
             core.bus().post(Events.Tick.INSTANCE);
             tickNanos += System.nanoTime() - t0;
             if (++diagTicks >= 600) reportPerformance(core);

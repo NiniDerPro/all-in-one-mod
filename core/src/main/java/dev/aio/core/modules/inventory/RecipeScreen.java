@@ -52,6 +52,8 @@ public final class RecipeScreen implements UiScreen {
         boolean in(double x, double y) { return x >= x1 && x < x2 && y >= y1 && y < y2; }
     }
     private record ItemHit(float x, float y, int size, ItemRef item) {}
+    private record CraftHit(float x1, float y1, float x2, float y2, RecipeView recipe) {}
+    private final List<CraftHit> craftHits = new ArrayList<>();
     private record ComboHit(float x, float y, RecipeView recipe, int slot) {}
     private final List<Hit> hits = new ArrayList<>();
     private final List<ItemHit> itemHits = new ArrayList<>();
@@ -104,6 +106,7 @@ public final class RecipeScreen implements UiScreen {
 
     @Override public void render(Renderer r, int mx, int my, float delta) {
         hits.clear();
+        craftHits.clear();
         itemHits.clear();
         comboHits.clear();
         hoveredItem = null;
@@ -334,11 +337,13 @@ public final class RecipeScreen implements UiScreen {
             McGui.button(r, bx1, by1, bx2, by2, mx, my, ok);
             r.centeredText("+", (bx1 + bx2) / 2f + 0.5f, by1 + 2, ok ? 0xFFFFFFFF : 0xFFA0A0A0, ok);
             if (mx >= bx1 && mx < bx2 && my >= by1 && my < by2) tooltip = switch (status) {
-                case OK -> Lang.tr("aio.ui.recipe.transfer_shift_as_many_as", "Transfer · Shift: as many as possible");
+                case OK -> Lang.tr("aio.ui.recipe.transfer_shift_as_many_as", "Transfer · Shift: as many as possible")
+                        + (rec.kind() == RecipeKind.CRAFTING ? "\n" + Lang.tr("aio.ui.recipe.middle_click_craft", "Middle click: craft directly") : "");
                 case MISSING_ITEMS -> Lang.tr("aio.ui.recipe.missing_ingredients_marked_red", "Missing ingredients (marked red)");
                 case TOO_BIG -> Lang.tr("aio.ui.recipe.too_big_for_2_2", "Too big for 2×2 – open a crafting table");
                 case WRONG_STATION -> stationHint(rec.kind());
             };
+            if (ok && rec.kind() == RecipeKind.CRAFTING) craftHits.add(new CraftHit(x, y, x + w, y + h, rec));
             if (ok) hits.add(new Hit(bx1, by1, bx2, by2, () -> {
                 boolean shift = core.platform().isKeyDown(Keys.LEFT_SHIFT) || core.platform().isKeyDown(Keys.RIGHT_SHIFT);
                 if (RecipeTransfer.transfer(core.platform().container(), rec, shift) > 0) core.platform().closeScreen();
@@ -368,11 +373,15 @@ public final class RecipeScreen implements UiScreen {
     private void renderTooltip(Renderer r, int mx, int my) {
         String text = hoveredItem != null ? hoveredItem.name() : tooltip;
         if (text == null || text.isEmpty()) return;
-        float tw = r.textWidth(text);
-        float tx = Math.min(mx + 10, r.screenWidth() - tw - 8), ty = Math.max(2, my - 14);
-        r.fill(tx - 3, ty - 3, tx + tw + 3, ty + 11, 0xF0100010);
-        r.outline(tx - 3, ty - 3, tx + tw + 3, ty + 11, 1, 0x505000FF);
-        r.text(text, tx, ty, hoveredItem != null ? hoveredItem.nameColor() : 0xFFFFFFFF, true);
+        String[] lines = text.split("\n");
+        float tw = 0;
+        for (String l : lines) tw = Math.max(tw, r.textWidth(l));
+        int th = lines.length * 10;
+        float tx = Math.min(mx + 10, r.screenWidth() - tw - 8), ty = Math.max(2, my - 4 - th);
+        r.fill(tx - 3, ty - 3, tx + tw + 3, ty + th + 1, 0xF0100010);
+        r.outline(tx - 3, ty - 3, tx + tw + 3, ty + th + 1, 1, 0x505000FF);
+        for (int i = 0; i < lines.length; i++)
+            r.text(lines[i], tx, ty + i * 10, hoveredItem != null ? hoveredItem.nameColor() : (i == 0 ? 0xFFFFFFFF : 0xFFAAAAAA), true);
     }
 
     private static String stationHint(RecipeKind kind) {
@@ -413,6 +422,14 @@ public final class RecipeScreen implements UiScreen {
         }
         ItemPanel panel = itemPanel();
         if (panel != null && lastRenderer != null && panel.mouseClicked(lastRenderer, mx, my, button)) return true;
+        if (button == 2) { // middle click on a recipe: craft it directly
+            for (CraftHit h : craftHits) {
+                if (mx >= h.x1 && mx < h.x2 && my >= h.y1 && my < h.y2) {
+                    if (QuickCraft.craft(core, h.recipe)) core.platform().closeScreen();
+                    return true;
+                }
+            }
+        }
         for (Hit h : hits) {
             if (h.in(mx, my)) {
                 h.action.run();
