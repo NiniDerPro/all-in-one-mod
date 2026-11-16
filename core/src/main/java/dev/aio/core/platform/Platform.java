@@ -20,6 +20,9 @@ public interface Platform {
 
     boolean isSingleplayer();
 
+    /** Whether the own player is flying (creative/spectator) or riding something. */
+    default boolean playerFlyingOrRiding() { return false; }
+
     /** Server address (e.g. {@code play.example.net}) or null in singleplayer/menu. */
     String serverAddress();
 
