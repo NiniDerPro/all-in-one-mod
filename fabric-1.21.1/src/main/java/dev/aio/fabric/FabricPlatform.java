@@ -119,6 +119,16 @@ public final class FabricPlatform implements Platform {
 
     private LocalPlayer player() { return client.player; }
 
+    @Override public int[] lightLevels() {
+        LocalPlayer p = player();
+        if (p == null || client.level == null) return null;
+        net.minecraft.core.BlockPos b = p.blockPosition();
+        return new int[]{client.level.getBrightness(net.minecraft.world.level.LightLayer.BLOCK, b),
+                client.level.getBrightness(net.minecraft.world.level.LightLayer.SKY, b)};
+    }
+
+    @Override public int entityCount() { return client.level == null ? -1 : client.level.getEntityCount(); }
+
     @Override public boolean playerFlyingOrRiding() {
         LocalPlayer p = player();
         return p != null && (p.getAbilities().flying || p.isPassenger());
