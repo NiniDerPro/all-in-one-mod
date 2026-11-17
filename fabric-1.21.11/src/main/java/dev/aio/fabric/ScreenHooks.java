@@ -45,6 +45,7 @@ final class ScreenHooks {
     static void register(AioCore core, Minecraft client) {
         FabricRenderer renderer = new FabricRenderer(client);
         ScreenEvents.AFTER_INIT.register((mc, screen, w, h) -> {
+            ScreenInput.clear(screen);
             if (screen instanceof ChatScreen) hookChat(core, renderer, screen);
             // "AIO" button at the top left of the pause and title menu opens the AIO menu
             if ((screen instanceof PauseScreen || screen instanceof TitleScreen) && core.clientSettings().menuButton.on()) {
@@ -206,7 +207,10 @@ final class ScreenHooks {
             return !used;
         });
 
-        // Typed characters: not available as a screen event in this Fabric API version (see KeyboardHandlerMixin)
+        ScreenInput.onChar(screen, c -> {
+            ItemPanel panel = list.panel();
+            return panel == null || !panel.charTyped(c);
+        });
 
         ScreenEvents.remove(screen).register(s -> {
             ItemPanel panel = list.panel();
