@@ -207,7 +207,10 @@ final class ScreenHooks {
             return !used;
         });
 
-        // Typed characters: not available as a screen event in this Fabric API version (see KeyboardHandlerMixin)
+        ScreenInput.onChar(screen, c -> {
+            ItemPanel panel = list.panel();
+            return panel == null || !panel.charTyped(c);
+        });
 
         ScreenEvents.remove(screen).register(s -> {
             ItemPanel panel = list.panel();
