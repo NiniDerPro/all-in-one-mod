@@ -625,6 +625,7 @@
   "aio.soundradar.players": "Joueurs",
   "aio.soundradar.radius": "Taille de l'anneau",
   "aio.soundradar.range": "Portée",
+  "aio.soundradar.ring": "Afficher le cercle",
   "aio.soundradar.toggleKey": "Touche de bascule",
   "aio.togglesneak": "Accroupi permanent",
   "aio.togglesneak.background": "Arrière-plan",

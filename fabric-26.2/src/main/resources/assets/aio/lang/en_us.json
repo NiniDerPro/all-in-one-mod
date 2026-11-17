@@ -673,6 +673,7 @@
   "aio.soundradar.players": "Players",
   "aio.soundradar.radius": "Ring size",
   "aio.soundradar.range": "Range",
+  "aio.soundradar.ring": "Show circle",
   "aio.soundradar.toggleKey": "Toggle key",
   "aio.togglesneak": "Toggle Sneak",
   "aio.togglesneak.background": "Background",

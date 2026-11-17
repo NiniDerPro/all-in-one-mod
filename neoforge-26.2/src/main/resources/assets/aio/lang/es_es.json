@@ -640,6 +640,7 @@
   "aio.soundradar.players": "Jugadores",
   "aio.soundradar.radius": "Tamaño del anillo",
   "aio.soundradar.range": "Alcance",
+  "aio.soundradar.ring": "Mostrar círculo",
   "aio.soundradar.toggleKey": "Tecla de alternar",
   "aio.togglesneak": "Agacharse fijo",
   "aio.togglesneak.background": "Fondo",

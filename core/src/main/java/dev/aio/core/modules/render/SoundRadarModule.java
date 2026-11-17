@@ -27,7 +27,7 @@ public final class SoundRadarModule extends Module {
             GREEN = 0x7CFF7C, YELLOW = 0xFFF0A0, GREY = 0xC8C8C8, LIGHT_RED = 0xFF9A9A;
 
     private final NumberSetting radius, range, duration;
-    private final BooleanSetting labels, footsteps, hostile, players, neutral, blocks, other, ignoreOwn;
+    private final BooleanSetting ring, labels, footsteps, hostile, players, neutral, blocks, other, ignoreOwn;
     private final List<Entry> entries = new ArrayList<>();
 
     private static final class Entry {
@@ -52,7 +52,8 @@ public final class SoundRadarModule extends Module {
         radius = add(new NumberSetting("radius", "Ring size", 60, 30, 150, 5, " px"));
         range = add(new NumberSetting("range", "Range", 24, 4, 48, 1, " blocks"));
         duration = add(new NumberSetting("duration", "Show for", 1.5, 0.5, 4, 0.25, " s"));
-        labels = add(new BooleanSetting("labels", "Show subtitle", true));
+        ring = add(new BooleanSetting("ring", "Show circle", true));
+        labels = add(new BooleanSetting("labels", "Show subtitle", false));
         footsteps = add(new BooleanSetting("footsteps", "Footsteps", true));
         footsteps.group("sounds");
         hostile = add(new BooleanSetting("hostile", "Hostile mobs", true));
@@ -128,8 +129,10 @@ public final class SoundRadarModule extends Module {
     }
 
     private void render(Renderer r) {
-        if (entries.isEmpty() || !platform().inWorld() || platform().isScreenOpen()) return;
+        if (!platform().inWorld() || platform().isScreenOpen()) return;
         if (platform().perspective() == Perspective.THIRD_PERSON_FRONT) return;
+        if (ring.on()) drawRing(r, r.screenWidth() / 2f, r.screenHeight() / 2f, radius.get().floatValue());
+        if (entries.isEmpty()) return;
         long now = System.currentTimeMillis();
         long life = Math.round(duration.get() * 1000);
         Vec3 p = platform().playerPos();
@@ -157,13 +160,14 @@ public final class SoundRadarModule extends Module {
             int argb = (alpha << 24) | e.color;
 
             drawArc(r, cx, cy, rad, rel, 14 + 10 * near, 1.5f + 2.5f * near, argb);
+            drawArrow(r, cx, cy, rad + 3, rel, 4 + 3 * near, argb);
 
             if (labels.on()) {
                 String text = e.label;
                 if (dy > 2.5) text += " ▲";
                 else if (dy < -2.5) text += " ▼";
                 if (!text.isBlank()) {
-                    float lr = rad + 12;
+                    float lr = rad + 18;
                     float lx = cx + (float) Math.sin(rel) * lr, ly = cy - (float) Math.cos(rel) * lr - r.fontHeight() / 2f;
                     float tw = r.textWidth(text);
                     float tx = lx - tw / 2f + (float) Math.sin(rel) * tw / 2f;
@@ -184,6 +188,32 @@ public final class SoundRadarModule extends Module {
             float t = thick * (float) (0.45 + 0.55 * Math.sin(Math.PI * i / steps));
             float x = cx + (float) Math.sin(a) * rad, y = cy - (float) Math.cos(a) * rad;
             r.fill(x - t / 2, y - t / 2, x + t / 2, y + t / 2, argb);
+        }
+    }
+
+    /** Faint full circle around the crosshair, so the directions are easy to read. */
+    private static void drawRing(Renderer r, float cx, float cy, float rad) {
+        int steps = Math.max(48, (int) (rad * 2));
+        for (int i = 0; i < steps; i++) {
+            double a = 2 * Math.PI * i / steps;
+            float x = cx + (float) Math.sin(a) * rad, y = cy - (float) Math.cos(a) * rad;
+            r.fill(x - 0.5f, y - 0.5f, x + 0.5f, y + 0.5f, 0x60FFFFFF);
+        }
+    }
+
+    /** Small arrow outside the ring that points towards the sound. */
+    private static void drawArrow(Renderer r, float cx, float cy, float base, double angle, float len, int argb) {
+        float sx = (float) Math.sin(angle), sy = -(float) Math.cos(angle);
+        int steps = Math.max(4, (int) (len * 2));
+        for (int i = 0; i <= steps; i++) {
+            float t = (float) i / steps;
+            float d = base + t * len, half = (1 - t) * len * 0.7f;
+            float px = cx + sx * d, py = cy + sy * d;
+            // spread across the arrow (perpendicular to the direction)
+            for (float o = -half; o <= half; o += 0.75f) {
+                float x = px + -sy * o, y = py + sx * o;
+                r.fill(x - 0.5f, y - 0.5f, x + 0.5f, y + 0.5f, argb);
+            }
         }
     }
 
